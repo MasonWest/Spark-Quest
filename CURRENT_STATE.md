@@ -36,6 +36,7 @@
 | **清理** | **删除 10 个开发期一次性 seeder 脚本（2026-09-14）**：`seed_level2..7.py` / `seed_quiz_level2.py` / `seed_quiz_level2_v2.py` / `upgrade_level2.py` / `expand_quizzes_to_10.py`。运行时从不读取（唯一运行时 seed 模块是 `app/seed_badges.py`，保留）；它们内嵌**旧快照**并 `upsert()` 写 JSON + DB，`seed_level3.py` 误跑即回滚本日 L2/L3 修复 → 多源漂移隐患。真源仍为 `app/quiz_seed.json` + `app/course_seed.json` | 🟢 **已删除（staged，未 commit/push）**；文件均在 HEAD，可经 git 历史找回 |
 | **文档一致性** | **规格书 `spark_quest/` 00–05 修缮（2026-09-14）**：加「文档定位」说明（设计意图 vs as-built，**冲突以本文件为准**）；`04` 路线图状态表校正 + Phase 6 复习节按实际 SRS 重写；`01` §9/§10、`03` 偏差清单、`05` Phase 6 Prompt 修正。消除「规格书与实现不一致」的误导 | 🟢 **已完成**（`spark_quest/` 不进 git） |
 | **清理** | **删除 30 个开发期一次性脚本 + 抽出常驻 sync 工具（2026-09-14 续）**：`backend/` 根目录 30 个一次性脚本（smoke/e2e 5、fix 8、patch 4、rebalance 3、rewrite 4、preview 2、sync 4）+ 4 个配套数据 JSON 全删。逐个 grep 确认**无任何一个被 `app/` 引用** → 运行时零影响；且 `fix_level4_*.py` 无 `--apply` 保护、`sync_*` 会重写 seed，属「误跑改库/回退题库」敞口。等价能力提升为常驻 **`backend/sync_seed.py`**（默认 dry-run 报告 `drift/orphan/db_only`，`--apply` 写入并自动备份）。**该工具首次运行即抓到并修复 `course_seed.json` 的一处 L5 漂移**（`l5-what-is-shuffle` 的 `explanation` 旧版含绝对化定义 + 重复定义，与当初 quiz_seed 漏同步同源）。`.gitignore` 放宽为 `*.bak*` + `backend/_*` | 🟢 **已完成**（staged，未 commit/push；冷库重建 66 课 / 660 题与生产库零差异） |
+| **技术修复** | **Level 3 JOIN 旧口径修复 + 全库叠词清理 + sync_seed 补齐 explanation（2026-09-14 续四）**：① L3 `l3-joins-intro` 的「JOIN 必触发 Shuffle」是**真事实错误**（与 Broadcast Hash Join 矛盾；比喻库 §4 早在 2026-09-09 已更正、课文未跟进）→ 全课 7 处改为「通常要 Shuffle」并补「一侧是小表可走广播连接免掉这次 Shuffle（L6 展开）」（objective / explanation 边界① / key_points / common_mistakes / q307 解析 / q314 正确项+解析；`correct_index` 未动，判分零影响）；② **全库叠词清理**：扫出 6 处「同一段文字连续写了两遍」（`l5-repartition-coalesce` 141 字 / `l6-join-strategies-overview` 148 字 / `l6-shuffle-hash-join` 192+138 字 / `l6-how-spark-chooses` 48 字 / `l6-join-data-skew` 231 字），均系历史批量替换脚本遗留；③ **`sync_seed.py` 补齐 `explanation` 同步**（此前只同步 options/correct_index，DB-only 的解析改动会在冷重建后丢失） | 🟢 **已完成**（未 commit/push；冷重建 66 课 / 660 题与生产库零差异） |
 | **v1.1** | **Course Map 重做（区域化垂直旅程 / 三档时间叙事 / 5 态节点 / 列表兜底）** | **🟢 已完成并验收** |
 
 **当前进度：Phase 9.1 Streak 已完成并验收；Phase 9.2 Badge 已实现完毕（待验收）；Phase 10.1 薄弱题 / Weak Questions 已实现完毕（`quiz_answer_log` 事实层 + 跨来源派生薄弱题 + `/wrong-questions` 重练页，待验收）。**
@@ -1112,7 +1113,9 @@ Practice 端点**绝不调用** `record_activity / increment_user_stats / evalua
 
 ### 技术债（已知、暂不修）
 
-- **L2 / L3 课文与题库仍是旧口径**（orderBy 必 Shuffle / 聚合必 Shuffle / JOIN 必 Shuffle），与已更正的设计文档不一致。收益低，暂挂
+- **L2 / L3 课文旧口径**（2026-09-14 逐条评估 → 部分修复）：
+  - ✅ **已修**：L3 `l3-joins-intro` 的「JOIN 必触发 Shuffle」——唯一一处**真事实错误**（与 Broadcast Hash Join 矛盾；比喻库 §4 早在 2026-09-09 已更正，课文未跟进）→ 已改「通常要 Shuffle」并补「一侧是小表可走广播连接免掉这次 Shuffle」。
+  - ⏳ **保留**：L2 的 orderBy / 聚合「必 Shuffle」与 L3 `l3-where-order-limit` 的「ORDER BY 必触发 Shuffle」——评估为**可接受的入门级简化**（均带「大表 / 常态」限定，L3 心智模型行亦明示「严谨边界见 Level 4」）；改动收益低，维持现状。
 - L4 lesson 31 答案分布 A2/B4/C2/D2（5 道冻结题有 4 道固定在 B），无法进一步优化
 
 ### 防回退
@@ -1225,7 +1228,7 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 - **L0 / L1 未做技术审查**（早期课，三段文案结构完整）
 - **L5 / L6 / L7 答案位置分布未核查**（L4 曾发现 A38/B45/C6/D1 的严重失衡）
 - **全库 2 道跨 Level 重复题干**：`为什么「计划相同 ≠ 运行时性能相同」？`（q429 L4-8 / q519 L5-8）、`综合读图的第一步是？`（q425 L4-8 / q515 L5-8）——建议改 L5-8 那两题
-- L2 / L3 旧口径技术债仍未修（用户决定）；L2/L3 三段文案未查
+- L2 / L3 旧口径技术债：**L3 JOIN「必 Shuffle」已于 2026-09-14 修复**（见下表 09-14 续四条）；L2 / L3 的 orderBy、聚合「必 Shuffle」经评估为可接受简化，保留（用户决定）；L2/L3 三段文案未查
 
 ---
 

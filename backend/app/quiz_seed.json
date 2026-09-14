@@ -3549,7 +3549,7 @@
             "它要触发 Shuffle 按 key 重分区"
           ],
           "correct_index": 3,
-          "explanation": "JOIN 需按连接键重分区，必触发 Shuffle，代价大。",
+          "explanation": "JOIN 需按连接键重分区（Shuffle），代价大；一侧是小表时可走广播免掉它（见 L6）。",
           "dimension": "why"
         },
         {
@@ -3636,11 +3636,11 @@
           "options": [
             "JOIN 的执行本身是免费的",
             "JOIN 只能在 DataFrame API 里用",
-            "JOIN 是多表，必 Shuffle，L6 深讲",
+            "JOIN 是多表，通常要 Shuffle，L6 深讲",
             "JOIN 和 Level 2 的内容没有关系"
           ],
           "correct_index": 2,
-          "explanation": "JOIN 是多表操作，必触发 Shuffle，深入在 Level 6。",
+          "explanation": "JOIN 是多表操作，通常需 Shuffle，深入在 Level 6。",
           "dimension": "comparison"
         }
       ]

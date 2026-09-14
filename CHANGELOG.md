@@ -867,6 +867,37 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ---
 
+## 2026-09-14（续四）— Level 3 JOIN 旧口径修复 + 全库叠词清理
+
+用户询问「L2/L3 旧口径技术债影响大不大」，逐条评估后决定：只修其中唯一一处**真事实错误**，其余保留。
+
+### Fixed
+- **L3 `l3-joins-intro`「JOIN 必触发 Shuffle」**：JOIN 的实际策略包含 **Broadcast Hash Join（小表广播，大表侧不产生 ShuffleExchange）**，写成「必 Shuffle」是事实错误——学习者会据此错过最常见的维表 join 优化。且《心智模型与比喻边界案例库》§4 早在 **2026-09-09** 就更正为「JOIN 未必 Shuffle」，课文一直未跟进（同源技术债）。共改 **7 处**：
+  - `objective`：「并知道 JOIN 必触发 Shuffle…」→「…通常要按连接键重分区（Shuffle）…」
+  - `explanation` 边界①：「JOIN 必触发 Shuffle…」→「JOIN 通常要一次 Shuffle…；但若其中一侧是小表，Spark 可走广播连接免掉这次 Shuffle（Level 6 展开）」
+  - `key_points[2]`：「JOIN 必触发 Shuffle（按 key 重分区），代价大」→「JOIN 通常要 Shuffle…」
+  - `common_mistakes[2].why`：「必 Shuffle，大表 JOIN 是大成本。」→「通常要 Shuffle…」
+  - `q307` 解析、`q314` 正确项文本 + 解析
+  - **`correct_index` 全部未动**（q307 仍为 3、q314 仍为 2），判分与薄弱题派生零影响。
+
+### Fixed（叠词）
+- **全库「同一段文字连续写了两遍」共 6 处**：系 2026-09-09 ~ 09-11 各轮批量替换脚本遗留（当时只扫单课，未做全库复扫）：
+  - `l5-repartition-coalesce`（141 字）、`l6-join-strategies-overview`（148 字）、`l6-shuffle-hash-join`（192 字 + 138 字，同课两处）、`l6-how-spark-chooses`（48 字）、`l6-join-data-skew`（231 字）
+  - 判定用「周期重复」：仅当 `s[i:i+d] == s[j:j+d]`（d = j−i）时删第二遍；`l5-what-is-partition` 里 `maxPartitionBytes` 的远距离复述等**合法重复被自动跳过**。
+
+### Changed
+- **`backend/sync_seed.py` 补齐 `explanation` 同步**：此前只同步 `options` / `correct_index`，而 `_seed_quizzes()` 播种时**会读 `explanation`** → 只改 DB 的解析在清库重建后会丢失（与 L5 `quiz_seed.json` 漏同步同类隐患）。补齐后 dry-run 显示历史 explanation 零漂移，属防御性修复。
+
+### 验证
+- 冷库重建（副本 app 目录 + 空 DB → `init_db()`）：`lessons=66 / quizzes=660`，与生产库**逐课逐题零差异**（lesson 0 / quiz 0）。
+- 全库扫描：`U+FFFD` 0 处；「必 Shuffle」残留 3 处**均为正确用法**（`repartition` 确实必 Shuffle；另两处在「别背死某算子必 Shuffle」的教育语境）；「唯一」15 处全为术语或限定语境的正确用法。
+- 真库改动经 `sync_seed.py --apply` 同步（`course_seed.json` 6 课 + `quiz_seed.json` 2 题）；复跑 dry-run 双零漂移。
+
+### 状态
+- **未 commit / 未 push**（用户验收后推送）。
+
+---
+
 ## 模板（后续阶段直接复制此结构，改日期与内容）
 
 ## YYYY-MM-DD — <阶段标题>
