@@ -634,7 +634,7 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ### Fixed — P1（3 项）
 
-- **乱码 2 处（U+FFFD）**：L7-4 / L7-9 的 `examples[].note`（「复�� L5」「实���执行图」）。全库复查后残留 0
+- **乱码 2 处（U+FFFD）**：L7-4 / L7-9 的 `examples[].note`（「复用 L5」「真实执行图」）。全库复查后残留 0
 - **AQE 默认开启的事实缺失（本次最重要）**：Spark 官方文档明确 **AQE「enabled by default since Apache Spark 3.2.0」**。原课文把 AQE 讲成「需要手动开启的功能」，导致五处表述与 3.x 现实脱节：
   - L7-4「`shuffle.partitions` 就是后续 Task 数」→ AQE 下只是**初始上界**（补 ⑤ 版本提示）
   - L7-5 静态 explain 的 SortMergeJoin 未必是最终策略（补 ⑤）
@@ -830,6 +830,40 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ### 状态
 - **未 commit / 未 push**（与同日 L2/L3 题库修复、复习失败修复一并待推）。
+
+---
+
+## 2026-09-14（续三）— 清理 30 个开发期一次性脚本 + 新增常驻 seed 同步工具
+
+### Removed
+- **删除 `backend/` 根目录 30 个开发期一次性脚本 + 4 个配套数据 JSON**（用户 2026-09-14 拍板「留 1 个 sync 工具，其余全删」）：
+  - 验收冒烟/e2e（5）：`_p101_smoke.py`、`_p91_smoke.py`、`_p91_e2e_check.py`、`_p92_smoke.py`、`_p92_e2e_check.py`
+  - 内容修复（8）：`fix_deferred_failed_reviews_20260914.py`、`fix_l41_l48_dup_20260911.py`、`fix_l6_dup_20260911.py`、`fix_level4_20260909.py`、`fix_level4_20260909_round2.py`、`fix_level4_objective_20260909.py`、`fix_level56_20260910.py`、`fix_level7_20260911.py`
+  - patch（4）/ rebalance（3）/ rewrite（4）/ preview（2）/ sync（4，含 `sync_quiz_seed_all_20260914.py`，能力已迁入新工具）
+  - 数据 JSON：`l2_distractors_20260914.json`、`l3_distractors_20260914.json`、`l2l3_distractors_patch_20260914.json`、`l5_distractors_20260911.json`
+  - 本地 scratch（未跟踪）：`_quiz_dump.json`、`_p6b_e2e_check.py`、`_l4/_l567_narrative_preview.html`
+  - **理由**：逐个 grep 确认**无任何一个被 `app/` 引用** → 删除对运行时零影响。且 `fix_level4_20260909.py` 等**无 `--apply` 保护**、参数一对即 `commit()`，`sync_*` 会重写 seed —— 留着即「误跑改库 / 回退题库」的敞口，与被删的旧 seeder 同类风险。被删文件均在 `HEAD` 中，可经 git 历史找回。
+
+### Added
+- **`backend/sync_seed.py`** —— 常驻「真库 → 播种文件」同步 + 漂移检查工具（由 `sync_quiz_seed_all_20260914.py` + `sync_seed_all_20260910.py` 等价能力合并提升）：
+  - `python sync_seed.py` → **dry-run**：只报告 `drift / orphan / db_only`，退出码 1 表示检测到漂移
+  - `python sync_seed.py --apply` → 写入，先自动备份为 `*.bak_before_sync_<时间戳>`
+  - 覆盖 `course_seed.json`（按 slug 对齐 `objective / description / content`）与 `quiz_seed.json`（按 lesson_slug + 归一化 prompt 对齐 `options / correct_index`），幂等
+
+### Fixed
+- **`course_seed.json` 的一处 L5 漂移（新工具首次运行即抓到）**：`l5-what-is-shuffle` 的 `content.explanation` 在 seed 中是**旧版**（含绝对化定义「就叫 Shuffle」+ 第 7 行重复定义「空中飞货 = Shuffle = …」），而 DB 已是修复版（不提前定义、用「往往意味着」的去绝对化措辞 + 定义收口到第 7 行）。→ 与当初 `quiz_seed.json` 漏同步**同源**（L5 修复只改了 DB）。已 `--apply` 同步；现 course / quiz 双零漂移。
+
+### Changed
+- **`.gitignore` 放宽两条规则**（消除漏网 + 防复发）：
+  - `*.bak_before_*` → **`*.bak*`**（原先漏挡 `*.bak_l3review` 这类命名，会让备份出现在 `git status` 里）
+  - 逐个列举的 scratch 文件名 → **`backend/_*`**（backend 根目录任何 `_` 前缀临时文件一律不入库）
+
+### 验证
+- 冷库重建（临时目录副本 + 空 DB → `init_db()`）：`levels=8 / lessons=66 / quizzes=660`；与生产库**逐课逐题零差异**（lesson content 0 不一致 / quiz 0 不一致 / 仅重建有 0 / 仅生产有 0）。
+- `import app.main` 正常（12 routes）；真库未被写入（lessons 66 / quizzes 660 / `quiz_answer_log` 245 不变）。
+
+### 状态
+- **未 commit / 未 push**（用户验收后推送）。
 
 ---
 

@@ -1,6 +1,6 @@
 # Spark Quest — 当前项目状态
 
-> 最后更新：2026-09-14（① Level 2 / Level 3 题库修复：正确项长度信号 + 答案位置偏置；quiz_seed.json 全量校正并修复 L5 历史遗留；② 修复「复习失败后课程从今日复习静默消失」——失败不再延后 3 天，改为保持到期；③ **修复空库冷启动崩溃**（`content` 未序列化 + `pop` 后取键），并**删除 10 个开发期一次性 seeder 脚本**（多源漂移隐患）；④ 规格书 `spark_quest/` 00–05 一致性修缮；与 `CHANGELOG.md` 同步）
+> 最后更新：2026-09-14（① Level 2 / Level 3 题库修复：正确项长度信号 + 答案位置偏置；quiz_seed.json 全量校正并修复 L5 历史遗留；② 修复「复习失败后课程从今日复习静默消失」——失败不再延后 3 天，改为保持到期；③ **修复空库冷启动崩溃**（`content` 未序列化 + `pop` 后取键），并**删除 10 个开发期一次性 seeder 脚本**（多源漂移隐患）；④ 规格书 `spark_quest/` 00–05 一致性修缮；⑤ **清理 30 个开发期一次性脚本**（smoke/fix/patch/rebalance/rewrite/preview/sync）+ 新增常驻 **`backend/sync_seed.py`**（DB→seed 同步 / 漂移检查），借它抓到并修复 `course_seed.json` 的一处 L5 漂移；与 `CHANGELOG.md` 同步）
 > 代码目录：`E:\MMMason\Spark_dlg\spark-quest-app\`
 > 代码仓库：`https://github.com/MasonWest/Spark-duolinguo`（分支 `main`）
 > 文档目录（通常只读）：`E:\MMMason\Spark_dlg\spark_quest\`
@@ -35,6 +35,7 @@
 | **Bug 修复** | **空库冷启动崩溃（2026-09-14）**：`database.py::_seed_course_data()` 首次播种路径两处缺陷 —— ① `content` 对象未 `json.dumps` 就塞进 `Text` 列 → `type 'dict' is not supported`；② `n_lessons` 读取已被 `pop` 掉的 `lessons` 键 → `KeyError`。因历史 DB 一直存在而从未暴露；`spark_quest.db` 被 gitignore，故**全新克隆 / 删库重建后首次启动必崩**。已修复：pop 前计数 + 不 pop 共享 dict + content 序列化 | 🟢 **已完成并落库**（未 commit/push；验证：空库重建 `8 levels / 66 lessons / 660 quizzes`，与生产库逐题比对 660/660 零差异） |
 | **清理** | **删除 10 个开发期一次性 seeder 脚本（2026-09-14）**：`seed_level2..7.py` / `seed_quiz_level2.py` / `seed_quiz_level2_v2.py` / `upgrade_level2.py` / `expand_quizzes_to_10.py`。运行时从不读取（唯一运行时 seed 模块是 `app/seed_badges.py`，保留）；它们内嵌**旧快照**并 `upsert()` 写 JSON + DB，`seed_level3.py` 误跑即回滚本日 L2/L3 修复 → 多源漂移隐患。真源仍为 `app/quiz_seed.json` + `app/course_seed.json` | 🟢 **已删除（staged，未 commit/push）**；文件均在 HEAD，可经 git 历史找回 |
 | **文档一致性** | **规格书 `spark_quest/` 00–05 修缮（2026-09-14）**：加「文档定位」说明（设计意图 vs as-built，**冲突以本文件为准**）；`04` 路线图状态表校正 + Phase 6 复习节按实际 SRS 重写；`01` §9/§10、`03` 偏差清单、`05` Phase 6 Prompt 修正。消除「规格书与实现不一致」的误导 | 🟢 **已完成**（`spark_quest/` 不进 git） |
+| **清理** | **删除 30 个开发期一次性脚本 + 抽出常驻 sync 工具（2026-09-14 续）**：`backend/` 根目录 30 个一次性脚本（smoke/e2e 5、fix 8、patch 4、rebalance 3、rewrite 4、preview 2、sync 4）+ 4 个配套数据 JSON 全删。逐个 grep 确认**无任何一个被 `app/` 引用** → 运行时零影响；且 `fix_level4_*.py` 无 `--apply` 保护、`sync_*` 会重写 seed，属「误跑改库/回退题库」敞口。等价能力提升为常驻 **`backend/sync_seed.py`**（默认 dry-run 报告 `drift/orphan/db_only`，`--apply` 写入并自动备份）。**该工具首次运行即抓到并修复 `course_seed.json` 的一处 L5 漂移**（`l5-what-is-shuffle` 的 `explanation` 旧版含绝对化定义 + 重复定义，与当初 quiz_seed 漏同步同源）。`.gitignore` 放宽为 `*.bak*` + `backend/_*` | 🟢 **已完成**（staged，未 commit/push；冷库重建 66 课 / 660 题与生产库零差异） |
 | **v1.1** | **Course Map 重做（区域化垂直旅程 / 三档时间叙事 / 5 态节点 / 列表兜底）** | **🟢 已完成并验收** |
 
 **当前进度：Phase 9.1 Streak 已完成并验收；Phase 9.2 Badge 已实现完毕（待验收）；Phase 10.1 薄弱题 / Weak Questions 已实现完毕（`quiz_answer_log` 事实层 + 跨来源派生薄弱题 + `/wrong-questions` 重练页，待验收）。**

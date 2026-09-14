@@ -53,12 +53,9 @@ Thumbs.db
 *.log
 
 # ===== Local migration / seed backups (one-off, not source) =====
-*.bak_before_*
+# 放宽为 *.bak*：原先只挡 *.bak_before_*，导致 *.bak_l3review 这类命名漏网、出现在 git status
+*.bak*
 
-# ===== Local verification scratch (needs dev-only deps, not product) =====
-backend/_quiz_dump.json
-backend/_p6b_e2e_check.py
-# 生成物：由 backend/preview_level4_narrative.py 重新生成
-backend/_l4_narrative_preview.html
-# 生成物：由 backend/preview_narrative_567_20260911.py 重新生成
-backend/_l567_narrative_preview.html
+# ===== Local verification scratch (dev-only, not product) =====
+# backend 根目录下任何 `_` 前缀的临时脚本/产物一律不入库（原先逐个列文件名，防不住新增）
+backend/_*
