@@ -1,0 +1,190 @@
+{
+  "_note": "L2/L3 干扰项第二轮补丁：目标为第一轮后 margin>10 的 37 题。代码/语句类答案改用平行错误语句（长度自然对齐）；解释类答案继续补长。",
+  "distractors": {
+    "110": [
+      "因为 & 与 | 这两种运算符运行起来比 and / or 更快一些",
+      "因为 filter 本身并不支持多个条件的组合，必须拆成多次来调用",
+      "因为 and / or 并不是 Python 提供的合法运算符，所以不能使用"
+    ],
+    "111": [
+      "它是 Action，调用时会立即触发整条计算链从头到尾地执行一遍运行",
+      "其中的 & 符号可以直接替换成 Python 里的 and，两者完全等价互换",
+      "它会在 Driver 端一次性把整张表过滤完毕后，再分发到各个分区上去"
+    ],
+    "213": [
+      "立刻把文件内容全部读出来，并逐行打印到控制台上给你看",
+      "先删除掉本地那个同名的旧文件，然后再返回一个新的对象",
+      "把 Python 的普通类型先整体转换一遍，最后再返回新结果"
+    ],
+    "221": [
+      "两者其实完全一样，都会返回一份本地列表供你直接拿去使用",
+      "take 并不会触发执行，它只是把这次操作登记进执行计划中",
+      "show 会返回一份列表，而 take 只负责把数据打印到屏幕上"
+    ],
+    "229": [
+      "只能写字符串形式的列名，不可以写任何形式的表达式内容出来",
+      "只能写数字字面量，用来构造出一个固定的常量列来展示",
+      "只能在里面写一个星号 * 来表示出这张表里的全部列"
+    ],
+    "115": [
+      "因为 Python 内置函数跑得更慢，会成为整个作业的性能瓶颈",
+      "因为 Spark 完全不允许在 Python 代码里调用任何自定义函数",
+      "因为内置函数只能作用于字符串类型的列，对数值列都无效"
+    ],
+    "230": [
+      "因为直接去修改某一个单元格在 Spark 里运行起来会更快一些",
+      "因为 Spark 本身就不允许往一张表里面去新增任何一列",
+      "因为原表存放在磁盘上，根本没有办法对它做原地修改"
+    ],
+    "231": [
+      "两者完全相同，都能在保留原有列的前提下新增出一列来用",
+      "select 不能新增列，只能挑选出表里面已经存在的那些列",
+      "withColumn 会先把其它列全部删掉，然后再补上这一列"
+    ],
+    "232": [
+      "withColumn 这个方法本身存在 bug，需要重启内核才行",
+      "新列名不合法，所以被 Spark 静默地忽略掉了",
+      "a 这一列根本不存在，所以整个调用被跳过了"
+    ],
+    "233": [
+      "因为它在 Driver 端按行挨个循环执行整列的计算与累加",
+      "因为 Python 内置的 abs 函数其实也能够分布式地并行执行",
+      "因为这些数据其实早就已经全部落在 Driver 的内存上了"
+    ],
+    "235": [
+      "因为去重一定会丢掉一部分数据，所以必须先想清楚后果",
+      "因为不指定列的话，Spark 在运行时会直接抛出错误",
+      "因为按指定列去重的执行速度通常会明显更快一些"
+    ],
+    "236": [
+      "limit 是 Action 返回本地列表；take 是 Transformation 返回新 DataFrame",
+      "limit 与 take 都是 Action，都会把结果返回成本地的列表",
+      "limit 与 take 都是 Transformation，都只返回一个新的 DataFrame"
+    ],
+    "239": [
+      "df.dropDuplicates(['user']).orderBy(F.desc('amount')).limit(5)",
+      "df.orderBy(F.desc('amount')).limit(5).dropDuplicates(['user'])",
+      "df.dropDuplicates(['user']).limit(5).orderBy(F.desc('amount'))"
+    ],
+    "127": [
+      "df.groupBy('city').agg(F.count('amount').alias('cnt'), F.avg('amount').alias('total'))",
+      "df.groupBy('city').agg(F.count('*').alias('cnt'), F.max('amount').alias('total'))",
+      "df.groupBy('city').agg(F.count('city').alias('cnt'), F.min('amount').alias('total'))"
+    ],
+    "242": [
+      "忽略掉这个列名，直接用原来那个名字继续往下写就可以了",
+      "重新做一次 groupBy，让结果里面的列名自动刷新一遍就好了",
+      "把最终写出去的文件名改掉，让结果里的列名跟着一起变"
+    ],
+    "243": [
+      "把全部数据先复制到 Driver 端，再统一做一次聚合运算",
+      "直接禁用掉所有优化，让聚合老老实实地逐行去执行",
+      "先按聚合列做一次全局排序，然后再删掉重复的那些行"
+    ],
+    "244": [
+      "df.groupBy('city').agg(F.sum('amount').alias('mx'), F.count('*').alias('cnt'))",
+      "df.groupBy('city').agg(F.max('amount').alias('mx'), F.sum('*').alias('cnt'))",
+      "df.groupBy('city').agg(F.min('amount').alias('mx'), F.count('city').alias('cnt'))"
+    ],
+    "131": [
+      "把所有数据合并写入单个大文件里，方便后续整体读取",
+      "按随机生成的名字拆成多个互不相关的小文件",
+      "只在内存中生效便于调试，并不会真正落盘保存"
+    ],
+    "134": [
+      "filter / withColumn / groupBy / orderBy 都是 Action，只有 write 是 Transformation",
+      "read / filter / withColumn / groupBy 都是 Transformation，只有 orderBy 是 Action",
+      "filter / groupBy / orderBy / write 都是 Transformation，只有 read 是 Action"
+    ],
+    "253": [
+      "Python 进程本身崩溃了，需要重启一下内核才可以恢复运行",
+      "数据为空的时候一定会出现这种一直卡住不动的现象",
+      "显示器的刷新问题，和计算本身其实并没有任何关系"
+    ],
+    "254": [
+      "read.csv → filter → groupBy('city').agg(...) → write → orderBy(desc).limit(10)",
+      "read.csv → groupBy('city').agg(...) → filter → orderBy(desc).limit(10) → write",
+      "read.csv → filter → orderBy(desc).limit(10) → groupBy('city').agg(...) → write"
+    ],
+    "273": [
+      "视图会把底层的真实数据物化之后保存下来",
+      "视图其实就是一张独立的、真实存在的物理表",
+      "视图一旦创建之后就不能再被查询了"
+    ],
+    "289": [
+      "这一列在表里面根本就没有对应的字段存在",
+      "SQL 的语法本身写错了，才导致直接报错",
+      "底层的表缺少合适的索引，所以查不到"
+    ],
+    "294": [
+      "两者完全不同，根本无法相互替代地去使用",
+      "orderBy 的执行速度通常都会比 SQL 更快一些",
+      "SQL 里面根本没有排序这种能力可以去用"
+    ],
+    "299": [
+      "完全不产生任何额外的执行代价和开销",
+      "只会额外触发一次全局排序的操作",
+      "只会额外触发一次写入操作而已"
+    ],
+    "312": [
+      "SELECT u.name, o.amount FROM users u JOIN orders o ON u.id=o.uid GROUP BY u.name",
+      "SELECT u.name, sum(o.amount) FROM users JOIN orders WHERE u.id=o.uid GROUP BY u.name",
+      "SELECT name, sum(amount) FROM users, orders ON u.id=o.uid GROUP BY u.name"
+    ],
+    "317": [
+      "它的语法比内置函数要更加复杂一些",
+      "它并不支持用于聚合类的那类运算操作",
+      "它会把整份数据完整地复制一遍出来"
+    ],
+    "319": [
+      "这个自定义函数本身写得有问题",
+      "引用的那一列名字写错了地方",
+      "SQL 的整体语法写得不太对"
+    ],
+    "324": [
+      "把 Spark 卸载掉再重新安装一遍",
+      "给每个 Executor 都多加一些内存",
+      "干脆忽略掉这个性能问题即可"
+    ],
+    "326": [
+      "CREATE TABLE t USING parquet PATH '/data/sales' 然后 SELECT",
+      "CREATE VIEW t USING parquet LOCATION '/data/sales' 然后 SELECT",
+      "CREATE TABLE t USING csv LOCATION '/data/sales' 然后 SELECT"
+    ],
+    "328": [
+      "两者本质上完全一样，没有任何区别",
+      "本路线的表读取起来会明显更快一些",
+      "本路线的表一旦注册后就不能再查询"
+    ],
+    "331": [
+      "数据量本身太少所导致的",
+      "SQL 语句本身写错所导致的",
+      "列的数量太多所导致的"
+    ],
+    "332": [
+      "不一致（只有 DataFrame API 才有写出模式），SQL 侧并不存在",
+      "一致（overwrite/append/error/ignore），SQL 用 CREATE TABLE ... LOCATION",
+      "一致（append/overwrite/error/ignore），SQL 用 UPDATE ... SET"
+    ],
+    "334": [
+      "磁盘上的数据已经被删掉了",
+      "SQL 语句本身写得不对",
+      "当前用户并没有操作权限"
+    ],
+    "338": [
+      "在注册临时视图的时候",
+      "在 spark.sql 返回结果的那一刻",
+      "在读取 CSV 文件的那一步里"
+    ],
+    "343": [
+      "两者之间其实并没有任何关系",
+      "L3 已经完全替代掉了 L2 的内容",
+      "L3 的执行速度反而比 L2 更慢一些"
+    ],
+    "344": [
+      "分区在 CREATE TABLE 时 GROUPED BY 定义，写出用 INSERT OVERWRITE TABLE",
+      "分区在 INSERT OVERWRITE 时 PARTITIONED BY 定义，读取用 CREATE TABLE",
+      "分区在 CREATE TABLE 时 PARTITIONED BY 定义，写出用 LOAD DATA LOCATION"
+    ]
+  }
+}

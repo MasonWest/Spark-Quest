@@ -759,6 +759,80 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ---
 
+## 2026-09-14 — Level 2 / Level 3 题库修复（正确项长度信号 + 答案位置偏置）+ quiz_seed.json 全量校正
+
+### Fixed
+- **L2/L3「正确项恒最长」**：
+  - 实测 L2 **72/100** 正确项唯一最长（明显最长 >10 字：39/100，中位差 +8）；L3 **82/90（91%）** 唯一最长（明显最长 45/90，中位差 +10，最大差 +70）。根因同 L5：正确项是完整句、干扰项是极短桩（L3 干扰项中位长度仅 8 字）。
+  - 重写 **153 题**干扰项（L2 72 + L3 82；q271 为代码 token「global_temp.」无法加长且差值仅 4，跳过）为**与正确项长度相当、事实错误**的干扰项；对「错误说法」类题（98/103/123/138）改填等长**真陈述**，避免唯一假陈述因更长而暴露。代码/语句类题改用**平行错误语句**（如 q254 的 ETL 顺序、q312 的 SQL、q127/q244 的 agg 表达式）。
+  - 两轮执行（首轮全量 + 针对 >10 差值的 37 题补丁）。结果：明显最长(>10) **L2 39→9 / L3 45→8**；差值中位 **8→0 / 10→1**；剩余 >10 的题全部落在 11–20（已无「显而易见」级）。
+- **L2/L3 答案位置偏置**：L2 分布 `[63,13,12,12]`（63% A）、L3 `[30,57,3,0]`（57% B、**D 从不出现**）。按课序轮转重排选项顺序（仅置换 + 重算 `correct_index`，**正确项文本零改动**）：L2 → `[25,26,25,24]`、L3 → `[23,23,22,22]`。
+  - **已作答（冻结）题一并重排**。依据：`routers/weak_questions.py` 派生薄弱题只读 `is_correct` + `question_id`，**从不回读** `quiz_answer_log.selected_index / correct_index`（两列只写不读）；判分 `payload.selected_index == q.correct_index` 用的也是当前值。故重排不破坏任何派生/判分逻辑，脚本**不触碰** `quiz_answer_log`（保持 append-only）。
+- **`quiz_seed.json` 历史遗留（重要）**：核实 App `_seed_quizzes()` 只读 **`app/quiz_seed.json`**。此前 2026-09-11 的 L5 干扰项重写 / 答案重排只回写了 DB + `seed_level5.py`，**漏了 `quiz_seed.json`** —— 其中 L5 90 题仍是旧短桩干扰项（8/12/13 字）+ 旧 `correct_index`，**一旦清库重跑 seed 就会复活 L5「全 A + 正确项恒最长」旧缺陷**。已把 `quiz_seed.json` 全量对齐 DB。
+
+### Changed
+- **seeding 口径更正**：App 重跑 seed 的**真源**是 `app/quiz_seed.json`（quiz）+ `app/course_seed.json`（lesson content）；`seed_levelN.py` / `seed_quiz_levelN.py` 是**开发期一次性脚本、运行时不读取**。其中 `seed_level3.py`(LEVEL3_QUIZZES)、`seed_quiz_level2.py`(NEW_QUIZZES) 仍持旧快照、未被任何代码引用（建议后续整合或删除，避免多源漂移）。
+
+### 验收
+- L2/L3 修复后：`dist` L2 `[25,26,25,24]` / L3 `[23,23,22,22]`；明显最长 L2 9 / L3 8；差值中位 0 / 1；**重复选项 0、U+FFFD 0**。
+- `quiz_seed.json` ↔ DB：**L0–L7 共 660 题零漂移**（`mismatched=0 / missing=0`）。
+- 全库 lessons + quizzes：U+FFFD 0、重复选项 0。
+- 脚本（`backend/`，均 `--apply` 幂等）：`rewrite_l2l3_distractors_20260914.py`、`patch_l2l3_distractors_20260914.py`、`rebalance_l2l3_answers_20260914.py`、`sync_quiz_seed_l2l3_20260914.py`、`sync_quiz_seed_all_20260914.py`；数据 `l2_distractors_20260914.json`、`l3_distractors_20260914.json`、`l2l3_distractors_patch_20260914.json`。
+- 备份：`spark_quest.db.bak_before_l2l3distractors_20260914` / `..._l2l3patch_20260914` / `..._l2l3rebalance_20260914`；`app/quiz_seed.json.bak_before_l2l3sync_20260914` / `..._syncall_20260914`。
+- 全部**未 commit / 未 push**（用户验收后推送）。
+
+---
+
+## 2026-09-14（续）— 修复：复习失败后课程被从「今日复习」静默移除
+
+### Fixed
+- **复习失败 = 课程从待复习消失（死路）**：`POST /api/review/{id}/submit` 在 <5/5 时调用 `defer_review_schedule()`，把 `next_review_at` 推到 **now + 3 天**。而首页「今日复习」的唯一判定是 `status='mastered' AND next_review_at <= now`（`/api/review/due`）—— 于是**提交失败的那一刻，这节课就从它唯一的入口里掉了出去**：用户看不到"还没复习完"，也无法从首页回到它，只能自己翻到课程页点「间隔复习（5 题）」。
+  - 现场还原（lesson 24「SELECT 基础」，Level 3）：`quiz_answer_log` 记录 03:11:11 一轮 4/5 失败 → `next_review_at = 09-17 03:11`（被藏起）；03:14:41 用户手动补做 5/5 通过 → `advance` 到 stage 2、`next_review_at = 09-21`。
+  - **不是前端锅**：`/lesson/:id?from=review`（失败页「重新阅读本课」）只 `GET /api/lessons/:id` + 笔记，**不写任何 mastery 字段**。
+- **修法（用户 2026-09-14 拍板：失败即留在今日复习）**：
+  - `defer_review_schedule()` → **`keep_review_due()`**（`services.py`）：失败时 `last_review_at = now`、`next_review_at = now`（保持"未完成"），返回 **0**（不排新间隔，UI 也不再打印误导性的"+N 天"）。`srs_stage` 照旧**不动**（失败是巩固，不是降级）。
+  - `routers/review.py`：改调用 + 更新模块 docstring（原「失败延后 3 天、可立即重试」的 decouple 说明作废）。
+  - 结果页失败分支文案：删掉「另已安排在 3 天后再次提醒你复习本课」，改为「本课会继续留在首页『今日复习』里，直到 5 题全对为止」。
+- **存量数据核查**：`fix_deferred_failed_reviews_20260914.py`（dry-run / `--apply`）扫描"`next_review_at` 在未来、但最近一轮复习是失败"的行 —— **0 条**（27 个"未来到期"的课要么上轮 5/5 通过、要么从未做过复习）。**无需数据修复，未改动生产数据**。
+
+### Changed
+- **失败不再排下一次复习**：`REVIEW_FAIL_INTERVAL_DAYS = 3` 常量**删除**。失败后的语义 = 「本课仍未复习完，继续挂在今日复习里（逾期天数会累积），随时可重试；直到一轮 5/5 才升到下一档」。
+  - 副作用存档：规格书 `spark_quest/04_WorkBuddy_开发实施指南.md` Phase 6 写的是「复习错误 → 1 天后」，而实现一直是 3 天；本次改动让**两者都不再适用**（失败不再排期）。规格书该行是否同步待用户决定。
+
+### 验收
+- 冒烟（在 `backend/_smoketmp/` 的 **DB 副本**上跑，端口 9100，**真库零改动**）：14 项断言**全过**。
+  - 失败轮（4/5）：`next_interval_days=0`、课题**仍在** `/api/review/due`、`next_review_at ≈ now`、`srs_stage` / `review_count` 不变、`status` 仍 `mastered`。
+  - 通过轮（5/5）回归：`srs_stage` +1、`review_count` +1、`next_interval_days=7`、课题**离开** `/api/review/due`、due 列表 = 基线 − 该课。
+- 真库冒烟后核对：due 16 条不变、`quiz_answer_log` 245 行不变、lesson 24 仍 `stage=2 / next=09-21`。
+- 前端 `tsc --noEmit` 通过（0 error）。
+- 脚本：`backend/fix_deferred_failed_reviews_20260914.py`（存量核查，dry-run 未写入 → 未产生 `.bak`）。
+- 全部**未 commit / 未 push**（用户验收后推送，与同日 L2/L3 题库修复一并待推）。
+
+---
+
+## 2026-09-14（续二）— 冷启动（空库重建）修复 + 废弃开发期 seeder 清理
+
+### Fixed
+- **空库冷启动崩溃（潜在 P0：全新克隆 / 删库重建后首次启动必崩）**。`database.py::_seed_course_data()` 在 `course_levels` 为空时执行**首次播种**，该路径存在两处缺陷，因历史 DB 一直存在而从未暴露：
+  1. `Lesson(**lesson_data)` 把 `course_seed.json` 里的 `content` **对象**直接塞进 `Text` 列 → `sqlite3.ProgrammingError: Error binding parameter 9: type 'dict' is not supported`。已改为先 `json.dumps(..., ensure_ascii=False)`（与 `_backfill_lesson_content` 同口径）。
+  2. `n_lessons = sum(len(l["lessons"]) for l in data["levels"])` 读取的键已被上面的 `level_data.pop("lessons", [])` 移除 → `KeyError: 'lessons'`（被缺陷 1 挡住，修完 1 才暴露）。已改为 **pop 前计数**，且不再 pop 共享 dict（改用 `{k: v for k, v in level_data.items() if k != "lessons"}`），`_backfill_lesson_content` 仍能读到 lessons。
+  - **影响面**：`spark_quest.db` 被 `.gitignore` 忽略 → 任何**全新克隆 / 手动删库**都会在启动时崩溃；现存运行库不受影响（历史数据由下面被删的一次性 seeder 写入）。老库补内容路径 `_backfill_lesson_content()` 一直正确（本就 `json.dumps`）。
+  - **验证**：全新空库 `init_db()` → `levels=8 / lessons=66 / quizzes=660`，`content` 全部为合法 JSON；与生产库**逐题比对 660/660 零差异**（仅重建有 0 / 仅生产有 0 / 内容不同 0）；全库答案位置分布 `[164,172,158,166]`。
+
+### Removed
+- **删除 10 个开发期一次性 seeder 脚本**（用户 2026-09-14 拍板）：`backend/seed_level2.py`、`seed_level3.py`、`seed_level4.py`、`seed_level5.py`、`seed_level6.py`、`seed_level7.py`、`seed_quiz_level2.py`、`seed_quiz_level2_v2.py`、`upgrade_level2.py`、`expand_quizzes_to_10.py`。
+  - **理由**：运行时**从不读取**它们（唯一运行时 seed 模块是 `app/seed_badges.py`，保留）；这些脚本内嵌**旧快照**并 `upsert()` 同时写 `course_seed.json` + `quiz_seed.json` + DB —— 尤其 `seed_level3.py` 的 `LEVEL3_QUIZZES` 仍是旧短桩干扰项（`"SAVE TABLE"` / `"SQL 不支持分区"`），**误跑一次即回滚本日 L2/L3 题库修复**，是活跃的多源漂移风险。
+  - **真源不变**：`app/quiz_seed.json`（quiz）+ `app/course_seed.json`（lesson content）；清库重建已由上面的冷启动修复保证可用。
+  - 被删文件均在 `HEAD` 中，可经 git 历史随时找回。
+
+### Docs
+- 规格书 `spark_quest/`（不进 git）：00–05 全部加「文档定位」说明（设计意图 vs as-built，**冲突以 `CURRENT_STATE.md` 为准**）；`04` 路线图状态表按现状校正 + Phase 6 复习节按实际 SRS 重写；`01` §9/§10、`03` 偏差清单、`05` Phase 6 Prompt 同步修正。→ 消解了上一条目遗留的「规格书 Phase 6 与实现不一致」问题。
+
+### 状态
+- **未 commit / 未 push**（与同日 L2/L3 题库修复、复习失败修复一并待推）。
+
+---
+
 ## 模板（后续阶段直接复制此结构，改日期与内容）
 
 ## YYYY-MM-DD — <阶段标题>

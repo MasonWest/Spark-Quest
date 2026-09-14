@@ -1,6 +1,6 @@
 # Spark Quest — 当前项目状态
 
-> 最后更新：2026-09-11（Level 5 干扰项重写 + 比喻边界/版本提示段落重复修复；与 `CHANGELOG.md` 同步）
+> 最后更新：2026-09-14（① Level 2 / Level 3 题库修复：正确项长度信号 + 答案位置偏置；quiz_seed.json 全量校正并修复 L5 历史遗留；② 修复「复习失败后课程从今日复习静默消失」——失败不再延后 3 天，改为保持到期；③ **修复空库冷启动崩溃**（`content` 未序列化 + `pop` 后取键），并**删除 10 个开发期一次性 seeder 脚本**（多源漂移隐患）；④ 规格书 `spark_quest/` 00–05 一致性修缮；与 `CHANGELOG.md` 同步）
 > 代码目录：`E:\MMMason\Spark_dlg\spark-quest-app\`
 > 代码仓库：`https://github.com/MasonWest/Spark-duolinguo`（分支 `main`）
 > 文档目录（通常只读）：`E:\MMMason\Spark_dlg\spark_quest\`
@@ -29,6 +29,12 @@
 | **技术修复** | **Level 5 答案位置重排（2026-09-11）**：修复「正确项恒为 A」缺陷——L5 共 90 题 88 题 correct_index=0（seed 写库时正确项恒放位置 0，未套用 L4 后确立的「写库即放目标位置」约定）；套用规范序列 [2,0,3,1,0,3,1,2,3,1] 按课序 rotate 重排，整体分布由 [88,2,0,0] 改为 [22,25,18,25]，lesson 41–48 每课均 [2,3,2,3]；冻结 lesson 40 已作答 5 题（保留历史语义）；同口径写回 seed_level5.py 的 LEVEL5_QUIZZES | 🟢 **已完成并落库**（L6 分布本已 [22,23,22,23] 无需处理；L2 偏 A [63,13,12,12] / L3 偏 B [30,57,3,0] 同类失衡待定） |
 | **内容修复** | **Level 5 干扰项重写 + Lesson 42 心智模型去重（2026-09-11）**：① L5 抽题修完全 A 后又发现「正确项总是最长的那个」——核查 88/90（98%）正确项严格最长（中位差 +13 字），根因是正确项为完整句、干扰项为短短语，长度成给分信号；已将 90 题干扰项全部改写为与正确项长度相当、事实错误的完整句子（正确项文本/`correct_index` 不动），「明显最长」占比 53→20、「有干扰项更长」占比 1→12；② Lesson 42 explanation 心智模型段落在首尾重复定义且与引言比喻重叠，已去重（引言只埋钩子、心智模型段删冗余自述保留 Stage 桥接）；同口径写回 seed_level5.py（含 2 题 stale prompt 补同步，现 90/90 一致） | 🟢 **已完成并落库**（均未 commit/push；少数「explain why」题型正确项仍偏长，属固有特性已压到可接受范围） |
 | **内容修复** | **Lesson「比喻边界/版本提示」段落重复修复（2026-09-11 续）**：2026-09-10 L5/L6 审计新增「版本提示」段时引入系统性复制粘贴重复——同一 ④/⑤ 段落在该 lesson 出现两次、且 DB 与 course_seed.json 双源同在。受影响 L5：41（分区数与并行度）、48（综合练习）；L6：49、52、54、57（各为 AQE 运行时改 SMJ→BHJ 的版本提示重复）。已用行级去重脚本在 DB + `app/course_seed.json` 两处同修，修复后全库 0 课有重复行、DB==SEED、U+FFFD 0 | 🟢 **已完成并落库**（未 commit/push；备份 4 份） |
+| **技术修复** | **Level 2 / Level 3 题库修复（2026-09-14）**：修复两个缺陷——① **正确项恒最长**：L2 72% 正确项唯一最长（明显最长 >10 字：39/100）、L3 91%（45/90）；② **答案位置偏置**：L2 `[63,13,12,12]`（63% A）、L3 `[30,57,3,0]`（57% B、D 从不出现）。干扰项重写 153 题（L2 72 + L3 82，q271 代码 token 跳过）为与正确项长度相当的事实错误项（对「错误说法」题填真陈述）；答案位置重排（含已作答题，见说明）为 L2 `[25,26,25,24]` / L3 `[23,23,22,22]`。明显最长 L2 39→9 / L3 45→8、差值中位 8→0 / 10→1；全库 U+FFFD 0、重复选项 0 | 🟢 **已完成并落库**（未 commit/push） |
+| **技术修复** | **`quiz_seed.json` 全量校正 + L5 历史遗留修复（2026-09-14）**：核实 App `_seed_quizzes()` 只读 `app/quiz_seed.json`；此前 L5 修复只回写了 DB + `seed_level5.py`，**漏了 `quiz_seed.json` → 其中 L5 90 题仍是旧短桩干扰项 + 旧索引，清库重跑 seed 会复活 L5 旧缺陷**。已把 `quiz_seed.json` 全量对齐 DB，现 **L0–L7 共 660 题 DB↔seed 零漂移**。**口径更正**：quiz seed 真源是 `app/quiz_seed.json`，`seed_levelN.py` / `seed_quiz_levelN.py` 是开发期一次性脚本（运行时不读）；其中 `seed_level3.py`(LEVEL3_QUIZZES) / `seed_quiz_level2.py`(NEW_QUIZZES) 曾为旧快照，**已随 2026-09-14 的 seeder 清理一并删除**（见下表「清理」行） | 🟢 **已完成并落库**（未 commit/push） |
+| **Bug 修复** | **复习失败后课程从「今日复习」静默消失（2026-09-14）**：`POST /api/review/{id}/submit` 失败时调 `defer_review_schedule()` 把 `next_review_at` 推到 **now+3 天**，而首页待复习的唯一判定是 `status='mastered' AND next_review_at <= now` → **一失败就从唯一步口掉出去**，既看不到"没复习完"也无法从首页回去（用户 2026-09-14 实测 lesson 24「SELECT 基础」复现，最后靠手动翻课程页才补做）。改为 **`keep_review_due()`**：失败时 `next_review_at = now`（保持到期）、返回 0、`srs_stage` 不动，课件**留在今日复习**直到一轮 5/5；`REVIEW_FAIL_INTERVAL_DAYS = 3` 常量删除；结果页失败文案同步改写。存量扫描 0 条需修复 | 🟢 **已完成并落库**（未 commit/push；冒烟在 DB 副本上跑，14 项断言全过，真库零改动） |
+| **Bug 修复** | **空库冷启动崩溃（2026-09-14）**：`database.py::_seed_course_data()` 首次播种路径两处缺陷 —— ① `content` 对象未 `json.dumps` 就塞进 `Text` 列 → `type 'dict' is not supported`；② `n_lessons` 读取已被 `pop` 掉的 `lessons` 键 → `KeyError`。因历史 DB 一直存在而从未暴露；`spark_quest.db` 被 gitignore，故**全新克隆 / 删库重建后首次启动必崩**。已修复：pop 前计数 + 不 pop 共享 dict + content 序列化 | 🟢 **已完成并落库**（未 commit/push；验证：空库重建 `8 levels / 66 lessons / 660 quizzes`，与生产库逐题比对 660/660 零差异） |
+| **清理** | **删除 10 个开发期一次性 seeder 脚本（2026-09-14）**：`seed_level2..7.py` / `seed_quiz_level2.py` / `seed_quiz_level2_v2.py` / `upgrade_level2.py` / `expand_quizzes_to_10.py`。运行时从不读取（唯一运行时 seed 模块是 `app/seed_badges.py`，保留）；它们内嵌**旧快照**并 `upsert()` 写 JSON + DB，`seed_level3.py` 误跑即回滚本日 L2/L3 修复 → 多源漂移隐患。真源仍为 `app/quiz_seed.json` + `app/course_seed.json` | 🟢 **已删除（staged，未 commit/push）**；文件均在 HEAD，可经 git 历史找回 |
+| **文档一致性** | **规格书 `spark_quest/` 00–05 修缮（2026-09-14）**：加「文档定位」说明（设计意图 vs as-built，**冲突以本文件为准**）；`04` 路线图状态表校正 + Phase 6 复习节按实际 SRS 重写；`01` §9/§10、`03` 偏差清单、`05` Phase 6 Prompt 修正。消除「规格书与实现不一致」的误导 | 🟢 **已完成**（`spark_quest/` 不进 git） |
 | **v1.1** | **Course Map 重做（区域化垂直旅程 / 三档时间叙事 / 5 态节点 / 列表兜底）** | **🟢 已完成并验收** |
 
 **当前进度：Phase 9.1 Streak 已完成并验收；Phase 9.2 Badge 已实现完毕（待验收）；Phase 10.1 薄弱题 / Weak Questions 已实现完毕（`quiz_answer_log` 事实层 + 跨来源派生薄弱题 + `/wrong-questions` 重练页，待验收）。**
@@ -675,19 +681,18 @@ spark-quest-app/
 - **不做 SM-2 / Anki 式 SRS / 个性化遗忘曲线拟合**，只用固定可解释的间隔阶梯
 - **复习单位是 Lesson**，不做单题级 SRS、不做每 dimension 独立进度
 
-**调度规则（`services.py`）**：
+**调度规则（`services.py`）**（2026-09-14 修订：失败分支已改）
 ```
 REVIEW_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60, 120]     # srs_stage 索引这张表
-REVIEW_FAIL_INTERVAL_DAYS = 3
 REVIEW_QUESTION_COUNT = 5
 ```
 - 首次掌握（学习测验第一次转 `mastered`）→ `first_mastered_at = now`、`srs_stage = 0`、`next_review_at = now + 1d`
 - 复习通过（5/5）→ `srs_stage + 1`（封顶 6）、`review_count + 1`、`next_review_at = now + INTERVALS[stage]`
-- 复习失败（<5/5）→ **`srs_stage` 保持不变**、`next_review_at = now + 3d`（只插入一次短期巩固，不是降级）
+- 复习失败（<5/5）→ **`srs_stage` 保持不变**、**`next_review_at = now`（保持到期，不排下一次）**；课件继续留在「今日复习」里，直到某一轮 5/5
 - 到达 120 天后封顶，不再无限增长
-- `srs_stage` 是权威调度状态，**不可由 `next_review_at` 反推**（失败与「通过 stage0」的间隔都是 3 天，会撞车）；`review_count` 只做统计，不参与调度
+- `srs_stage` 是权威调度状态，**不可由 `next_review_at` 反推**；`review_count` 只做统计，不参与调度
 
-**关键设计点：失败后的「立即重做」与「下一次调度」是两个概念。** 失败会把 `next_review_at` 推到 3 天后，但 `GET /api/review/{id}` **只看是否 mastered**，不看是否到期——因此用户读完本课可以立刻再挑战，不受 `next_review_at` 阻挡。
+**关键设计点（2026-09-14 修订）：失败 = 仍未复习完，绝不能从「今日复习」掉出去。** 原实现失败时把 `next_review_at` 推到 3 天后，而首页待复习的唯一入口判定就是 `status='mastered' AND next_review_at <= now` —— 于是用户一失败，这一课当即从首页消失、再也回不去（实测 lesson 24，详见 CHANGELOG「2026-09-14（续）」）。现在失败走 **`keep_review_due()`**：`last_review_at = now`、`next_review_at = now`（到期时间即失败那一刻，`overdue_days` 随天数累积），返回 `0`（不排新间隔，UI 也不再打印"+N 天"）。`GET /api/review/{id}` 依旧只看是否 `mastered`，随时可重试；**只有通过才升档**。
 
 **数据模型变更（最小）**：`lesson_mastery` 新增 5 列 `first_mastered_at / srs_stage / next_review_at / last_review_at / review_count`。`first_mastered_at` 与 `last_quiz_at` 语义分离（前者＝首次掌握，后者＝最近一次测验），不混用。
 **存量回填**（`migrate.py::backfill_mastered_review_schedule`）：对 `status='mastered' AND next_review_at IS NULL AND last_quiz_at IS NOT NULL` 的历史行，令 `first_mastered_at = last_quiz_at`、`srs_stage = 0`、`next_review_at = last_quiz_at + 1d`。**代码注释已明确声明**：历史数据没有真实首次掌握时间，`last_quiz_at` 只是**近似锚点**；此后新掌握的 Lesson 用真实 `first_mastered_at`。本次执行回填了 **18 条**存量 mastered 记录。
@@ -697,7 +702,7 @@ REVIEW_QUESTION_COUNT = 5
 后端
 1. `models.py` — `LessonMastery` 增 5 列 + 类注释说明「review ≠ 新状态」「stage 权威、count 仅统计」
 2. `migrate.py` — `add_lesson_mastery_review_columns()`（PRAGMA 检测 + ALTER，幂等）+ 上述回填函数，挂进 `run_migrations()`（`init_db` 已自动调用）
-3. `services.py` — 新增 `REVIEW_INTERVALS_DAYS` 等常量 + `is_due_for_review / due_lesson_ids / due_reviews / init_review_schedule / advance_review_schedule / defer_review_schedule`
+3. `services.py` — 新增 `REVIEW_INTERVALS_DAYS` 等常量 + `is_due_for_review / due_lesson_ids / due_reviews / init_review_schedule / advance_review_schedule / ~~defer_review_schedule~~ keep_review_due`（2026-09-14 改名：失败不再延后）
 4. `routers/review.py`（新增）— `/api/review/due`、`/api/review/{id}`、`/api/review/{id}/submit`
 5. `routers/quizzes.py` — `submit_quiz` 在「首次转 mastered」分支写入复习锚点（+5 行）；`_sample_quiz_questions` 增加可选 `priority_dims`（弱维度优先，仅排序偏好，非权重模型）
 6. `routers/dashboard.py` — `DashboardOut.reviews_due`
@@ -721,8 +726,8 @@ REVIEW_QUESTION_COUNT = 5
 3. `GET /api/review/{id}` → 5 题、不含 `correct_index`、维度分散（`comparison/debug/apply/concept/mechanism`）
 4. 5/5 → 通过，`stage 0→1`，间隔 3 天；`review_count=1` 不参与调度
 5. 连续通过验证整条阶梯 `1→3→7→14→30→60→120` 全部正确，到 120 天后封顶
-6. 4/5 → 判失败；`srs_stage` 不变；`next_review_at = +3 天`；错题 id 写入 `weak_points`；**score / attempts / last_quiz_at / status 四个学习态字段零改动**
-7. 失败后（`next_review_at` 已在 3 天后）仍能立即再次取题挑战（HTTP 200）
+6. 4/5 → 判失败；`srs_stage` 不变；~~`next_review_at = +3 天`~~ → **2026-09-14 起改为 `next_review_at = now`（保持到期）**；错题 id 写入 `weak_points`；**score / attempts / last_quiz_at / status 四个学习态字段零改动**
+7. 失败后（~~`next_review_at` 已在 3 天后~~ 现仍为到期状态）仍能立即再次取题挑战（HTTP 200）
 8. 未到期（+1 天）不出现在今日复习；`reviews_due` 与 `review/due` 完全一致
 9. 存量 18 条 mastered 已回填并可正常进入复习（回填锚点＝`last_quiz_at`，近似值）
 10. 状态词表仍只有 4 个、复习全程零状态变化、Level 状态词表不变、Map `due_for_review` 只出现在 mastered 课上、Dashboard 进度口径不变、非 mastered 课复习被 403、提交题数 ≠5 被 422

@@ -179,7 +179,8 @@ export default function ReviewPage() {
                 先回到课程内容重新读一遍，读完后可以立刻再挑战一次。
                 <br />
                 <span className="muted">
-                  另已安排在 {result.next_interval_days} 天后再次提醒你复习本课。
+                  本次未通过，本课会继续留在首页「今日复习」里，直到 5
+                  题全对为止。
                 </span>
               </p>
               <Link

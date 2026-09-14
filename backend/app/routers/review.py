@@ -11,9 +11,11 @@ Design constraints (Phase 6b, deliberately minimal):
   * Review is NOT a new learning status. It only runs on `mastered` lessons,
     and a failed review never demotes a lesson (status stays "mastered").
   * Passing requires 5/5 -- stricter than the 80% learning-quiz threshold.
-  * On failure `next_review_at` moves 3 days out, but the user may retry
-    immediately: "next scheduled review" and "allowed to retry now" are two
-    different concepts and are deliberately decoupled.
+  * On failure the lesson simply STAYS DUE (`next_review_at = now`), because
+    failing means "not reviewed yet". It remains in the Home review queue
+    until a 5/5 round passes, and the user may retry right away from the
+    result page. (Before 2026-09-14 a failure deferred the next review by 3
+    days, which silently removed the lesson from its only entry point.)
 """
 
 import json
@@ -38,8 +40,8 @@ from ..schemas import (
 from ..services import (
     REVIEW_QUESTION_COUNT,
     advance_review_schedule,
-    defer_review_schedule,
     due_reviews,
+    keep_review_due,
     record_activity,
 )
 from ..badge_service import evaluate_badges, increment_user_stats
@@ -233,7 +235,8 @@ def submit_review(lesson_id: int, payload: ReviewSubmitIn, db: Session = Depends
     if passed:
         interval_days = advance_review_schedule(mastery, now=now)
     else:
-        interval_days = defer_review_schedule(mastery, now=now)
+        # Failed: stay due (do NOT schedule it out of the Home review queue).
+        interval_days = keep_review_due(mastery, now=now)
     # `weak_points` keeps its original meaning: wrong question ids from the
     # most recent round (drives the next round's dimension ordering).
     mastery.weak_points = json.dumps(weak_points, ensure_ascii=False)

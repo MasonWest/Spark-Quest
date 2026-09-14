@@ -1518,10 +1518,10 @@
           "type": "single_choice",
           "prompt": "写下 spark.createDataFrame(rows, schema) 后，下列说法正确的是？",
           "options": [
-            "会先在 Driver 端把所有数据物化到内存，再等待后续操作",
-            "会立刻扫描全表推断类型，确保每一行的类型都被正确解析",
+            "会先把 rows 全部收集到 Driver 端逐行校验类型，再据此建立分区与计划",
+            "会立刻在集群上启动一个 Job，把 rows 并行读入 Executor 并缓存在内存里",
             "只是登记数据与结构，并未真正计算；show() 之类的 Action 出现后才执行",
-            "会立即分配 Task 并开始读取，只是暂不把结果返回给用户"
+            "会先扫描一遍数据推断出每列类型，再据此分配 Task 并立即开始计算"
           ],
           "correct_index": 2,
           "explanation": "createDataFrame 只是「登记」数据与结构；和所有 Transformation 一样惰性，真正读取/计算要等 show / count 等 Action 触发。",
@@ -1531,9 +1531,9 @@
           "type": "single_choice",
           "prompt": "下列哪类任务最符合「优先用 DataFrame」的场景？",
           "options": [
-            "对几百行数据做简单求和，只追求代码最短、不关心执行效率",
-            "对图片、音频等非结构化文件做特征提取与预处理",
-            "需要自己手写每台机器的循环逻辑来逐条处理记录",
+            "对几百行的小表做求和，更在意代码写得多短而不关心执行效率",
+            "对图片、音频这类非结构化文件做特征提取并预处理成向量",
+            "需要自己手写每台机器上的循环逻辑，逐条处理原始记录",
             "对 TB 级结构化数据做分组聚合，并希望 Spark 自动优化"
           ],
           "correct_index": 3,
@@ -1557,12 +1557,12 @@
           "type": "single_choice",
           "prompt": "你想立刻在控制台看到 DataFrame 的前几行数据，却只看到对象的描述，应该？",
           "options": [
+            "直接 print(df) 就会自动把全部数据行逐条打印出来",
             "调用 df.show() 这类 Action 来真正触发并展示数据",
-            "直接 print(df) 就能自动打印全部数据行",
-            "重新创建一个 RDD 才能看到",
-            "修改 Spark 源码"
+            "必须先把它重新创建一个 RDD，之后才能看到里面的数据",
+            "需要先修改 Spark 的源码，让它在打印时顺便展示数据"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "DataFrame 惰性，print(df) 不会触发执行；要看数据需用 show()/take() 等 Action。",
           "dimension": "debug"
         },
@@ -1570,12 +1570,12 @@
           "type": "single_choice",
           "prompt": "DataFrame 底层的数据是以什么形式存放和计算的？",
           "options": [
+            "全部集中在 Driver 单机的内存里，按列组织好之后等待计算",
+            "只以 CSV 文件的形式存在于磁盘上，从不进入内存参与计算",
             "按分区分布式存放，底层仍以 RDD 的 Task 机制执行",
-            "全部集中在 Driver 单机内存里",
-            "只存在于 CSV 文件，不进内存",
-            "全部放在客户端浏览器"
+            "全部放在客户端浏览器里，由页面来负责渲染与计算"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "DataFrame 数据按分区分布式存放，底层执行仍由 RDD 分区与 Task 机制驱动。",
           "dimension": "mechanism"
         },
@@ -1583,12 +1583,12 @@
           "type": "single_choice",
           "prompt": "要得到一个 DataFrame 的「列名 + 类型」概览，应该？",
           "options": [
-            "df.printSchema()",
             "df.show()（只看数据行）",
             "df.collect()",
-            "df.count()"
+            "df.count()",
+            "df.printSchema()"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "printSchema 打印字段名与数据类型；show 看数据、collect 拉回本地、count 数行数。",
           "dimension": "apply"
         },
@@ -1597,9 +1597,9 @@
           "prompt": "为什么有了 pandas 这样的单机表，Spark 还要提供 DataFrame？",
           "options": [
             "因为数据可能大到单机内存装不下，且需要集群并行加速",
-            "因为 DataFrame 写法更短",
-            "因为 pandas 不支持任何列名",
-            "因为 DataFrame 不需要数据也能运行"
+            "因为它的写法比 pandas 更短，能省下不少模板代码",
+            "因为 pandas 完全不支持列名，只能按下标访问字段",
+            "因为它不需要任何真实数据，就能完成一次计算"
           ],
           "correct_index": 0,
           "explanation": "核心动机是规模与并行：当数据超内存或需分布式加速时，Spark DataFrame 才派上用场。",
@@ -1609,12 +1609,12 @@
           "type": "single_choice",
           "prompt": "关于 DataFrame 这种「表」的说法，正确的是？",
           "options": [
+            "它是 Driver 里一个普通的 Python 二维列表，只是多了列名",
             "它是带 Schema 的二维表抽象，数据按分区分布在集群而非单机数组",
-            "它是 Driver 里一个普通的 Python 二维列表",
-            "它就是磁盘上的 CSV 文件本身",
-            "它只能存一行数据"
+            "它就是磁盘上那个 CSV 文件本身，读取时才临时载入内存",
+            "它只能同时保存一行数据，多行需要反复重建对象"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "DataFrame 是带列名/类型的二维表抽象，但底层数据按分区分布在集群，并非单机内存里的列表。",
           "dimension": "concept"
         }
@@ -1653,9 +1653,9 @@
           "type": "single_choice",
           "prompt": "读 CSV 后调用 show(10)，数据真正被读取发生在？",
           "options": [
-            "spark.read.csv 调用的一瞬间，数据就已全部读取并进入内存",
-            "程序启动后由 Driver 自动、无条件地先把全表读一遍",
-            "只在 Driver 端由单个进程顺序读取并解析，不经过集群",
+            "spark.read.csv 被调用的一瞬间，数据就已经全部读取并进入内存",
+            "程序启动后由 Driver 自动地、无条件地先把整张表读一遍",
+            "只在 Driver 端由单个进程顺序读取并解析，完全不经由集群",
             "show() 这个 Action 触发时，各 Executor 读取自己负责的分片并解析"
           ],
           "correct_index": 3,
@@ -1679,10 +1679,10 @@
           "type": "single_choice",
           "prompt": "关于 CSV 读取后的数据类型，下列说法错误的是？",
           "options": [
-            "不加 inferSchema 时，所有列默认会被当成 StringType",
+            "不加 inferSchema 时，Spark 会默认把所有列都当成字符串类型来读",
             "即使不加 inferSchema，Spark 也会自动把所有列准确识别为正确的类型",
-            "加 inferSchema 会抽样推断类型，但仍可能因样本偏差猜错",
-            "生产环境推荐用 schema=StructType 显式声明类型更可靠"
+            "加 inferSchema 时，Spark 会抽样推断列类型，但仍可能因样本偏差猜错",
+            "生产环境更推荐用 schema=StructType 显式声明类型，比自动推断更可靠"
           ],
           "correct_index": 1,
           "explanation": "不加 inferSchema 时 Spark 不会「准确识别」，而是把所有列默认当成 StringType；正确做法是显式声明或开启 inferSchema。",
@@ -1692,12 +1692,12 @@
           "type": "single_choice",
           "prompt": "为什么 spark.read 系列方法返回 DataFrame 是『惰性』的设计？",
           "options": [
+            "因为 Spark 根本读不了文件，只能先返回一个占位对象",
+            "因为这样能让上层代码写得更短、更省事一些",
             "为了先把读取计划交给 Catalyst 优化，真正读取等 Action 触发",
-            "因为 Spark 不支持读文件",
-            "为了让代码更短",
-            "因为读取不需要任何优化"
+            "因为读取文件这件事本身不需要做任何优化"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "惰性让读取也进入统一优化计划，可与后续过滤/投影一起被下推优化。",
           "dimension": "why"
         },
@@ -1705,12 +1705,12 @@
           "type": "single_choice",
           "prompt": "spark.createDataFrame(rows, schema) 与 spark.read.csv(path) 的共同点是？",
           "options": [
-            "都返回 DataFrame，且都是惰性的（不立即读取/物化）",
-            "都会立刻把全部数据读进 Driver",
-            "前者读文件、后者读集合",
-            "两者都返回 RDD"
+            "两者都会立刻把全部数据读进 Driver 内存里再返回",
+            "前者用于读文件、后者用于读集合，正好说反了",
+            "两者返回的都是 RDD 而不是 DataFrame",
+            "都返回 DataFrame，且都是惰性的（不立即读取/物化）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "两者都构造 DataFrame 且不立即物化；createDataFrame 记内存集合，read 记文件来源。",
           "dimension": "comparison"
         },
@@ -1719,9 +1719,9 @@
           "prompt": "已知 schema=StructType([...])，把一个已有 RDD 转成带结构的 DataFrame，应？",
           "options": [
             "spark.createDataFrame(rdd, schema)",
-            "rdd.toDF()（不需要 schema）",
-            "spark.read.csv(rdd)",
-            "rdd.show()"
+            "rdd.toDF()，在这个场景里不需要再传入任何 schema",
+            "spark.read.csv(rdd)，也就是把 RDD 当成文件路径来读",
+            "rdd.show()，先把数据打印出来，再照着补上列结构"
           ],
           "correct_index": 0,
           "explanation": "createDataFrame 同时接受集合或 RDD 与 schema，把无结构 RDD 变成有结构的 DataFrame。",
@@ -1731,12 +1731,12 @@
           "type": "single_choice",
           "prompt": "spark.read.format('json').load(path) 中 format/load 的作用是？",
           "options": [
+            "立刻把文件内容全部读出来，并逐行打印到控制台上给你看",
             "指定数据源格式为 json 并加载为 DataFrame（仍是惰性）",
-            "立即把数据打印出来",
-            "删除原文件",
-            "转换 Python 类型"
+            "先删除掉本地那个同名的旧文件，然后再返回一个新的对象",
+            "把 Python 的普通类型先整体转换一遍，最后再返回新结果"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "format 指定数据源类型，load 读取为 DataFrame；依旧惰性，真正读等 Action。",
           "dimension": "concept"
         },
@@ -1744,12 +1744,12 @@
           "type": "single_choice",
           "prompt": "用 createDataFrame 时如果不给 schema 而只给元组/Row，Spark 会？",
           "options": [
+            "直接报错，因为没有显式给出 schema 就无法创建",
+            "把所有列都当成文本来处理，并按 a、b、c 依次命名",
             "尝试从数据推断列名与类型（如元组默认 _1、_2 命名）",
-            "直接报错无法创建",
-            "把所有列当成文本且列名为 a、b、c",
-            "自动连接数据库补全结构"
+            "自动去连接一个数据库，把缺失的结构补全后再返回"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "不给 schema 时 Spark 会尽量推断结构（元组用 _1/_2 命名或按 Row 字段推断）。",
           "dimension": "mechanism"
         }
@@ -1775,9 +1775,9 @@
           "type": "single_choice",
           "prompt": "生产环境为何更推荐显式 StructType 声明 Schema，而非 inferSchema？",
           "options": [
-            "因为 inferSchema 在 Spark 中尚未被实现，无法使用",
-            "因为显式声明能把数据压缩得更小、更省内存",
-            "因为 inferSchema 一定把所有数字都猜成字符串类型",
+            "因为 inferSchema 在 Spark 里还没有实现，根本用不了",
+            "因为显式声明能把数据压得更小、更省内存",
+            "因为 inferSchema 一定会把所有数字都猜成字符串",
             "避免抽样推断出错、类型不符当场报错（fail-fast），且不抽样更快"
           ],
           "correct_index": 3,
@@ -1789,9 +1789,9 @@
           "prompt": "显式声明 Schema 后读取数据，遇到「字符串无法转成 IntegerType」的行会怎样？",
           "options": [
             "直接报错（fail-fast），而不是悄悄存成 null 或错误类型",
-            "自动把该值替换为 null，以保持程序继续运行不中断",
-            "自动把该值转成字符串以尽量保留原始信息",
-            "静默跳过这一行，仅记录一条警告日志后继续"
+            "自动把该值替换为 null，好让程序继续跑而不中断",
+            "自动把该值转成字符串，尽量保留住原始信息",
+            "静默跳过这一行，只记一条警告日志后继续"
           ],
           "correct_index": 0,
           "explanation": "显式 schema 的 fail-fast 特性能在解析阶段就拦下脏数据，避免「脏数据悄悄污染后续计算」。",
@@ -1814,10 +1814,10 @@
           "type": "single_choice",
           "prompt": "关于字段的 nullable，下列说法错误的是？",
           "options": [
-            "字段默认 nullable=True，即默认允许出现空值",
-            "nullable 会影响 join 与聚合时 null 值的处理逻辑",
+            "字段默认就是 nullable=True，也就是说默认允许该列出现空值",
+            "nullable 这个设置会影响 join 与聚合时对 null 值的处理逻辑",
             "字段默认 nullable=False，因此 DataFrame 中不可能出现空值",
-            "可以对关键的外键列显式设置 nullable=False"
+            "可以对关键的外键列显式地设置 nullable=False，用来约束非空"
           ],
           "correct_index": 2,
           "explanation": "Spark 字段 nullable 默认是 True（可空），不是 False；忽略这一点可能导致 join / 聚合时意外出现 null。",
@@ -1827,12 +1827,12 @@
           "type": "single_choice",
           "prompt": "StructField('age', IntegerType(), True) 三个参数分别指？",
           "options": [
-            "列名、数据类型、是否可空",
-            "列名、默认值、长度",
-            "类型、列名、注释",
-            "索引、类型、精度"
+            "列名、默认值、以及该字段允许的最大长度",
+            "字段的数据类型、列名、以及附带的注释文字",
+            "字段在表中的下标、类型、以及小数精度",
+            "列名、数据类型、是否可空"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "StructField 依次为 name、dataType、nullable，描述单列的结构。",
           "dimension": "mechanism"
         },
@@ -1841,9 +1841,9 @@
           "prompt": "显式声明 Schema 与完全不声明（让 Spark 推断）相比，主要代价是？",
           "options": [
             "需要多写一些类型定义，换来可控与 fail-fast",
-            "运行更慢且更容易出错",
-            "无法再读取 CSV",
-            "列数会减少"
+            "运行会变得更慢，而且出错的可能性也更高",
+            "就无法再读取 CSV 这类没有结构的文件了",
+            "最终得到的列数会比让 Spark 推断时明显减少"
           ],
           "correct_index": 0,
           "explanation": "代价是多写类型声明，换来的是类型可控、不抽样、错误更早暴露。",
@@ -1853,12 +1853,12 @@
           "type": "single_choice",
           "prompt": "要让某列允许为空并声明为整数，应写？",
           "options": [
-            "StructField('cnt', IntegerType(), True)",
             "StructField('cnt', IntegerType(), False) 表示可空",
+            "StructField('cnt', IntegerType(), True)",
             "StructField('cnt', 'int')",
             "IntegerType('cnt', True)"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "nullable=True 表示允许空值；写法为 StructField(name, type, nullable)。",
           "dimension": "apply"
         },
@@ -1866,12 +1866,12 @@
           "type": "single_choice",
           "prompt": "StringType、IntegerType、BooleanType 等属于？",
           "options": [
+            "Python 自带的内置类型，可以直接当作 schema 来用",
+            "Spark 对文件名的一种约定，用来识别数据源",
             "Spark 的 DataType 体系，用于描述每列的数据类型",
-            "Python 的内置类型，可直接当 schema 用",
-            "文件名约定",
-            "磁盘存储格式"
+            "磁盘上某一种具体的存储格式的名字"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "这些是 pyspark.sql.types 中的 DataType，组成 Schema 的类型系统。",
           "dimension": "concept"
         },
@@ -1879,12 +1879,12 @@
           "type": "single_choice",
           "prompt": "为什么浮点金额不用 DoubleType 而用 DecimalType？",
           "options": [
-            "DecimalType 用十进制精度表示，避免二进制浮点的舍入误差",
-            "DoubleType 不能存小数",
-            "DecimalType 运行更快",
-            "DoubleType 已被废弃"
+            "DoubleType 根本无法存小数，只能用整数来表达",
+            "DecimalType 的运算速度比 DoubleType 更快一些",
+            "DoubleType 这个类型在 Spark 里已经被废弃了",
+            "DecimalType 用十进制精度表示，避免二进制浮点的舍入误差"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "Double 是二进制浮点会有舍入误差；金额需 DecimalType 的十进制精确表示。",
           "dimension": "why"
         }
@@ -1923,10 +1923,10 @@
           "type": "single_choice",
           "prompt": "用 df.age 这种「属性式」引用列的局限是？",
           "options": [
-            "会立刻触发一次 Action，把数据读取到 Driver",
+            "会立刻触发一次 Action，把整列数据都读到 Driver",
             "当列名含空格或与 DataFrame 已有方法名冲突时无法使用",
-            "只能用于数值类型列，对字符串列无效",
-            "会直接修改原 DataFrame 的列结构并写回"
+            "只对数值类型的列有效，字符串列无法使用",
+            "会直接修改原 DataFrame 的列结构并写回磁盘"
           ],
           "correct_index": 1,
           "explanation": "属性式写法对含空格的列名（如 df.order amount）或重名方法无效，此时要用 df['col'] 或 col('col')。",
@@ -1963,9 +1963,9 @@
           "prompt": "show() 与 collect() 在执行上有何关系？",
           "options": [
             "两者都是 Action，都会触发作业执行；show 只取前 n 行打印",
-            "collect 是 Transformation",
-            "show 不触发执行",
-            "两者都不触发执行"
+            "collect 是 Transformation，show 不触发执行",
+            "show 和 collect 这两种操作都不会触发作业执行",
+            "collect 不触发执行，只有 show 才会触发"
           ],
           "correct_index": 0,
           "explanation": "show 和 collect 都是 Action，都会真正触发计算；show 仅取前若干行展示。",
@@ -1975,12 +1975,12 @@
           "type": "single_choice",
           "prompt": "take(n) 与 show(n) 的区别是？",
           "options": [
+            "两者其实完全一样，都会返回一份本地列表供你直接拿去使用",
             "take(n) 返回 Row 列表供本地使用；show(n) 只打印表格、不返回数据",
-            "两者完全相同",
-            "take 不触发执行",
-            "show 返回列表"
+            "take 并不会触发执行，它只是把这次操作登记进执行计划中",
+            "show 会返回一份列表，而 take 只负责把数据打印到屏幕上"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "take(n) 把前 n 行以 Row 列表形式取回本地；show(n) 只打印、不便后续处理。",
           "dimension": "comparison"
         },
@@ -1988,12 +1988,12 @@
           "type": "single_choice",
           "prompt": "想在 Notebook 里拿到前 5 行数据做本地处理，应？",
           "options": [
+            "df.show(5)，然后靠肉眼解析屏幕上的输出",
+            "df.printSchema()，从结构信息里取出前 5 行",
             "df.take(5) 或 df.limit(5).collect()",
-            "df.show(5) 然后解析屏幕输出",
-            "df.printSchema()",
-            "df.count()"
+            "df.count()，先数出一共有多少行再做处理"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "take/collect 把数据以对象形式取回本地；show 只打印、不便后续处理。",
           "dimension": "apply"
         },
@@ -2001,12 +2001,12 @@
           "type": "single_choice",
           "prompt": "df.dtypes 返回的是什么？",
           "options": [
-            "一个 [(列名, 类型字符串), ...] 的列表",
-            "行数",
-            "数据样本",
-            "执行计划"
+            "表中的行数，以及每个分区里各有多少行数据",
+            "一段数据样本，通常就是表里最前面的若干行",
+            "这份 DataFrame 对应的执行计划文本",
+            "一个 [(列名, 类型字符串), ...] 的列表"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "dtypes 给出每列的名称与类型（字符串形式），便于快速核对结构。",
           "dimension": "concept"
         },
@@ -2015,9 +2015,9 @@
           "prompt": "为什么不能依赖 print(df) 来查看数据内容？",
           "options": [
             "DataFrame 惰性，未触发的计算不会被打印成数据行",
-            "print 函数对 DataFrame 无效",
-            "会删除数据",
-            "需要联网才能打印"
+            "print 函数对 DataFrame 对象本来就是无效的",
+            "打印会把内部的数据对象直接从内存里删掉",
+            "必须连上网之后才能把 DataFrame 打印出来"
           ],
           "correct_index": 0,
           "explanation": "DataFrame 是惰性计划，直接 print 不会执行计算、看不到真实数据行；要看需用 Action。",
@@ -2033,9 +2033,9 @@
           "prompt": "select 与 filter 分别用于？",
           "options": [
             "select 用来挑列（投影），filter 用来挑行（过滤）",
-            "select 用来挑行，filter 用来挑列",
+            "select 用来挑行，filter 用来挑列，正好相反",
             "两者功能完全一样，都是用来挑行的",
-            "两者都会就地修改原 DataFrame，而非返回新表"
+            "两者都会就地把原 DataFrame 改掉，而非返回新表"
           ],
           "correct_index": 0,
           "explanation": "select = 投影（选列），filter / where = 过滤（选行），二者功能等价；两者都返回新 DataFrame，不修改原表。",
@@ -2045,10 +2045,10 @@
           "type": "single_choice",
           "prompt": "为什么 filter 的多条件必须用 & / | 而非 Python 的 and / or？",
           "options": [
-            "因为 & / | 的执行速度比 and / or 更快，应优先使用",
+            "因为 & 与 | 这两种运算符运行起来比 and / or 更快一些",
             "因为条件必须是 Column 表达式，and/or 会先把 Column 当布尔求值而报错",
-            "因为 filter 本身不支持多个条件组合，必须拆成多个 filter",
-            "因为 and / or 不是 Spark 提供的合法运算符，语法上不允许"
+            "因为 filter 本身并不支持多个条件的组合，必须拆成多次来调用",
+            "因为 and / or 并不是 Python 提供的合法运算符，所以不能使用"
           ],
           "correct_index": 1,
           "explanation": "Python 的 and/or 会先把两个 Column 当布尔判断，抛 ValueError；必须用位运算 & | ~ 且每个条件单独加括号。",
@@ -2058,10 +2058,10 @@
           "type": "single_choice",
           "prompt": "对于 df.filter((df.age>18) & (df.city=='BJ'))，下列说法正确的是？",
           "options": [
-            "它是 Action，调用时会立即触发整条计算链执行",
-            "其中的 & 可以直接替换为 Python 的 and，二者完全等价",
+            "它是 Action，调用时会立即触发整条计算链从头到尾地执行一遍运行",
+            "其中的 & 符号可以直接替换成 Python 里的 and，两者完全等价互换",
             "它是 Transformation，只记账不立即执行；Catalyst 还可能把过滤下推到读取阶段",
-            "它会在 Driver 端一次性把全表数据过滤完再分发"
+            "它会在 Driver 端一次性把整张表过滤完毕后，再分发到各个分区上去"
           ],
           "correct_index": 2,
           "explanation": "filter 是 Transformation，不立即执行；而且 Catalyst 常把 filter 下推（谓词下推）到读取阶段提前过滤，减少后续数据量。",
@@ -2097,12 +2097,12 @@
           "type": "single_choice",
           "prompt": "为什么 select 只选需要的列通常能让作业更快？",
           "options": [
+            "因为这样能把代码写得更短，读起来也更省事",
             "因为 Catalyst 可做列裁剪，跳过不需要的列、减少数据量",
-            "因为少写几行代码",
-            "因为列多了会报错",
-            "因为 select 必须放在 filter 之前"
+            "因为一旦表的列太多，Spark 就会直接报错",
+            "因为 select 必须写在 filter 之前才会生效"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "只选必要列让优化器做列裁剪（column pruning），少读少传数据，提升性能。",
           "dimension": "why"
         },
@@ -2110,12 +2110,12 @@
           "type": "single_choice",
           "prompt": "filter 与 where 的关系是？",
           "options": [
+            "filter 的运行速度更快，所以应该优先使用它",
+            "where 只能用于数字类型的列，字符串列不行",
             "两者功能完全等价，where 是 filter 的别名",
-            "filter 更快",
-            "where 只能用于数字列",
-            "两者毫无关系"
+            "两者毫无关系，是两套完全独立的算子"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "在 Spark 中 where 就是 filter 的别名，语义与性能一致。",
           "dimension": "comparison"
         },
@@ -2123,12 +2123,12 @@
           "type": "single_choice",
           "prompt": "下面哪段代码一定会在运行时报错？",
           "options": [
-            "df.filter(df.age > 18 and df.city == 'BJ')（用 Python and 而非 &）",
-            "df.filter((df.age > 18) & (df.city == 'BJ'))",
-            "df.filter(df.age > 18)",
-            "df.where(df.city == 'BJ')"
+            "df.filter((df.age > 18) & (df.city == 'BJ'))（这是完全正确的写法）",
+            "df.filter(df.age > 18)（只过滤了单个条件，不会报错）",
+            "df.where(df.city == 'BJ')（where 与 filter 完全等价）",
+            "df.filter(df.age > 18 and df.city == 'BJ')（用 Python and 而非 &）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "用 Python 的 and/or 会把 Column 当布尔立即求值而报 ValueError；须用 & | ~ 且加括号。",
           "dimension": "debug"
         },
@@ -2137,9 +2137,9 @@
           "prompt": "只保留 city 为 'BJ' 且 age 大于 30 的行，正确的是？",
           "options": [
             "df.filter((df.city == 'BJ') & (df.age > 30))",
-            "df.filter(df.city == 'BJ' and df.age > 30)",
-            "df.select('BJ', 30)",
-            "df.where(df.city = 'BJ')"
+            "df.filter(df.city == 'BJ' and df.age > 30)（Python and 会报错）",
+            "df.select('BJ', 30)（这样能挑出符合条件的两列）",
+            "df.where(df.city = 'BJ')（缺少条件 age > 30）"
           ],
           "correct_index": 0,
           "explanation": "多条件用 Column 运算符 &，每个条件单独加括号；Python and 会报错。",
@@ -2149,12 +2149,12 @@
           "type": "single_choice",
           "prompt": "select 表达式除了列名，还可以接受？",
           "options": [
+            "只能写字符串形式的列名，不可以写任何形式的表达式内容出来",
             "Column 表达式，如 F.col('a')、df.b、F.expr('a+1')",
-            "只能写字符串列名，不能写表达式",
-            "只能写数字",
-            "只能写 *"
+            "只能写数字字面量，用来构造出一个固定的常量列来展示",
+            "只能在里面写一个星号 * 来表示出这张表里的全部列"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "select 可接受列名字符串或任意 Column 表达式（含运算、函数），非常灵活。",
           "dimension": "concept"
         }
@@ -2167,10 +2167,10 @@
           "type": "single_choice",
           "prompt": "withColumn(name, expr) 的作用是？",
           "options": [
-            "直接修改传入的 DataFrame，使其列被原地更新",
+            "直接修改传进来的那个 DataFrame，把它的列就地更新",
             "新增（或同名则覆盖）一列，返回一个新的 DataFrame",
-            "从 DataFrame 中删除指定的那一列",
-            "删除满足某个条件的若干行"
+            "从 DataFrame 中删掉指定的那一列，并返回新表",
+            "把满足某个条件的若干行从表里过滤掉"
           ],
           "correct_index": 1,
           "explanation": "withColumn 第一个参数若与已有列同名则覆盖，否则新增；返回新 DataFrame，原表不变。",
@@ -2180,10 +2180,10 @@
           "type": "single_choice",
           "prompt": "对 Column 做运算时，必须用 F.abs / F.round 等 Spark 函数，而不能用 Python 内置 abs / round，是因为？",
           "options": [
-            "因为 Python 内置函数运行速度更慢，会成为性能瓶颈",
-            "因为 Spark 完全不支持在 Python 中调用任何函数",
+            "因为 Python 内置函数跑得更慢，会成为整个作业的性能瓶颈",
+            "因为 Spark 完全不允许在 Python 代码里调用任何自定义函数",
             "Column 不是具体数值，只有 Spark 函数才能描述「怎么算」并保持分布式执行",
-            "因为 Python 内置函数只能作用于字符串类型的列，对数值无效"
+            "因为内置函数只能作用于字符串类型的列，对数值列都无效"
           ],
           "correct_index": 2,
           "explanation": "Column 是「延迟计算的占位」，不是具体数值；裸用 Python 函数无法表达「逐行怎么算」，且会破坏分布式执行。",
@@ -2232,12 +2232,12 @@
           "type": "single_choice",
           "prompt": "为什么 DataFrame 提供 withColumn 而不是让你改原表的某一格？",
           "options": [
+            "因为直接去修改某一个单元格在 Spark 里运行起来会更快一些",
+            "因为 Spark 本身就不允许往一张表里面去新增任何一列",
             "因为 DataFrame 不可变，任何变换都返回新表以保证 lineage/并行安全",
-            "因为修改单元格更快",
-            "因为 Spark 不允许新增列",
-            "因为原表在磁盘上不能改"
+            "因为原表存放在磁盘上，根本没有办法对它做原地修改"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "DataFrame 不可变，withColumn 返回新表；这保证了血缘可重放与并发安全。",
           "dimension": "why"
         },
@@ -2245,12 +2245,12 @@
           "type": "single_choice",
           "prompt": "withColumn 与 select 增列的区别是？",
           "options": [
-            "withColumn 在保留原列基础上加/改一列；select 需显式列出要保留的所有列",
-            "两者完全相同",
-            "select 不能增列",
-            "withColumn 会删除其它列"
+            "两者完全相同，都能在保留原有列的前提下新增出一列来用",
+            "select 不能新增列，只能挑选出表里面已经存在的那些列",
+            "withColumn 会先把其它列全部删掉，然后再补上这一列",
+            "withColumn 在保留原列基础上加/改一列；select 需显式列出要保留的所有列"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "withColumn 自动保留其它列；select 要自己把原有列都写出来才不丢列。",
           "dimension": "comparison"
         },
@@ -2259,9 +2259,9 @@
           "prompt": "写了 df.withColumn('x', df.a + 1) 却没看到 x 列，是因为？",
           "options": [
             "withColumn 返回新 DataFrame，必须接住返回值（或链式）才生效",
-            "withColumn 有 bug",
-            "列名非法",
-            "a 列不存在所以被忽略"
+            "withColumn 这个方法本身存在 bug，需要重启内核才行",
+            "新列名不合法，所以被 Spark 静默地忽略掉了",
+            "a 这一列根本不存在，所以整个调用被跳过了"
           ],
           "correct_index": 0,
           "explanation": "DataFrame 不可变，withColumn 返回新对象；不用变量接住或不链式，改动就丢失了。",
@@ -2271,12 +2271,12 @@
           "type": "single_choice",
           "prompt": "df.withColumn('abs_a', F.abs(df.a)) 中 F.abs 为什么能在集群上执行？",
           "options": [
+            "因为它在 Driver 端按行挨个循环执行整列的计算与累加",
             "F.abs 是 Spark 函数，把『逐行怎么算』编进执行计划下推到 Executor",
-            "因为它在 Driver 上一行行循环",
-            "因为 Python 内置 abs 也能分布式",
-            "因为数据已全在 Driver"
+            "因为 Python 内置的 abs 函数其实也能够分布式地并行执行",
+            "因为这些数据其实早就已经全部落在 Driver 的内存上了"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "Spark 函数把计算描述发到各 Executor 并行执行；Python 内置函数拿不到分布式数据。",
           "dimension": "mechanism"
         },
@@ -2284,12 +2284,12 @@
           "type": "single_choice",
           "prompt": "把 'name' 列统一转为大写新增为 'name_up'，应？",
           "options": [
-            "df.withColumn('name_up', F.upper(df.name))",
             "df.withColumn('name_up', df.name.upper())（Python 字符串方法无效）",
             "df.select(F.upper('name'))",
+            "df.withColumn('name_up', F.upper(df.name))",
             "df.addColumn('name_up', F.upper('name'))"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "字符串处理要用 F.upper 等 Spark 函数；df.name.upper() 是 Python 方法，对 Column 无效。",
           "dimension": "apply"
         }
@@ -2302,7 +2302,7 @@
           "type": "single_choice",
           "prompt": "distinct() 与 dropDuplicates(['name']) 的区别是？",
           "options": [
-            "两者完全一样，都是按整行去重",
+            "两者完全一样，都是把整行完全相同的记录去掉",
             "dropDuplicates 按整行去重，distinct 按指定列去重",
             "distinct 按「整行完全相同」去重；dropDuplicates 按指定的列组合去重",
             "两者都只能在分组之后使用才有意义"
@@ -2329,8 +2329,8 @@
           "prompt": "df.orderBy(F.desc('amount')).limit(10) 表达的语义是？",
           "options": [
             "先按金额降序排序，再取排序后的前 10 行（TopN）",
-            "先取前 10 行，再在这 10 行内部排序",
-            "随机取出 10 行，不保证任何顺序",
+            "先取出前 10 行，再在这 10 行内部做一次排序",
+            "随机取出 10 行，不保证任何先后顺序",
             "只取金额最大的那一行，并返回它的 10 个字段"
           ],
           "correct_index": 0,
@@ -2354,10 +2354,10 @@
           "type": "single_choice",
           "prompt": "以下关于排序的错误说法是？",
           "options": [
-            "降序要用 F.desc('age') 或 df.age.desc() 来表达",
-            "orderBy 与 sort 在功能上完全等价",
+            "降序排序要用 F.desc('age') 或 df.age.desc() 这类表达式来表达",
+            "orderBy 与 sort 这两个方法在功能上是完全等价的，可以互换",
             "orderBy('age desc') 可以在字符串参数里直接写 'desc' 指定降序",
-            "多列排序时依次传入多个排序表达式即可"
+            "多列排序时，只需要依次把多个排序表达式传进即可"
           ],
           "correct_index": 2,
           "explanation": "orderBy 的字符串参数只当列名，不会解析 'desc' 关键字；降序要用 F.desc() 或 .desc()。",
@@ -2367,12 +2367,12 @@
           "type": "single_choice",
           "prompt": "为什么去重前常常先思考『按哪些列算重复』？",
           "options": [
-            "因为 distinct 看整行、dropDuplicates 只看指定列，语义差别很大",
-            "因为去重一定会丢数据",
-            "因为不指定列会报错",
-            "因为去重更快"
+            "因为去重一定会丢掉一部分数据，所以必须先想清楚后果",
+            "因为不指定列的话，Spark 在运行时会直接抛出错误",
+            "因为按指定列去重的执行速度通常会明显更快一些",
+            "因为 distinct 看整行、dropDuplicates 只看指定列，语义差别很大"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "整行去重与按列去重结果不同；明确维度才能选对 distinct 还是 dropDuplicates。",
           "dimension": "why"
         },
@@ -2381,9 +2381,9 @@
           "prompt": "limit 与 take 在『取前 N 行』上的区别是？",
           "options": [
             "limit 是 Transformation 返回新 DataFrame；take 是 Action 返回本地列表",
-            "两者都返回列表",
-            "两者都是 Transformation",
-            "take 不触发执行"
+            "limit 是 Action 返回本地列表；take 是 Transformation 返回新 DataFrame",
+            "limit 与 take 都是 Action，都会把结果返回成本地的列表",
+            "limit 与 take 都是 Transformation，都只返回一个新的 DataFrame"
           ],
           "correct_index": 0,
           "explanation": "limit 返回新的（惰性）DataFrame；take(n) 是 Action，把前 n 行取回本地。",
@@ -2393,12 +2393,12 @@
           "type": "single_choice",
           "prompt": "想按『城市+日期』去重却写成 dropDuplicates()（不传列），会？",
           "options": [
+            "会自动按所有列一起判断重复，正好是想要的效果",
             "按整行完全相同才算重复，可能去不掉真正想去的重复",
-            "自动按所有列去重（这就是想要的效果）",
-            "直接报错",
-            "一行都不去"
+            "会直接报错，提示必须显式传入去重的列名",
+            "一行都不会被去掉，结果和原表完全一样"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "不传列时 dropDuplicates 退化为整行去重；若只想按部分列去重需显式传入列列表。",
           "dimension": "debug"
         },
@@ -2406,12 +2406,12 @@
           "type": "single_choice",
           "prompt": "orderBy 触发的 Shuffle 中，数据如何被重新组织？",
           "options": [
+            "把数据随机打乱顺序，让每个分区的大小更均匀",
+            "把数据整体复制到 Driver 内存里再统一排序",
             "按排序键分区，使相同/相邻键的数据汇聚，便于全局有序",
-            "随机打乱顺序",
-            "复制到 Driver",
-            "直接落盘不做排序"
+            "直接把数据落到磁盘上，不做任何排序处理"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "orderBy 通过 Shuffle 按排序键重新分区，把同键数据放一起才能完成全局排序。",
           "dimension": "mechanism"
         },
@@ -2419,12 +2419,12 @@
           "type": "single_choice",
           "prompt": "要取『金额最高且去重后的前 5 个不同用户』，合理写法是？",
           "options": [
-            "df.orderBy(F.desc('amount')).dropDuplicates(['user']).limit(5)",
-            "df.limit(5).dropDuplicates(['user'])",
-            "df.dropDuplicates(['user']).limit(5)",
-            "df.distinct().limit(5)"
+            "df.dropDuplicates(['user']).orderBy(F.desc('amount')).limit(5)",
+            "df.orderBy(F.desc('amount')).limit(5).dropDuplicates(['user'])",
+            "df.dropDuplicates(['user']).limit(5).orderBy(F.desc('amount'))",
+            "df.orderBy(F.desc('amount')).dropDuplicates(['user']).limit(5)"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "先按金额降序，再按用户去重并取前 5，得到金额最高的 5 个不同用户；顺序很重要。",
           "dimension": "apply"
         }
@@ -2437,9 +2437,9 @@
           "type": "single_choice",
           "prompt": "df.groupBy('city').agg(F.sum('amount')) 表达的是？",
           "options": [
-            "先对全表直接求 amount 的总和，忽略分组",
-            "按行号自动分组，每组恰好一行",
-            "对每个 city 分别求平均值而非求和",
+            "先对全表的 amount 直接求和，完全忽略分组键",
+            "按行号自动分组，保证每一组恰好只有一行",
+            "对每个 city 分别求平均值，而不是求和",
             "按 city 分组，并对每个组的 amount 求和"
           ],
           "correct_index": 3,
@@ -2451,9 +2451,9 @@
           "prompt": "groupBy 操作通常会触发 Shuffle，原因是？",
           "options": [
             "需要把相同分组键的行汇聚到同一节点，才能在该组上聚合",
-            "因为要把聚合结果打印出来展示给用户",
-            "因为要按聚合列再做一次排序",
-            "因为要先把数据源重新从头读取一遍"
+            "因为要把聚合后的结果打印出来展示给用户",
+            "因为需要按聚合列再额外做一次全局排序",
+            "因为要先把数据源从磁盘上重新读取一遍"
           ],
           "correct_index": 0,
           "explanation": "分组聚合需要把相同 key 的行汇聚到同一分区，这就是一次 Shuffle——Spark 最常见的 Shuffle 来源之一。",
@@ -2476,10 +2476,10 @@
           "type": "single_choice",
           "prompt": "想统计每个城市的订单数与总销售额，应？",
           "options": [
-            "df.groupBy('city').sum('amount')（只能得到单一聚合）",
-            "先 df.groupBy('city').count()，再单独做一遍 sum",
+            "df.groupBy('city').agg(F.count('amount').alias('cnt'), F.avg('amount').alias('total'))",
+            "df.groupBy('city').agg(F.count('*').alias('cnt'), F.max('amount').alias('total'))",
             "df.groupBy('city').agg(F.count('*').alias('cnt'), F.sum('amount').alias('total'))",
-            "df.select('city', F.sum('amount'))（缺少 groupBy 会报错）"
+            "df.groupBy('city').agg(F.count('city').alias('cnt'), F.min('amount').alias('total'))"
           ],
           "correct_index": 2,
           "explanation": "agg 可一次对多列做不同聚合并用 alias 起名；count('*') 统计行数，sum 统计销售额。",
@@ -2503,9 +2503,9 @@
           "prompt": "为什么分组聚合是 Spark 中最常见的 Shuffle 来源？",
           "options": [
             "因为需要把相同 key 的行汇聚到同一节点才能聚合",
-            "因为聚合要打印结果",
-            "因为要重新读取文件",
-            "因为要排序"
+            "因为聚合之后必须把结果打印出来给用户看",
+            "因为要先把数据源文件从头到尾重新读一遍",
+            "因为需要按聚合列再做一次全局排序"
           ],
           "correct_index": 0,
           "explanation": "聚合要求同 key 同处，必然触发 Shuffle 重新分布数据，故很常见。",
@@ -2515,12 +2515,12 @@
           "type": "single_choice",
           "prompt": "agg(F.sum('a')) 与 groupBy('k').sum('a') 的关系是？",
           "options": [
+            "两者完全不是一回事，语义与执行都不同",
             "sum 是 agg 的便捷写法，底层都走 agg 聚合",
-            "两者完全不同",
-            "sum 不触发聚合",
-            "agg 不能求和"
+            "sum 不会触发聚合，只做一次简单的投影",
+            "agg 只能用于分组，不能用来求和"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "groupBy 后的 .sum/.count 等都是 agg 的语法糖，最终都通过 agg 表达。",
           "dimension": "comparison"
         },
@@ -2528,12 +2528,12 @@
           "type": "single_choice",
           "prompt": "groupBy('city').agg(F.avg('amount')) 结果列名叫 'avg(amount)'，下游引用报错，应？",
           "options": [
+            "忽略掉这个列名，直接用原来那个名字继续往下写就可以了",
+            "重新做一次 groupBy，让结果里面的列名自动刷新一遍就好了",
             "用 alias 改名，如 .agg(F.avg('amount').alias('avg_amt'))",
-            "忽略列名直接用",
-            "重新 groupBy 一次",
-            "改文件名"
+            "把最终写出去的文件名改掉，让结果里的列名跟着一起变"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "聚合默认列名带表达式，下游难引用；用 alias 起清晰名字是通用做法。",
           "dimension": "debug"
         },
@@ -2541,12 +2541,12 @@
           "type": "single_choice",
           "prompt": "在 groupBy 聚合时，Catalyst 通常还会尝试做？",
           "options": [
-            "在 map 端预聚合（partial aggregation）以减少 Shuffle 数据量",
-            "把数据全部复制到 Driver",
-            "禁用优化",
-            "先排序再删除"
+            "把全部数据先复制到 Driver 端，再统一做一次聚合运算",
+            "直接禁用掉所有优化，让聚合老老实实地逐行去执行",
+            "先按聚合列做一次全局排序，然后再删掉重复的那些行",
+            "在 map 端预聚合（partial aggregation）以减少 Shuffle 数据量"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "Spark 常做部分聚合（如先本地 combine）再 shuffle，显著降低传输量，类似 reduceByKey。",
           "dimension": "mechanism"
         },
@@ -2555,9 +2555,9 @@
           "prompt": "要同时算每个城市的最大金额与行数，应？",
           "options": [
             "df.groupBy('city').agg(F.max('amount').alias('mx'), F.count('*').alias('cnt'))",
-            "df.groupBy('city').max('amount')（只能一个聚合）",
-            "先 count 再单独做 max",
-            "df.agg(F.max('amount'), F.count('*'))（缺 groupBy）"
+            "df.groupBy('city').agg(F.sum('amount').alias('mx'), F.count('*').alias('cnt'))",
+            "df.groupBy('city').agg(F.max('amount').alias('mx'), F.sum('*').alias('cnt'))",
+            "df.groupBy('city').agg(F.min('amount').alias('mx'), F.count('city').alias('cnt'))"
           ],
           "correct_index": 0,
           "explanation": "agg 可一次声明多个聚合并分别 alias；缺 groupBy 会对全表聚合而非分组。",
@@ -2573,9 +2573,9 @@
           "prompt": "df.write 属于？",
           "options": [
             "一个 Action，会触发前面整条 Transformation 链真正执行",
-            "一个 Transformation，只把写配置登记进执行计划",
+            "一个 Transformation，只把写出配置登记进计划",
             "一个只读的检查操作，不会真正触发作业执行",
-            "一种特殊的聚合操作，只统计将要写出的行数"
+            "一种特殊的聚合，只统计将要写出的行数"
           ],
           "correct_index": 0,
           "explanation": "write 和 show / count 一样是 Action，会触发前面所有 Transformation 真正执行，常作为 Job 的终点。",
@@ -2598,10 +2598,10 @@
           "type": "single_choice",
           "prompt": "df.write.partitionBy('dt','city').parquet(path) 会产生？",
           "options": [
-            "把所有数据合并写入单个大文件，方便后续整体读取",
-            "按随机生成的名字拆成多个互不相关的文件",
+            "把所有数据合并写入单个大文件里，方便后续整体读取",
+            "按随机生成的名字拆成多个互不相关的小文件",
             "按列值建立嵌套目录（如 dt=.../city=...），支撑下游分区裁剪",
-            "仅在内存中生效，便于调试，并不会真正落盘"
+            "只在内存中生效便于调试，并不会真正落盘保存"
           ],
           "correct_index": 2,
           "explanation": "partitionBy 按列值生成嵌套目录，下游查询可只扫描需要的目录（分区裁剪），大幅提升性能。",
@@ -2637,12 +2637,12 @@
           "type": "single_choice",
           "prompt": "为什么写出默认采用 errorIfExists 而不是覆盖？",
           "options": [
+            "因为覆盖写出的速度比直接报错更快一些",
             "为了防误覆盖生产数据，路径已存在就报错提醒你显式决定",
-            "因为覆盖更快",
-            "因为 Spark 不能覆盖",
-            "因为写入不需要确认"
+            "因为 Spark 本身就不支持覆盖已有的路径",
+            "因为写出这件事原本就不需要用户确认"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "默认报错而非覆盖，是安全优先：避免一条命令把已有输出悄悄冲掉。",
           "dimension": "why"
         },
@@ -2650,12 +2650,12 @@
           "type": "single_choice",
           "prompt": "mode('overwrite') 与 mode('append') 的区别是？",
           "options": [
+            "两者效果完全一样，只是写法上不同",
+            "append 会先把旧数据清空之后再写入",
             "overwrite 先清空目标再写；append 在原有之上追加",
-            "两者相同",
-            "append 会删旧数据",
-            "overwrite 是追加"
+            "overwrite 实际上是以追加的方式写入"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "overwrite 覆盖（先删后写），append 追加；语义相反，选错会丢数据或重复。",
           "dimension": "comparison"
         },
@@ -2663,12 +2663,12 @@
           "type": "single_choice",
           "prompt": "重复运行同一 write 代码却报『path already exists』，是因为？",
           "options": [
-            "默认 mode 是 errorIfExists，路径存在即报错",
-            "磁盘满了",
-            "Python 版本问题",
-            "网络断开"
+            "磁盘已经满了，写不进去新的文件",
+            "当前 Python 的版本和 Spark 不兼容",
+            "网络连接中断了，导致写出失败",
+            "默认 mode 是 errorIfExists，路径存在即报错"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "这正是默认 errorIfExists 的行为；需显式指定 overwrite 或 append 才能重复运行。",
           "dimension": "debug"
         },
@@ -2677,9 +2677,9 @@
           "prompt": "partitionBy 写出的目录结构对下游查询有何影响？",
           "options": [
             "按列值分层目录，下游可分区裁剪只扫相关目录",
-            "把所有数据写进单个文件",
-            "没有任何影响",
-            "会打乱数据顺序"
+            "会把所有数据都写进一个单独的大文件里",
+            "对下游查询没有任何影响，只是目录好看",
+            "会打乱数据的先后顺序，影响读取"
           ],
           "correct_index": 0,
           "explanation": "分区目录让下游按分区列过滤时跳过无关目录（分区裁剪），显著提速。",
@@ -2689,12 +2689,12 @@
           "type": "single_choice",
           "prompt": "要把结果以 Parquet 写出到 out/，且允许重复运行覆盖，应？",
           "options": [
+            "df.write.parquet('out/')，默认在路径已存在时会报错",
             "df.write.mode('overwrite').parquet('out/')",
-            "df.write.parquet('out/')（默认会报错若已存在）",
             "df.write.mode('append').csv('out/')",
             "df.write.format('json').save('out/')"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "用 mode('overwrite') + parquet 既用列式高效格式，又允许重复运行覆盖。",
           "dimension": "apply"
         }
@@ -2707,10 +2707,10 @@
           "type": "single_choice",
           "prompt": "在「读 CSV → filter → withColumn → groupBy → orderBy → write」链路中，哪些是 Transformation？",
           "options": [
-            "这六个步骤全部都是 Action，会逐个立即执行",
+            "filter / withColumn / groupBy / orderBy 都是 Action，只有 write 是 Transformation",
             "filter / withColumn / groupBy / orderBy 都是 Transformation，只有 write 是 Action",
-            "只有 read 是 Action，其余步骤都不是",
-            "只有 groupBy 是 Transformation，其它都是 Action"
+            "read / filter / withColumn / groupBy 都是 Transformation，只有 orderBy 是 Action",
+            "filter / groupBy / orderBy / write 都是 Transformation，只有 read 是 Action"
           ],
           "correct_index": 1,
           "explanation": "read / filter / withColumn / groupBy / orderBy 都是惰性 Transformation，只有 write（或 show/count）这类 Action 才触发执行。",
@@ -2733,9 +2733,9 @@
           "type": "single_choice",
           "prompt": "groupBy('region').sum('amount') 得到的聚合列，默认列名是？",
           "options": [
-            "自动命名为 'total'，可直接引用",
+            "会自动命名为 'total'，可以直接引用",
             "与原列名 'amount' 完全相同，不会冲突",
-            "自动命名为分组键 'region'，不会重复",
+            "会自动命名为分组键 'region'，不会重复",
             "类似 'sum(amount)'，通常需要用 alias 改名"
           ],
           "correct_index": 3,
@@ -2759,10 +2759,10 @@
           "type": "single_choice",
           "prompt": "以下关于这个迷你 ETL 链路的错误说法是？",
           "options": [
-            "filter 多条件必须用 & 且每个条件单独加括号",
+            "filter 的多条件必须用 & 号，并且每个条件都要单独加括号",
             "整条链路只有最后的 Action 才触发执行，所以 read 也会立即执行",
-            "groupBy / orderBy 通常各会触发一次 Shuffle",
-            "write 才是真正触发整条链执行的那个 Action"
+            "groupBy 与 orderBy 通常各自都会触发一次 Shuffle 操作",
+            "write 才是真正触发整条链路执行的那个 Action（动作）"
           ],
           "correct_index": 1,
           "explanation": "惰性指「只有 Action 才触发」，并不意味着 read 是 Action——read 是 Transformation，只是记账，只有 write/show/count 才是触发点。",
@@ -2772,12 +2772,12 @@
           "type": "single_choice",
           "prompt": "整条 ETL 链路中，发生的 Shuffle 通常来自哪些步骤？",
           "options": [
+            "read 与 filter 这类操作也会各自触发一次 Shuffle",
+            "只有最后的 write 一步会触发 Shuffle",
             "groupBy / orderBy 等需要跨分区重排的操作",
-            "read / filter 也会 Shuffle",
-            "只有 write 会 Shuffle",
-            "全程没有 Shuffle"
+            "整条链路里全程都没有发生任何 Shuffle"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "Shuffle 出现在需跨分区重分布处（groupBy、orderBy、按列去重等），而非 read/filter。",
           "dimension": "mechanism"
         },
@@ -2785,12 +2785,12 @@
           "type": "single_choice",
           "prompt": "为什么先 show 验证、确认无误后再 write 是好习惯？",
           "options": [
-            "避免把错误/脏数据写入存储，且 write 一旦执行代价高",
-            "因为 show 更快",
-            "因为 write 不支持大数据",
-            "因为 show 必须写在前"
+            "因为 show 的执行速度比 write 更快一些",
+            "因为 write 本身不支持数据量较大的表",
+            "因为 show 在语法上必须写在 write 前面",
+            "避免把错误/脏数据写入存储，且 write 一旦执行代价高"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "write 是昂贵的 Action 且会落盘；先 show/limit 抽查可尽早拦截错误。",
           "dimension": "why"
         },
@@ -2799,9 +2799,9 @@
           "prompt": "『先做 Transformation 链、最后用 Action 触发』与『每步立即执行』相比？",
           "options": [
             "前者能整体优化（下推/裁剪/融合），后者失去这些机会",
-            "两者性能一样",
-            "后者更快",
-            "前者不能优化"
+            "两者的运行性能其实完全一样，没有区别",
+            "后者比前者更快，因为每一步都能及时执行",
+            "前者反而不能做任何优化，只是写法好看"
           ],
           "correct_index": 0,
           "explanation": "惰性让优化器拿到完整 DAG 做整体优化；每步即执行则无法全局优化。",
@@ -2811,12 +2811,12 @@
           "type": "single_choice",
           "prompt": "链路写好运行却『一直卡着没输出』，最可能的原因是？",
           "options": [
+            "Python 进程本身崩溃了，需要重启一下内核才可以恢复运行",
             "整条链全是 Transformation，缺少 Action（write/show）触发",
-            "Python 崩溃",
-            "数据为空一定这样",
-            "显示器问题"
+            "数据为空的时候一定会出现这种一直卡住不动的现象",
+            "显示器的刷新问题，和计算本身其实并没有任何关系"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "若只有 Transformation 没有 Action，就不会有任何 Job 执行，看起来像『卡住』。",
           "dimension": "debug"
         },
@@ -2824,12 +2824,12 @@
           "type": "single_choice",
           "prompt": "要读 CSV → 过滤异常行 → 按城市聚合 → 取金额前 10 写出，正确骨架是？",
           "options": [
+            "read.csv → filter → groupBy('city').agg(...) → write → orderBy(desc).limit(10)",
+            "read.csv → groupBy('city').agg(...) → filter → orderBy(desc).limit(10) → write",
             "read.csv → filter → groupBy('city').agg(...) → orderBy(desc).limit(10) → write",
-            "read.csv → write → filter → groupBy",
-            "groupBy → read.csv → write",
-            "read.csv → collect → 本地 pandas 聚合"
+            "read.csv → filter → orderBy(desc).limit(10) → groupBy('city').agg(...) → write"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "典型顺序：读→过滤→聚合→排序取 TopN→写出；write 作 Action 触发整条链。",
           "dimension": "apply"
         }
@@ -2842,12 +2842,12 @@
           "type": "single_choice",
           "prompt": "Spark SQL 最准确的定位是？",
           "options": [
-            "一个新的独立计算引擎",
             "Spark 处理结构化数据的统一模块，提供 SQL 与 DataFrame API",
-            "一种只支持 SQL 的数据库",
-            "一个 Python 数据分析库"
+            "一个全新的、和 Spark 没有任何关系、可以单独部署运行的独立计算引擎",
+            "一种只支持 SQL 查询、除此之外不能处理任何数据形式的独立数据库",
+            "一个专门用在单机环境里做数据清洗与统计的 Python 数据分析库"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "Spark SQL 是 Spark 处理结构化数据的统一模块，SQL 与 DataFrame API 共享 Catalyst 优化器，不是新引擎。",
           "dimension": "concept"
         },
@@ -2855,10 +2855,10 @@
           "type": "single_choice",
           "prompt": "spark.sql(\"SELECT ...\") 返回什么？",
           "options": [
-            "一个执行后的结果表",
+            "一个已经被执行完、可以直接读取的结果表",
             "一个 DataFrame（惰性）",
-            "一个 Python list",
-            "一个 JDBC 连接"
+            "一个普通的 Python list，装着一批结果行",
+            "一条指向外部数据库的 JDBC 连接对象"
           ],
           "correct_index": 1,
           "explanation": "spark.sql 返回惰性 DataFrame，可继续链式 .filter() 等，遇到 Action 才执行。",
@@ -2868,12 +2868,12 @@
           "type": "single_choice",
           "prompt": "为什么 Spark 同时提供 SQL 和 DataFrame API？",
           "options": [
-            "它们底层是两套不同引擎，性能不同",
+            "它们底层其实是两套不同的引擎，性能上也有差异",
+            "因为 SQL 的写法更简洁，所以引擎优先推荐使用 SQL",
             "让分析师用 SQL、工程师用 API，且共享同一优化器",
-            "SQL 更快",
-            "API 更快"
+            "因为 DataFrame API 的执行速度比 SQL 更快一些"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "二者共享 Catalyst 优化器，只是两种写法，目的是适配不同使用者。",
           "dimension": "why"
         },
@@ -2881,12 +2881,12 @@
           "type": "single_choice",
           "prompt": "关于 Spark SQL 与 DataFrame API 的关系，正确的是？",
           "options": [
-            "SQL 编译成的执行计划和 API 等价",
-            "SQL 比 API 快一倍",
-            "API 不能做聚合",
-            "二者无法混用"
+            "SQL 的执行速度比 API 快一倍左右",
+            "DataFrame API 不能用来做聚合运算",
+            "两者无法混用在同一条执行链里",
+            "SQL 编译成的执行计划和 API 等价"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "二者最终编译成相同逻辑/物理计划，性能一致。",
           "dimension": "comparison"
         },
@@ -2894,12 +2894,12 @@
           "type": "single_choice",
           "prompt": "当你调用 spark.sql，内部首先发生什么？",
           "options": [
-            "立刻把数据算完返回",
             "解析成逻辑计划交给 Catalyst 优化",
-            "把 DataFrame 物化成表",
-            "启动一个 MapReduce 作业"
+            "立刻把数据全部算完并返回结果",
+            "把 DataFrame 物化成一张真实的物理表",
+            "启动一个 MapReduce 作业开始计算"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "sql() 先把 SQL 文本解析成逻辑计划，再交 Catalyst 优化，不立即计算。",
           "dimension": "mechanism"
         },
@@ -2907,10 +2907,10 @@
           "type": "single_choice",
           "prompt": "想用 SQL 查询一个叫 df 的 DataFrame，第一步该？",
           "options": [
-            "直接 spark.sql(\"SELECT * FROM df\")",
+            "直接 spark.sql(\"SELECT * FROM df\") 就能查询",
             "先 df.createOrReplaceTempView(\"df\") 再查",
-            "把 df 转成 pandas",
-            "用 df.toTable()"
+            "先把 df 转成 pandas 再用本地 SQL 查",
+            "调用 df.toTable() 把它登记成一张表"
           ],
           "correct_index": 1,
           "explanation": "SQL 只认注册过的名字，必须先注册成视图。",
@@ -2920,12 +2920,12 @@
           "type": "single_choice",
           "prompt": "直接 spark.sql(\"SELECT * FROM my_df\") 报 Table or view not found，原因是？",
           "options": [
+            "SQL 的语法本身写错了，需要检查拼写",
+            "Spark 会话没有正常启动，需要重启",
             "DataFrame 没有注册成视图",
-            "SQL 语法错",
-            "Spark 没启动",
-            "列不存在"
+            "查询里引用的那个列名不存在"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "SQL 只认在 catalog 中注册过的名字，未注册的 DataFrame 变量名不是表名。",
           "dimension": "debug"
         },
@@ -2933,12 +2933,12 @@
           "type": "single_choice",
           "prompt": "Catalyst 在 Spark SQL 中的作用是？",
           "options": [
-            "一个存储格式",
-            "Spark 的优化器，SQL 与 API 共用",
-            "一种网络协议",
-            "一种 UDF 框架"
+            "一种列式的文件存储格式，用于落盘",
+            "一种集群节点之间通信用的网络协议",
+            "一个用于编写自定义函数的 UDF 框架",
+            "Spark 的优化器，SQL 与 API 共用"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "Catalyst 是 Spark 的优化器，SQL 与 DataFrame API 都经由它优化。",
           "dimension": "concept"
         },
@@ -2946,12 +2946,12 @@
           "type": "single_choice",
           "prompt": "关于「SQL 比 API 慢」的说法，正确的是？",
           "options": [
-            "一定更慢",
-            "一定更快",
             "二者最终执行计划相同，性能差异来自写法本身",
-            "无法比较"
+            "SQL 一定比 API 更慢，因为语法更繁琐",
+            "SQL 一定比 API 更快，因为它更容易优化",
+            "两者性能无法放在一起比较，没有意义"
           ],
-          "correct_index": 2,
+          "correct_index": 0,
           "explanation": "执行计划相同，性能差异只来自具体写法，而非接口选择。",
           "dimension": "comparison"
         },
@@ -2959,10 +2959,10 @@
           "type": "single_choice",
           "prompt": "如何把 spark.sql 的结果继续用 API 加工？",
           "options": [
-            "结果不是 DataFrame 不能用 API",
+            "结果并不是 DataFrame，所以不能再用 API",
             "结果是 DataFrame，可直接接 .filter() 等",
-            "必须先 collect",
-            "必须再注册一次"
+            "必须先 collect 到本地之后才能继续加工",
+            "必须先把结果重新注册成视图才能加工"
           ],
           "correct_index": 1,
           "explanation": "spark.sql 返回 DataFrame，自然可以接着用 API 链式处理。",
@@ -2977,10 +2977,10 @@
           "type": "single_choice",
           "prompt": "createOrReplaceTempView 做了什么？",
           "options": [
-            "把 DataFrame 物化成表落盘",
+            "把 DataFrame 物化成一张真实的表并落盘保存",
             "在 session 内注册一个名字指向该 DataFrame（零拷贝）",
-            "复制一份数据",
-            "启动一个 Job"
+            "把整份数据完整地复制一份，供 SQL 单独使用",
+            "在后台启动一个 Job，把结果预先算好并缓存起来"
           ],
           "correct_index": 1,
           "explanation": "它只是往 catalog 写一条「名字→DataFrame」的映射，不移动数据。",
@@ -2990,12 +2990,12 @@
           "type": "single_choice",
           "prompt": "让 SQL 能查 df，正确写法是？",
           "options": [
-            "df.toTable(\"t\")",
+            "df.toTable(\"t\")，也就是把 df 直接登记成表",
+            "spark.register(df)，由会话来统一注册",
             "df.createOrReplaceTempView(\"t\")",
-            "spark.register(df)",
-            "spark.sql(\"CREATE t FROM df\")"
+            "spark.sql(\"CREATE t FROM df\")，用 SQL 来建表"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "createOrReplaceTempView 把 DataFrame 注册为临时视图。",
           "dimension": "apply"
         },
@@ -3003,12 +3003,12 @@
           "type": "single_choice",
           "prompt": "为什么临时视图「不复制数据」很重要？",
           "options": [
-            "避免双倍内存与拷贝开销",
-            "因为它更快",
-            "因为 SQL 要求",
-            "没意义"
+            "因为它能让后续的查询跑得更快一些",
+            "因为 SQL 语法本身就是这样要求的",
+            "其实没有什么实际意义，可以忽略",
+            "避免双倍内存与拷贝开销"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "视图只是逻辑映射，零拷贝避免内存与 IO 浪费。",
           "dimension": "why"
         },
@@ -3016,12 +3016,12 @@
           "type": "single_choice",
           "prompt": "注册视图后，真正计算发生在？",
           "options": [
-            "createOrReplaceTempView 时",
             "你 spark.sql 查询它并遇到 Action 时",
-            "session 关闭时",
-            "注册时预计算"
+            "在 createOrReplaceTempView 被调用的那一刻",
+            "在 session 被关闭的那一刻统一计算",
+            "在注册视图的时候就已经预先算好了"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "注册只是登记名字；查询遇到 Action 才真正执行。",
           "dimension": "mechanism"
         },
@@ -3029,10 +3029,10 @@
           "type": "single_choice",
           "prompt": "临时视图 vs 全局临时视图，正确的是？",
           "options": [
-            "二者完全一样",
+            "两者名字虽然不同，但作用域其实完全一样",
             "全局视图需 global_temp. 前缀且跨 session 可见",
-            "临时视图跨 session 可见",
-            "全局视图不能跨 session"
+            "临时视图是跨 session 可见的，全局视图不是",
+            "全局视图不能跨 session 使用，只能本会话查询"
           ],
           "correct_index": 1,
           "explanation": "全局临时视图用 global_temp. 前缀访问，且跨 session 可见。",
@@ -3042,12 +3042,12 @@
           "type": "single_choice",
           "prompt": "session 关闭后再查之前注册的视图报「表不存在」，原因？",
           "options": [
+            "底层的数据已经被删除掉了",
+            "SQL 语句本身写错了导致查不到",
             "视图只在创建它的 session 有效",
-            "数据被删了",
-            "SQL 错",
-            "视图名冲突"
+            "视图的名字和别的对象发生了冲突"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "临时视图绑定 session 生命周期，session 关闭即失效。",
           "dimension": "debug"
         },
@@ -3056,11 +3056,11 @@
           "prompt": "全局临时视图查询时前缀是？",
           "options": [
             "temp.",
-            "global_temp.",
             "public.",
-            "session."
+            "session.",
+            "global_temp."
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "全局临时视图必须用 global_temp. 前缀访问。",
           "dimension": "apply"
         },
@@ -3068,12 +3068,12 @@
           "type": "single_choice",
           "prompt": "临时视图本质是？",
           "options": [
-            "数据库里的物理表",
             "catalog 中「名字→DataFrame」的逻辑映射",
-            "一份拷贝",
-            "一个 UDF"
+            "数据库里一张真实存在的物理表",
+            "对底层数据做出的一份完整拷贝",
+            "一个用来做自定义处理的 UDF 函数"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "视图是逻辑映射，不是物理表、不物化数据。",
           "dimension": "concept"
         },
@@ -3081,12 +3081,12 @@
           "type": "single_choice",
           "prompt": "关于视图与底层数据，正确的是？",
           "options": [
+            "视图会把底层的真实数据物化之后保存下来",
             "视图修改会影响原 DataFrame 吗——不会，视图只是映射",
-            "视图会物化数据",
-            "视图就是表",
-            "视图不可查询"
+            "视图其实就是一张独立的、真实存在的物理表",
+            "视图一旦创建之后就不能再被查询了"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "视图只是映射，不持有数据，也不改变底层 DataFrame。",
           "dimension": "comparison"
         },
@@ -3094,12 +3094,12 @@
           "type": "single_choice",
           "prompt": "同名再调用 createOrReplaceTempView 会？",
           "options": [
-            "报错",
+            "直接报错，提示同名",
+            "同时创建两个并存",
             "覆盖同名视图",
-            "创建两个",
-            "忽略"
+            "静默忽略这次调用"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "createOrReplace 语义就是同名覆盖。",
           "dimension": "debug"
         }
@@ -3112,12 +3112,12 @@
           "type": "single_choice",
           "prompt": "SQL 中 SELECT 的作用是？",
           "options": [
-            "过滤行",
+            "过滤掉不满足条件的行",
+            "对结果做一次排序",
             "指定输出列（投影）",
-            "排序",
-            "分组"
+            "按某一列做分组"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "SELECT 指定输出列，对应 DataFrame 的 select（投影）。",
           "dimension": "concept"
         },
@@ -3125,12 +3125,12 @@
           "type": "single_choice",
           "prompt": "选出 name 列并重命名 age→age_next，正确？",
           "options": [
-            "SELECT name, age AS age_next",
             "SELECT name, age=age_next",
             "SELECT name, rename age age_next",
-            "SELECT name, age->age_next"
+            "SELECT name, age->age_next",
+            "SELECT name, age AS age_next"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "SQL 用 AS 起别名；age AS age_next 是标准写法。",
           "dimension": "apply"
         },
@@ -3138,12 +3138,12 @@
           "type": "single_choice",
           "prompt": "spark.sql(\"SELECT ...\") 返回的是？",
           "options": [
-            "执行结果",
             "惰性 DataFrame",
-            "list",
-            "表"
+            "执行完的结果集",
+            "普通的 Python list",
+            "一张物理表"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "spark.sql 返回惰性 DataFrame，需 Action 才执行。",
           "dimension": "mechanism"
         },
@@ -3151,10 +3151,10 @@
           "type": "single_choice",
           "prompt": "SELECT name, age 与 DataFrame API df.select(\"name\",\"age\") 的关系？",
           "options": [
-            "完全不同",
+            "两者完全不同，无法互换",
             "Catalyst 中等价",
-            "API 更快",
-            "SQL 更快"
+            "DataFrame API 会更快一些",
+            "SQL 的写法会更快一些"
           ],
           "correct_index": 1,
           "explanation": "两者在 Catalyst 中生成等价逻辑计划，性能一致。",
@@ -3164,12 +3164,12 @@
           "type": "single_choice",
           "prompt": "为什么不建议把 Python 变量直接拼进 SQL 字符串？",
           "options": [
-            "写法麻烦",
+            "写起来会比较麻烦一些",
+            "运行时会直接报错",
             "有注入风险且计划无法缓存",
-            "会报错",
-            "不支持"
+            "Spark 并不支持这种写法"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "拼接既带来注入风险，又让每次字符串不同、计划无法复用缓存。",
           "dimension": "why"
         },
@@ -3177,12 +3177,12 @@
           "type": "single_choice",
           "prompt": "列名含空格 `order amount` 在 SQL 中报错，修复？",
           "options": [
-            "去掉空格",
-            "用反引号 `order amount`",
-            "加引号",
-            "改列名"
+            "直接去掉名字里的空格",
+            "给列名加上一对双引号",
+            "干脆把这一列改个名",
+            "用反引号 `order amount`"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "含空格/特殊字符的列名必须用反引号包裹。",
           "dimension": "debug"
         },
@@ -3191,9 +3191,9 @@
           "prompt": "给每行加常量列 tag='VIP'，正确？",
           "options": [
             "SELECT name, 'VIP' AS tag",
-            "SELECT name, VIP",
-            "SELECT name, \"VIP\"",
-            "SELECT name, const VIP"
+            "SELECT name, VIP AS tag",
+            "SELECT name, \"VIP\" AS tag",
+            "SELECT name, const VIP AS tag"
           ],
           "correct_index": 0,
           "explanation": "字符串常量用单引号，AS 起别名。",
@@ -3216,12 +3216,12 @@
           "type": "single_choice",
           "prompt": "关于 SQL SELECT 与 Level 2 df.select，正确的是？",
           "options": [
-            "一个会触发执行一个不会",
+            "一个会立刻执行，另一个不会执行",
+            "select 只能挑列，不能给列起别名",
             "都惰性，都返回 DataFrame，等价",
-            "select 不能起别名",
-            "SQL 不能写表达式"
+            "SQL 里不能写表达式，只能写列名"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "两者都惰性、都返回 DataFrame、在 Catalyst 中等价。",
           "dimension": "comparison"
         },
@@ -3229,12 +3229,12 @@
           "type": "single_choice",
           "prompt": "调用 spark.sql 后变量里「没有数据」，原因？",
           "options": [
-            "SQL 报错了",
-            "spark.sql 惰性，需 Action 才执行",
-            "DataFrame 为空",
-            "视图错"
+            "SQL 语句在执行时直接报错了",
+            "返回的 DataFrame 本身是空的",
+            "视图注册的时候写错了名字",
+            "spark.sql 惰性，需 Action 才执行"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "spark.sql 仅构造惰性 DataFrame，数据在 Action 时才算。",
           "dimension": "debug"
         }
@@ -3248,11 +3248,11 @@
           "prompt": "SQL 中挑行用？",
           "options": [
             "SELECT",
-            "WHERE",
             "ORDER BY",
-            "LIMIT"
+            "LIMIT",
+            "WHERE"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "WHERE 过滤行，对应 DataFrame 的 filter。",
           "dimension": "concept"
         },
@@ -3261,9 +3261,9 @@
           "prompt": "过滤 age>18 且 city='BJ'，正确？",
           "options": [
             "WHERE age>18 AND city='BJ'",
-            "WHERE age>18 & city='BJ'",
-            "WHERE age>18 && city='BJ'",
-            "FILTER"
+            "WHERE age>18 OR city='BJ'",
+            "WHERE age>18 AND city=\"BJ\"",
+            "FILTER age>18 AND city='BJ'"
           ],
           "correct_index": 0,
           "explanation": "SQL 用 AND/OR/NOT 组合条件，对应 API 的 & | ~。",
@@ -3273,12 +3273,12 @@
           "type": "single_choice",
           "prompt": "为什么 ORDER BY 在大表上昂贵？",
           "options": [
+            "它慢是因为语法本身比较复杂",
             "它要全局有序，必触发 Shuffle",
-            "它慢因为语法",
-            "它复制数据",
-            "它不优化"
+            "它会把数据完整复制一份再排序",
+            "它完全不做任何优化，所以慢"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "全局有序需要按排序键重分区，必触发一次 Shuffle。",
           "dimension": "why"
         },
@@ -3286,12 +3286,12 @@
           "type": "single_choice",
           "prompt": "WHERE 条件通常如何被优化？",
           "options": [
-            "被忽略",
+            "会被优化器直接忽略掉不使用",
+            "会被推迟到最后一步才执行",
             "被 Catalyst 下推到读取端尽早过滤",
-            "在最后执行",
-            "在写入时"
+            "会在真正写入的时候才被应用"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "Catalyst 常做谓词下推，让过滤尽早发生、减少后续数据量。",
           "dimension": "mechanism"
         },
@@ -3299,12 +3299,12 @@
           "type": "single_choice",
           "prompt": "WHERE phone = NULL 查不到空值行，原因？",
           "options": [
-            "列不存在",
-            "NULL 不参与 = 比较，永远假，要用 IS NULL",
-            "语法错",
-            "索引问题"
+            "这一列在表里面根本就没有对应的字段存在",
+            "SQL 的语法本身写错了，才导致直接报错",
+            "底层的表缺少合适的索引，所以查不到",
+            "NULL 不参与 = 比较，永远假，要用 IS NULL"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "NULL 是未知值，= NULL 永远为假，判断空必须用 IS NULL。",
           "dimension": "debug"
         },
@@ -3313,9 +3313,9 @@
           "prompt": "取金额最高的 5 个城市，正确？",
           "options": [
             "ORDER BY total DESC LIMIT 5",
-            "LIMIT 5 ORDER BY total",
-            "TOP 5",
-            "SELECT MAX(5)"
+            "LIMIT 5 ORDER BY total DESC",
+            "SELECT TOP 5 total FROM ...",
+            "SELECT MAX(total) FROM ..."
           ],
           "correct_index": 0,
           "explanation": "先排序再 LIMIT 即 TopN；ORDER BY 触发 Shuffle。",
@@ -3325,10 +3325,10 @@
           "type": "single_choice",
           "prompt": "SQL 的 AND/OR 与 Level 2 API 的 & | ~ 的关系？",
           "options": [
-            "完全无关",
+            "两者完全无关，是两套独立的语法",
             "语义一样，只是 SQL 文本用 AND/OR，API 用 & | ~",
-            "一个快一个慢",
-            "API 不支持"
+            "SQL 的写法更快，API 的写法更慢",
+            "DataFrame API 根本不支持多条件组合"
           ],
           "correct_index": 1,
           "explanation": "语义等价，只是语言不同；效果都是组合条件。",
@@ -3339,11 +3339,11 @@
           "prompt": "判断空值正确的写法是？",
           "options": [
             "= NULL",
-            "IS NULL",
             "== NULL",
+            "IS NULL",
             "equals NULL"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "SQL 用 IS NULL / IS NOT NULL 判断空值。",
           "dimension": "concept"
         },
@@ -3351,12 +3351,12 @@
           "type": "single_choice",
           "prompt": "LIMIT 5 返回结果「感觉是随机的」，原因？",
           "options": [
-            "LIMIT 是随机抽样",
-            "LIMIT 取前 5 行，未排序则顺序不定",
-            "数据错",
-            "bug"
+            "LIMIT 本身就是在做随机抽样",
+            "底层数据文件被破坏导致顺序乱",
+            "这是 Spark 一个尚未修复的 bug",
+            "LIMIT 取前 5 行，未排序则顺序不定"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "LIMIT 取前 N 行；未配合 ORDER BY 时顺序不保证，并非抽样。",
           "dimension": "debug"
         },
@@ -3364,12 +3364,12 @@
           "type": "single_choice",
           "prompt": "ORDER BY 与 Level 2 的 orderBy 关系？",
           "options": [
-            "完全不同",
             "Catalyst 中等价，ORDER BY 触发 Shuffle",
-            "orderBy 更快",
-            "SQL 不能排序"
+            "两者完全不同，根本无法相互替代地去使用",
+            "orderBy 的执行速度通常都会比 SQL 更快一些",
+            "SQL 里面根本没有排序这种能力可以去用"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "二者等价，ORDER BY 通常触发一次 Shuffle（Level 5 展开）。",
           "dimension": "comparison"
         }
@@ -3382,12 +3382,12 @@
           "type": "single_choice",
           "prompt": "GROUP BY 的作用是？",
           "options": [
-            "过滤行",
             "按维度分组并对每组聚合",
-            "排序",
-            "投影"
+            "对满足条件的行做过滤",
+            "对结果按某一列排序",
+            "挑选出需要的若干列"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "GROUP BY 按维度分组，再用聚合函数汇总每组。",
           "dimension": "concept"
         },
@@ -3395,12 +3395,12 @@
           "type": "single_choice",
           "prompt": "按 city 算总额，正确？",
           "options": [
+            "SELECT sum(amount) FROM sales GROUP BY city",
             "SELECT city, sum(amount) FROM sales GROUP BY city",
-            "SELECT sum(amount) FROM sales",
             "SELECT city, amount FROM sales GROUP BY city",
-            "GROUP BY city sum(amount)"
+            "SELECT sum(amount) FROM sales"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "分组键出现在 SELECT，聚合函数算汇总值。",
           "dimension": "apply"
         },
@@ -3408,12 +3408,12 @@
           "type": "single_choice",
           "prompt": "为什么聚合后过滤要用 HAVING 而非 WHERE？",
           "options": [
-            "HAVING 更快",
+            "HAVING 的执行速度比 WHERE 更快",
+            "因为 SQL 语法规定必须这样写",
             "WHERE 在分组前执行看不到聚合值",
-            "语法要求",
-            "没原因"
+            "并没有什么特别的原因"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "WHERE 在分组前执行，看不到聚合结果；HAVING 在分组后。",
           "dimension": "why"
         },
@@ -3421,12 +3421,12 @@
           "type": "single_choice",
           "prompt": "WHERE sum(amount)>1000 报错，修复？",
           "options": [
-            "改成 HAVING sum(amount)>1000",
-            "改成 FILTER",
-            "删掉",
-            "用 WHERE amount>1000"
+            "改成 FILTER sum(amount)>1000",
+            "直接把这一句删掉即可",
+            "改用 WHERE amount>1000",
+            "改成 HAVING sum(amount)>1000"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "聚合函数不能用于 WHERE，必须放 HAVING。",
           "dimension": "debug"
         },
@@ -3434,12 +3434,12 @@
           "type": "single_choice",
           "prompt": "GROUP BY 通常触发？",
           "options": [
-            "无代价",
             "一次 Shuffle（按 key 汇聚）+ 本地预聚合",
-            "一次排序",
-            "一次写入"
+            "完全不产生任何额外的执行代价和开销",
+            "只会额外触发一次全局排序的操作",
+            "只会额外触发一次写入操作而已"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "分组需按 key 重分区并汇聚，必触发 Shuffle，且常有 Map-side Combine。",
           "dimension": "mechanism"
         },
@@ -3461,11 +3461,11 @@
           "prompt": "非分组列出现在 SELECT 但未聚合会？",
           "options": [
             "自动取第一个",
-            "报错",
             "返回 null",
+            "报错",
             "忽略"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "组内该列有多个值，Spark 不知道取哪个，直接报错（同 SQL）。",
           "dimension": "concept"
         },
@@ -3473,12 +3473,12 @@
           "type": "single_choice",
           "prompt": "只留总金额>1000 的城市，正确？",
           "options": [
-            "WHERE sum(amount)>1000",
+            "WHERE sum(amount)>1000 GROUP BY city",
             "HAVING sum(amount)>1000",
-            "GROUP BY city HAVING sum(amount)>1000",
-            "FILTER"
+            "GROUP BY city WHERE sum(amount)>1000",
+            "GROUP BY city HAVING sum(amount)>1000"
           ],
-          "correct_index": 2,
+          "correct_index": 3,
           "explanation": "先 GROUP BY 再 HAVING 对聚合结果过滤。",
           "dimension": "apply"
         },
@@ -3487,9 +3487,9 @@
           "prompt": "SELECT city, amount FROM sales GROUP BY city 报错，原因？",
           "options": [
             "amount 未聚合也未被分组",
-            "city 错",
-            "语法错",
-            "没数据"
+            "city 这一列的名字写错了",
+            "SQL 的语法整体写错了",
+            "数据源里根本没有数据"
           ],
           "correct_index": 0,
           "explanation": "amount 既不在 GROUP BY 也未被聚合，违反约束。",
@@ -3499,10 +3499,10 @@
           "type": "single_choice",
           "prompt": "SQL GROUP BY 与 Level 2 df.groupBy 关系？",
           "options": [
-            "不同引擎",
+            "两者是不同的执行引擎",
             "Catalyst 中等价",
-            "API 不能聚合",
-            "SQL 不能多列分组"
+            "DataFrame API 不能做聚合",
+            "SQL 不支持按多列分组"
           ],
           "correct_index": 1,
           "explanation": "二者生成等价逻辑计划。",
@@ -3517,10 +3517,10 @@
           "type": "single_choice",
           "prompt": "JOIN 的作用是？",
           "options": [
-            "过滤",
+            "过滤掉不匹配的那些行",
             "按连接键把两表行配对",
-            "排序",
-            "分组"
+            "把结果按某一列排序",
+            "对两表分别做分组聚合"
           ],
           "correct_index": 1,
           "explanation": "JOIN 按连接条件把两表的行组合（配对）。",
@@ -3530,12 +3530,12 @@
           "type": "single_choice",
           "prompt": "按 user_id 内连接 users 与 orders，正确？",
           "options": [
+            "JOIN orders WHERE users.user_id=orders.user_id",
+            "JOIN orders USING user_id",
             "JOIN orders ON users.user_id=orders.user_id",
-            "JOIN orders WHERE user_id",
-            "JOIN orders USING user_id WITHOUT ON",
-            "CROSS"
+            "CROSS JOIN orders"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "INNER JOIN 用 ON 指定连接键。",
           "dimension": "apply"
         },
@@ -3543,12 +3543,12 @@
           "type": "single_choice",
           "prompt": "为什么 JOIN 通常代价大？",
           "options": [
-            "它要触发 Shuffle 按 key 重分区",
-            "它复制表",
-            "它慢因为语法",
-            "没原因"
+            "它会把两张表都完整复制一份",
+            "它慢是因为 SQL 语法比较复杂",
+            "JOIN 本身没有任何额外代价",
+            "它要触发 Shuffle 按 key 重分区"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "JOIN 需按连接键重分区，必触发 Shuffle，代价大。",
           "dimension": "why"
         },
@@ -3556,12 +3556,12 @@
           "type": "single_choice",
           "prompt": "INNER JOIN 保留的是？",
           "options": [
+            "两表都匹配上的行",
             "左表全部",
             "右表全部",
-            "两表都匹配上的行",
             "两表所有行（含不匹配）"
           ],
-          "correct_index": 2,
+          "correct_index": 0,
           "explanation": "INNER JOIN 只保留两边都能匹配上的行。",
           "dimension": "mechanism"
         },
@@ -3569,12 +3569,12 @@
           "type": "single_choice",
           "prompt": "JOIN 后行数远超预期（爆炸），可能原因？",
           "options": [
+            "数据量本身就太少了",
             "连接键有重复导致笛卡尔式膨胀",
-            "数据少",
-            "SQL 错",
-            "索引"
+            "SQL 的语法写错了",
+            "缺少合适的索引"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "连接键重复会产生多对多膨胀，是常见性能/正确性问题。",
           "dimension": "debug"
         },
@@ -3582,12 +3582,12 @@
           "type": "single_choice",
           "prompt": "INNER JOIN 与后续 Level 6 的关系？",
           "options": [
+            "JOIN 的全部内容在本课已经讲完",
+            "INNER JOIN 在所有类型里最慢",
             "本课只讲 INNER 基础，类型/广播/调优在 L6",
-            "已全部讲完",
-            "INNER 最慢",
-            "无关"
+            "本课内容和后面的 Level 无关"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "本课只建立直觉；各种 JOIN 类型与调优在 Level 6 展开。",
           "dimension": "comparison"
         },
@@ -3595,12 +3595,12 @@
           "type": "single_choice",
           "prompt": "连接键类型不一致会导致？",
           "options": [
-            "自动转换",
-            "匹配不上（全空）",
-            "报错",
-            "忽略"
+            "会自动做一次类型转换",
+            "运行时会直接报错",
+            "直接忽略掉该行",
+            "匹配不上（全空）"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "字符串≠整数，类型不一致会导致全部不匹配。",
           "dimension": "concept"
         },
@@ -3608,12 +3608,12 @@
           "type": "single_choice",
           "prompt": "JOIN 之后继续聚合，正确？",
           "options": [
-            "不行",
             "SELECT u.name, sum(o.amount) FROM users u JOIN orders o ON ... GROUP BY u.name",
-            "必须分开",
-            "用 HAVING"
+            "SELECT u.name, o.amount FROM users u JOIN orders o ON u.id=o.uid GROUP BY u.name",
+            "SELECT u.name, sum(o.amount) FROM users JOIN orders WHERE u.id=o.uid GROUP BY u.name",
+            "SELECT name, sum(amount) FROM users, orders ON u.id=o.uid GROUP BY u.name"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "JOIN 后可正常 GROUP BY 汇总。",
           "dimension": "apply"
         },
@@ -3621,10 +3621,10 @@
           "type": "single_choice",
           "prompt": "忘了 ON 直接 JOIN 两表，结果？",
           "options": [
-            "报错",
+            "直接报错，提示缺少 ON 条件",
             "变成 CROSS JOIN（笛卡尔积）行数爆炸",
-            "正常",
-            "空"
+            "会正常返回，只是结果为空",
+            "两表会按行号一一对应连接"
           ],
           "correct_index": 1,
           "explanation": "无连接条件会变成 CROSS JOIN，行数 = 两表行数乘积。",
@@ -3634,12 +3634,12 @@
           "type": "single_choice",
           "prompt": "JOIN 与 Level 2 单表操作关系？",
           "options": [
+            "JOIN 的执行本身是免费的",
+            "JOIN 只能在 DataFrame API 里用",
             "JOIN 是多表，必 Shuffle，L6 深讲",
-            "JOIN 免费",
-            "JOIN 只在 API",
-            "无关"
+            "JOIN 和 Level 2 的内容没有关系"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "JOIN 是多表操作，必触发 Shuffle，深入在 Level 6。",
           "dimension": "comparison"
         }
@@ -3652,12 +3652,12 @@
           "type": "single_choice",
           "prompt": "Spark SQL 内置函数位于？",
           "options": [
-            "pandas",
+            "pyspark.sql.types 这个模块",
+            "Python 自带的 os 模块",
             "pyspark.sql.functions（F）",
-            "os",
-            "math"
+            "Python 标准的 math 库"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "内置函数都在 pyspark.sql.functions 下（F 前缀）。",
           "dimension": "concept"
         },
@@ -3665,12 +3665,12 @@
           "type": "single_choice",
           "prompt": "为什么优先用内置函数而非 UDF？",
           "options": [
-            "内置走 Catalyst 原生优化更快",
-            "内置更简单",
-            "UDF 不支持",
-            "没原因"
+            "内置函数写起来更简单一些",
+            "UDF 在 Spark 里并不被支持",
+            "两者其实没有什么差别",
+            "内置走 Catalyst 原生优化更快"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "内置函数被 Catalyst 编译成原生算子，快且可优化。",
           "dimension": "why"
         },
@@ -3679,9 +3679,9 @@
           "prompt": "UDF 为什么慢？",
           "options": [
             "它要 JVM↔Python 序列化往返且失去 Catalyst 优化",
-            "它语法复杂",
-            "它不支持聚合",
-            "它复制数据"
+            "它的语法比内置函数要更加复杂一些",
+            "它并不支持用于聚合类的那类运算操作",
+            "它会把整份数据完整地复制一遍出来"
           ],
           "correct_index": 0,
           "explanation": "UDF 每行触发一次跨语言调用并序列化，且绕过 Catalyst 优化。",
@@ -3691,10 +3691,10 @@
           "type": "single_choice",
           "prompt": "把 Python 函数 score_category 变成可用列表达式，正确？",
           "options": [
-            "直接用在 SQL",
+            "直接在 SQL 里写函数名调用",
             "F.udf(score_category) 注册",
-            "def 即可",
-            "score_category()"
+            "用 def 定义完就能直接使用",
+            "写成 score_category() 调用"
           ],
           "correct_index": 1,
           "explanation": "需用 F.udf 把 Python 函数注册成 UDF。",
@@ -3704,12 +3704,12 @@
           "type": "single_choice",
           "prompt": "在 SQL 里直接调用普通 Python 函数报错，原因？",
           "options": [
+            "这个自定义函数本身写得有问题",
+            "引用的那一列名字写错了地方",
             "SQL 不认普通 Python 函数，需 F.udf 注册",
-            "函数错",
-            "列错",
-            "语法"
+            "SQL 的整体语法写得不太对"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "SQL 文本里不能直接引用 Python 函数，必须经过 F.udf 注册。",
           "dimension": "debug"
         },
@@ -3717,12 +3717,12 @@
           "type": "single_choice",
           "prompt": "行级 Python UDF vs pandas UDF，正确的是？",
           "options": [
-            "一样",
-            "pandas UDF 向量化更快，优先",
-            "行级更快",
-            "都不能用"
+            "两者的性能完全一样",
+            "行级 UDF 反而更快一些",
+            "两种 UDF 都不能实际使用",
+            "pandas UDF 向量化更快，优先"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "pandas UDF 向量化执行，比逐行 Python UDF 高效得多。",
           "dimension": "comparison"
         },
@@ -3730,12 +3730,12 @@
           "type": "single_choice",
           "prompt": "关于 UDF 的「慢」，本课态度是？",
           "options": [
-            "UDF 不能用",
             "能不用就不用，埋伏笔给 Level 7",
-            "UDF 最快",
-            "无所谓"
+            "UDF 完全不能用，必须避免",
+            "UDF 的执行速度其实最快",
+            "用不用都无所谓，没有差别"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "本课确立「能不用 UDF 就不用」的原则，深入优化留 Level 7。",
           "dimension": "concept"
         },
@@ -3743,10 +3743,10 @@
           "type": "single_choice",
           "prompt": "字符串大写，正确做法？",
           "options": [
-            "写 UDF",
+            "自己写一个 UDF 来实现",
             "直接用内置 upper() 或 F.upper",
-            "用 Python upper",
-            "用循环"
+            "直接用 Python 的 upper 方法",
+            "用 for 循环逐行处理"
           ],
           "correct_index": 1,
           "explanation": "内置能做的绝不写 UDF。",
@@ -3756,12 +3756,12 @@
           "type": "single_choice",
           "prompt": "内置函数 upper 与 API F.upper 关系？",
           "options": [
-            "不同",
+            "两者是完全不同的实现",
+            "DataFrame API 会更快一些",
             "同一套，Catalyst 等价",
-            "API 更快",
-            "SQL 不支持"
+            "SQL 里其实并不支持 upper"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "二者是同一套函数的两种调用方式。",
           "dimension": "comparison"
         },
@@ -3769,12 +3769,12 @@
           "type": "single_choice",
           "prompt": "UDF 在 Executor 上性能差，排查方向？",
           "options": [
-            "看是否行级 Python 调用过多，考虑 pandas_udf",
-            "重装 Spark",
-            "加内存",
-            "忽略"
+            "把 Spark 卸载掉再重新安装一遍",
+            "给每个 Executor 都多加一些内存",
+            "干脆忽略掉这个性能问题即可",
+            "看是否行级 Python 调用过多，考虑 pandas_udf"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "行级 Python 调用是瓶颈，优先改 pandas_udf 或内置。",
           "dimension": "debug"
         }
@@ -3787,12 +3787,12 @@
           "type": "single_choice",
           "prompt": "不接 Hive 时，CREATE TABLE ... USING parquet LOCATION 做了什么？",
           "options": [
-            "移动数据",
-            "把「路径+格式」登记进 catalog，不移动数据",
-            "复制数据",
-            "启动 Job"
+            "把数据从原位置移动到新目录",
+            "把整份数据完整复制一份备份",
+            "立刻启动一个 Job 读取全部数据",
+            "把「路径+格式」登记进 catalog，不移动数据"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "它只登记元数据，数据仍在原路径，按需读取。",
           "dimension": "concept"
         },
@@ -3801,9 +3801,9 @@
           "prompt": "把 Parquet 路径直接当表查，正确？",
           "options": [
             "CREATE TABLE t USING parquet LOCATION '/data/sales' 然后 SELECT",
-            "必须先用 pandas 读",
-            "不支持",
-            "用 LOAD"
+            "CREATE TABLE t USING parquet PATH '/data/sales' 然后 SELECT",
+            "CREATE VIEW t USING parquet LOCATION '/data/sales' 然后 SELECT",
+            "CREATE TABLE t USING csv LOCATION '/data/sales' 然后 SELECT"
           ],
           "correct_index": 0,
           "explanation": "CREATE TABLE ... LOCATION 即可把文件注册成可查的表。",
@@ -3813,10 +3813,10 @@
           "type": "single_choice",
           "prompt": "本路线明确不接入什么？",
           "options": [
-            "Parquet",
+            "Parquet 这种列式存储格式",
             "Hive Metastore（永久表）",
-            "CSV",
-            "JSON"
+            "CSV 这种文本存储格式",
+            "JSON 这种半结构化格式"
           ],
           "correct_index": 1,
           "explanation": "既定约束明确不接 Hive Metastore，表非永久 Hive 表。",
@@ -3826,12 +3826,12 @@
           "type": "single_choice",
           "prompt": "这里的「表」与数据库永久表区别？",
           "options": [
-            "一样",
+            "两者本质上完全一样，没有任何区别",
+            "本路线的表读取起来会明显更快一些",
             "本路线表是 session 内或文件级，非永久 Hive 表",
-            "更快",
-            "不能查"
+            "本路线的表一旦注册后就不能再查询"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "未接 Hive 时表是临时/文件级，不跨 session 持久。",
           "dimension": "comparison"
         },
@@ -3839,12 +3839,12 @@
           "type": "single_choice",
           "prompt": "CREATE TABLE ... LOCATION 查询时？",
           "options": [
-            "立刻读全表",
-            "按需按格式读取，Catalyst 正常优化",
-            "复制",
-            "报错"
+            "会立刻把整张表读取进内存",
+            "会先把数据复制一份再查询",
+            "查询时直接报错无法执行",
+            "按需按格式读取，Catalyst 正常优化"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "查询时按格式读取，Catalyst 照常优化（含谓词下推）。",
           "dimension": "mechanism"
         },
@@ -3853,9 +3853,9 @@
           "prompt": "对应 API mode(\"overwrite\").write 的 SQL 写出是？",
           "options": [
             "INSERT OVERWRITE TABLE",
-            "SAVE TABLE",
-            "UPDATE",
-            "EXPORT"
+            "SAVE TABLE 这样的语句",
+            "UPDATE 这种更新语句",
+            "EXPORT 这种导出语句"
           ],
           "correct_index": 0,
           "explanation": "SQL 用 INSERT OVERWRITE TABLE 对应 overwrite 模式。",
@@ -3865,12 +3865,12 @@
           "type": "single_choice",
           "prompt": "写出产生海量小文件，原因？",
           "options": [
+            "数据量本身太少所导致的",
             "partitionBy 每 Task 一文件",
-            "数据少",
-            "SQL 错",
-            "列多"
+            "SQL 语句本身写错所导致的",
+            "列的数量太多所导致的"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "partitionBy 落盘每 Task 生成一个文件，易产生小文件（Level 7 坑）。",
           "dimension": "debug"
         },
@@ -3878,12 +3878,12 @@
           "type": "single_choice",
           "prompt": "SaveMode 与 Level 2 write 的关系？",
           "options": [
-            "完全不同",
+            "不一致（只有 DataFrame API 才有写出模式），SQL 侧并不存在",
+            "一致（overwrite/append/error/ignore），SQL 用 CREATE TABLE ... LOCATION",
             "一致（overwrite/append/error/ignore），SQL 用 INSERT OVERWRITE/INTO",
-            "只 API 有",
-            "SQL 没有"
+            "一致（append/overwrite/error/ignore），SQL 用 UPDATE ... SET"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "SQL 的 INSERT OVERWRITE/INTO 对应 API 的 overwrite/append。",
           "dimension": "concept"
         },
@@ -3891,12 +3891,12 @@
           "type": "single_choice",
           "prompt": "注册视图 vs CREATE TABLE ... LOCATION，正确的是？",
           "options": [
-            "都只是登记，不移动数据",
-            "后者移动数据",
-            "前者更快",
-            "不能混用"
+            "后者会把数据真正移动一次",
+            "前者执行起来会更快一些",
+            "两者不能混合使用",
+            "都只是登记，不移动数据"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "两者都只登记逻辑映射，不移动/复制数据。",
           "dimension": "comparison"
         },
@@ -3905,9 +3905,9 @@
           "prompt": "期望「永久表」跨 session 存在却失败，原因？",
           "options": [
             "没接 Hive（enableHiveSupport）",
-            "数据丢了",
-            "SQL 错",
-            "权限"
+            "磁盘上的数据已经被删掉了",
+            "SQL 语句本身写得不对",
+            "当前用户并没有操作权限"
           ],
           "correct_index": 0,
           "explanation": "本路线不接 Hive，表非持久，跨 session 需重新注册。",
@@ -3922,12 +3922,12 @@
           "type": "single_choice",
           "prompt": "本综合练习链路的第一步通常是？",
           "options": [
-            "直接写 SQL",
             "读 CSV 并确认 Schema",
-            "注册 Hive",
-            "直接写出"
+            "直接开始写 SQL 语句",
+            "先去注册一个 Hive 表",
+            "直接把数据写出去"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "先读入并 printSchema 确认类型，是标准第一步。",
           "dimension": "concept"
         },
@@ -3935,10 +3935,10 @@
           "type": "single_choice",
           "prompt": "读 CSV 后让 SQL 能查，正确？",
           "options": [
-            "直接 SELECT",
+            "直接对 DataFrame 执行 SELECT",
             "先 createOrReplaceTempView",
-            "转 pandas",
-            "toTable"
+            "先把它转成 pandas 再查询",
+            "调用 toTable 把它登记成表"
           ],
           "correct_index": 1,
           "explanation": "必须先注册成视图，SQL 才能按名字查。",
@@ -3948,12 +3948,12 @@
           "type": "single_choice",
           "prompt": "为什么写出前先用 show 验证？",
           "options": [
+            "这样写起来更快",
+            "语法上必须这么做",
             "避免写出脏数据",
-            "更快",
-            "必须",
-            "语法"
+            "这是强制的规范"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "先验证聚合与类型，避免错误落盘。",
           "dimension": "why"
         },
@@ -3961,12 +3961,12 @@
           "type": "single_choice",
           "prompt": "综合练习中哪一步是 Action（真正执行）？",
           "options": [
-            "注册视图",
-            "最后的写出（INSERT OVERWRITE / write）",
-            "spark.sql 返回时",
-            "读 CSV 时"
+            "在注册临时视图的时候",
+            "在 spark.sql 返回结果的那一刻",
+            "在读取 CSV 文件的那一步里",
+            "最后的写出（INSERT OVERWRITE / write）"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "只有最后的写出（Write）是 Action，触发前面整条链执行。",
           "dimension": "mechanism"
         },
@@ -3987,10 +3987,10 @@
           "type": "single_choice",
           "prompt": "spark.sql 返回结果与 API 链式加工，正确的是？",
           "options": [
-            "不能混用",
+            "两者不能混用在同一条链里",
             "结果是 DataFrame，可继续接 API",
-            "必须重新注册",
-            "不同引擎"
+            "必须重新注册一次视图才行",
+            "SQL 与 API 底层是不同引擎"
           ],
           "correct_index": 1,
           "explanation": "spark.sql 返回 DataFrame，可自然接 API 链式处理。",
@@ -4000,12 +4000,12 @@
           "type": "single_choice",
           "prompt": "按 city 聚合且只留 total>1000，正确？",
           "options": [
-            "WHERE sum>1000",
+            "WHERE sum(amount)>1000",
+            "GROUP BY city WHERE sum(amount)>1000",
             "GROUP BY city HAVING sum(amount)>1000",
-            "GROUP BY city WHERE",
-            "FILTER"
+            "FILTER sum(amount)>1000"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "先分组再 HAVING 过滤聚合结果。",
           "dimension": "apply"
         },
@@ -4013,12 +4013,12 @@
           "type": "single_choice",
           "prompt": "spark.sql(...) 返回的是？",
           "options": [
-            "结果表",
-            "惰性 DataFrame",
-            "list",
-            "连接"
+            "执行完的结果表",
+            "Python 的 list 对象",
+            "一个数据库连接对象",
+            "惰性 DataFrame"
           ],
-          "correct_index": 1,
+          "correct_index": 3,
           "explanation": "spark.sql 返回惰性 DataFrame。",
           "dimension": "concept"
         },
@@ -4026,12 +4026,12 @@
           "type": "single_choice",
           "prompt": "Level 3 与 Level 2 的关系？",
           "options": [
-            "无关",
             "L3 用 SQL 操作 L2 的 DataFrame，共享 Catalyst",
-            "L3 替代 L2",
-            "L3 更慢"
+            "两者之间其实并没有任何关系",
+            "L3 已经完全替代掉了 L2 的内容",
+            "L3 的执行速度反而比 L2 更慢一些"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "L3 是在 L2 的 DataFrame 之上用 SQL 这层方言，共享同一优化器。",
           "dimension": "comparison"
         },
@@ -4039,12 +4039,12 @@
           "type": "single_choice",
           "prompt": "写出 Parquet 按 city 分区，SQL 侧对应？",
           "options": [
+            "分区在 CREATE TABLE 时 GROUPED BY 定义，写出用 INSERT OVERWRITE TABLE",
             "分区在 CREATE TABLE 时 PARTITIONED BY 定义，写出用 INSERT OVERWRITE TABLE",
-            "SQL 不支持分区",
-            "用 LIMIT 分区",
-            "partitionBy 只在 pandas 用"
+            "分区在 INSERT OVERWRITE 时 PARTITIONED BY 定义，读取用 CREATE TABLE",
+            "分区在 CREATE TABLE 时 PARTITIONED BY 定义，写出用 LOAD DATA LOCATION"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "分区由目标表定义（建表时 PARTITIONED BY），写出用 INSERT OVERWRITE。",
           "dimension": "apply"
         }
@@ -5272,12 +5272,12 @@
           "type": "single_choice",
           "prompt": "分区（Partition）最准确的定位是？",
           "options": [
-            "结果正确性的保证",
+            "分区是保证计算结果正确的关键，切错分区答案就错",
+            "分区是把文件在磁盘上物理劈开的固定 128MB 块",
             "Spark 并行计算的最小数据单元，一个分区由一个 Task 处理",
-            "磁盘上被劈开的物理文件块",
-            "Driver 端的内存容器"
+            "分区是 Driver 端用来暂存 shuffle 数据的内存容器"
           ],
-          "correct_index": 1,
+          "correct_index": 2,
           "explanation": "分区是并行计算的最小数据单元，一个分区由一个 Task 在一个 Executor 上处理；它是逻辑切片，不是磁盘物理切割。",
           "dimension": "concept"
         },
@@ -5286,9 +5286,9 @@
           "prompt": "为什么分区数影响并行度？",
           "options": [
             "分区数 = 并行 Task 数 = 理论并行度",
-            "分区数 = Executor 数",
-            "分区越多结果越准",
-            "分区数 = Stage 数"
+            "分区数等于 Executor 数，有几个工人就有几个分区",
+            "分区越多，最终结果越精确、误差越小",
+            "分区数等于 Stage 数，每个分区对应一个 Stage"
           ],
           "correct_index": 0,
           "explanation": "每个分区对应一个 Task，所以分区数决定 Task 数（理论并行度）；实际能同时跑多少还受集群可用 core 数限制。",
@@ -5299,9 +5299,9 @@
           "prompt": "写下 df = spark.read.parquet('sales') 后调用 df.count()，Spark 内部发生什么？",
           "options": [
             "为各分区各起一个 Task 并行处理",
-            "先把全表读进 Driver 再算",
-            "不切分区直接算",
-            "只起一个 Task"
+            "先把整张表读进 Driver 内存再统一计算",
+            "DataFrame 不切分区，直接整体串行算",
+            "只为整个作业起一个全局 Task 统筹"
           ],
           "correct_index": 0,
           "explanation": "Action 触发时，Spark 为当前每个分区起一个 Task，分派给 Executor 并行处理，Task 数 = 分区数。",
@@ -5312,9 +5312,9 @@
           "prompt": "想查看当前 DataFrame 的分区数，用？",
           "options": [
             "df.rdd.getNumPartitions()",
-            "df.count()",
-            "df.show()",
-            "spark.conf.get('partitions')"
+            "df.count()，数出的总行数就是分区数",
+            "df.show()，界面显示的行数代表分区数",
+            "spark.conf.get('partitions')，从配置项里查分区数"
           ],
           "correct_index": 0,
           "explanation": "getNumPartitions() 直接返回当前分区数，是看清并行度的入口。",
@@ -5324,12 +5324,12 @@
           "type": "single_choice",
           "prompt": "关于分区与 HDFS block，正确的是？",
           "options": [
-            "分区数一定等于 block 数",
             "分区与 block 不是 1:1，输入格式/算子会改变分区数",
-            "block 就是分区",
-            "分区由 Driver 决定与 block 无关"
+            "分区数一定等于 HDFS block 数，二者一一对应",
+            "block 就是分区，两者是同一个概念",
+            "分区完全由 Driver 决定，跟 block 毫无关系"
           ],
-          "correct_index": 1,
+          "correct_index": 0,
           "explanation": "读文件时 DataFrame 按 `spark.sql.files.maxPartitionBytes`（默认 128MB）切分，恰好常与 block 数接近；但 repartition / 不同输入格式会改变它，二者非 1:1。",
           "dimension": "comparison"
         },
@@ -5338,9 +5338,9 @@
           "prompt": "分区是以下哪种？",
           "options": [
             "逻辑切分（由 partitioner/输入切片决定）",
-            "把文件在磁盘上物理劈成几块",
-            "Driver 内存中的对象",
-            "网络带宽的单位"
+            "把文件在磁盘上物理劈成几块来分别读取",
+            "Driver 内存里拆分出来的数据对象",
+            "衡量网络带宽吞吐量的一个物理单位"
           ],
           "correct_index": 0,
           "explanation": "分区是逻辑切片，由 partitioner 或输入格式决定，文件在磁盘上并未被物理劈开。",
@@ -5350,12 +5350,12 @@
           "type": "single_choice",
           "prompt": "为什么「分区数不影响结果正确性」？",
           "options": [
+            "分区数越多，计算结果的精度就越高",
             "切 2 份还是 200 份答案一样，只影响快慢",
-            "分区数越多结果越准",
-            "分区决定算法",
-            "分区只影响显示"
+            "分区数决定了 Spark 具体选用哪种算法",
+            "分区只影响前端界面中数据如何显示"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "分区只决定数据怎么分布并行，不改变计算结果，只影响性能。",
           "dimension": "why"
         },
@@ -5363,12 +5363,12 @@
           "type": "single_choice",
           "prompt": "repartition(200) 后 count()，大约产生几个 Task？",
           "options": [
+            "约 1 个（几乎不并行）",
+            "约 2 个（只有两个分区）",
             "约 200 个",
-            "1 个",
-            "2 个",
-            "0 个"
+            "约 0 个（不起 Task）"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "分区数改为 200，Action 时约 200 个 Task 并行，每个 Task 处理一个分区。",
           "dimension": "mechanism"
         },
@@ -5376,12 +5376,12 @@
           "type": "single_choice",
           "prompt": "想减少「不必要的分区误解」，该怎么做？",
           "options": [
-            "用 getNumPartitions() 看真实分区数",
-            "直接默认 block 数就是分区数",
-            "凭感觉设分区数",
-            "认为分区越多越准"
+            "直接默认 HDFS block 数就是当前分区数",
+            "凭经验随手设一个分区数就当真相",
+            "认为分区越多结果越准，于是盲目加分区",
+            "用 getNumPartitions() 看真实分区数"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "分区可能受算子/格式影响，应实际查看而非拍脑袋。",
           "dimension": "apply"
         },
@@ -5390,9 +5390,9 @@
           "prompt": "关于「分区 vs 文件物理块」，正确的是？",
           "options": [
             "分区是逻辑视图，文件未被物理劈开",
-            "分区一定等于物理文件块",
-            "分区在 Driver 内存",
-            "分区是网络概念"
+            "分区一定等于物理文件块的大小",
+            "分区存在于 Driver 的内存里",
+            "分区是网络传输层的一个概念"
           ],
           "correct_index": 0,
           "explanation": "分区是「怎么读/怎么分配」的逻辑视图，不是磁盘切割。",
@@ -5408,9 +5408,9 @@
           "prompt": "「并行度」在 Spark 中约等于？",
           "options": [
             "该 Stage 的分区数（Task 数）",
-            "Executor 的硬盘大小",
-            "SQL 行数",
-            "网络带宽"
+            "Executor 硬盘容量的大小决定并行度",
+            "SQL 查询所返回的总行数",
+            "集群网络带宽的兆比特数"
           ],
           "correct_index": 0,
           "explanation": "并行度理论上 = 该 Stage 的分区数（Task 数）；实际上限还受集群可用 core 数限制。",
@@ -5420,12 +5420,12 @@
           "type": "single_choice",
           "prompt": "为什么分区数太少会慢？",
           "options": [
-            "Executor 闲置或单 Task 过大（长尾/OOM）",
-            "分区少结果算错",
-            "分区少必 Shuffle",
-            "分区少网络更堵"
+            "分区少会直接导致计算结果出错",
+            "分区少必然触发一次额外的 Shuffle 重排",
+            "分区少会让网络变得更加拥堵",
+            "Executor 闲置或单 Task 过大（长尾/OOM）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "分区远少于核数时算力闲置；单分区过大则长尾任务、易 OOM。",
           "dimension": "why"
         },
@@ -5433,12 +5433,12 @@
           "type": "single_choice",
           "prompt": "写下 df.repartition(10000).count() 会发生什么？",
           "options": [
+            "只起 1 个 Task，整张表串行处理",
             "起 1 万个 Task，多数只处理几 KB，调度开销反噬",
-            "只起 1 个 Task",
-            "结果变准",
-            "不切分区"
+            "结果会比默认分区时更精确可靠",
+            "DataFrame 不再切分区，直接在内存算"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "海量小 Task 的调度/启动开销可能超过计算本身，且易产生小文件。",
           "dimension": "mechanism"
         },
@@ -5447,9 +5447,9 @@
           "prompt": "想避免「百核集群 98 核闲置」，应该？",
           "options": [
             "让分区数匹配集群并行能力（合理设置分区数）",
-            "把分区降到 1",
-            "增加 block 数硬凑",
-            "无能为力"
+            "把分区数降到 1 最省事也最快",
+            "硬凑更多 block 数来人为凑并行度",
+            "集群慢是硬件问题，对此无能为力"
           ],
           "correct_index": 0,
           "explanation": "分区数应大致匹配可用并行度，否则资源浪费（具体最优值调优留 L7）。",
@@ -5459,12 +5459,12 @@
           "type": "single_choice",
           "prompt": "关于「分区数 vs 结果正确性」，正确的是？",
           "options": [
-            "只影响性能，不影响正确性",
-            "分区数决定答案",
-            "分区少答案错",
-            "分区多答案才对"
+            "分区数直接决定最终答案",
+            "分区少答案就会算错",
+            "分区多答案才正确",
+            "只影响性能，不影响正确性"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "分区是性能旋钮，不是正确性旋钮。",
           "dimension": "comparison"
         },
@@ -5472,12 +5472,12 @@
           "type": "single_choice",
           "prompt": "默认 shuffle 分区数（spark.sql.shuffle.partitions）通常是？",
           "options": [
+            "1（最小值就是 1）",
             "200（默认值，非最优保证）",
-            "1",
-            "等于核数",
-            "无限"
+            "等于集群 CPU 的总核数",
+            "无限大，按需自动扩展"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "默认 200，只是**初始**值：Spark 3.2+ 默认开启 AQE，运行时会按真实数据量合并 shuffle 分区，最终分区数通常小于 200（定量调优留 L7）。",
           "dimension": "concept"
         },
@@ -5485,12 +5485,12 @@
           "type": "single_choice",
           "prompt": "为什么本课不给「最优分区数经验公式」？",
           "options": [
+            "有固定经验公式，照抄即可不用想",
+            "是作者漏写导致的课程遗漏",
             "最优值取决于数据量/核数/记录大小，是 L7 调优主题",
-            "公式不存在",
-            "作者忘了",
-            "Spark 自动完美"
+            "Spark 能自动算出完美值，无需操心"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "最优分区数依数据和集群而定，本课只建原理直觉，定量调优留 L7。",
           "dimension": "why"
         },
@@ -5498,12 +5498,12 @@
           "type": "single_choice",
           "prompt": "分区太多除了调度开销，还容易带来？",
           "options": [
-            "海量小文件（每 Task 一个输出）",
-            "结果错误",
-            "必然 Shuffle",
-            "内存溢出到 Driver"
+            "会导致计算结果出错",
+            "必然触发一次 Shuffle 重排",
+            "内存溢出到 Driver 端",
+            "海量小文件（每 Task 一个输出）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "每个 Task 通常产生一个输出文件，分区过多易产生小文件问题。",
           "dimension": "mechanism"
         },
@@ -5511,12 +5511,12 @@
           "type": "single_choice",
           "prompt": "评估一段作业是否「分区过少」应看？",
           "options": [
+            "输入文件的大小决定并行度",
             "任务并行度是否远低于可用核数",
-            "文件大小",
-            "SQL 行数",
-            "网络延迟"
+            "SQL 语句的行数决定并行度",
+            "网络延迟的高低决定并行度"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "并行度（Task 数）远低于核数即资源浪费，是分区过少的信号。",
           "dimension": "apply"
         },
@@ -5524,12 +5524,12 @@
           "type": "single_choice",
           "prompt": "关于「分区越多越并行越快」，正确的是？",
           "options": [
+            "永远成立，分区越多越快",
+            "分区与并行度毫无关系",
             "不一定，太多调度开销反噬",
-            "永远成立",
-            "分区与并行无关",
-            "只影响正确性"
+            "只影响正确性不影响速度"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "分区数是平衡杠杆，不是越大越好。",
           "dimension": "comparison"
         }
@@ -5542,12 +5542,12 @@
           "type": "single_choice",
           "prompt": "Shuffle 最准确的定位是？",
           "options": [
-            "跨节点按 key 重新分布数据",
-            "把文件物理劈开",
-            "Driver 中转数据",
-            "一种排序算法"
+            "把文件在磁盘上物理劈开",
+            "数据先回 Driver 再中转分发",
+            "一种本地磁盘排序算法",
+            "跨节点按 key 重新分布数据"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "Shuffle 是宽依赖时跨节点按 key 重分布数据的物理过程。",
           "dimension": "concept"
         },
@@ -5555,12 +5555,12 @@
           "type": "single_choice",
           "prompt": "为什么 groupBy / orderBy 通常会触发 Shuffle？（join 要分策略）",
           "options": [
+            "因为这类操作必须把数据先全部拉回 Driver 端汇总，再重新下发给各工人",
             "需要全局按 key 汇聚 / 全局有序，通常要跨节点重排（上游已按该 key 分区时可省）",
-            "它们写错了",
-            "Driver 要求",
-            "为了显示进度"
+            "因为 Spark 出于稳妥，会对每一个算子都强制插入一次重排",
+            "因为要先把中间结果写进磁盘排序、读完才能交给下一步处理"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "这些操作需要「全局按 key 汇聚或全局有序」，通常要跨节点重排。例外：上游已按该 key 分区时不插 Exchange；join 走 Broadcast Join 时小表侧也不产生 ShuffleExchange。",
           "dimension": "why"
         },
@@ -5569,9 +5569,9 @@
           "prompt": "写下 df.groupBy('city').count() 触发 Action 后，Shuffle 阶段发生什么？",
           "options": [
             "按 city 哈希、序列化、跨网络发到目标 Executor、反序列化归并",
-            "数据回 Driver 再分发",
-            "不移动数据",
-            "只排序不传输"
+            "数据先回 Driver 汇总成一份再分发给各工人",
+            "数据完全不移动，直接在本地就地计算",
+            "只做本地排序，从不跨网络做传输"
           ],
           "correct_index": 0,
           "explanation": "map 端按 key 分区/combine、序列化、网络传输到目标端、反序列化归并，完成跨节点重排。",
@@ -5581,12 +5581,12 @@
           "type": "single_choice",
           "prompt": "在计划里认出 Shuffle，应该看哪个节点？",
           "options": [
-            "Exchange",
             "Scan",
             "Project",
-            "Filter"
+            "Filter",
+            "Exchange"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "Exchange 节点就是 Shuffle 的物理信号，复用 L4 的读法。",
           "dimension": "apply"
         },
@@ -5594,12 +5594,12 @@
           "type": "single_choice",
           "prompt": "关于 Shuffle 与宽依赖，正确的是？",
           "options": [
+            "Shuffle 是代码写错才抛出的异常",
             "Shuffle 是宽依赖的物化，不是错误",
-            "Shuffle 是写错代码",
-            "宽依赖不 Shuffle",
-            "Shuffle 只发生在 Driver"
+            "宽依赖根本不会发生 Shuffle",
+            "Shuffle 只发生在 Driver 端内部"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "需要全局按 key 汇聚时通常发生 Shuffle（上游已按该 key 分区、或走 Broadcast Join 时可省）；它是代价不是错误。",
           "dimension": "comparison"
         },
@@ -5607,12 +5607,12 @@
           "type": "single_choice",
           "prompt": "Shuffle 发生时数据在谁之间传输？",
           "options": [
+            "先回 Driver 中转再发下去",
+            "只在单个磁盘内部移动",
             "Executor 之间直接互传",
-            "先回 Driver 再分发",
-            "只在磁盘内",
-            "经网络到客户端"
+            "经网络发到客户端浏览器"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "Shuffle 是 Executor 之间跨节点互传，Driver 不抱数据。",
           "dimension": "concept"
         },
@@ -5620,12 +5620,12 @@
           "type": "single_choice",
           "prompt": "为什么 Shuffle 是「某些操作特别慢」的根源？",
           "options": [
-            "它涉及跨节点重分布（序列化+网络+反序列化+排序）",
-            "它不改代码",
-            "它只排序",
-            "它很快"
+            "它根本不改变任何代码的逻辑结构",
+            "它只在内存里做一次轻量排序",
+            "它其实非常快，性能可忽略不计",
+            "它涉及跨节点重分布（序列化+网络+反序列化+排序）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "跨节点重分布带来多环节开销，是作业中最昂贵的操作之一。",
           "dimension": "why"
         },
@@ -5633,12 +5633,12 @@
           "type": "single_choice",
           "prompt": "df.groupBy('city').count().explain() 会显示几个 Stage？",
           "options": [
+            "1 个（不切 Stage）",
             "2 个（1 次 Shuffle 切出）",
-            "1 个",
-            "0 个",
-            "10 个"
+            "0 个（没有 Stage）",
+            "10 个（每算子一个）"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "1 次 Exchange（Shuffle）→ 2 个 Stage（本地预聚合 / 跨节点合并）。",
           "dimension": "mechanism"
         },
@@ -5646,12 +5646,12 @@
           "type": "single_choice",
           "prompt": "看到代码里有 Exchange，第一反应应是？",
           "options": [
+            "说明代码写错了，必须立刻改",
+            "说明最终结果一定会算错",
             "注意这是 Shuffle，是性能重点信号",
-            "代码写错了",
-            "结果会错",
-            "无需关心"
+            "无需关心，这只是正常现象"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "Exchange = Shuffle，是性能重点信号，但未必是错误。",
           "dimension": "apply"
         },
@@ -5660,9 +5660,9 @@
           "prompt": "关于「Shuffle 能否避免」，正确的是？",
           "options": [
             "通常需要；上游已按该 key 分区或走 Broadcast Join 时可省",
-            "永远可避免",
-            "永远无法发生",
-            "只有 join 才 Shuffle"
+            "永远可以靠配置一个参数就彻底避免 Shuffle 的发生",
+            "Shuffle 在 Spark 里永远不可能发生，这只是谣言",
+            "只有 join 这一种操作才会触发 Shuffle"
           ],
           "correct_index": 0,
           "explanation": "宽依赖的通常代价：需要全局按 key 汇聚时才发生；上游已按该 key 分区、或 join 走 Broadcast Join，都可以省掉。",
@@ -5677,12 +5677,12 @@
           "type": "single_choice",
           "prompt": "Shuffle 代价主要来自哪些环节？",
           "options": [
+            "只做排序这一步，不涉及任何其他环节",
             "序列化 → 网络传输 → 反序列化 → 排序/聚合",
-            "只排序",
-            "只读取",
-            "只写磁盘"
+            "只做数据读取，根本不做任何传输",
+            "只写磁盘，完全不进入网络"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "Shuffle 跨节点重排涉及序列化、网络、反序列化、排序/聚合多环节开销。",
           "dimension": "concept"
         },
@@ -5691,9 +5691,9 @@
           "prompt": "为什么 Shuffle 比「内存里挪一下数据」贵得多？",
           "options": [
             "它跨网络、要序列化/反序列化、可能 spill 磁盘",
-            "它不改变数据",
-            "它只排序",
-            "它很快"
+            "它根本不改变数据本身的内容",
+            "它只在内存里做一次轻量排序",
+            "它其实非常快，性能可忽略不计"
           ],
           "correct_index": 0,
           "explanation": "Shuffle 是多环节重活，涉及网络与序列化，还可能 spill，远非零成本内存操作。",
@@ -5703,12 +5703,12 @@
           "type": "single_choice",
           "prompt": "写下 df.groupBy('city').sum('amount')，Shuffle 在 map/reduce 端各做什么？",
           "options": [
-            "map 端分区+排序+combine，reduce 端 fetch+反序列化+归并",
-            "两端都不动",
-            "只 reduce 端排序",
-            "只 map 端读"
+            "Shuffle 发生时两边都不需要移动任何数据、原地完成",
+            "只在 reduce 端做排序，map 端这一步完全不做事",
+            "只在 map 端读取，reduce 端这一步完全不做事",
+            "map 端分区+排序+combine，reduce 端 fetch+反序列化+归并"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "map 端按 key 分区、排序/combine、写块；reduce 端 fetch、反序列化、归并。",
           "dimension": "mechanism"
         },
@@ -5716,12 +5716,12 @@
           "type": "single_choice",
           "prompt": "想直观感受 Shuffle 代价，看计划里哪个节点？",
           "options": [
+            "Scan 节点（扫描数据）",
             "Exchange（背后即序列化+网络+重排）",
-            "Scan",
-            "Project",
-            "Filter"
+            "Project 节点（投影列）",
+            "Filter 节点（过滤行）"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "Exchange 即 Shuffle，其背后是一串跨节点开销。",
           "dimension": "apply"
         },
@@ -5729,12 +5729,12 @@
           "type": "single_choice",
           "prompt": "关于 spill 到磁盘，正确的是？",
           "options": [
+            "spill 能把 Shuffle 的速度变得更快、反而更优",
+            "spill 在 Spark 的实际运行里根本不会发生",
             "内存不足时 spill，磁盘 I/O 通常比内存慢 1~2 个数量级，放大代价",
-            "spill 让 Shuffle 更快",
-            "spill 不会发生",
-            "spill 只影响显示"
+            "spill 只影响前端界面的显示效果、无关性能"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "spill 把中间结果写磁盘，磁盘（尤其随机 I/O）通常比内存慢 1~2 个数量级，是 Shuffle 贵的重要放大器。",
           "dimension": "comparison"
         },
@@ -5742,12 +5742,12 @@
           "type": "single_choice",
           "prompt": "本课对 spark.shuffle.file.buffer / compression 等参数怎么处理？",
           "options": [
-            "只讲原理，具体调优参数留 Level 7",
-            "本课就教怎么调",
-            "不需要这些参数",
-            "参数已最优"
+            "本课就手把手教你怎么调优",
+            "这些参数完全用不着去管",
+            "参数默认值已经是最优解",
+            "只讲原理，具体调优参数留 Level 7"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "本课只建立「贵在哪」的原理直觉，具体调优参数留 L7。",
           "dimension": "concept"
         },
@@ -5755,12 +5755,12 @@
           "type": "single_choice",
           "prompt": "数据倾斜为什么会放大 Shuffle 代价？",
           "options": [
+            "倾斜会让 Shuffle 直接消失",
             "少数 key 的货极多，单节点被压垮拖慢整体",
-            "倾斜让 Shuffle 消失",
-            "倾斜只影响显示",
-            "倾斜加快网络"
+            "倾斜只影响前端界面的显示",
+            "倾斜反而能加快网络传输"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "倾斜时某些 key 的 Shuffle 块远超其他，单节点瓶颈拖垮整体（调优留 L7）。",
           "dimension": "why"
         },
@@ -5768,12 +5768,12 @@
           "type": "single_choice",
           "prompt": "reduce 端拉取（fetch）属于 Shuffle 的哪类开销？",
           "options": [
+            "本地排序环节（不涉及网络）",
+            "Driver 端计算环节",
             "网络传输环节（跨节点拉取自己负责的分区）",
-            "本地排序",
-            "Driver 计算",
-            "结果显示"
+            "最终结果展示环节"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "reduce 端通过网络 fetch 属于自己的分区数据，是网络传输环节。",
           "dimension": "mechanism"
         },
@@ -5782,9 +5782,9 @@
           "prompt": "评估一段作业是否受 Shuffle 主导，应关注？",
           "options": [
             "Exchange 数量与数据量（计划/UI）",
-            "文件大小",
-            "SQL 长度",
-            "显示效果"
+            "输入文件的大小是主要因素",
+            "SQL 语句的长度决定一切",
+            "界面显示的效果好坏"
           ],
           "correct_index": 0,
           "explanation": "Shuffle 主导的作业通常 Exchange 多、传输量大，可在计划与 Spark UI 观察。",
@@ -5794,12 +5794,12 @@
           "type": "single_choice",
           "prompt": "关于 Shuffle 代价环节，正确的是？",
           "options": [
-            "map 端排序+combine，reduce 端 fetch+归并，都花钱",
-            "只有网络花钱",
-            "只有排序花钱",
-            "都不花钱"
+            "只有网络传输这一个环节会真正消耗资源花钱",
+            "只有排序这一个环节会真正消耗资源花钱",
+            "这些环节全都不消耗任何资源、完全免费",
+            "map 端排序+combine，reduce 端 fetch+归并，都花钱"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "排序、combine、序列化、网络、归并每个环节在大数据量下都可能是瓶颈。",
           "dimension": "comparison"
         }
@@ -5814,8 +5814,8 @@
           "options": [
             "子分区只依赖父局部分区，无需重排",
             "子分区依赖父全部分区",
-            "必 Shuffle",
-            "跨节点"
+            "一定触发 Shuffle",
+            "需要跨节点做传输"
           ],
           "correct_index": 0,
           "explanation": "窄依赖中子分区只由有限个（通常 1 个）父分区计算，无需跨节点重排。",
@@ -5825,12 +5825,12 @@
           "type": "single_choice",
           "prompt": "为什么宽依赖处必然切 Stage？",
           "options": [
-            "子分区要等所有上游同 key 货到齐，天然跨节点",
-            "宽依赖更快",
-            "宽依赖无 Shuffle",
-            "随机切"
+            "宽依赖反而比窄依赖跑得更快",
+            "宽依赖根本不发生 Shuffle",
+            "Stage 是随机切出来的",
+            "子分区要等所有上游同 key 货到齐，天然跨节点"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "宽依赖的子分区依赖全局同 key 数据，必须跨节点重分布，无法留在同一段连续工序。",
           "dimension": "why"
         },
@@ -5838,12 +5838,12 @@
           "type": "single_choice",
           "prompt": "写下 df.filter(...).select(...) 与 df.groupBy('city').count()，Stage 划分有何不同？",
           "options": [
+            "filter 与 groupBy 都会各自切出一个全新的 Stage 边界",
             "前者无 Exchange 同 Stage，后者有 Exchange 切 Stage",
-            "两者都切 Stage",
-            "两者都不切",
-            "前者切后者不切"
+            "filter 与 groupBy 都在同一 Stage 里、完全不切分",
+            "只有 filter 切 Stage、groupBy 始终不切"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "filter/select 是窄依赖，同 Stage 融合；groupBy 是宽依赖，Exchange 处切 Stage。",
           "dimension": "mechanism"
         },
@@ -5851,12 +5851,12 @@
           "type": "single_choice",
           "prompt": "想判断「分区会不会被重分配」，应看？",
           "options": [
+            "输入文件的大小决定一切",
+            "SQL 语句行数的多少决定",
             "依赖类型（窄/宽）与是否需全局重分布",
-            "文件大小",
-            "SQL 行数",
-            "显示设置"
+            "界面显示的设置决定"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "宽依赖（需全局按 key 汇聚）才会重分配分区，窄依赖就地处理。",
           "dimension": "apply"
         },
@@ -5864,12 +5864,12 @@
           "type": "single_choice",
           "prompt": "关于「Stage 边界 = Shuffle 切口」，正确的是？",
           "options": [
-            "宽依赖处的 Shuffle 就是 Stage 边界",
-            "窄依赖切 Stage",
-            "Stage 由 Executor 数决定",
-            "Stage 与 Shuffle 无关"
+            "窄依赖也会切 Stage",
+            "Stage 由 Executor 数量决定",
+            "Stage 与 Shuffle 完全没有任何关系",
+            "宽依赖处的 Shuffle 就是 Stage 边界"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "宽依赖处的 Exchange（Shuffle）即 Stage 边界，也是融合断点。",
           "dimension": "comparison"
         },
@@ -5877,12 +5877,12 @@
           "type": "single_choice",
           "prompt": "L5 对窄/宽依赖的「定义」怎么处理？",
           "options": [
+            "L5 会重新讲一遍窄/宽依赖的定义",
             "定义 L4 已讲，L5 只延展到分区物化与 Stage 切口",
-            "L5 重讲定义",
-            "定义已过时",
-            "不再提及"
+            "L4 的定义已经过时、需要作废",
+            "L5 不再提及窄/宽依赖的概念"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "L5 重点在分区如何被重新分配与 Stage 边界，不重复 L4 定义。",
           "dimension": "concept"
         },
@@ -5890,12 +5890,12 @@
           "type": "single_choice",
           "prompt": "为什么宽依赖失败恢复比窄依赖贵？",
           "options": [
+            "宽依赖的 Shuffle 输出即使丢了也无需做任何恢复",
+            "窄依赖与宽依赖的恢复代价是完全相同的",
             "Shuffle 输出丢失时可能要重跑相关上游 map task，恢复成本远高于本地重算一个分区",
-            "宽依赖不恢复",
-            "一样贵",
-            "窄依赖更贵"
+            "窄依赖一旦丢失，恢复起来反而比宽依赖更贵"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "宽依赖的 Shuffle 输出落在 map 端，一旦丢失通常要重新执行相关的上游 map task 再重排；窄依赖只需沿本地依赖链重算受影响的分区。所以宽依赖恢复更贵——但「上游任何分区丢都整体重算」是 RDD 论文时代的简化说法（呼应 L4 已更正的口径）。",
           "dimension": "why"
         },
@@ -5904,9 +5904,9 @@
           "prompt": "groupBy 在分区层面属于？",
           "options": [
             "宽依赖，父分区数据发往多个子分区（通常需 Shuffle；上游已按该 key 分区时可省）",
-            "窄依赖",
-            "不分配",
-            "本地"
+            "窄依赖，子分区的数据完全不跨分区做传输",
+            "分组操作完全不做任何数据分配或重分布",
+            "数据完全在本地不移动、就地完成计算"
           ],
           "correct_index": 0,
           "explanation": "groupBy 通常需跨节点按 key 重分布；若上游已按 city 分好区，则不插 Exchange。",
@@ -5916,12 +5916,12 @@
           "type": "single_choice",
           "prompt": "评估「某算子是否切 Stage」应看？",
           "options": [
-            "有没有 Exchange（宽依赖），而非算子数量",
-            "代码行数",
-            "文件数",
-            "显示效果"
+            "代码行数的多少决定切不切 Stage",
+            "输入文件的数量决定切不切 Stage",
+            "界面显示的效果决定切不切 Stage",
+            "有没有 Exchange（宽依赖），而非算子数量"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "只有宽依赖（Exchange）切 Stage，窄算子在同一 Stage 融合。",
           "dimension": "apply"
         },
@@ -5929,12 +5929,12 @@
           "type": "single_choice",
           "prompt": "关于窄依赖与分区，正确的是？",
           "options": [
+            "窄依赖也跨节点重排",
             "父→子分区是局部分配，无跨节点重排",
-            "窄依赖也跨节点",
-            "窄依赖必 Shuffle",
-            "窄依赖切 Stage"
+            "窄依赖必然 Shuffle",
+            "窄依赖也会切 Stage"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "窄依赖中父→子分区是局部分配，不触发跨节点重分布。",
           "dimension": "comparison"
         }
@@ -5947,12 +5947,12 @@
           "type": "single_choice",
           "prompt": "以下哪组算子通常一定触发 Shuffle？",
           "options": [
-            "groupBy / orderBy / distinct / repartition",
-            "select / filter / map",
-            "union（同 schema）",
-            "cache"
+            "select / filter / map 这类纯窄算子通常也会触发 Shuffle",
+            "union（同 schema 直接拼接）必然触发 Shuffle",
+            "cache（纯缓存）也会让数据重分布",
+            "groupBy / orderBy / distinct / repartition"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "这些操作需全局按 key 汇聚、全局有序或强制重分布，通常触发 Shuffle；join 要分策略（Broadcast Join 不 Shuffle），所以没列进来。",
           "dimension": "concept"
         },
@@ -5960,12 +5960,12 @@
           "type": "single_choice",
           "prompt": "判断一个算子是否 Shuffle 的真正判据是？",
           "options": [
+            "算子名字好不好听、炫不炫",
             "是否需要全局按 key 汇聚 / 全局有序",
-            "算子名字好不好听",
-            "代码行数",
-            "是否用了 SQL"
+            "代码行数的多少",
+            "是否用了 SQL 接口"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "是否需全局重分布才是判据，不是算子名本身。",
           "dimension": "why"
         },
@@ -5973,12 +5973,12 @@
           "type": "single_choice",
           "prompt": "写下 dfA.join(dfB, 'id').explain()，计划里出现什么？",
           "options": [
+            "计划里没有任何 Exchange 节点出现",
+            "所有计算都在 Driver 端本地完成",
             "若走 Sort Merge Join 则两侧各一个 Exchange；若小表走 Broadcast Join 则只有 BroadcastExchange，大表不 Shuffle",
-            "无 Exchange",
-            "只在 Driver 算",
-            "不重排"
+            "数据原地做笛卡尔积，完全不重排"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "要看策略：sort-merge / shuffle-hash 会两侧各一个 Exchange；Broadcast Join 只广播小表，大表侧不产生 ShuffleExchange。策略细节留 Level 6。",
           "dimension": "mechanism"
         },
@@ -5986,12 +5986,12 @@
           "type": "single_choice",
           "prompt": "想减少不必要的 Shuffle，第一步该？",
           "options": [
-            "认出触发 Shuffle 的算子清单",
-            "加大内存",
-            "加分区",
-            "改 SQL 方言"
+            "盲目加大内存配置来回避",
+            "一味增加分区数量来回避",
+            "改 SQL 方言换写法来回避",
+            "认出触发 Shuffle 的算子清单"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "先认得哪些操作会叫空中货运，才能有意识地避开不必要的飞货。",
           "dimension": "apply"
         },
@@ -5999,12 +5999,12 @@
           "type": "single_choice",
           "prompt": "关于 union（同 schema），正确的是？",
           "options": [
+            "一定触发 Shuffle",
             "通常只拼接分区，不 Shuffle",
-            "一定 Shuffle",
-            "比 join 更易 Shuffle",
-            "必须排序"
+            "比 join 更容易 Shuffle",
+            "必须做全局排序才能合并"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "同 schema union 只是拼接分区，通常不触发 Shuffle。",
           "dimension": "comparison"
         },
@@ -6012,12 +6012,12 @@
           "type": "single_choice",
           "prompt": "本课对 join 的策略（broadcast/sort-merge）怎么处理？",
           "options": [
+            "本课会展开所有 join 策略的具体细节与调优代码",
+            "join 在任何情况下都永远不会发生任何 Shuffle",
             "只点 join 通常要按 key 重分布（Broadcast Join 可免），深类型留 Level 6",
-            "本课展开所有 join 策略",
-            "join 不 Shuffle",
-            "join 只 broadcast"
+            "join 在任何情况下都只会走 broadcast 这一种策略"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "join 深类型（broadcast / sort-merge 怎么选）是 Level 6 内容；本课只点「shuffle-based join 需要按 key 重分布，Broadcast Join 例外」。",
           "dimension": "concept"
         },
@@ -6026,9 +6026,9 @@
           "prompt": "为什么 repartition 会 Shuffle？",
           "options": [
             "它强制跨节点重分布数据",
-            "它只读数据",
-            "它排序不重排",
-            "它不移动数据"
+            "它只读数据不重排",
+            "它只排序不重分布",
+            "它不移动任何数据"
           ],
           "correct_index": 0,
           "explanation": "repartition(n) 用 round-robin（轮询）把数据均匀打散到 n 个分区，必然触发 Shuffle；它不保证同 key 同分区（要按列哈希得写 repartition(n, col)）。",
@@ -6038,12 +6038,12 @@
           "type": "single_choice",
           "prompt": "reduceByKey / aggregateByKey 通常属于？",
           "options": [
-            "按 key，通常需跨节点合并；上游已按相同 key 分区时可省",
-            "绝不 Shuffle",
-            "只本地",
-            "只排序"
+            "这类聚合绝不触发任何 Shuffle 重排",
+            "全部只在本地完成不跨任何节点",
+            "只做排序并不做合并",
+            "按 key，通常需跨节点合并；上游已按相同 key 分区时可省"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "按 key 的聚合通常需在 reduce 端跨节点合并；若上游已按相同 key 且相同分区数分区，则只做本地聚合、不 Shuffle。",
           "dimension": "mechanism"
         },
@@ -6051,12 +6051,12 @@
           "type": "single_choice",
           "prompt": "评估「某个可能 Shuffle 的算子是否真 Shuffle」，应看？",
           "options": [
+            "只听算子名字就能判断",
             "计划里有无 Exchange，取决于上游分区分布",
-            "只听名字",
-            "文件大小",
-            "显示设置"
+            "输入文件的大小决定",
+            "界面显示的设置决定"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "是否实际 Shuffle 取决于上游是否已是目标分区分布，看计划最准。",
           "dimension": "apply"
         },
@@ -6065,9 +6065,9 @@
           "prompt": "关于「触发 Shuffle 的清单」，正确的是？",
           "options": [
             "是『需要全局重分布』的算子集合，非死记名字",
-            "背名字即可无需理解",
-            "只有 groupBy",
-            "只有 join"
+            "背名字即可，无需理解原理",
+            "只有 groupBy 会 Shuffle",
+            "只有 join 会 Shuffle"
           ],
           "correct_index": 0,
           "explanation": "清单的本质是「需全局按 key 汇聚/有序」，理解判据比背名字重要。",
@@ -6082,12 +6082,12 @@
           "type": "single_choice",
           "prompt": "reduceByKey 比 groupByKey 省 Shuffle 的根本原因是？",
           "options": [
+            "reduceByKey 根本不 Shuffle",
             "map 端先做本地 combine，传输量小",
-            "reduceByKey 不 Shuffle",
-            "groupByKey 排序",
-            "reduceByKey 更快的网络"
+            "groupByKey 也先做本地 combine",
+            "reduceByKey 走的是更快的网络"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "reduceByKey 在 map 端本地聚合（combine），只传部分和，跨网络传输量远小于原始记录数。",
           "dimension": "concept"
         },
@@ -6095,12 +6095,12 @@
           "type": "single_choice",
           "prompt": "为什么 groupByKey 传输量大？",
           "options": [
+            "它在 map 端就提前聚合并发走",
+            "它只做排序并不做传输",
             "不做 combine，所有 value 原样 Shuffle",
-            "它不聚合",
-            "它只排序",
-            "它更快"
+            "它比 reduceByKey 跑得更快"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "groupByKey 不做 map 端 combine，每个 key 的全部 value 原样飞到目标端再分组。",
           "dimension": "why"
         },
@@ -6108,12 +6108,12 @@
           "type": "single_choice",
           "prompt": "写下 rdd.map(...).reduceByKey(_+_) 触发 Action 时，map 端发生什么？",
           "options": [
-            "同 key 先在本地相加成部分和，再 Shuffle 部分和",
-            "所有 value 原样飞走",
-            "不聚合",
-            "只排序"
+            "所有 value 原样飞往目标端不合并",
+            "本地完全不做任何聚合",
+            "只做排序并不做传输",
+            "同 key 先在本地相加成部分和，再 Shuffle 部分和"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "每个 Executor 先在本地把同 key 的 value 相加成部分和，Shuffle 时只传这些部分和。",
           "dimension": "mechanism"
         },
@@ -6121,12 +6121,12 @@
           "type": "single_choice",
           "prompt": "可换的聚合优先用哪个以减少飞货？",
           "options": [
-            "reduceByKey / aggregateByKey",
             "groupByKey",
-            "collect 后 Python 算",
-            "不限"
+            "reduceByKey / aggregateByKey",
+            "collect 回 Driver 用 Python 算",
+            "随便用哪个都行，不限"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "可换的聚合优先 reduceByKey / aggregateByKey，利用 map 端 combine 省传输。",
           "dimension": "apply"
         },
@@ -6134,12 +6134,12 @@
           "type": "single_choice",
           "prompt": "关于 combine 的前提，正确的是？",
           "options": [
+            "任何聚合都能安全做 combine",
+            "只有 groupByKey 能做 combine",
             "聚合函数须可结合（sum/min/max 等，通常同时可交换）",
-            "任何聚合都能 combine",
-            "只有 groupByKey 能 combine",
-            "combine 不需要前提"
+            "combine 不需要任何前提条件"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "严格说是「可结合」（associative）才能安全地在 map 端预聚合；sum/min/max 等同时也满足可交换。不可结合的聚合（如中位数）本地先聚合会算错。",
           "dimension": "comparison"
         },
@@ -6149,7 +6149,7 @@
           "options": [
             "否，仍有一次 Shuffle，只是传输量小",
             "是，零 Shuffle",
-            "从不 Shuffle",
+            "reduceByKey 从不 Shuffle",
             "只排序不 Shuffle"
           ],
           "correct_index": 0,
@@ -6160,12 +6160,12 @@
           "type": "single_choice",
           "prompt": "为什么不能对所有聚合都用 map 端 combine？",
           "options": [
-            "依赖全局顺序的聚合不可结合（如中位数）",
-            "combine 总是错",
-            "Spark 不支持",
-            "只有 sum 能用"
+            "combine 永远会算错",
+            "Spark 不支持 combine",
+            "只有 sum 能用 combine",
+            "依赖全局顺序的聚合不可结合（如中位数）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "依赖全局顺序的聚合不满足可结合性，本地先聚合会得到错误结果。",
           "dimension": "why"
         },
@@ -6173,12 +6173,12 @@
           "type": "single_choice",
           "prompt": "groupByKey 在 Shuffle 阶段传输的是什么？",
           "options": [
+            "只传输每个 key 的部分和",
             "每个 key 的全部 value（原样）",
-            "部分和",
-            "只 key",
-            "排序结果"
+            "只传 key 不传 value",
+            "传输排好序的结果"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "groupByKey 不做 combine，传输量 = 原始 value 总数。",
           "dimension": "mechanism"
         },
@@ -6187,9 +6187,9 @@
           "prompt": "评估「能否用 reduceByKey 替代 groupByKey」，应看？",
           "options": [
             "聚合是否可结合（能否安全本地预聚合）",
-            "文件大小",
-            "SQL 长度",
-            "显示设置"
+            "输入文件的大小决定一切",
+            "SQL 语句的长度决定一切",
+            "界面显示的设置决定"
           ],
           "correct_index": 0,
           "explanation": "可结合的聚合（sum/min/max 等）可改 reduceByKey 省飞货；不可结合的（如中位数）不能。",
@@ -6199,12 +6199,12 @@
           "type": "single_choice",
           "prompt": "关于本课 tuning 代码（partitioner/分区数），正确的是？",
           "options": [
-            "只讲原理，调优代码留 Level 7",
-            "本课就教怎么调最优",
-            "不需要",
-            "已最优"
+            "本课就教你调到最优",
+            "这些调优完全不需要做",
+            "默认值已经是最优解",
+            "只讲原理，调优代码留 Level 7"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "本课只讲「为什么 reduceByKey 更省」，设 partitioner/调分区数留 L7。",
           "dimension": "comparison"
         }
@@ -6217,12 +6217,12 @@
           "type": "single_choice",
           "prompt": "repartition 与 coalesce 的核心区别是？",
           "options": [
+            "两者都必然触发一次 Shuffle 重排、行为完全一致",
+            "两者都不会触发任何 Shuffle、随便用哪个都行",
             "repartition 必 Shuffle 可增可减；coalesce 默认不 Shuffle 只能减",
-            "两者都必 Shuffle",
-            "两者都不 Shuffle",
-            "coalesce 能增分区"
+            "coalesce 能凭空增加分区数、和 repartition 等价"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "repartition 一定 Shuffle、可增可减；coalesce 默认窄合并不 Shuffle、只能减。",
           "dimension": "concept"
         },
@@ -6230,12 +6230,12 @@
           "type": "single_choice",
           "prompt": "为什么「想减分区又不想白付 Shuffle」选 coalesce？",
           "options": [
-            "coalesce 默认走窄依赖合并，不触发 Shuffle",
-            "coalesce 更快的网络",
-            "repartition 不能减",
-            "coalesce 必 Shuffle"
+            "coalesce 用更快的网络传输",
+            "repartition 不能减少分区",
+            "coalesce 必然触发 Shuffle",
+            "coalesce 默认走窄依赖合并，不触发 Shuffle"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "coalesce 默认 shuffle=False，合并相邻分区，不触发 Shuffle，适合纯减分区。",
           "dimension": "why"
         },
@@ -6243,12 +6243,12 @@
           "type": "single_choice",
           "prompt": "写下 df.repartition(200) 与 df.coalesce(2)，计划里 Exchange 有何不同？",
           "options": [
+            "两者都会产生 Exchange 节点、没有区别",
             "repartition 有 Exchange（Shuffle），coalesce 无",
-            "两者都有",
-            "两者都无",
-            "coalesce 有 repartition 无"
+            "两者都不会产生 Exchange、没有区别",
+            "coalesce 有 Exchange 而 repartition 没有"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "repartition 必产生 Exchange；coalesce 默认不 Shuffle，无 Exchange。",
           "dimension": "mechanism"
         },
@@ -6256,12 +6256,12 @@
           "type": "single_choice",
           "prompt": "想增加分区数，应该用？",
           "options": [
+            "coalesce（只能合并不能增）",
+            "limit（只截断行数用）",
             "repartition（coalesce 不能增）",
-            "coalesce",
-            "limit",
-            "cache"
+            "cache（只缓存数据用）"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "coalesce 只合并、不能凭空增多分区，增分区必须用 repartition。",
           "dimension": "apply"
         },
@@ -6270,9 +6270,9 @@
           "prompt": "关于 coalesce 不能增分区，正确的是？",
           "options": [
             "它只合并现有分区，无法创造新分区",
-            "它能增但很慢",
-            "它能随意增",
-            "增分区用 coalesce"
+            "它能增但速度很慢",
+            "它能随意增任意多",
+            "增分区也用 coalesce"
           ],
           "correct_index": 0,
           "explanation": "coalesce 是合并操作，分区数只能减少不能增加。",
@@ -6282,12 +6282,12 @@
           "type": "single_choice",
           "prompt": "repartition(n) 是否会触发 Shuffle？",
           "options": [
-            "一定触发（无论增还是减）",
-            "从不",
-            "只在减时",
-            "只在增时"
+            "无论何时都从不触发",
+            "只在减分区时才触发",
+            "只在增分区时才触发",
+            "一定触发（无论增还是减）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "repartition(n) 用 round-robin（轮询）把数据均匀打散到 n 个分区，任何方向都付一次 Shuffle；它不保证同 key 同分区，要按列哈希得写 repartition(n, col)。",
           "dimension": "concept"
         },
@@ -6295,12 +6295,12 @@
           "type": "single_choice",
           "prompt": "为什么 repartition 任何方向都 Shuffle？",
           "options": [
+            "repartition 其实只是把数据原样读取一遍，并不做任何重新打散或移动",
             "它用 round-robin 把数据重新打散到 n 个新分区（不保证同 key 同分区）",
-            "它读数据",
-            "它只排序",
-            "它不移动"
+            "repartition 只按 key 做本地排序，并不把数据跨节点重分布",
+            "repartition 根本不移动数据，只在每个分区内部原地整理"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "repartition 必须跨节点重分布数据以达到目标分区数，必然 Shuffle。",
           "dimension": "why"
         },
@@ -6309,9 +6309,9 @@
           "prompt": "coalesce 跨节点合并时，数据会怎样？",
           "options": [
             "仍可能移动数据（shuffle=False 主要同节点合并）",
-            "绝对零移动",
-            "必回 Driver",
-            "只排序"
+            "绝对零移动，完全不动数据",
+            "必然先回 Driver 中转一下",
+            "只做排序并不移动数据"
           ],
           "correct_index": 0,
           "explanation": "coalesce 默认同节点合并，但跨节点合并仍可能移动数据，并非绝对零移动。",
@@ -6321,12 +6321,12 @@
           "type": "single_choice",
           "prompt": "评估「减分区该用哪个」，应看？",
           "options": [
-            "是否想避免 Shuffle → 优先 coalesce",
-            "文件大小",
-            "SQL 长度",
-            "显示设置"
+            "输入文件的大小是判断依据",
+            "SQL 语句的长度是判断依据",
+            "界面显示的设置是依据",
+            "是否想避免 Shuffle → 优先 coalesce"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "纯减分区且不想付 Shuffle，优先 coalesce。",
           "dimension": "apply"
         },
@@ -6334,12 +6334,12 @@
           "type": "single_choice",
           "prompt": "关于两者与不可变语义，正确的是？",
           "options": [
+            "会就地修改原 DataFrame",
             "都返回新 DataFrame，原 DataFrame 不变",
-            "会改原 DataFrame",
-            "两者都改原",
-            "不支持链式"
+            "两者都改原 DataFrame",
+            "不支持链式调用方式"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "repartition/coalesce 都返回新的 DataFrame，遵循不可变语义。",
           "dimension": "comparison"
         }
@@ -6352,12 +6352,12 @@
           "type": "single_choice",
           "prompt": "综合读图的第一步是？",
           "options": [
-            "找 Shuffle（空中飞货：groupBy/orderBy/join）",
-            "数 Task",
-            "打开 UI",
-            "改代码"
+            "先数一共有多少个 Task 就能定位性能瓶颈",
+            "先打开 Spark UI 界面看任务的运行时长",
+            "直接改代码加并行度就能解决所有问题",
+            "找 Shuffle（空中飞货：groupBy/orderBy/join）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "先找触发 Shuffle 的算子，它们是性能重点信号与 Stage 边界。",
           "dimension": "concept"
         },
@@ -6365,12 +6365,12 @@
           "type": "single_choice",
           "prompt": "对单条线性依赖链，估算 Stage 数的公式是？",
           "options": [
+            "等于该作业的总分区数",
             "Shuffle（Exchange）边界数 + 1",
-            "分区数",
-            "Task 数",
-            "Action 数"
+            "等于 Task 的总数",
+            "等于 Action 的调用次数"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "对单条线性依赖链，Stage 数 ≈ Shuffle 边界数 + 1；多分支 / 多数据源的 DAG 要按实际依赖关系数，不能套公式。",
           "dimension": "apply"
         },
@@ -6378,12 +6378,12 @@
           "type": "single_choice",
           "prompt": "一段 logs.groupBy('city').count().orderBy(desc).limit(10) 通常有几处 Shuffle？",
           "options": [
+            "1 处（只有 groupBy 触发一处 Exchange）",
+            "3 处（每个算子各触发一处 Exchange）",
             "2（groupBy + orderBy；limit 不 Shuffle）",
-            "1",
-            "3",
-            "0"
+            "0 处（整条链路从头到尾都不 Shuffle）"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "groupBy 一处 Exchange；`orderBy(...).limit(10)` 会被优化成 TakeOrderedAndProject（内部一次单分区 Shuffle），所以仍是 2 次 Shuffle → 3 个 Stage，且最后一个 Stage 只有 1 个 Task。注意 Spark 3.2+ AQE 会按运行时统计再调整。",
           "dimension": "mechanism"
         },
@@ -6392,9 +6392,9 @@
           "prompt": "如何估计一段作业的并行度？",
           "options": [
             "看分区数（Task 数 = 分区数）",
-            "看 SQL 行数",
-            "看文件大小",
-            "看显示"
+            "看 SQL 语句的行数多少",
+            "看输入文件的大小",
+            "看界面显示的效果"
           ],
           "correct_index": 0,
           "explanation": "并行度 ≈ 该 Stage 的分区数，即 Task 数。",
@@ -6404,12 +6404,12 @@
           "type": "single_choice",
           "prompt": "为什么「计划相同 ≠ 运行时性能相同」？",
           "options": [
-            "数据倾斜、分区数等运行时因素影响真实耗时",
-            "计划本身有错",
-            "两者无关",
-            "Spark 随机变慢"
+            "是计划本身写错了",
+            "两者其实毫无关系",
+            "Spark 会随机变慢",
+            "数据倾斜、分区数等运行时因素影响真实耗时"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "同样计划在不同数据分布/分区数下真实耗时差异大，倾斜等是运行时因素（L7）。",
           "dimension": "why"
         },
@@ -6417,12 +6417,12 @@
           "type": "single_choice",
           "prompt": "Level 5 综合练习的达标标准是？",
           "options": [
+            "综合练习要求把作业代码改到最快、做出最优性能",
             "读懂：认 Shuffle、数 Stage、估并行度、指出 reduceByKey 优化点",
-            "把代码改快",
-            "完全重写",
-            "立即调优"
+            "综合练习要求把功能完全重写一遍才算真正学会",
+            "综合练习要求立刻做出完整参数调优才算验收通过"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "综合只验收「看得懂分区与 Shuffle、能识别触发点」，不要求调优。",
           "dimension": "comparison"
         },
@@ -6431,9 +6431,9 @@
           "prompt": "看到 groupByKey 后 sum，可指出什么优化点（原理）？",
           "options": [
             "改用 reduceByKey 类做 map 端 combine，减少飞货",
-            "加大内存",
-            "加分区",
-            "改 SQL 方言"
+            "盲目加大内存配置就能回避所有的飞货",
+            "一味增加分区数量就能回避所有的飞货",
+            "改 SQL 方言换写法就能回避所有的飞货"
           ],
           "correct_index": 0,
           "explanation": "可换的聚合优先 reduceByKey，利用 combine 省 Shuffle（只点原理，不写 tuning）。",
@@ -6443,12 +6443,12 @@
           "type": "single_choice",
           "prompt": "综合读图练习用什么工具最划算？",
           "options": [
-            "explain()（不执行，零成本）",
-            "show()",
-            "write()",
-            "collect()"
+            "show() 直接看结果",
+            "write() 写盘再看",
+            "collect() 拉回本地",
+            "explain()（不执行，零成本）"
           ],
-          "correct_index": 0,
+          "correct_index": 3,
           "explanation": "explain() 不触发执行，是随时可做、零成本的读图手段。",
           "dimension": "concept"
         },
@@ -6456,12 +6456,12 @@
           "type": "single_choice",
           "prompt": "关于「综合练习与调优」，正确的是？",
           "options": [
+            "必须当场做参数调优",
             "综合只验读懂，调优留 L6/L7",
-            "必须当场调优",
-            "不用读图",
-            "读图无用"
+            "不用读图直接写代码",
+            "读图对调优毫无用处"
           ],
-          "correct_index": 0,
+          "correct_index": 1,
           "explanation": "本课目标是「看得懂分区与 Shuffle」，定量调优在 L6（Join）/L7（性能）。",
           "dimension": "comparison"
         },
@@ -6469,12 +6469,12 @@
           "type": "single_choice",
           "prompt": "数 Stage 时容易漏算什么？",
           "options": [
+            "数 Stage 时最容易被人漏算的是最后一个收尾的 Stage",
+            "数 Stage 时最容易被人漏算的是中间过渡的 Stage",
             "初始 Stage（单条线性链：Stage 数 = Shuffle 数 + 1，从 1 起算）",
-            "最后的 Stage",
-            "中间的 Stage",
-            "都不易漏"
+            "数 Stage 其实从开头到结尾每一个都不容易漏算"
           ],
-          "correct_index": 0,
+          "correct_index": 2,
           "explanation": "易漏「初始 Stage」：单条线性链下从 1 开始加，Shuffle 边界数 + 1；多分支 DAG 不适用。",
           "dimension": "mechanism"
         }

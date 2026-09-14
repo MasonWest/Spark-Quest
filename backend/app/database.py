@@ -86,15 +86,25 @@ def _seed_course_data() -> None:
     with Session(engine) as session:
         already_seeded = session.scalar(select(CourseLevel).limit(1)) is not None
         if not already_seeded:
+            # Count before building: do NOT pop "lessons" off the shared dicts
+            # in `data` (the backfill below reads them), and never re-read a
+            # popped key (that raised KeyError on the fresh-seed path).
+            n_levels = len(data["levels"])
+            n_lessons = sum(len(lv.get("lessons", [])) for lv in data["levels"])
             for level_data in data["levels"]:
-                lessons = level_data.pop("lessons", [])
-                level = CourseLevel(**level_data)
-                for lesson_data in lessons:
-                    level.lessons.append(Lesson(**lesson_data))
+                level_fields = {k: v for k, v in level_data.items() if k != "lessons"}
+                level = CourseLevel(**level_fields)
+                for lesson_data in level_data.get("lessons", []):
+                    # `content` is a nested object in the seed JSON but a Text
+                    # column in the DB -> serialize it, mirroring the backfill
+                    # path below. Without this, seeding an empty DB raises
+                    # "type 'dict' is not supported".
+                    row = dict(lesson_data)
+                    if isinstance(row.get("content"), (dict, list)):
+                        row["content"] = json.dumps(row["content"], ensure_ascii=False)
+                    level.lessons.append(Lesson(**row))
                 session.add(level)
             session.commit()
-            n_levels = len(data["levels"])
-            n_lessons = sum(len(l["lessons"]) for l in data["levels"])
             logger.info("Seeded course data: %s levels, %s lessons.", n_levels, n_lessons)
         else:
             logger.info("Course data already present, skipping seed.")

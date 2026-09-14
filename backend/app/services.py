@@ -48,9 +48,9 @@ LOCAL_UTC_OFFSET_HOURS = 8
 # Deliberately NOT an SRS algorithm (no SM-2, no per-user curve fitting).
 # A fixed, explainable ladder: `srs_stage` indexes into this list.
 REVIEW_INTERVALS_DAYS = [1, 3, 7, 14, 30, 60, 120]
-# A failed review does NOT reset the ladder -- it only inserts one short
-# consolidation review. `srs_stage` is kept as-is.
-REVIEW_FAIL_INTERVAL_DAYS = 3
+# A failed review neither resets nor advances the ladder: `srs_stage` is kept
+# as-is and the lesson is simply left DUE, because "failed" means "not reviewed
+# yet". See keep_review_due() for why the old "+3 days" defer was a bug.
 # A review round is 5 questions and requires 5/5 (stricter than the 80%
 # mastery threshold used by the learning quiz).
 REVIEW_QUESTION_COUNT = 5
@@ -119,17 +119,27 @@ def advance_review_schedule(mastery: LessonMastery, now: Optional[datetime] = No
     return interval
 
 
-def defer_review_schedule(mastery: LessonMastery, now: Optional[datetime] = None) -> int:
-    """Review failed (<5/5): insert one short consolidation review in 3 days.
+def keep_review_due(mastery: LessonMastery, now: Optional[datetime] = None) -> int:
+    """Review failed (<5/5): the lesson stays DUE -- it was not reviewed.
 
-    `srs_stage` is intentionally left untouched -- failing is a consolidation
-    step, not a demotion. The user may still retry immediately; this date is
-    only the next *scheduled* review.
+    A failed round must never look "handled" to the scheduler. The previous
+    implementation pushed `next_review_at` three days out, which silently
+    dropped the lesson out of the Home review queue (`/api/review/due` is the
+    only surface that can reach it) -- so failing a review made the lesson
+    vanish with no way back, exactly when it needed attention most. Bug fixed
+    2026-09-14: a lesson stays in the queue until a 5/5 round passes.
+
+    `srs_stage` is intentionally left untouched: failing is a consolidation
+    step, not a demotion. The overdue counter keeps growing until a round
+    passes, and the user may retry immediately from the result page.
+
+    Returns 0 -- no new interval was scheduled -- so the UI never has to print
+    a misleading "+N days" line on the failure path.
     """
     now = now or datetime.utcnow()
     mastery.last_review_at = now
-    mastery.next_review_at = now + timedelta(days=REVIEW_FAIL_INTERVAL_DAYS)
-    return REVIEW_FAIL_INTERVAL_DAYS
+    mastery.next_review_at = now  # outstanding, not scheduled
+    return 0
 
 
 def ordered_lessons(db: Session) -> List[Lesson]:
