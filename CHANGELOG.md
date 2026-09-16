@@ -898,6 +898,65 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ---
 
+## 2026-09-16 — 首页 Final UI Refinement（v1.2 基线 · P0 进度环竖排 + 跨文件类名冲突 + 层级压缩）
+
+> 定位：**纯 UI refinement**。首页整体布局、信息架构、视觉方向沿用既有结论，本次只修已确认的缺陷与视觉权重问题。
+> **未动**：路由、API、数据派生逻辑、`更多` 折叠交互、淡紫 / 蓝色视觉语言、任何新增功能或新颜色体系。
+
+### Fixed
+- **P0 · 顶部进度环 `73%` 竖排**（根因：`index.css` 里 `.progress-ring { transform: rotate(-90deg) }` 把整个 `<svg>` 连同环心的 `<text>` 一起转了 90°，文字于是变成自下而上的竖排）。
+  - 改为**只旋转弧**：两个 `<circle>` 各加 `transform="rotate(-90 cx cy)"`，`<svg>` 不再旋转。弧的起算点仍在 12 点方向，视觉与原先完全一致，但文字保持水平。
+  - 环心文字由 `y = size/2 + 4` 改为 `y = size/2` + `dominantBaseline="central"`，并用 `textAnchor="middle"` 水平居中 → 实测文字中心与环心偏移 `dx=0px / dy=0px`。
+  - 顺带补 `viewBox="0 0 size size"`：此前 420px 以下媒体查询把环 CSS 缩到 48px，而 SVG 无 `viewBox`（用户坐标不缩放）→ 半径 25 的圆在 48×48 视口里会被裁掉右侧和底部。补上后等比缩放，48px 下文字仍为水平（实测盒 23.6×14）。
+  - **数据完全没动**：仍读 `progress.percentage`（实测 73%）。
+- **P1 · 首页复习卡标题异常过大 + 卡片过高**（根因：**跨文件全局类名冲突**）。`Home.css` 与 `ReviewPage.css` 都定义了裸选择器 `.review-title`；两个文件都是**全局 CSS**（非 CSS Module），Vite 按 import 顺序注入，而 `main.tsx` 里 `ReviewPage` 在 `Home` 之后 → 注入更晚的 `ReviewPage.css` 的 `.review-title { font-size: 26px; margin: 0 0 16px }` 在首页也生效（同特异性、后注入者胜）。结果首页复习卡里的题目标题实际是 **26px + 16px 下边距**，把卡片撑到 **93.8px**。修复：首页侧改名 `.home-review-title` 彻底隔离；标题回到 `--sq-text-h3`（16px / 600）。
+  - 同源问题还有一处：`WeakQuestionsPage.css` 末尾残留 `.footer-weak-link`（给首页页脚链接用的），已随页脚删除一并清掉。
+- **窄屏闪烁横向滚动条（顺带修）**：`.primary-card.focus-ring::after` 是 `inset:-6px` 的纯装饰层，配合 3s 呼吸动画 `scale(1.0→1.05)`，窄屏时会周期性顶破视口 **1~2px**，导致每 3 秒闪一次横向滚动条（实测 380/400/420px 下 10 次采样中出现 1~2px 溢出，禁用该 `::after` 后 30/30 次均为 0）。修复：`.dashboard-page` 加 `overflow-x: clip`（用 `clip` 而非 `hidden`，不产生滚动容器、不影响纵向滚动），复测三档宽度 30/30 次均为 0，装饰环视觉不受影响。
+
+### Changed
+- **P1 · 今日复习卡片轻量压缩**：`.review-item` padding 12px → `10px 12px`，`.review-link` gap 4px → 2px，标题 16px/1.35、`meta` 12px/1.4。
+  - 实测卡片高 **93.8px → 62.4px（-33%）**。其中大部分降幅来自**修掉上面那个 26px/16px-margin 的类名泄漏**，不是我硬压 padding；若后续觉得压过头，把标题提到 16→18px 即可，不建议回到 26px。
+  - 淡紫色复习视觉语言**完整保留**（`--sq-review-light` #faf5ff 底 + `--sq-review-border` #ddd6fe 描边），信息项一个没减（标题 / Level / 逾期天数 / 去复习）。
+  - 视觉层级实测：主课程标题 **28px** > 区块标题 / 题目标题 **16px**，达成「今日学习 ＞ 今日复习」。
+- **P1 · 进度摘要：后台表格 → Learning Progress Summary**：
+  - 去掉每行 `border-bottom` 的横向分割线（实测三行 `borderTop/Bottom` 全为 `0px`），改为一张**白底摘要卡**（`--sq-card-bg` + 1px `--sq-border` + 16px 圆角 + 极轻阴影）；
+  - 每行改为「主指标 + 上下文辅助文字」双行结构（`dt` 内 label / sub，`dd` 为 18px/700 主数值），靠 padding 建立呼吸空间；
+  - **数据一增一减都没有**，仍是总进度 / 当前 Level / 最长连续三项。
+- **P1 · 「当前 Level」语义歧义修复**：原「当前 Level / `0 / 9` · `0%`」在 hero 已显示「Lesson 1 / 9」的情况下容易被读成自相矛盾（1/9 vs 0/9）或读成整个课程只走完 0/9。现改为：
+  - 总进度 → 已完成 48 / 66 课 → **73%**
+  - 当前 Level → **Level 6** · 已完成 0 / 9 课 → **0%**（`Level 6` 由 `current_level.title` 前端正则取 `^Level\s*\d+` 短标签，纯展示层派生，**后端零改动**）
+  - 最长连续 → 最近学习 2026-09-16 → **5 天**
+- **P2 · 删除底部重复快捷入口**：整块 `<footer class="footer-nav">`「查看完整学习路线 → / 🏅 最近解锁 → / 🧠 薄弱题 →」删除。实测 `footer` 元素 0 个、`.footer-*` 0 个；关键入口计数现为 学习路线 `/map` = 1、薄弱题 `/wrong-questions` = 1（`/badges` 出现 7 次 = 1 个「查看全部」+ 6 个徽章磁贴，符合既定行为）。
+- **P2 · 薄弱题改为「今日复习」之后的轻量独立入口**：展开区区块顺序实测为
+  `review-section → weak-section → progress-section → map-section → badge-section`。
+  - 规格：688×60px，白底 + 1px 描边，无大面积彩色背景、无巨大标题、无大按钮、无统计、无游戏化装饰。左 🧠 + 「薄弱题 / 回顾答错的题目，主动强化」，右「复习错题 ›」。
+  - 与「今日复习」**保持独立入口不合并**：前者是 SRS 到期任务（系统主动提醒），后者是用户主动强化。
+- **P2 · 「更多」按钮**：折叠逻辑与语义**零改动**（仍由 `aria-expanded` + `hidden` 控制，默认收起）；仅做视觉一致性检查，并补一条纯 CSS 的展开态 chevron 旋转（`[aria-expanded="true"] .toggle-icon { transform: rotate(90deg) }`），未改任何 JS 交互。
+- **P2 · 最近解锁 Badge**：维持默认 `slice(0, 6)`，实测 6 个，标题栏「🏅 最近解锁 / 查看全部 →」不变。
+
+### 验收（实测，非仅「代码能跑」）
+- 用 CDP（headless Chrome 152）在真实页面上做前后对照测量，BEFORE 状态通过注入旧样式在原页面上复现，避免两套环境不可比。
+- 进度环：BEFORE `svg.transform = matrix(0,-1,1,0,0,0)`（= rotate(-90deg)）、文字盒 **16×25.9（高＞宽 = 竖排）** → AFTER `svg.transform = none`、`circle.transform = rotate(-90 28 28)`、文字盒 **25.9×16（宽＞高 = 水平）**、偏移 `dx=0 dy=0`。
+- 复习卡：**93.8 → 62.4px**；泄漏到首页的 `.review-title` 元素数 0。
+- 进度摘要：三行分割线 0px；摘要块 170px；文案见上。
+- 窄屏：375 / 400px 横向溢出 0；环 48px 显示下文字仍水平。
+- 截图存档：`ux_audit/refine-00-ring-before.png`（竖排证据）、`refine-01-review-before.png`（26px 卡片证据）、`refine-02-expanded-1280.png`、`refine-03-collapsed-firstscreen.png`、`refine-04-narrow-400.png`、`refine-05-narrow-375.png`。
+
+### 参考（后续排查同类问题的两个坑）
+- **跨文件全局 CSS 类名冲突 —— 已立为铁律 R1**：本项目所有 `.css` 都是全局注入，裸类名会互相覆盖，且**只在「同名 + 同特异性 + 后注入」时才发生**，单看某个文件完全看不出问题。本次全库复查：裸类名冲突除已修的 2 例（`.review-title`、`.footer-weak-link`）外**另有 0 例**；另发现 **10 处「复合选择器跨文件同名」**（`.para` `.ok` `.correct` `.wrong` `.is-active` `.muted` `.back-link` `.retry` `.btn-ghost` `.btn-primary`）经逐条核查作用域均被父级限定，**判为良性**，清单与理由见 `frontend/src/pages/README.md` 附录。
+  - **铁律全文**：`frontend/src/pages/README.md`（含 2 起事故档案、修法、良性清单）
+  - **可执行护栏**：`frontend/scripts/check-css-namespace.mjs` → `cd frontend && npm run check:css`（违规 exit 1；`--all` 附观察项）
+  - **规则一句话**：选择器**完全等于** `.foo` → 违规；含空格 / 第二个类 / 元素名 → 作用域已限定，通常良性。新写页面样式一律加页面前缀（`.home-` / `.review-` / `.quiz-` / `.practice-`）。
+  - 同步落在：`README.md` 醒目警告块、`CURRENT_STATE.md`「关键约定与坑位」首条 + 顶部「版本与必读」、`index.css` 顶部注释横幅、`frontend/src/pages/README.md`。
+- **本地 CDP 截图：`/json/new` + page 端点在本机 Chrome 152 下命令无响应**（`Page.navigate` / `Runtime.evaluate` 全部超时，但事件仍能收到）。改用 browser 端点 + `Target.createTarget` + `Target.attachToTarget({flatten:true})` + 每条命令带 `sessionId` 后全部正常，脚本见 `ux_audit/verify_home_refine.mjs`。
+- **vite dev server 会「假死」**：本次遇到一个已跑 6 天的 vite 进程，端口仍 `LISTENING` 但任何 HTTP 请求（python / Chrome 均）无响应 → 前端全站不可用且报错像是「网络问题」。**排查顺序应是先直接打一下 6001 根路径**，无响应就重启 vite，不要先怀疑代理或浏览器。（本次已重启，顺带用 `node node_modules/vite/bin/vite.js` 直起，绕开沙箱里 npm 不可用的问题。）
+
+### 状态
+- 🟢 **已完成并验收，已推送 `main`（v1.2 基线）**。`tsc --noEmit` 通过（exit 0）；`npm run check:css` 通过（跨文件裸类名冲突 **0**）。
+- 已知但**本次未动**（供用户决定）：hero 的「Lesson 1 / 9」表示「当前在第几课」，与摘要的「已完成 0 / 9 课」是两个量（前者含未完成的当前课）。两者现已各自写明口径，不再互相矛盾，但若想彻底统一，可把 hero 改成「第 1 课 / 共 9 课」。
+
+---
+
 ## 模板（后续阶段直接复制此结构，改日期与内容）
 
 ## YYYY-MM-DD — <阶段标题>

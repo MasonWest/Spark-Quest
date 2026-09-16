@@ -48,6 +48,9 @@ export default function Home() {
   const currentLevelTitle = cl?.title ?? "—";
   const currentLessonNum = tl ? (cl?.completed_count ?? 0) + 1 : (cl?.completed_count ?? 0);
   const totalLessonsInLevel = cl?.total_count ?? 0;
+  // 进度摘要里用短标签（"Level 6"），避免长标题把摘要行撑成两行。
+  // 纯展示层派生，不改后端数据。
+  const shortLevelLabel = cl ? (cl.title.match(/^Level\s*\d+/i)?.[0] ?? cl.title) : "—";
 
   const todayStatus = tl?.status === "needs_review" ? "warning" : "primary";
   const todayStatusLabel = tl?.status === "needs_review" ? "需复习" : "可学习";
@@ -139,7 +142,7 @@ export default function Home() {
                 {reviews.map((r) => (
                   <li key={r.lesson_id} className="review-item">
                     <Link to={`/review/${r.lesson_id}`} className="review-link">
-                      <span className="review-title">{r.title}</span>
+                      <span className="home-review-title">{r.title}</span>
                       <span className="review-meta">
                         {r.level_title} · {r.overdue_days > 0 ? `逾期 ${r.overdue_days} 天` : "今天到期"}
                       </span>
@@ -151,22 +154,52 @@ export default function Home() {
             </div>
           )}
 
-          {/* 进度摘要 */}
+          {/* Phase 10.1: 薄弱题 — 今日复习之后的轻量独立入口。
+              它是「可以主动进入的强化工具」，不是今天必须完成的第三项任务：
+              所以只有白底 + 1px 描边，无大色块、无大标题、无统计。 */}
+          <div className="secondary-section weak-section">
+            <Link to="/wrong-questions" className="weak-entry">
+              <span className="weak-entry-icon" aria-hidden={true}>🧠</span>
+              <span className="weak-entry-text">
+                <span className="weak-entry-title">薄弱题</span>
+                <span className="weak-entry-desc">回顾答错的题目，主动强化</span>
+              </span>
+              <span className="weak-entry-go">
+                复习错题
+                <Icon name="chevron" size={14} aria-hidden={true} />
+              </span>
+            </Link>
+          </div>
+
+          {/* 进度摘要 — Learning Progress Summary，不是报表 */}
           <div className="secondary-section progress-section">
             <h2 className="section-title"><Icon name="progress" size={16} aria-hidden={true} /> 进度摘要</h2>
             <dl className="progress-summary">
               <div className="progress-row">
-                <dt>总进度</dt>
-                <dd><strong>{p!.completed} / {p!.total}</strong> · {p!.percentage}%</dd>
+                <dt className="progress-label">
+                  总进度
+                  <span className="progress-sub">已完成 {p!.completed} / {p!.total} 课</span>
+                </dt>
+                <dd className="progress-value">{p!.percentage}%</dd>
               </div>
+              {/* 语义修正：原「当前 Level / 0 / 9 · 0%」容易被读成"整个课程只走完 0/9"。
+                  现在明确「哪个 Level」+「已完成几课」，与 hero 的 Lesson 位置区分开。 */}
               <div className="progress-row">
-                <dt>当前 Level</dt>
-                <dd><strong>{cl!.completed_count} / {cl!.total_count}</strong> · {cl!.percentage}%</dd>
+                <dt className="progress-label">
+                  当前 Level
+                  <span className="progress-sub">{shortLevelLabel} · 已完成 {cl!.completed_count} / {cl!.total_count} 课</span>
+                </dt>
+                <dd className="progress-value">{cl!.percentage}%</dd>
               </div>
               {/* Phase 9.1: 历史最长是只读统计，放摘要区，不占 hero 视觉焦点 */}
               <div className="progress-row">
-                <dt>最长连续</dt>
-                <dd><strong>{data.longest_streak} 天</strong>{data.last_study_date ? ` · 最近 ${data.last_study_date}` : ""}</dd>
+                <dt className="progress-label">
+                  最长连续
+                  <span className="progress-sub">
+                    {data.last_study_date ? `最近学习 ${data.last_study_date}` : "还没有学习记录"}
+                  </span>
+                </dt>
+                <dd className="progress-value">{data.longest_streak} <span className="progress-unit">天</span></dd>
               </div>
             </dl>
           </div>
@@ -202,19 +235,6 @@ export default function Home() {
           )}
         </div>
       </section>
-
-      {/* Footer: Map 入口二次保障 */}
-      <footer className="footer-nav">
-        <Link to="/map" className="footer-map-link">
-          <Icon name="map" size={16} aria-hidden={true} /> 查看完整学习路线 →
-        </Link>
-        <Link to="/badges" className="footer-badge-link">
-          <span aria-hidden={true}>🏅</span> 最近解锁 →
-        </Link>
-        <Link to="/wrong-questions" className="footer-weak-link">
-          <span aria-hidden={true}>🧠</span> 薄弱题 →
-        </Link>
-      </footer>
     </div>
   );
 }

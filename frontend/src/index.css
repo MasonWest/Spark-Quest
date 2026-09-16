@@ -1,4 +1,18 @@
-/* 全局基础样式 + Design Tokens */
+/* ============================================================================
+ * 全局基础样式 + Design Tokens
+ *
+ * ⚠️ 铁律 R1：本项目所有 .css 都是【全局作用域】（无 CSS Module / 无 scoped），
+ *   由 main.tsx 静态 import 后全局注入 <head>。因此**裸类名跨文件复用会静默互相覆盖**
+ *   （后 import 者胜），症状是某页元素"莫名"跟本文件写的对不上。
+ *
+ *   · 新写页面样式 → 类名必须加页面前缀（.home- / .review- / .quiz- / .practice- …）
+ *   · 确实该全站共享的通用组件类 → 只在本文件（设计系统层）定义一次，
+ *     其他文件不许再定义同名裸类名
+ *   · 局部覆盖 → 用父级限定（.review-next .para），这是合法写法
+ *
+ *   自查：node frontend/scripts/check-css-namespace.mjs
+ *   全文：frontend/src/pages/README.md
+ * ========================================================================== */
 
 :root {
   /* === Color System (继承 Course Map 色标) === */
@@ -173,12 +187,15 @@ body {
 .badge-review { background: var(--sq-review-light); color: #6d28d9; border: 1px solid var(--sq-review-border); }
 .badge-neutral { background: var(--sq-bg); color: var(--sq-text-muted); border: 1px solid var(--sq-border); }
 
-/* === Progress Ring === */
+/* === Progress Ring ===
+   注意：这里**不能**对 .progress-ring 做 transform: rotate(-90deg)。
+   整环旋转会连带把环中心的百分比文字一起转成竖排。
+   起始角由 ProgressRing.tsx 给两个 <circle> 加 transform="rotate(-90 cx cy)" 完成，
+   视觉效果完全一致，但文字保持水平。 */
 .progress-ring {
   display: inline-block;
   width: var(--size, 64px);
   height: var(--size, 64px);
-  transform: rotate(-90deg);
 }
 .progress-ring__bg { fill: none; stroke: var(--sq-border); stroke-width: var(--stroke, 6); }
 .progress-ring__fg {
@@ -189,6 +206,12 @@ body {
   stroke-dasharray: var(--dash, 158);
   stroke-dashoffset: var(--offset, 0);
   transition: stroke-dashoffset 0.6s ease-out;
+}
+/* 环心百分比：水平居中 + 垂直居中，不随进度弧旋转 */
+.progress-ring__label {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  user-select: none;
 }
 
 /* === Icon System === */

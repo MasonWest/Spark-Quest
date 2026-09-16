@@ -4,6 +4,11 @@
   max-width: 720px;
   margin: 0 auto;
   padding: var(--sq-space-6) var(--sq-space-4);
+  /* primary-card 的装饰呼吸环 ::after 用 inset:-6px + scale 外扩，
+     窄屏时会周期性顶破视口 1~2px，导致每 3 秒闪一次横向滚动条。
+     用 overflow-x: clip（而不是 hidden）裁掉纯装饰层的溢出，
+     不产生滚动容器、不影响纵向滚动。 */
+  overflow-x: clip;
 }
 
 /* Hero - 普通文档流，非 sticky */
@@ -177,6 +182,15 @@
   box-shadow: var(--sq-focus-ring);
 }
 
+/* 展开态让 chevron 转向下（纯视觉，交互逻辑不变） */
+.secondary-toggle .toggle-icon {
+  transition: transform 0.2s ease;
+}
+
+.secondary-toggle[aria-expanded="true"] .toggle-icon {
+  transform: rotate(90deg);
+}
+
 .secondary-content {
   padding-top: var(--sq-space-4);
   animation: sq-collapse 0.2s ease;
@@ -201,7 +215,12 @@
   color: var(--sq-text);
 }
 
-/* Review Section */
+/* Review Section
+   P1 精修：压缩视觉重量。
+   —— 原来首页复习卡片高度约 95px，其中一大半是
+      ReviewPage.css 里同名的全局 .review-title(26px + margin-bottom 16px)
+      泄漏进来的（Home.tsx 已改名为 .home-review-title 隔离）。
+      现在标题回到 16px 层级，再收紧上下 padding，行高约 60px。 */
 .review-list {
   list-style: none;
   padding: 0;
@@ -216,7 +235,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--sq-space-3);
-  padding: var(--sq-space-3);
+  padding: 10px var(--sq-space-3);
   background: var(--sq-review-light);
   border: 1px solid var(--sq-review-border);
   border-radius: var(--sq-radius-button);
@@ -226,51 +245,151 @@
 .review-link {
   display: flex;
   flex-direction: column;
-  gap: var(--sq-space-1);
+  gap: 2px;
   text-decoration: none;
   color: var(--sq-text);
   min-width: 0;
   flex: 1;
 }
 
-.review-title {
+/* 与 ReviewPage 的 .review-title 彻底分家（避免跨文件类名互相覆盖） */
+.home-review-title {
   font-weight: 600;
-  font-size: var(--sq-text-body);
+  font-size: var(--sq-text-h3);
+  line-height: 1.35;
+  color: var(--sq-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .review-meta {
   font-size: var(--sq-text-tiny);
+  line-height: 1.4;
   color: var(--sq-text-muted);
 }
 
-/* Progress Section */
+/* Weak Questions Section (Phase 10.1)
+   「可以主动进入的强化工具」，不是今天必须完成的第三项任务：
+   白底 + 1px 描边，无大色块 / 大标题 / 统计。 */
+.weak-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--sq-space-3);
+  padding: var(--sq-space-3) var(--sq-space-4);
+  background: var(--sq-card-bg);
+  border: 1px solid var(--sq-border);
+  border-radius: var(--sq-radius-card);
+  text-decoration: none;
+  color: var(--sq-text);
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.weak-entry:hover {
+  background: var(--sq-bg);
+  border-color: var(--sq-border-muted);
+}
+
+.weak-entry:focus-visible {
+  box-shadow: var(--sq-focus-ring);
+}
+
+.weak-entry-icon {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.weak-entry-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.weak-entry-title {
+  font-size: var(--sq-text-body);
+  font-weight: 600;
+  color: var(--sq-text);
+}
+
+.weak-entry-desc {
+  font-size: var(--sq-text-tiny);
+  color: var(--sq-text-subtle);
+}
+
+.weak-entry-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  font-size: var(--sq-text-small);
+  font-weight: 600;
+  color: var(--sq-primary);
+}
+
+/* Progress Section
+   P1 精修：从「后台表格」改成 Learning Progress Summary。
+   做法：去掉每行的横向分割线改为一张轻量摘要卡，行内 2 行文字
+   （主指标 + 上下文辅助文字）建立层级，靠 padding 做呼吸空间。
+   数据项一个没加，一个没减。 */
 .progress-summary {
   display: grid;
-  gap: var(--sq-space-3);
+  gap: 0;
+  margin: 0;
+  padding: var(--sq-space-2) var(--sq-space-4);
+  background: var(--sq-card-bg);
+  border: 1px solid var(--sq-border);
+  border-radius: var(--sq-radius-card);
+  box-shadow: var(--sq-shadow-base);
 }
 
 .progress-row {
   display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: var(--sq-space-4);
-  font-size: var(--sq-text-body);
   padding: var(--sq-space-2) 0;
-  border-bottom: 1px solid var(--sq-border);
+  border: none;
 }
 
 .progress-row:last-child {
   border-bottom: none;
 }
 
-.progress-row dt {
-  color: var(--sq-text-muted);
-}
-
-.progress-row dd {
-  margin: 0;
+.progress-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  font-size: var(--sq-text-small);
   font-weight: 600;
   color: var(--sq-text);
+}
+
+.progress-sub {
+  font-size: var(--sq-text-tiny);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--sq-text-subtle);
+}
+
+.progress-value {
+  margin: 0;
+  flex-shrink: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--sq-text);
+  font-variant-numeric: tabular-nums;
   text-align: right;
+}
+
+.progress-unit {
+  font-size: var(--sq-text-tiny);
+  font-weight: 600;
+  color: var(--sq-text-muted);
 }
 
 /* Map Section */
@@ -297,27 +416,9 @@
   box-shadow: var(--sq-focus-ring);
 }
 
-/* Footer */
-.footer-nav {
-  margin-top: var(--sq-space-6);
-  padding-top: var(--sq-space-4);
-  border-top: 1px solid var(--sq-border);
-  text-align: center;
-}
-
-.footer-map-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sq-space-2);
-  color: var(--sq-primary);
-  text-decoration: none;
-  font-weight: 500;
-  font-size: var(--sq-text-body);
-}
-
-.footer-map-link:hover {
-  text-decoration: underline;
-}
+/* Footer 已移除（P2）：
+   底部那排「查看完整学习路线 / 最近解锁 / 薄弱题」与展开区内的正式入口重复。
+   学习路线、最近解锁在上方展开区已有正式入口，薄弱题已上移到「今日复习」之后。 */
 
 /* Responsive */
 @media (max-width: 420px) {
@@ -403,19 +504,6 @@
   font-size: 22px;
   font-weight: 800;
   color: #b45309;
-}
-
-.footer-badge-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--sq-ink-muted, #6b7280);
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.footer-badge-link:hover {
-  color: var(--sq-accent, #d68910);
 }
 
 @media (min-width: 421px) and (max-width: 720px) {

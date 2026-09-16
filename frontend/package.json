@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:css": "node scripts/check-css-namespace.mjs",
+    "check:css:all": "node scripts/check-css-namespace.mjs --all"
   },
   "dependencies": {
     "react": "^18.3.1",

@@ -1,6 +1,18 @@
 # Spark Quest — 当前项目状态
 
-> 最后更新：2026-09-14（① Level 2 / Level 3 题库修复：正确项长度信号 + 答案位置偏置；quiz_seed.json 全量校正并修复 L5 历史遗留；② 修复「复习失败后课程从今日复习静默消失」——失败不再延后 3 天，改为保持到期；③ **修复空库冷启动崩溃**（`content` 未序列化 + `pop` 后取键），并**删除 10 个开发期一次性 seeder 脚本**（多源漂移隐患）；④ 规格书 `spark_quest/` 00–05 一致性修缮；⑤ **清理 30 个开发期一次性脚本**（smoke/fix/patch/rebalance/rewrite/preview/sync）+ 新增常驻 **`backend/sync_seed.py`**（DB→seed 同步 / 漂移检查），借它抓到并修复 `course_seed.json` 的一处 L5 漂移；与 `CHANGELOG.md` 同步）
+> 最后更新：2026-09-16（**🟢 v1.2 基线 · 首页 Final UI Refinement**：P0 修复顶部进度环 `73%` 被整体旋转成竖排 + 补 `viewBox`；P1 修复**跨文件全局类名冲突** `.review-title`（首页复习卡标题被 ReviewPage.css 顶到 26px、卡片 93.8→62.4px）、进度摘要去表格线改白底摘要卡、「当前 Level 0/9 · 0%」语义歧义改为「Level 6 · 已完成 0 / 9 课」；P2 删除页脚重复快捷入口、薄弱题上移为「今日复习」之后的轻量入口、保持最近解锁 6 个 + `更多` 折叠逻辑不变；顺带修掉呼吸环 `::after` 导致的窄屏闪烁横向滚动条。**纯 refinement，未动数据逻辑与交互**；本次同时立下**前端样式铁律 R1**（见「关键约定与坑位」首条）并交付可执行护栏 `frontend/scripts/check-css-namespace.mjs`。此前：2026-09-14 ① L2/L3 题库修复（正确项长度信号 + 答案位置偏置）；② 修复「复习失败后课程从今日复习静默消失」；③ 修复空库冷启动崩溃；④ 规格书 00–05 一致性修缮；⑤ 清理 40 个开发期一次性脚本 + 新增常驻 `backend/sync_seed.py`；⑥ L3 JOIN 旧口径修复 + 全库叠词清理 + sync_seed 补齐 `explanation`。与 `CHANGELOG.md` 同步）
+>
+> ### 📌 版本与必读
+>
+> | 项 | 值 |
+> |----|-----|
+> | **当前版本基线** | **v1.2**（2026-09-16 · 首页 Final UI Refinement，已验收并推送） |
+> | 前一版本 | v1.1（Course Map 重做）/ V1.0（2026-08-28 基线起点） |
+> | 权威事实来源 | 本文件（数值 / 表名 / 接口若与 `spark_quest/00–05` 冲突，**一律以本文件为准**） |
+>
+> ⚠️ **改前端样式前必读 —— 铁律 R1：本项目 `.css` 全部是全局作用域，裸类名跨文件复用会「后 import 者胜」静默覆盖，单看任何单个文件都查不出来。**
+> 全文 `frontend/src/pages/README.md` · 自查 `cd frontend && npm run check:css` · 历史事故 2 起（`.review-title` 曾让首页复习卡标题虚增 26px）
+
 > 代码目录：`E:\MMMason\Spark_dlg\spark-quest-app\`
 > 代码仓库：`https://github.com/MasonWest/Spark-duolinguo`（分支 `main`）
 > 文档目录（通常只读）：`E:\MMMason\Spark_dlg\spark_quest\`
@@ -38,8 +50,9 @@
 | **清理** | **删除 30 个开发期一次性脚本 + 抽出常驻 sync 工具（2026-09-14 续）**：`backend/` 根目录 30 个一次性脚本（smoke/e2e 5、fix 8、patch 4、rebalance 3、rewrite 4、preview 2、sync 4）+ 4 个配套数据 JSON 全删。逐个 grep 确认**无任何一个被 `app/` 引用** → 运行时零影响；且 `fix_level4_*.py` 无 `--apply` 保护、`sync_*` 会重写 seed，属「误跑改库/回退题库」敞口。等价能力提升为常驻 **`backend/sync_seed.py`**（默认 dry-run 报告 `drift/orphan/db_only`，`--apply` 写入并自动备份）。**该工具首次运行即抓到并修复 `course_seed.json` 的一处 L5 漂移**（`l5-what-is-shuffle` 的 `explanation` 旧版含绝对化定义 + 重复定义，与当初 quiz_seed 漏同步同源）。`.gitignore` 放宽为 `*.bak*` + `backend/_*` | 🟢 **已完成**（staged，未 commit/push；冷库重建 66 课 / 660 题与生产库零差异） |
 | **技术修复** | **Level 3 JOIN 旧口径修复 + 全库叠词清理 + sync_seed 补齐 explanation（2026-09-14 续四）**：① L3 `l3-joins-intro` 的「JOIN 必触发 Shuffle」是**真事实错误**（与 Broadcast Hash Join 矛盾；比喻库 §4 早在 2026-09-09 已更正、课文未跟进）→ 全课 7 处改为「通常要 Shuffle」并补「一侧是小表可走广播连接免掉这次 Shuffle（L6 展开）」（objective / explanation 边界① / key_points / common_mistakes / q307 解析 / q314 正确项+解析；`correct_index` 未动，判分零影响）；② **全库叠词清理**：扫出 6 处「同一段文字连续写了两遍」（`l5-repartition-coalesce` 141 字 / `l6-join-strategies-overview` 148 字 / `l6-shuffle-hash-join` 192+138 字 / `l6-how-spark-chooses` 48 字 / `l6-join-data-skew` 231 字），均系历史批量替换脚本遗留；③ **`sync_seed.py` 补齐 `explanation` 同步**（此前只同步 options/correct_index，DB-only 的解析改动会在冷重建后丢失） | 🟢 **已完成**（未 commit/push；冷重建 66 课 / 660 题与生产库零差异） |
 | **v1.1** | **Course Map 重做（区域化垂直旅程 / 三档时间叙事 / 5 态节点 / 列表兜底）** | **🟢 已完成并验收** |
+| **v1.2** | **首页 Final UI Refinement（2026-09-16）**：纯 refinement，未动布局骨架 / 数据逻辑 / 交互。**P0** 顶部进度环 `73%` 竖排 —— 根因是 `.progress-ring { transform: rotate(-90deg) }` 把整个 `<svg>`（含中心 `<text>`）一起转了 90°，改为只给两个 `<circle>` 加 `transform="rotate(-90 cx cy)"`，视觉效果不变但文字水平；顺带补 `viewBox`（此前 420px 窄屏 CSS 缩到 48px 而无 viewBox → 环会被裁）。**P1** 复习卡标题过大 —— 根因是**跨文件全局类名冲突**：`Home.css` 与 `ReviewPage.css` 都定义裸 `.review-title`，两文件都是全局 CSS，Vite 按 import 顺序后注入者胜（ReviewPage 在 Home 之后）→ 首页复习卡标题被顶到 `26px` + `margin-bottom:16px`，卡片高 93.8px。改名 `.home-review-title` 隔离 + 收紧 padding → 62.4px（-33%），淡紫色视觉语言保留。**P1** 进度摘要表格感 → 白底摘要卡（每行 0 横向分割线 + 主指标/辅助文字双行层级），数据项一增一减都没有。**P1** 「当前 Level / 0 / 9 · 0%」歧义 → 「Level 6 · 已完成 0 / 9 课」，与总进度行区分。**P2** 删除页脚重复快捷入口（学习路线/最近解锁/薄弱题三链）、薄弱题上移为「今日复习」之后的轻量独立入口（白底 1px 描边、无大色块）、最近解锁保持 6 个、`更多` 折叠逻辑不变。**顺带**修掉 `primary-card` 装饰呼吸环 `::after`（`inset:-6px` + `scale(1.05)`）在窄屏周期性顶破视口 1~2px 的闪烁横向滚动条（`overflow-x: clip`）。**本次同时立下前端样式铁律 R1** —— 全库复查确认**除已修的 2 例外无其他裸类名冲突**，另 10 处「复合选择器同名」已逐条核查为良性（父级限定）；配套交付可执行护栏 `frontend/scripts/check-css-namespace.mjs` + `npm run check:css` | 🟢 **已完成并验收（v1.2 基线，已推送 `main`）** |
 
-**当前进度：Phase 9.1 Streak 已完成并验收；Phase 9.2 Badge 已实现完毕（待验收）；Phase 10.1 薄弱题 / Weak Questions 已实现完毕（`quiz_answer_log` 事实层 + 跨来源派生薄弱题 + `/wrong-questions` 重练页，待验收）。**
+**当前进度：🟢 v1.2 基线（首页 Final UI Refinement）已完成并验收并推送；Phase 9.1 Streak 已完成并验收；Phase 9.2 Badge 已实现完毕（待验收）；Phase 10.1 薄弱题 / Weak Questions 已实现完毕（`quiz_answer_log` 事实层 + 跨来源派生薄弱题 + `/wrong-questions` 重练页，待验收）。**
 
 **下一个可做方向**：Phase 7 Parking Lot 防发散 / Phase 10.2（薄弱度启发式升级：连续做对才移出列表）/ Level 8「真实 ETL 毕业项目」（见 CHANGELOG 2026-08-29 结论：不再线性扩 Spark 内核，不引入 Flink）。
 
@@ -352,6 +365,16 @@ spark-quest-app/
 ```
 
 ## 关键约定与坑位
+
+- 🚨 **【铁律 R1】前端 `.css` 全局注入 —— 禁止跨文件复用裸类名（2026-09-16 立，**最重要的一条**）**：
+  本项目所有 `.css` 由 `main.tsx` 静态 import 后**全局注入** `<head>`（**无 CSS Module / 无 scoped / 无 hash 后缀**），样式是全站累加，**不是页面级隔离**。因此两个文件写**同名裸类选择器**（`.foo`）时，**后 import 者胜**。冲突只在「① 同名 + ② 同特异性 + ③ 后注入」三条同时成立时才发作 → 平时完全静默，爆发时极难查，**单看任何一个文件都是正确的**。
+
+  - **症状（照这个认）**：某页元素字号 / 间距 / 颜色"莫名"跟本文件写的对不上；DevTools 里生效的规则来自**另一个页面**的 css 文件；改本文件数值**毫无效果**（因为你被覆盖了）；换路由就正常。
+  - **修法（按推荐顺序）**：① **首选**给类名加**页面前缀**（`.home-` / `.review-` / `.quiz-` / `.practice-` / `.map-`）；② 局部覆盖改用**父级限定**（`.review-next .para`，这是合法写法，不算违规）；③ 确实该全站共享的通用类（`.card` `.badge` `.chip` `.tag` `.icon` `.container` `.btn-primary` `.btn-ghost` `.btn-sm` `.section-title`）**只在 `index.css` 设计系统层定义一次**，别处不得再定义同名裸类名。
+  - **落地前自查**：`cd frontend && npm run check:css`（通过 = 退出码 0；`npm run check:css:all` 附带观察项）。全文：`frontend/src/pages/README.md`。
+  - **事故档案**：① `.review-title`（`Home.css` ↔ `ReviewPage.css`）→ 首页复习卡标题被顶到 26px、卡片虚高至 93.8px（正确 62.4px）；② `.footer-weak-link`（`Home.css` ↔ `WeakQuestionsPage.css`）→ 页脚删除后残留幽灵规则（**教训：元素删了，样式必须同批删干净**）。
+  - **现状（2026-09-16 全库复查）**：裸类名冲突 **0**；另有 **10 处复合选择器同名**（`.para` `.ok` `.correct` `.wrong` `.is-active` `.muted` `.back-link` `.retry` `.btn-ghost` `.btn-primary`）经逐条核查**作用域已被父级限定**，**判为良性**，清单见 `pages/README.md` 附录 —— 勿重复"修复"。
+  - **判断标准一句话**：选择器**完全等于** `.foo` → 违规；含空格 / 第二个类 / 元素名 → 作用域已限定，通常良性。
 
 - **端口 6000 不可用**：Chromium 内核浏览器（Chrome/Edge）把 6000 列为 `ERR_UNSAFE_PORT`（X11 保留），访问会显示"网页似乎有问题或已永久移动"。前端统一用 **6001**。Chromium 不安全端口黑名单含 1,7,9,…,6000,6667,…,10080 等。
 - **npm 缓存目录沙箱限制**：`npm install` 默认缓存 `AppData` 会被沙箱拦截（EPERM）。用 `--cache <项目内目录>` 规避，如 `npm install --cache .npm-cache`。
@@ -1229,6 +1252,49 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 - **L5 / L6 / L7 答案位置分布未核查**（L4 曾发现 A38/B45/C6/D1 的严重失衡）
 - **全库 2 道跨 Level 重复题干**：`为什么「计划相同 ≠ 运行时性能相同」？`（q429 L4-8 / q519 L5-8）、`综合读图的第一步是？`（q425 L4-8 / q515 L5-8）——建议改 L5-8 那两题
 - L2 / L3 旧口径技术债：**L3 JOIN「必 Shuffle」已于 2026-09-14 修复**（见下表 09-14 续四条）；L2 / L3 的 orderBy、聚合「必 Shuffle」经评估为可接受简化，保留（用户决定）；L2/L3 三段文案未查
+
+---
+
+## v1.2 实现记录 —— 首页 Final UI Refinement（2026-09-16 · 已完成并验收并推送）
+
+**定位**：纯 UI refinement。首页整体布局、信息架构、视觉方向沿用既有结论；**未动**路由、API、数据派生逻辑、`更多` 折叠交互、淡紫 / 蓝色视觉语言，**无新增功能、无新颜色体系**。详细逐条记录见 `CHANGELOG.md` 2026-09-16 条目。
+
+### 改动文件与内容
+
+| 文件 | 改动 |
+|------|------|
+| `frontend/src/index.css` | 🔴 P0：`.progress-ring` 不再整体 `transform: rotate(-90deg)`（旋转下移到两个 `<circle>` 的 `transform="rotate(-90 cx cy)"`）；补 `viewBox`。另加铁律 R1 顶部注释横幅 |
+| `frontend/src/components/ui/ProgressRing.tsx` | 环心文字改 `dominantBaseline="central"` + `textAnchor="middle"`，实现真正水平居中；弧单独旋转 |
+| `frontend/src/pages/Home.tsx` | 复习卡标题改 `.home-review-title`（P1）；进度摘要改双行层级 + 「Level 6 · 已完成 0/9 课」表述（P1）；薄弱题上移为复习之后的轻量入口、删除页脚三链（P2） |
+| `frontend/src/pages/Home.css` | 复习卡压缩（97→62px）；摘要去横向分割线改白底摘要卡；新增 `.home-weak-entry`；`.dashboard-page` 加 `overflow-x: clip`（修窄屏周期闪烁滚动条） |
+| `frontend/src/pages/WeakQuestionsPage.css` | 清理为首页页脚写的残留规则 `.footer-weak-link` |
+| `frontend/src/pages/README.md` | 🆕 **铁律 R1 全文 + 2 起事故档案 + 良性清单** |
+| `frontend/scripts/check-css-namespace.mjs` | 🆕 **可执行护栏**：扫跨文件裸类名冲突，违规 exit 1（`npm run check:css`） |
+| `frontend/package.json` | 新增 `check:css` / `check:css:all` 脚本 |
+| `README.md` | 首页醒目位加入 R1 维护者警告块 |
+| `CHANGELOG.md` / `CURRENT_STATE.md` | 版本基线同步至 v1.2 |
+
+### 验收（CDP 真实页面实测，非仅「代码能跑」）
+
+| 项 | BEFORE | AFTER |
+|----|--------|-------|
+| 进度环 `<svg>` transform | `matrix(0,-1,1,0,0,0)`（= rotate -90°） | `none`；`circle` = `rotate(-90 28 28)` |
+| `73%` 文字盒 | **16 × 25.9**（高＞宽 = 竖排） | **25.9 × 16**（宽＞高 = 水平），相对环心 `dx=0 dy=0` |
+| 复习卡高度 | **93.8px** | **62.4px（-33%）** |
+| 复习卡标题 | 26px（被 `ReviewPage.css` 泄漏覆盖） | 16px/600（`.home-review-title`） |
+| 进度摘要行分割线 | 3 条 `border-bottom` | **0 条**（白底摘要卡 + 双行层级） |
+| 页脚快捷入口 | 3 个（学习路线 / 最近解锁 / 薄弱题） | **0 个**（`footer` 元素 0） |
+| 展开区顺序 | review → progress → map → badge → footer | **review → weak → progress → map → badge** |
+| 窄屏横向溢出（380/400/420px） | 10 次采样 1~2px 周期溢出 | **30/30 为 0** |
+| 最近解锁 Badge | 6 个 | 6 个（`slice(0,6)`，未动） |
+| `更多` 折叠 | `aria-expanded` + `hidden` | 同（仅补纯 CSS chevron 旋转） |
+
+截图存档：`ux_audit/refine-00-ring-before.png`（竖排证据）、`refine-01-review-before.png`（26px 证据）、`refine-02-expanded-1280.png`、`refine-03-collapsed-firstscreen.png`、`refine-04-narrow-400.png`、`refine-05-narrow-375.png`。
+
+### 遗留（本次刻意未动，供后续决定）
+
+- hero 的 **「Lesson 1 / 9」** 表示「当前在第几课」（含未完成的当前课），与摘要的 **「已完成 0 / 9 课」** 是两个不同量。两者现已各自写明口径、不再互相矛盾；若想彻底统一，可把 hero 改成「第 1 课 / 共 9 课」。
+- 类名冲突的**根治方案**（迁移 CSS Modules / 加构建期 hash）未做 —— 当前以「铁律 + 护栏脚本」约束，成本最低且不改动现有 20+ 个 css 文件。
 
 ---
 
