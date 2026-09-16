@@ -6,9 +6,10 @@
 >
 > | 项 | 值 |
 > |----|-----|
-> | **当前版本基线** | **v1.2**（2026-09-16 · 首页 Final UI Refinement，已验收并推送） |
-> | 前一版本 | v1.1（Course Map 重做）/ V1.0（2026-08-28 基线起点） |
+> | **当前版本基线** | **v1.2**（2026-09-16 · 首页 Final UI Refinement）—— 已验收 · 已推送 · 已打 tag `v1.2`。**Spark Quest 第一个稳定 UI + 工程规范基线** |
+> | 前置基线 | v1.1（Course Map 重做 2026-09-07）/ V1.0（2026-08-28 起点；当时未打 tag） |
 > | 权威事实来源 | 本文件（数值 / 表名 / 接口若与 `spark_quest/00–05` 冲突，**一律以本文件为准**） |
+> | **版本发布规则（轻量，2026-09-16 立）** | **阶段性验收完成 → commit → push → tag**。只在**阶段验收通过**时打 annotated tag `vN.N`（`git tag -a v1.2 -m "…"`）；**不给每个小改动打 tag** —— 小改动照常 commit + push 即可。tag 一览：`git tag -l` |
 >
 > ⚠️ **改前端样式前必读 —— 铁律 R1：本项目 `.css` 全部是全局作用域，裸类名跨文件复用会「后 import 者胜」静默覆盖，单看任何单个文件都查不出来。**
 > 全文 `frontend/src/pages/README.md` · 自查 `cd frontend && npm run check:css` · 历史事故 2 起（`.review-title` 曾让首页复习卡标题虚增 26px）

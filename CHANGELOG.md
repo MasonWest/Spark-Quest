@@ -5,6 +5,10 @@
 >
 > 规则：每完成一个阶段，追加一个 `## YYYY-MM-DD` 段落，分 `Added / Changed / Fixed / Architecture` 小节。
 > 后续增量更新只追加新条目，不要改写历史条目。
+>
+> **版本发布规则（轻量，2026-09-16 立）：阶段性验收完成 → commit → push → tag。**
+> 只在**阶段验收通过**时打 annotated tag `vN.N`；**不给每个小改动打 tag**，小改动照常 commit + push 就行。
+> 已发布 tag：`v1.2`（Spark Quest 首个稳定 UI + 工程规范基线）。一览用 `git tag -l`。
 
 ---
 
@@ -952,7 +956,7 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 - **vite dev server 会「假死」**：本次遇到一个已跑 6 天的 vite 进程，端口仍 `LISTENING` 但任何 HTTP 请求（python / Chrome 均）无响应 → 前端全站不可用且报错像是「网络问题」。**排查顺序应是先直接打一下 6001 根路径**，无响应就重启 vite，不要先怀疑代理或浏览器。（本次已重启，顺带用 `node node_modules/vite/bin/vite.js` 直起，绕开沙箱里 npm 不可用的问题。）
 
 ### 状态
-- 🟢 **已完成并验收，已推送 `main`（v1.2 基线）**。`tsc --noEmit` 通过（exit 0）；`npm run check:css` 通过（跨文件裸类名冲突 **0**）。
+- 🟢 **已完成并验收 · 已推送 `main` · 已打 annotated tag `v1.2`** —— **Spark Quest 第一个稳定 UI + 工程规范基线**。`tsc --noEmit` 通过（exit 0）；`npm run check:css` 通过（跨文件裸类名冲突 **0**）。
 - 已知但**本次未动**（供用户决定）：hero 的「Lesson 1 / 9」表示「当前在第几课」，与摘要的「已完成 0 / 9 课」是两个量（前者含未完成的当前课）。两者现已各自写明口径，不再互相矛盾，但若想彻底统一，可把 hero 改成「第 1 课 / 共 9 课」。
 
 ---
