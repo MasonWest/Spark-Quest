@@ -55,12 +55,15 @@
 ```bash
 # 在 spark-quest-app/ 下
 node frontend/scripts/check-css-namespace.mjs
+
+# 或在 frontend/ 下（等价）
+npm run check:css
 ```
 
 - 通过 → `✅ CSS 命名空间检查通过（铁律 R1）`
 - 违规 → 列出**文件名:行号**与修法，退出码 1
 
-加 `--all` 可另外列出"复合选择器里跨文件同名"的观察项（通常良性，人工确认即可）。
+加 `--all`（或 `npm run check:css:all`）可另外列出"复合选择器里跨文件同名"的观察项（通常良性，人工确认即可）。
 
 ---
 
