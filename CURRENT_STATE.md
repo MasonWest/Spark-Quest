@@ -15,7 +15,7 @@
 > 全文 `frontend/src/pages/README.md` · 自查 `cd frontend && npm run check:css` · 历史事故 2 起（`.review-title` 曾让首页复习卡标题虚增 26px）
 
 > 代码目录：`E:\MMMason\Spark_dlg\spark-quest-app\`
-> 代码仓库：`https://github.com/MasonWest/Spark-duolinguo`（分支 `main`）
+> 代码仓库：`https://github.com/MasonWest/Spark-Quest`（分支 `main`）—— 仓库已于 2026-09-17 更名为 **Spark-Quest**，旧地址 `Spark-duolinguo` 仍 302 重定向
 > 文档目录（通常只读）：`E:\MMMason\Spark_dlg\spark_quest\`
 
 ## 总体状态
