@@ -898,7 +898,7 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 - 真库改动经 `sync_seed.py --apply` 同步（`course_seed.json` 6 课 + `quiz_seed.json` 2 题）；复跑 dry-run 双零漂移。
 
 ### 状态
-- **未 commit / 未 push**（用户验收后推送）。
+- 已推送：`811caa5`（fast-forward `c04e956..811caa5`，5 文件 +59 −17）。按发布规则属小改动 → 只 commit + push，**不打 tag**。
 
 ---
 
@@ -1018,9 +1018,58 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ### 状态
 
-- 待用户验收；**未 commit / 未 push**。按发布规则，本批属小改动 → commit + push，**不打 tag**。
+- 已推送：`4c1ed99`（修复本体；其后仓库更名 `4ad67e6` / 文档同步 `1878e98`）。按发布规则属小改动 → 只 commit + push，**不打 tag**。
 
 ---
+
+## 2026-09-18 — Level 6 题库偏置修复（「正确项恒最长」）+ Sort-Merge Join「两次 Shuffle」表述澄清
+
+用户在学 L6 时提出两个问题：① `l6-sort-merge-join` 反复暗示「两次 shuffle」，容易被读成「搬两遍 / 两轮串行」；② L6 全库 Quiz 的**正确答案就是最长的那个选项**，且正确项尾部带 `（）` 解释，等于把答案标出来。
+
+### Fixed（题库：正确项最长偏置）
+
+- **L6（level_id=7，9 课）90 题全部重排选项**：修复前 **87/90（97%）** 的正确项是 4 个选项里唯一的**最长项**，且大量题目的正确项尾部挂 `（…）` 解释性从句（如 `两侧按 key 分区并排序（两个 Exchange）+ 归并扫描配对`）——「挑最长 + 挑带括号的那句」几乎等于送分。
+- 做法：**缩短正确项为精简短语**（细节留给 `explanation`）+ **把干扰项加长到同量级**，去掉正确项的括号解释。参照物是 L6 已有的正确范式（如 q529「不一定：一侧足够小时可广播，大表完全不 Shuffle」）。
+- 结果（复检脚本实测）：
+
+  | 指标 | 修复前 | 修复后 |
+  |---|---|---|
+  | 正确项为**唯一最长** | 87 / 90 | **0 / 91** |
+  | 正确项与最长项之差（中位数） | 大 | **3 字符**（肉眼不可辨） |
+  | 最长项出现位置分布 | — | 0/1/2/3 = **26 / 27 / 21 / 17**（无位置规律）|
+  | 正确项尾部带解释性括号 | 19 | **0**（仅剩 `hint('broadcast')` 这类**代码**括号）|
+
+- **`correct_index` 有调整**：`quiz_answer_log.selected_index / correct_index` 是**只写不读**的历史快照列（判分与薄弱题派生均实时读 `quizzes.correct_index`），因此重排选项 + 改答案下标**不影响既有作答记录、不影响派生结果**。
+
+### Fixed（内容：SMJ 的 Shuffle 表述）
+
+- **先纠正一个技术前提**：Sort-Merge Join **确实是两次 shuffle**（A、B 两侧各插入一个 `Exchange`，各自按 key 重分区 + 分区内排序），这是 Spark 的字面事实（Spark UI 两笔 shuffle 写、DAG 两个 ShuffleMapStage；datadriven.io 直接概括为 *Two Shuffles, Two Sorts, One Merge*）。原文「两边都 Shuffle」**不是事实错误**。
+- 但「两次 Shuffle」若被读成「**同一份数据搬两遍**」或「**先搬完 A 再搬 B 的两轮串行**」就是误解——这才是要消除的。改法是把话说准，而不是改成「只有一次」（那反而会写错）：
+  - `explanation` 边界①：`① **两边都 Shuffle**：两本簿子都得重排一遍再飞过去，代价是双份的` → `① **两侧都要重分布**：…计划上表现为两侧各有一个 Exchange。贵在「两份数据都在飞」（网络量约 A+B）；注意不是「同一份数据搬两遍」，也不是先 A 后 B 的两轮串行。`
+  - `objective` / `description` / `key_points`[0][2] / `preview` / `problem` / `examples[0].note` / 内部步骤 5：统一改为「两侧各（一个 Exchange / 重排一次）」「网络量约 A+B」。
+  - `common_mistakes` **新增第 4 条**：「把『两侧都要重排』读成『同一份数据被搬了两遍』。」
+  - `l6-join-strategies-overview` 的 `→ **两边都 Shuffle**。` → `→ **两侧都要按 key 重排**。`
+- **新增 1 道 Quiz（`q705`）**把该认知做成题目，让学习者自己作答得出结论：
+
+  > **计划里 SMJ 出现两个 Exchange，正确的理解是？**  → 正确项：`两侧各按 key 重排一次，双份数据量`；
+  > 干扰项：`同一份数据被原样搬了两遍，纯属重复的劳动` / `两轮串行：先搬完 A 再搬 B` / `其中一个其实是多余的，应该消掉`
+
+  题目本身也按新标准做了长度对齐，不构成新的「最长即正确」信号。
+
+### Fixed（两个「清库重建会丢」的隐患）
+
+- **`_seed_quizzes()` 漏播种 `quizzes.dimension`**：`quiz_seed.json` 里**有** `dimension`，但播种函数没读它，而 `migrate.add_quiz_dimension_column()` 只建列**不回填** → **冷库重建后 661 题维度全部为 `NULL`**，`_sample_quiz_questions` 的「维度多样性」Phase 6.1 逻辑**静默退化为纯随机**（已在副本库上反证：撤掉该行后冷库 `dimension IS NULL = 661/661`）。与 2026-09-14 修掉的 `explanation` 漏同步**同类**，已补齐。
+- **`sync_seed.py` 同步字段补 `dimension`**：否则「只改 DB 的维度标签」在清库重建后同样会丢；补上后与播种函数覆盖面一致。
+
+### 验证
+
+- **冷库重建**（副本 `app/` + 空 DB → `init_db()`，真库零改动）：`levels=8 / lessons=66 / quizzes=661 / badges=20`，**lesson 差异 0 / quiz 差异 0**（本轮比对**含 `dimension`**）。临时目录已清理。
+- 全库扫描：`U+FFFD` **0**；L6 危险绝对化词 41 处**逐条核对全为正确用法**（否定语境如「不一定：小表可广播」「计划变省也不等于一定更快」，或故意设置的错误干扰项）；L6 课文「叠词」命中 2 处均为**代码块内两行 `spark.read.parquet('big_fact_` 的合法重复**，非缺陷。
+- 真库改动经 `sync_seed.py --apply` 同步（`course_seed.json` 2 课 + `quiz_seed.json` 89 题 + 新增 1 题）；复跑 dry-run **双零漂移**（`drift total = 0`）。
+
+### 状态
+
+- 见本文件末尾「状态」区块（本条目写入时未 push）。
 
 ---
 

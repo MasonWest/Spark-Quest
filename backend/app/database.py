@@ -178,6 +178,7 @@ def _seed_quizzes() -> None:
                         options=json.dumps(q.get("options", []), ensure_ascii=False),
                         correct_index=q.get("correct_index", 0),
                         explanation=q.get("explanation", ""),
+                        dimension=q.get("dimension"),
                         order_index=i,
                     )
                 )

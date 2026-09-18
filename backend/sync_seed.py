@@ -23,9 +23,11 @@
     quiz_seed  ：按 lesson_slug + 归一化 prompt（去空白 + 统一引号）对齐
 同步字段
     lesson：objective / description / content（七键）
-    quiz  ：options / correct_index / explanation
+    quiz  ：options / correct_index / explanation / dimension
     ⚠️ explanation 早期不在同步范围，导致「只改 DB 解析」在冷库重建后丢失；
        2026-09-14 补齐。首次运行会暴露历史上仅改过 DB 的解析差异。
+    ⚠️ dimension 同理不在 `_seed_quizzes()` 的播种范围（2026-09-18 补齐播种 + 同步）——
+       维度标签影响抽题的 diversity 偏好，冷库重建丢维度会让 Phase 6.1 静默退化。
     只更新「有差异」的条目；orphan（seed 有 DB 无）与 db_only（DB 有 seed 无）只报告、不自动删改。
 """
 
@@ -92,10 +94,10 @@ def sync_quiz(cur, apply: bool):
     db = {}
     for lid, slug in cur.fetchall():
         cur.execute(
-            "SELECT prompt, options, correct_index, explanation FROM quizzes WHERE lesson_id=?",
+            "SELECT prompt, options, correct_index, explanation, dimension FROM quizzes WHERE lesson_id=?",
             (lid,),
         )
-        db[slug] = {norm(p): (json.loads(o), ci, ex) for p, o, ci, ex in cur.fetchall()}
+        db[slug] = {norm(p): (json.loads(o), ci, ex, dm) for p, o, ci, ex, dm in cur.fetchall()}
     seed = json.loads(QUIZ.read_text(encoding="utf-8"))
     matched = drift = orphan = new = 0
     for entry in seed["quizzes"]:
@@ -110,16 +112,18 @@ def sync_quiz(cur, apply: bool):
                 orphan += 1
                 continue
             matched += 1
-            opts, ci, ex = m[key]
+            opts, ci, ex, dm = m[key]
             if (
                 [norm(x) for x in q["options"]] != [norm(x) for x in opts]
                 or q["correct_index"] != ci
                 or q.get("explanation") != ex
+                or q.get("dimension") != dm
             ):
                 drift += 1
                 q["options"] = opts
                 q["correct_index"] = ci
                 q["explanation"] = ex
+                q["dimension"] = dm
         new += len(set(m) - seen)
     print(f"[quiz_seed]   questions matched={matched} drift={drift} orphan={orphan} db_only={new}")
     if apply and drift:
