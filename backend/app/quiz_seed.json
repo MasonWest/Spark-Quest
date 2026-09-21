@@ -4057,8 +4057,8 @@
           "type": "single_choice",
           "prompt": "执行计划最准确的定位是？",
           "options": [
-            "结果正确性的保证书",
-            "运行时真实耗时的记录",
+            "运行结果正确性的最终保证书",
+            "运行时真实耗时的唯一记录来源",
             "Spark 打算怎么算的「施工单」",
             "数据倾斜的诊断报告"
           ],
@@ -4083,10 +4083,10 @@
           "type": "single_choice",
           "prompt": "调用 explain() 时，Spark 内部发生什么？",
           "options": [
-            "真正执行数据计算",
+            "真正执行全部数据计算",
             "只打印计划、不执行数据计算",
-            "启动一个 Job",
-            "把全表读进内存"
+            "启动并跑完一个 Job",
+            "把整张表读进内存"
           ],
           "correct_index": 1,
           "explanation": "explain() 只把 Catalyst 规划好的算子树打印出来，不触发任何 Action，数据不会真正算。",
@@ -4096,9 +4096,9 @@
           "type": "single_choice",
           "prompt": "怀疑一段聚合特别慢，第一件该做的事？",
           "options": [
-            "直接重写代码",
-            "重启集群",
-            "无脑加大内存",
+            "直接重写整段计算代码",
+            "重启集群并重新提交任务",
+            "无脑加大内存继续观察",
             "先 explain 看计划，定位 Shuffle/扫描"
           ],
           "correct_index": 3,
@@ -4122,10 +4122,10 @@
           "type": "single_choice",
           "prompt": "执行计划主要帮你诊断什么？",
           "options": [
-            "数据正确性",
+            "数据结果的正确性",
             "性能（它打算怎么算、哪里 Shuffle）",
-            "网络是否连通",
-            "硬盘剩余空间"
+            "集群网络是否连通",
+            "磁盘剩余空间情况"
           ],
           "correct_index": 1,
           "explanation": "执行计划是性能诊断的第一视角，用于看清计算路径与 Shuffle，而非正确性或基础设施。",
@@ -4136,9 +4136,9 @@
           "prompt": "为什么从 Level 0-3 一路写代码却不曾「看见」内部怎么算？",
           "options": [
             "因为 Catalyst 的优化是黑盒，需 explain 才可见",
-            "因为 Spark 不支持查看",
-            "因为没装插件",
-            "因为代码太简单"
+            "因为 Spark 不支持查看计划",
+            "因为客户端没装插件",
+            "因为代码写得过于简单"
           ],
           "correct_index": 0,
           "explanation": "Catalyst 的优化（下推、裁剪等）在背后自动发生，不主动打印；只有调用 explain() 才能看见这份「施工单」。",
@@ -4174,9 +4174,9 @@
           "type": "single_choice",
           "prompt": "执行计划与 Spark UI 运行时指标的关系是？",
           "options": [
-            "二者完全一样",
-            "UI 没有用处",
-            "计划比 UI 更准",
+            "二者展示的完全一样",
+            "Spark UI 其实没有用处",
+            "执行计划比 UI 更准确",
             "计划是静态蓝图，UI 是运行时实测"
           ],
           "correct_index": 3,
@@ -4205,10 +4205,10 @@
           "type": "single_choice",
           "prompt": "物理计划（Physical Plan）描述的是？",
           "options": [
-            "想做什么",
+            "想做什么事情",
             "具体用什么算子实现、怎么做",
-            "表是否存在",
-            "列的类型"
+            "表是否存在于库里",
+            "各列的具体类型"
           ],
           "correct_index": 1,
           "explanation": "物理计划绑定具体实现，如选 HashAggregate 还是 SortAggregate、走 broadcast 还是 sort-merge join。",
@@ -4219,9 +4219,9 @@
           "prompt": "为什么执行计划要分逻辑和物理？",
           "options": [
             "因为 Catalyst 要先明确意图（逻辑），再绑定具体实现（物理）",
-            "历史遗留，没有原因",
-            "为了让 SQL 更慢",
-            "为了兼容 Hive"
+            "纯属历史遗留没有原因",
+            "为了让整条 SQL 更慢",
+            "为了向下兼容 Hive"
           ],
           "correct_index": 0,
           "explanation": "先有与实现无关的语义（逻辑），再经优化、选实现（物理），分层让优化与执行策略解耦。",
@@ -4270,9 +4270,9 @@
           "type": "single_choice",
           "prompt": "Analyzed 阶段抛出的常见错误类型是？",
           "options": [
-            "SyntaxError",
-            "NetworkError",
-            "OutOfMemoryError",
+            "SyntaxError 这类语法错",
+            "NetworkError 这类连接错",
+            "OutOfMemoryError 这类资源错",
             "AnalysisException（表或列不存在等）"
           ],
           "correct_index": 3,
@@ -4296,10 +4296,10 @@
           "type": "single_choice",
           "prompt": "Physical 阶段才绑定什么？",
           "options": [
-            "列名",
-            "表名",
+            "逻辑计划已经绑好了实现",
+            "二者之间毫无关系",
             "具体算子实现（如 HashAgg vs SortAgg）",
-            "SQL 语法"
+            "物理计划其实并不存在"
           ],
           "correct_index": 2,
           "explanation": "逻辑计划还停留在语义层；到 Physical 才选具体算子实现与执行策略。",
@@ -4327,10 +4327,10 @@
           "type": "single_choice",
           "prompt": "默认 explain()（无参）打印什么？",
           "options": [
-            "四段全部",
+            "四段计划全部打印",
             "仅 Physical Plan",
-            "仅 Parsed",
-            "运行时指标"
+            "只打印 Parsed 段",
+            "运行时的实测指标"
           ],
           "correct_index": 1,
           "explanation": "explain() 无参默认只打印 Physical Plan，最聚焦「最终怎么跑」。",
@@ -4366,10 +4366,10 @@
           "type": "single_choice",
           "prompt": "缩进树状、最易人眼扫读的版本用？",
           "options": [
-            "explain()",
+            "explain() 即可",
             "explain(mode='formatted')",
-            "explain(True)",
-            "print()"
+            "explain(True) 也行",
+            "print() 也能达到"
           ],
           "correct_index": 1,
           "explanation": "explain(mode='formatted') 以缩进树状结构打印，层级清晰，适合读图。",
@@ -4380,9 +4380,9 @@
           "prompt": "为什么 explain() 可以安全反复调用？",
           "options": [
             "它不触发执行，只是惰性窥视",
-            "因为它运行极快",
-            "因为它有缓存",
-            "因为它只读内存"
+            "因为它运行起来极快",
+            "因为它内部有缓存",
+            "因为它只读内存不碰盘"
           ],
           "correct_index": 0,
           "explanation": "explain() 不触发任何 Action，只打印规划结果，所以反复看零成本、零副作用。",
@@ -4418,9 +4418,9 @@
           "type": "single_choice",
           "prompt": "真正会触发数据执行的是？",
           "options": [
-            "explain()",
-            "type()",
-            "print()",
+            "explain() 会触发执行",
+            "type() 会触发执行",
+            "print() 会触发执行",
             "show()"
           ],
           "correct_index": 3,
@@ -4434,7 +4434,7 @@
             "explain('formatted')",
             "explain(True)",
             "explain()",
-            "无此档位"
+            "无此档位可选"
           ],
           "correct_index": 2,
           "explanation": "默认 explain() 只看 Physical Plan，最适合快速聚焦最终执行方式。",
@@ -4463,9 +4463,9 @@
           "prompt": "执行计划里 Scan 节点代表？",
           "options": [
             "进货口（从数据源读取）",
-            "过滤行",
-            "选列",
-            "分组汇总"
+            "过滤掉不符合的行",
+            "投影选出需要的列",
+            "分组后做汇总计算"
           ],
           "correct_index": 0,
           "explanation": "Scan 是数据源读取节点，对应「进货口」。",
@@ -4475,10 +4475,10 @@
           "type": "single_choice",
           "prompt": "Filter 节点代表？",
           "options": [
-            "进货",
+            "从数据源进货读取",
             "入口筛（按条件过滤行）",
-            "选列",
-            "汇总"
+            "投影选出需要的列",
+            "分组后做汇总计算"
           ],
           "correct_index": 1,
           "explanation": "Filter 对行做条件过滤，对应流水线入口的筛子。",
@@ -4488,10 +4488,10 @@
           "type": "single_choice",
           "prompt": "Exchange 节点代表？",
           "options": [
-            "读取数据",
-            "过滤",
+            "从数据源读取数据",
+            "按条件过滤数据行",
             "Shuffle（货在空中飞，按 key 重分布）",
-            "选列"
+            "投影选出需要的列"
           ],
           "correct_index": 2,
           "explanation": "Exchange 即 Shuffle，数据按 key 跨节点重分布，是性能重点信号。",
@@ -4502,9 +4502,9 @@
           "prompt": "为什么 Exchange 是最该警惕的节点？",
           "options": [
             "它必触发 Shuffle（序列化+网络+反序列化开销）",
-            "它不干活",
-            "它慢是因为语法",
-            "它会报错"
+            "它本身并不干活",
+            "它慢是因为写法差",
+            "它会直接报错退出"
           ],
           "correct_index": 0,
           "explanation": "Exchange = Shuffle，涉及序列化、网络传输与反序列化，是主要性能成本来源之一。",
@@ -4527,10 +4527,10 @@
           "type": "single_choice",
           "prompt": "计划里标注的行数 / 字节是？",
           "options": [
-            "真实实测值",
+            "集群网络带宽的实测值",
             "优化器的估计值",
-            "用户手动设定",
-            "网络带宽"
+            "用户在代码里手动设的值",
+            "数据源端返回的字节数"
           ],
           "correct_index": 1,
           "explanation": "计划中的统计量是 Catalyst 的估计，非实测；真实量看 Spark UI。",
@@ -4540,9 +4540,9 @@
           "type": "single_choice",
           "prompt": "想一眼看出「哪里发生了 Shuffle」，看计划里哪个节点？",
           "options": [
-            "Scan",
-            "Project",
-            "Aggregate",
+            "看 Scan 节点即可",
+            "看 Project 节点即可",
+            "看 Aggregate 节点",
             "Exchange"
           ],
           "correct_index": 3,
@@ -4554,9 +4554,9 @@
           "prompt": "关于 Aggregate 节点，正确的是？",
           "options": [
             "它是分组汇总（复用 L2 水果分拣派对）",
-            "它是读数据",
-            "它不消耗资源",
-            "它不产生 Shuffle"
+            "它做的是数据读取",
+            "它不消耗任何资源",
+            "它不产生任何 Shuffle"
           ],
           "correct_index": 0,
           "explanation": "Aggregate 对应 groupBy 聚合，复用「水果分拣派对」隐喻；聚合通常伴随 Shuffle。",
@@ -4566,10 +4566,10 @@
           "type": "single_choice",
           "prompt": "Project 节点代表？",
           "options": [
-            "汇总",
-            "过滤行",
+            "直接当作真实真相",
+            "当成一条错误信息",
             "选列（投影）",
-            "读取"
+            "直接全部忽略掉"
           ],
           "correct_index": 2,
           "explanation": "Project 做列投影/表达式计算，对应「只挑要的字段装箱」。",
@@ -4597,9 +4597,9 @@
           "type": "single_choice",
           "prompt": "谓词下推（Predicate Pushdown）是？",
           "options": [
-            "排序",
-            "把列裁掉",
-            "常量折叠",
+            "做的是数据的排序",
+            "做的是把列裁掉",
+            "做的是常量折叠",
             "把过滤尽早推到读取端"
           ],
           "correct_index": 3,
@@ -4610,10 +4610,10 @@
           "type": "single_choice",
           "prompt": "列裁剪（Column Pruning）的效果，准确的描述是？",
           "options": [
-            "过滤掉不需要的行",
+            "它会把不需要的行过滤掉",
             "在任何存储格式下都能等量减少磁盘 IO",
             "未被上层需要的列不会出现在 Scan 的 ReadSchema / 输出中；Parquet/ORC 等列式格式能进一步跳过这些列的数据",
-            "把所有列合并成一列"
+            "它会把所有列合并成一列"
           ],
           "correct_index": 2,
           "explanation": "列裁剪让不需要的列不进入 Scan 的 ReadSchema 与输出。收益大小取决于存储格式：Parquet/ORC 这类列式格式能真正跳过不需要的列数据（连 IO 一起省）；CSV/JSON 这类行式文本仍需要读取并解析整行，省的是内存与后续搬运，不是 IO。",
@@ -4624,9 +4624,9 @@
           "prompt": "常量折叠（Constant Folding）是？",
           "options": [
             "编译期把 1+1 算成 2",
-            "谓词下推",
-            "列裁剪",
-            "排序"
+            "做的是谓词下推这件事",
+            "做的是列裁剪这件事",
+            "做的是数据的排序"
           ],
           "correct_index": 0,
           "explanation": "常量折叠在优化期就把能确定的表达式算好，不拖到运行时。",
@@ -4649,9 +4649,9 @@
           "type": "single_choice",
           "prompt": "为什么「在 UDF 里做过滤」、指望它被下推到数据源，往往会落空？",
           "options": [
-            "因为 Catalyst 看不懂 UDF 内部逻辑，所以放弃优化",
-            "因为谓词下推只对 Parquet 生效",
-            "因为 UDF 只能用在 SQL 里，不能用在 DataFrame 上",
+            "因为 Catalyst 看不懂 UDF 内部逻辑所以放弃优化",
+            "因为谓词下推只对 Parquet 格式生效",
+            "因为 UDF 只能用在 SQL 里不能用在 DataFrame",
             "因为过滤条件依赖 UDF 的输出值，表达式的数据依赖顺序不允许把它移动到 UDF 计算之前"
           ],
           "correct_index": 3,
@@ -4662,10 +4662,10 @@
           "type": "single_choice",
           "prompt": "重读场景想最大化下推收益，优先用哪种格式？",
           "options": [
-            "csv",
+            "用 csv 就够了",
             "Parquet（列式存储）",
-            "纯文本 txt",
-            "无所谓"
+            "用纯文本 txt 即可",
+            "格式无所谓都一样"
           ],
           "correct_index": 1,
           "explanation": "Parquet 列式存储能配合做列裁剪/谓词下推；csv 不能按列跳过，收益有限。",
@@ -4677,7 +4677,7 @@
           "options": [
             "它是神仙，什么都能优化",
             "含 UDF 的过滤条件因依赖顺序无法下推；但 UDF 依赖的列仍会被保留，列裁剪并未失效",
-            "它会改变计算结果",
+            "它会改变最终的计算结果",
             "它只优化 SQL，不优化 DataFrame"
           ],
           "correct_index": 1,
@@ -4688,10 +4688,10 @@
           "type": "single_choice",
           "prompt": "null 传播（Null Propagation）属于哪类规则？",
           "options": [
-            "存储格式规则",
-            "网络传输规则",
+            "属于存储格式的规则",
+            "属于网络传输的规则",
             "Catalyst 等价改写规则",
-            "与优化无关"
+            "与优化完全无关"
           ],
           "correct_index": 2,
           "explanation": "null 传播是 Catalyst 在 Optimized 阶段做的一种等价简化规则。",
@@ -4701,9 +4701,9 @@
           "type": "single_choice",
           "prompt": "为什么普通 csv 的下推收益有限？",
           "options": [
-            "它自动压缩",
-            "它读取更快",
-            "它更智能",
+            "因为它会自动压缩",
+            "因为它读取速度更快",
+            "因为它更智能一些",
             "它不能按列跳过"
           ],
           "correct_index": 3,
@@ -4716,8 +4716,8 @@
           "options": [
             "严格按你写的顺序执行",
             "重排让过滤尽早、列裁剪合并进 Scan",
-            "直接报错",
-            "忽略你的写法"
+            "直接报错并不执行",
+            "忽略你的写法顺序"
           ],
           "correct_index": 1,
           "explanation": "Catalyst 会重排算子，让过滤下推、列裁剪合并进 Scan，顺序由优化器决定。",
@@ -4733,9 +4733,9 @@
           "prompt": "WholeStageCodegen 是？",
           "options": [
             "把相邻算子融合成单个 Java 方法",
-            "一种存储格式",
-            "一种网络协议",
-            "一种 UDF"
+            "它是一种存储格式",
+            "它是一种网络协议",
+            "它是一种用户 UDF"
           ],
           "correct_index": 0,
           "explanation": "WholeStageCodegen 将同 Stage 内相邻算子编译成一个手写 Java 方法，消除逐算子开销。",
@@ -4746,9 +4746,9 @@
           "prompt": "为什么要做 codegen 融合？",
           "options": [
             "省掉逐算子的虚函数调用与中间对象分配",
-            "它其实更慢",
-            "它会改变结果",
-            "它是强制要求"
+            "其实它运行更慢",
+            "它会改变计算结果",
+            "它是框架强制要求"
           ],
           "correct_index": 0,
           "explanation": "融合消除了逐算子虚函数调用与中间对象，数据以二进制行格式在算子间流转，更快。",
@@ -4772,9 +4772,9 @@
           "prompt": "什么会打断 codegen 融合？",
           "options": [
             "Exchange（Shuffle）边界",
-            "select",
-            "filter",
-            "Project"
+            "普通的 select 会打断",
+            "普通的 filter 会打断",
+            "普通的 Project 会打断"
           ],
           "correct_index": 0,
           "explanation": "Exchange 处数据要跨节点重分布，无法在同一个本地方法里连续跑，融合必然断开。",
@@ -4784,10 +4784,10 @@
           "type": "single_choice",
           "prompt": "关于融合与 Stage，正确的是？",
           "options": [
-            "Exchange 不影响融合",
-            "融合可以无限延续",
+            "Exchange 并不影响融合",
+            "融合可以无限地延续",
             "Exchange 切断融合，也是 Stage 边界",
-            "Stage 没有边界"
+            "Stage 并没有边界"
           ],
           "correct_index": 2,
           "explanation": "Exchange 既是融合断点，也是 Stage 的切分点，二者一致。",
@@ -4797,10 +4797,10 @@
           "type": "single_choice",
           "prompt": "Project Tungsten 是什么？",
           "options": [
-            "一种文件存储格式",
+            "它是一种文件存储格式",
             "Spark 的底层执行优化方向：紧凑二进制内存表示 + cache 感知算法 + 代码生成，WholeStageCodegen 属于其中的代码生成部分",
-            "一种网络传输协议",
-            "一种用户自定义函数"
+            "它是一种网络传输协议",
+            "它是一种用户自定义函数"
           ],
           "correct_index": 1,
           "explanation": "Tungsten 不是单一技术，而是一整套方向：紧凑/二进制的内存表示、cache 感知的算法与数据结构，以及代码生成。本课的 WholeStageCodegen 正是第三支。UnsafeRow、堆外内存这些字节级细节留到 Level 7。",
@@ -4811,7 +4811,7 @@
           "prompt": "为什么有些算子 / 表达式会「回退」（fallback）？",
           "options": [
             "它们会被优化器删掉",
-            "它们会直接报错",
+            "它们会直接报错退出",
             "它们走回传统的逐算子 iterator / Volcano 方式执行，不再享受 codegen 融合",
             "它们会自动改成广播"
           ],
@@ -4823,9 +4823,9 @@
           "type": "single_choice",
           "prompt": "关于 Tungsten，正确的说法是？",
           "options": [
-            "它就是「紧凑二进制格式」的别名",
-            "它只和 Shuffle 有关",
-            "它是一种存储格式",
+            "它就是「紧凑二进制」别名",
+            "它只和 Shuffle 有关系",
+            "它是一种文件的存储格式",
             "它包含紧凑二进制内存表示、cache 感知算法与代码生成三部分，WholeStageCodegen 属于其中的代码生成"
           ],
           "correct_index": 3,
@@ -4839,7 +4839,7 @@
             "看 `*(N)` 里的 N 是几：*(4) 就有 4 个",
             "统计整条计划里出现了几种不同的 N",
             "统计计划中带有相同 `*(N)` 编号的算子有几行",
-            "数 Exchange 节点的个数"
+            "数 Exchange 节点的个数即可"
           ],
           "correct_index": 2,
           "explanation": "N 是 codegen stage 的编号；同一个 stage 的每个算子都带相同编号，所以「数相同编号的行数」才是该 stage 的算子数。「统计整条计划里出现了几种不同的 N」 数出来的是 codegen stage 的个数，是另一回事。",
@@ -4894,9 +4894,9 @@
           "prompt": "为什么说宽依赖是 Stage 的「断点」？",
           "options": [
             "因为它触发 Exchange，把执行切成不同 Stage",
-            "因为它跑得更快",
-            "因为它无 Shuffle",
-            "因为它纯本地"
+            "因为它跑得其实更快",
+            "因为它并不会 Shuffle",
+            "因为它完全是本地的"
           ],
           "correct_index": 0,
           "explanation": "宽依赖处的 Shuffle（Exchange）就是 Stage 的切分线，也是融合断点。",
@@ -4921,8 +4921,8 @@
           "options": [
             "和窄依赖完全一样",
             "通常更高：Shuffle 输出丢失时可能需要重新执行相关的上游 map task，而不是只重算少数本地分区",
-            "一定比窄依赖便宜",
-            "无法恢复，只能整个作业重跑"
+            "一定比窄依赖更便宜",
+            "无法恢复只能整个重跑"
           ],
           "correct_index": 1,
           "explanation": "宽依赖的恢复成本通常明显高于窄依赖——Shuffle 输出不可用时，要回到上游 map 端重跑相关任务。（早期 RDD 论文的表述是「上游任何分区丢失都要整体重算」，那更保守；现代 Spark 有 shuffle 文件与 External Shuffle Service，实际只重跑失败的那部分。）",
@@ -4945,9 +4945,9 @@
           "type": "single_choice",
           "prompt": "下列算子中，通常情况下属于宽依赖（会引入 Shuffle）的是？",
           "options": [
-            "filter",
-            "select",
-            "map",
+            "通常是 filter 这类",
+            "通常是 select 这类",
+            "通常是 map 这类",
             "groupBy"
           ],
           "correct_index": 3,
@@ -4958,10 +4958,10 @@
           "type": "single_choice",
           "prompt": "groupBy 的「部分聚合」属于？",
           "options": [
-            "纯窄依赖",
-            "纯宽依赖",
+            "它属于纯的窄依赖",
+            "它属于纯的宽依赖",
             "窄+宽两阶段",
-            "无依赖"
+            "它压根没有依赖关系"
           ],
           "correct_index": 2,
           "explanation": "groupBy 先本地预聚合（窄），再跨节点合并（宽），是两阶段。",
@@ -4971,10 +4971,10 @@
           "type": "single_choice",
           "prompt": "决定 Stage 边界的是？",
           "options": [
-            "select",
-            "窄依赖",
+            "由 select 来决定",
+            "由窄依赖来决定",
             "宽依赖（Exchange）",
-            "Project"
+            "由 Project 来决定"
           ],
           "correct_index": 2,
           "explanation": "只有宽依赖（Shuffle）才会把执行切成不同 Stage。",
@@ -5017,7 +5017,7 @@
           "options": [
             "它是普遍公式，任何计划都能用",
             "它只适合快速估算单条线性依赖链；多分支、Union、多数据源的 DAG 要按实际依赖关系数",
-            "它算的是 Task 数",
+            "它算的其实是 Task 数",
             "它只在关闭 AQE 时才成立"
           ],
           "correct_index": 1,
@@ -5029,9 +5029,9 @@
           "prompt": "Task 数等于？",
           "options": [
             "该 Stage 的分区数（并行度）",
-            "Stage 数",
-            "Job 数",
-            "宽依赖数"
+            "等于 Stage 的个数",
+            "等于 Job 的个数",
+            "等于宽依赖个数"
           ],
           "correct_index": 0,
           "explanation": "每个分区对应一个 Task，所以 Task 数 = 该 Stage 输出 RDD 的分区数。",
@@ -5042,9 +5042,9 @@
           "prompt": "一个 Job 里的多个 Stage 是如何执行的？",
           "options": [
             "有依赖关系的 Stage 必须等父 Stage 完成，没有依赖关系的 Stage 可以并行提交",
-            "所有 Stage 一律严格串行，不可能并行",
+            "所有 Stage 一律严格串行",
             "所有 Stage 一律同时并行",
-            "由 Stage 编号的奇偶决定"
+            "由 Stage 编号奇偶决定"
           ],
           "correct_index": 0,
           "explanation": "Stage 之间靠依赖关系组成 DAG：前一个 Stage 的 Shuffle 输出是后一个的输入，这种必须串行；但互不依赖的分支（比如 union 的两侧、broadcast 的构建侧与探测侧）会被同时提交执行。真正的并行主力在 Task 层。",
@@ -5054,10 +5054,10 @@
           "type": "single_choice",
           "prompt": "单个 Stage 内的 Task 是？",
           "options": [
-            "顺序执行",
+            "按顺序逐个执行",
             "并行执行（多 Executor 各干一个分区）",
-            "不执行",
-            "串行排队"
+            "压根不会执行",
+            "排队串行地执行"
           ],
           "correct_index": 1,
           "explanation": "同一 Stage 内各分区 Task 由集群 Executor 并行执行，这是「微观并行」。",
@@ -5080,10 +5080,10 @@
           "type": "single_choice",
           "prompt": "层级关系正确的是？",
           "options": [
-            "Stage ⊃ Job ⊃ Task",
-            "Task ⊃ Stage ⊃ Job",
+            "Stage 包含 Job",
+            "Task 包含 Stage",
             "Job ⊃ Stage ⊃ Task",
-            "三者无关系"
+            "三者之间无关系"
           ],
           "correct_index": 2,
           "explanation": "一个 Job 包含多个 Stage，一个 Stage 包含多个 Task，层级嵌套。",
@@ -5093,10 +5093,10 @@
           "type": "single_choice",
           "prompt": "Spark 的最小执行单元是？",
           "options": [
-            "Job",
-            "Stage",
+            "是 Job 这个单元",
+            "是 Stage 这个单元",
             "Task",
-            "Action"
+            "是 Action 这个单元"
           ],
           "correct_index": 2,
           "explanation": "Task 是调度与执行的最小单位，运行在 Executor 上处理单个分区。",
@@ -5106,9 +5106,9 @@
           "type": "single_choice",
           "prompt": "执行一段 `df.groupBy('city').count().show()`，通常会产生几个 Job？",
           "options": [
-            "0，show 不触发作业",
-            "有几个分区就有几个",
-            "固定 2 个",
+            "0 个，show 不触发作业",
+            "有几个分区就有几个 Job",
+            "固定就是 2 个 Job",
             "通常 1 个（show 是 Action），但 show 底层是 take，数据不足时可能分多轮产生多个"
           ],
           "correct_index": 3,
@@ -5121,7 +5121,7 @@
           "options": [
             "全部并行，Stage 之间也不等待",
             "宏观串行、微观并行（所有 Stage 必然串行）",
-            "全部串行，没有并行",
+            "全部串行，没有任何并行",
             "有依赖处串行、无依赖可并行，单个 Stage 内的 Task 并行执行"
           ],
           "correct_index": 3,
@@ -5138,9 +5138,9 @@
           "prompt": "综合读图的第一步是？",
           "options": [
             "找 Exchange（Shuffle）",
-            "数 Task",
-            "打开 Spark UI",
-            "改代码"
+            "先数 Task 的个数",
+            "先打开 Spark UI 看",
+            "直接去改代码"
           ],
           "correct_index": 0,
           "explanation": "先找 Exchange 定位 Shuffle 与 Stage 边界，是读图的起点。",
@@ -5163,10 +5163,10 @@
           "type": "single_choice",
           "prompt": "一段简单的 `df.groupBy('city').count()` 通常会在计划里产生几处 Exchange？",
           "options": [
-            "0，聚合不需要 Shuffle",
+            "0 处，聚合不需要 Shuffle",
             "1（把相同 key 汇聚到一起需要一次 Shuffle）",
-            "2",
-            "3"
+            "2 处，按分组各来一次",
+            "3 处，每个算子各一次"
           ],
           "correct_index": 1,
           "explanation": "groupBy 需要把相同 key 汇聚到一起，通常会插入 1 次 Exchange。但这是「通常」不是「必然」：如果上游已经按 city 分好区（比如前面刚 repartition('city')，或读的是按 city 分桶的表），这次 Exchange 就可以省掉。",
@@ -5176,10 +5176,10 @@
           "type": "single_choice",
           "prompt": "指认「至少一处 Catalyst 优化」应看哪段？",
           "options": [
-            "Physical 段",
+            "看 Physical 段即可",
             "Optimized 段的下推/裁剪痕迹",
-            "Spark UI",
-            "运行日志"
+            "看 Spark UI 的运行指标",
+            "看运行日志的报错"
           ],
           "correct_index": 1,
           "explanation": "Optimized 段集中体现谓词下推、列裁剪等等价改写。",
@@ -5190,9 +5190,9 @@
           "prompt": "为什么「计划相同 ≠ 运行时性能相同」？",
           "options": [
             "数据倾斜、分区数等运行时因素影响真实耗时",
-            "计划本身有错",
-            "两者毫无关系",
-            "Spark 会随机变慢"
+            "因为计划本身有错",
+            "因为两者毫无关系",
+            "因为 Spark 会随机变慢"
           ],
           "correct_index": 0,
           "explanation": "同样计划在不同数据分布/分区数下真实耗时差异大，倾斜等是运行时因素（L5/L7）。",
@@ -5202,9 +5202,9 @@
           "type": "single_choice",
           "prompt": "Level 4 综合练习的达标标准是？",
           "options": [
-            "把代码改快",
-            "立即调优",
-            "完全重写",
+            "把整段代码改快",
+            "立即去做参数调优",
+            "把代码完全重写一遍",
             "读懂：认 Shuffle、数 Stage、找优化点"
           ],
           "correct_index": 3,
@@ -5215,10 +5215,10 @@
           "type": "single_choice",
           "prompt": "explain() 在综合练习中的角色是？",
           "options": [
-            "触发执行",
-            "修改数据",
+            "它会触发作业执行",
+            "它会修改底层数据",
             "零成本的读图工具",
-            "没有作用"
+            "它没有任何作用"
           ],
           "correct_index": 2,
           "explanation": "explain() 不执行，是随时可做、零成本的读图手段。",
@@ -5228,9 +5228,9 @@
           "type": "single_choice",
           "prompt": "对照两种写法，若 Optimized 段一致说明？",
           "options": [
-            "毫无意义",
-            "结果一定不同",
-            "会报错",
+            "毫无意义不用管",
+            "结果一定有所不同",
+            "程序会直接报错",
             "Catalyst 重排后二者等价"
           ],
           "correct_index": 3,
@@ -5254,9 +5254,9 @@
           "type": "single_choice",
           "prompt": "关于综合练习与调优，正确的是？",
           "options": [
-            "读图毫无用处",
-            "必须当场调优",
-            "不用读图",
+            "读图毫无用处而已",
+            "必须当场完成调优",
+            "根本不用去读图",
             "综合只验读懂，调优留 L5/L7"
           ],
           "correct_index": 3,
