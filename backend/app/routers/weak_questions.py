@@ -11,6 +11,12 @@ Design constraints (Phase 10.1, deliberately minimal):
   * "Weak question" = a question with >= 1 wrong answer in history. NOT "not
     currently mastered". A question answered wrong twice then right twice is
     STILL listed (wrong_count=2, last_attempt_correct=true) -- that is by design.
+  * `last_attempt_correct` is the ONLY extra signal the list exposes, and it is a
+    pure read-time label: the UI splits the returned list into 「待重练」
+    (false) / 「已恢复」 (true) purely for presentation. It is NOT a graduation
+    state -- list membership is unchanged, `wrong_count` and `last_wrong_at`
+    keep their true historical values, and nothing new is persisted. Do not turn
+    it into a status column, a filter param, or a second Mastery.
   * Aggregation is CROSS-SOURCE: quiz + review + practice logs are merged for the
     same question. `source` is only an event label, never a separate silo.
   * The practice endpoint commits a single standalone row and calls NONE of
@@ -63,6 +69,10 @@ def list_weak_questions(db: Session = Depends(get_db)):
 
     One row per question that has EVER been answered wrong, across all sources.
     All counts/timestamps are computed here -- nothing is persisted.
+
+    The list is deliberately NOT partitioned server-side: the client groups it by
+    `last_attempt_correct` (false -> 「待重练」, true -> 「已恢复」). "Ever wrong"
+    stays the single membership rule.
     """
     logs = (
         db.scalars(

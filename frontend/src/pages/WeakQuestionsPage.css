@@ -84,9 +84,105 @@
   padding: 1px 8px;
 }
 
-.weak-recovered {
-  color: #16a34a;
+.weak-ok {
+  flex-shrink: 0;
+  color: var(--sq-success);
+}
+
+/* 派生分组：待重练 / 已恢复（纯 UI 分组，不涉及任何持久化状态） */
+.weak-group {
+  margin-bottom: var(--sq-space-6);
+}
+
+.weak-group-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: var(--sq-text-h3);
   font-weight: 600;
+  color: var(--sq-text);
+}
+
+.weak-group-toggle {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.weak-group-toggle:hover .weak-group-action {
+  text-decoration: underline;
+}
+
+.weak-group-mark {
+  flex-shrink: 0;
+}
+
+.weak-group-mark-bad {
+  color: #dc2626;
+}
+
+.weak-group-mark-ok {
+  color: var(--sq-success);
+}
+
+.weak-group-count {
+  font-size: var(--sq-text-small);
+  font-weight: 500;
+  color: var(--sq-text-muted);
+}
+
+.weak-group-action {
+  margin-left: auto;
+  font-size: var(--sq-text-small);
+  font-weight: 500;
+  color: var(--sq-primary);
+}
+
+.weak-group-empty {
+  color: var(--sq-text-muted);
+  line-height: var(--sq-line-normal);
+}
+
+.weak-group-empty-title {
+  font-weight: 600;
+  color: var(--sq-text);
+  margin-bottom: 4px;
+}
+
+.weak-group-empty-sub {
+  font-size: var(--sq-text-small);
+}
+
+/* 已恢复：明显降权 —— 灰底、弱化题干、按钮转为描边（不与待重练同等强调） */
+.weak-card.is-recovered {
+  background: var(--sq-bg);
+  border-color: var(--sq-border-muted);
+}
+
+.weak-card.is-recovered .weak-prompt {
+  font-weight: 500;
+  color: var(--sq-text-muted);
+}
+
+.weak-card.is-recovered .weak-practice-btn {
+  background: var(--sq-card-bg);
+  color: var(--sq-primary);
+  border: 1px solid var(--sq-border);
+}
+
+.weak-card.is-recovered .weak-practice-btn:hover {
+  background: var(--sq-primary-light);
+  border-color: var(--sq-primary-border);
 }
 
 .weak-practice-btn {

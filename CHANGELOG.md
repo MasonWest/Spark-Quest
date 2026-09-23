@@ -1073,6 +1073,48 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ---
 
+## 2026-09-23 — Weak Questions UI 派生分组（待重练 / 已恢复）
+
+> **定位：Weak Questions UI 增加「待重练 / 已恢复」派生分组，复用现有 `last_attempt_correct`，不增加持久化状态。**
+> 小范围 UX + 展示语义修正，不是新增状态系统：不新增表 / 字段 / 接口，不改 `quiz_answer_log` 的事实层性质，不改 `practice` 端点行为，不引入「连续 N 次正确 / 跨天 / 冷却期」等规则。
+> 起因：真实库 17 道历史错题里有 16 道最近一次已答对（94%），却与仍然答错的题在同一个列表里同等呈现 —— 主列表被已恢复的题占满。
+
+### Added
+- **`frontend/src/pages/weakGrouping.ts`**：纯函数 `groupWeakQuestions()`，按 `last_attempt_correct` 二分出 `active` / `recovered`。零副作用、不改入参、不丢题、组内保持后端顺序。刻意用 `.ts` 而非 `.tsx`（node type stripping 不支持 JSX），从而能被 node 内置测试运行器直接加载。
+- **`frontend/scripts/weak-grouping.test.ts` + `npm run test:weak-grouping`**：项目首个可重复运行的测试入口（`node --test`，**零新依赖**）。放 `scripts/` 而非 `src/`：tsconfig 是 `include:["src"]` + `strict`，测试文件若进 `src/` 会因 `import { test } from "node:test"` 缺 `@types/node` 让 `tsc -b` 直接失败。
+- **「待重练」独立空态**：`🎉 待重练已清空 / 历史错题都已恢复，可以继续学习了。` —— 待重练为 0 是正常产品状态（当前数据即 1 道，答对后归 0），不能让用户看到空白区域以为页面坏了。
+- **`ux_audit/verify_weak_groups.mjs`**：薄弱题分组的 CDP 验收脚本（真实数据渲染 + 折叠展开 + 视觉权重 + 窄屏 + 只发 GET 核对）。
+
+### Changed
+- **薄弱题页由单列表改为两组派生视图**（`WeakQuestionsPage.tsx`）：
+  - 「🔴 待重练」= `last_attempt_correct === false`，**默认展开**，页面主要内容
+  - 「✓ 已恢复」= `last_attempt_correct === true`，**默认折叠**，但标题栏**数量常显**（`✓ 已恢复 16 道 · 展开`）—— 用户要能看出「这些题不是消失了，而是已恢复」
+  - 副标题：`共 N 道 · 待重练 X · 已恢复 Y`
+- **卡片文案按组别分化**：待重练卡「最近一次答错 · 相对时间」；已恢复卡「错误 N 次 · 最近一次答对 · 相对时间」。**`wrong_count` 等历史统计照旧显示，恢复不清零、不洗历史。**
+- **已恢复卡明显降权**：复合选择器 `.weak-card.is-recovered`（不违反铁律 R1 —— 含第二个类，作用域已限定）→ 灰底 + 题干字重 600→500 + 按钮由实心蓝改描边款。
+- **新增 `.weak-group*` 命名空间类**（`.weak-group` / `.weak-group-head` / `.weak-group-toggle` / `.weak-group-mark-*` / `.weak-group-count` / `.weak-group-action` / `.weak-group-empty*` / `.weak-ok`），全部带 `weak-` 前缀、仅本文件定义；新样式走 `--sq-*` 变量（顺带对深色模式友好）。
+- **删掉旧「最近一次已做对」绿标**：该标签落在「待重练」组内恒为 false，属死代码；同时**同批删除** `.weak-recovered` 样式规则（铁律 R1 教训：元素删了，样式必须同批删干净）。
+- **后端仅补注释，零行为变更**：`routers/weak_questions.py`（module docstring + `list_weak_questions()` docstring）、`schemas.py`（`last_attempt_correct` 字段注释）、`types.ts`（同字段注释）—— 写死该字段**只做 UI 展示分类**，**不是** graduation state，列表成员不变，不得演化为 status 列 / 过滤参数 / 第二套 Mastery。
+- 未新增 `total_attempts` 字段（本模块本就没有此字段，本次不引入）。
+
+### Fixed
+- **「已经答对的题为什么还霸占主要错题列表」**：`last_attempt_correct` 此前只用来渲染一个绿标、不参与任何归属；现在真正参与 UI 分类（`false → 待重练`，`true → 已恢复`），页面首屏不再被已恢复的题占据。
+
+### Architecture
+- **「已恢复」是读时派生 UI 分类，不是状态**：不写库、不新增持久化字段、不与 Mastery / SRS / badge / streak 互相写入；没有「标记为已掌握 / 移出错题本 / 删除 / dismiss」等任何手动操作 —— 唯一让题目进入「已恢复」的方式是**实际把最近一次答对**。
+- **准入规则不变**：仍是「历史上至少答错过一次」（ever wrong），列表成员不因答对而改变；服务端**不做**分组，响应形态不变。
+
+### 验证
+- **前端纯逻辑**：`node --test scripts/weak-grouping.test.ts` **7/7 通过**（含真实分布 17 = 待重练 1 + 已恢复 16、纯函数不修改入参、全恢复时待重练为空）。
+- **后端派生语义 6 用例**（副本库 + 副本 app 目录 → `init_db()`，**真库零改动**，mtime 未变）**10/10 通过**：错→错 = 待重练；错→对 = 已恢复；错→错→对 = 已恢复且 `wrong_count=2`；只答对 = 不入列；`practice` 对 = 已恢复（`last_source=practice`）且**端点零副作用**（`lesson_mastery` / `user_stats` / `study_days` / `user_badges` / `lessons` 全等）；`review` 对 = 已恢复（`last_source=review`）；历史统计保留 + 日志仍 append-only（零删除）；列表 total = 待重练 + 已恢复 对账一致。
+- **真实数据渲染**（CDP，`ux_audit/verify_weak_groups.mjs`）：`共 17 道 · 待重练 1 · 已恢复 16`；折叠态已恢复渲染 0 张、展开 16 张、折叠后标题栏仍含数量；待重练卡白底/字重 600/实心按钮 vs 已恢复卡 `rgb(249,250,251)`/字重 500/描边按钮；400 / 375px 无横向溢出；页面全程只发 `GET /api/weak-questions`（真库零写入）。
+- `tsc -b` 零错误；`check:css` 通过（11 个 css，无跨文件裸类名冲突），`--all` 观察项与改造前完全一致（未引入新的复合同名）。
+
+### 状态
+- 见 `CURRENT_STATE.md`「Phase 10.1 实现记录」的 **UI 派生分组（2026-09-23 增量）** 小节。本条写入时未 commit / push。
+
+---
+
 ## 模板（后续阶段直接复制此结构，改日期与内容）
 
 ## YYYY-MM-DD — <阶段标题>

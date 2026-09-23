@@ -273,7 +273,7 @@ title / objective / estimated_minutes 仍为独立列；课程文本**不硬编�
 | `GET /api/review/due` | **Phase 6b**：到期的复习列表（mastered 且 `next_review_at <= now`），按课程顺序；含 `overdue_days` | 6b |
 | `GET /api/review/{lesson_id}` | **Phase 6b**：取一轮复习（该课题库抽 5 题，不泄露答案；弱维度优先 + 维度多样性）；只要 `mastered` 即可取题（含失败后立即重试）；非 mastered → 403 | 6b |
 | `POST /api/review/{lesson_id}/submit` | **Phase 6b**：批改并重新调度。**5/5 才算通过**（4/5 判失败）；通过 → stage+1 且间隔按阶梯延长；失败 → stage 不变、`next_review_at = now+3d`、写 `weak_points`；提交题数 ≠5 → 422；**不改动 status / score / attempts / last_quiz_at** | 6b |
-| `GET /api/weak-questions` | **Phase 10.1**：从 `quiz_answer_log` **跨来源（quiz+review+practice）派生**薄弱题列表：`wrong_count` / `last_wrong_at` / `last_attempt_at` / `last_attempt_correct` 全部读时计算，不持久化；过滤 `wrong_count>=1`；排序 wrong_count DESC, last_wrong_at DESC | 10.1 |
+| `GET /api/weak-questions` | **Phase 10.1**：从 `quiz_answer_log` **跨来源（quiz+review+practice）派生**薄弱题列表：`wrong_count` / `last_wrong_at` / `last_attempt_at` / `last_attempt_correct` 全部读时计算，不持久化；过滤 `wrong_count>=1`；排序 wrong_count DESC, last_wrong_at DESC。**响应形态不变**：服务端不分组，前端按 `last_attempt_correct` 分为「待重练 / 已恢复」两组展示（见 Phase 10.1 记录的 UI 派生分组） | 10.1 / 09-23 |
 | `GET /api/weak-questions/{question_id}` | **Phase 10.1**：单题题面（id/type/prompt/options/dimension），**不含 correct_index**（答案不泄露）；404 on missing | 10.1 |
 | `POST /api/weak-questions/{question_id}/practice` | **Phase 10.1**：单题重练。服务端按 `quizzes.correct_index` 判分，追加一行 `quiz_answer_log(source='practice')`（独立事务）；**绝不触碰** mastery / SRS / streak / badge / user_stats | 10.1 |
 
@@ -1129,7 +1129,7 @@ XP / 金币 / 排行榜 / 商店 / 社交分享 / 每日目标 / 学习日历热
 
 - **`quiz_answer_log` = 事实层，不是状态层**：只记"某时刻、某用户、对某题、选了什么、对错与否"。不叫 `wrong_questions`——那个名字会诱导塞入 `status/mastery/wrong_count/is_fixed`，最终造出第二套 Mastery。
 - **一切派生**：错几次=COUNT / 最近错=MAX / 是否后来做对=查其后是否有 correct / 哪些进列表=过滤+排序。全部读时计算，零持久化状态。
-- **"薄弱"定义**：= "历史上至少出现过一次错误作答"，**不代表当前未掌握**。`wrong_count=2` 且 `last_attempt_correct=true` 仍留在列表（曾暴露薄弱点、最近一次已答对）——这是设计语义，不是 Bug。
+- **"薄弱"定义**：= "历史上至少出现过一次错误作答"，**不代表当前未掌握**。`wrong_count=2` 且 `last_attempt_correct=true` 仍留在列表（曾暴露薄弱点、最近一次已答对）——这是设计语义，不是 Bug。**列表内不再一律同等呈现**：2026-09-23 起前端按 `last_attempt_correct` 派生分为「待重练」（默认展开）/「已恢复」（默认折叠）两组，**准入规则与列表成员完全不变**。
 - **跨来源统一聚合**：`source` 只是事件标签（quiz/review/practice），同一题三来源记录合并统计，不是三套体系。
 - **不做历史 backfill**：Phase 10.1 之前的逐题尝试已丢弃、不可恢复；强行回填=制造伪历史。日志从实施日起累积，越用越有价值。
 
@@ -1158,8 +1158,20 @@ Practice 端点**绝不调用** `record_activity / increment_user_stats / evalua
 
 ### 前端（`/wrong-questions` 最小版）
 
-- `WeakQuestionsPage.tsx`：薄弱题总数 + 卡片列表（题干两行截断 / `维度 · L{n}` / 错误 N 次 · 相对时间 / 「最近一次已做对」绿标）→「重新练习」弹单题面板（选项作答 → 对错高亮 + 解析块 → 可重试/返回），**无强制勾选**
+- `WeakQuestionsPage.tsx`：薄弱题总数 + 卡片列表（题干两行截断 / `维度 · L{n}` / 错误 N 次 · 相对时间 / 「最近一次已做对」绿标）→「重新练习」弹单题面板（选项作答 → 对错高亮 + 解析块 → 可重试/返回），**无强制勾选**（2026-09-23 起改为派生分组视图，见下）
 - `Home.tsx` 页脚新增「🧠 薄弱题 →」入口；`main.tsx` 路由 `/wrong-questions`；`types.ts` 新增 3 个接口
+
+### UI 派生分组 —— 「待重练 / 已恢复」（2026-09-23 增量）
+
+> 一句话：**Weak Questions UI 增加「待重练 / 已恢复」派生分组，复用现有 `last_attempt_correct`，不增加持久化状态。**
+> 起因：17 道历史错题里有 16 道最近一次已答对，却与仍然答错的题同等呈现，占据主要视觉空间。
+
+- **分组规则（唯一规则，不做「连续 N 次」/跨天/冷却期）**：`last_attempt_correct === false` → 「待重练」（默认展开，页面主要内容）；`true` → 「已恢复」（默认折叠，标题栏**数量常显**，用户知道它们不是消失）。
+- **实现位置**：新增纯函数 `frontend/src/pages/weakGrouping.ts` 的 `groupWeakQuestions()`，只做二分；`.ts` 而非 `.tsx`（node type stripping 不支持 JSX），使其可用 node 内置 `--test` 直接跑。**后端零行为变更**，只在 `routers/weak_questions.py` / `schemas.py` / `types.ts` 补注释，写死「`last_attempt_correct` 只做展示分类，不是 graduation state，不得演化为 status 列/过滤参数/第二套 Mastery」。
+- **历史不清零**：`wrong_count` / `last_wrong_at` / `last_attempt_at` 照旧输出与显示，`quiz_answer_log` 不删行。本模块本就没有 `total_attempts` 字段，本次**不引入**。
+- **视觉**：已恢复卡用复合选择器 `.weak-card.is-recovered`（不违反铁律 R1）降权 —— 灰底 + 题干字重 500 + 按钮改描边款；待重练卡删掉旧「最近一次已做对」绿标（该组恒为 false，是死代码），文案改为「最近一次答错 / 最近一次答对 + 相对时间」。
+- **空态**：待重练为 0 时显示独立空态 `🎉 待重练已清空 / 历史错题都已恢复，可以继续学习了。`——**如实呈现真实数据**（当前 17 = 待重练 1 + 已恢复 16），不为「看起来内容丰富」而放宽恢复规则。
+- **验证**：`node --test scripts/weak-grouping.test.ts` 7/7；后端派生语义 6 用例（副本库 + 副本 app，真库零改动）10/10（含 `practice` / `review` 来源参与最近一次判定、practice 端点零副作用、历史统计保留）；CDP `ux_audit/verify_weak_groups.mjs` 实测真实数据渲染 17/1/16 + 折叠展开 + 400·375px 无溢出 + 只发 GET。
 
 ### 验证（快照 → 测 → 还原，`_p101_smoke.py` 23/23 全过）
 
@@ -1172,7 +1184,7 @@ Practice 端点**绝不调用** `record_activity / increment_user_stats / evalua
 
 ### 明确不做（Phase 10.2+ 候选）
 
-筛选/分类/归档、"连续做对 N 次才移出列表"的薄弱度升级、与 Review 的来源切换联动、错题 SRS、强制阅读解析。
+~~筛选/分类/归档~~ —— **「UI 层派生分组」这一最小切片已于 2026-09-23 落地**（见上）；仍不做：归档、手动标记已掌握/移出列表/dismiss、"连续做对 N 次才移出列表"的薄弱度升级、与 Review 的来源切换联动、错题 SRS、强制阅读解析。
 
 ---
 

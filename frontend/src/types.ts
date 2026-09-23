@@ -266,7 +266,9 @@ export interface WeakQuestion {
   wrong_count: number;
   last_wrong_at: string | null;
   last_attempt_at: string | null;
-  // 计算标签：最近一次尝试（跨来源）是否做对。true 不代表移出列表。
+  // 读时计算标签：最近一次尝试（跨 quiz + review + practice）是否做对。
+  // 前端仅用它做展示分组：false = 「待重练」，true = 「已恢复」——
+  // 不移出列表、不改变历史统计，也不是持久化的掌握状态。
   last_attempt_correct: boolean;
 }
 

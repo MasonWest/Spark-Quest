@@ -292,9 +292,11 @@ class WeakQuestionOut(BaseModel):
     wrong_count: int
     last_wrong_at: Optional[str] = None
     last_attempt_at: Optional[str] = None
-    # Computed label only: did the MOST RECENT attempt (any source) get it right?
-    # True does NOT remove the question from the list. Weak = "ever wrong", not
-    # "currently not mastered".
+    # Read-time label only: did the MOST RECENT attempt (any source) get it right?
+    # The UI uses it purely as a presentation split -- false = 「待重练」,
+    # true = 「已恢复」 -- WITHOUT removing the question from the list. Weak =
+    # "ever wrong", not "currently not mastered". It is not a graduation state and
+    # must never become a persisted status / filter / second Mastery.
     last_attempt_correct: bool = False
 
 

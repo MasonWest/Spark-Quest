@@ -5,6 +5,7 @@ import type {
   WeakQuestionDetail,
   WeakQuestionPracticeResult,
 } from "../types";
+import { groupWeakQuestions } from "./weakGrouping";
 import "./WeakQuestionsPage.css";
 
 function relativeTime(iso: string | null): string {
@@ -28,11 +29,62 @@ type PracticeState =
       selected: number;
     };
 
+/** 一张错题卡。`recovered` 只决定视觉权重与文案，不改变任何数据语义。 */
+function WeakCard({
+  q,
+  recovered,
+  onPractice,
+}: {
+  q: WeakQuestion;
+  recovered: boolean;
+  onPractice: (q: WeakQuestion) => void;
+}) {
+  return (
+    <article className={`weak-card${recovered ? " is-recovered" : ""}`}>
+      <div className="weak-card-main">
+        <div className="weak-prompt">
+          {recovered ? (
+            <span className="weak-ok" aria-hidden={true}>
+              ✓
+            </span>
+          ) : (
+            <span className="weak-x" aria-hidden={true}>
+              ❌
+            </span>
+          )}
+          <span className="weak-prompt-text">{q.prompt}</span>
+        </div>
+        <div className="weak-meta">
+          <span className="weak-dim">
+            {q.dimension ?? "未分类"} · L{q.level_order}
+          </span>
+          {/* 历史统计照旧显示：进入「已恢复」不等于把错误记录抹掉 */}
+          <span className="weak-count">错误 {q.wrong_count} 次</span>
+          {recovered ? (
+            <span className="weak-count">
+              最近一次答对 · {relativeTime(q.last_attempt_at)}
+            </span>
+          ) : (
+            <span className="weak-count">
+              最近一次答错 · {relativeTime(q.last_attempt_at)}
+            </span>
+          )}
+        </div>
+      </div>
+      <button className="weak-practice-btn" onClick={() => onPractice(q)}>
+        重新练习
+      </button>
+    </article>
+  );
+}
+
 export default function WeakQuestionsPage() {
   const [list, setList] = useState<WeakQuestion[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [practice, setPractice] = useState<PracticeState>({ status: "idle" });
   const [practiceError, setPracticeError] = useState<string | null>(null);
+  // 「已恢复」默认折叠，但折叠标题始终显示数量 —— 它们不是消失了，是已恢复。
+  const [recoveredOpen, setRecoveredOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/weak-questions")
@@ -76,7 +128,7 @@ export default function WeakQuestionsPage() {
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const result = (await res.json()) as WeakQuestionPracticeResult;
       setPractice({ status: "result", detail, result, selected });
-      refreshList(); // 计数 / 最近一次对错可能已变化
+      refreshList(); // 最近一次对错可能已变化 → 该题可能在两组之间移动
     } catch (e) {
       setPracticeError(String(e));
     }
@@ -88,6 +140,7 @@ export default function WeakQuestionsPage() {
   }
 
   const count = list?.length ?? 0;
+  const groups = groupWeakQuestions(list ?? []);
 
   return (
     <div className="container weak-page">
@@ -98,7 +151,7 @@ export default function WeakQuestionsPage() {
         <h1 className="weak-title">🧠 薄弱题</h1>
         <p className="weak-sub">
           {list
-            ? `共 ${count} 道 · 历史上答错过、值得重新练`
+            ? `共 ${count} 道 · 待重练 ${groups.active.length} · 已恢复 ${groups.recovered.length}`
             : "加载中…"}
         </p>
       </header>
@@ -115,42 +168,87 @@ export default function WeakQuestionsPage() {
         </div>
       )}
 
-      <div className="weak-list">
-        {list?.map((q) => (
-          <article className="weak-card" key={q.question_id}>
-            <div className="weak-card-main">
-              <div className="weak-prompt">
-                <span className="weak-x">❌</span>
-                <span className="weak-prompt-text">{q.prompt}</span>
+      {list && count > 0 && (
+        <>
+          {/* 第一组：待重练 —— 最近一次仍然答错的题，页面的主要内容 */}
+          <section className="weak-group">
+            <h2 className="weak-group-head">
+              <span
+                className="weak-group-mark weak-group-mark-bad"
+                aria-hidden={true}
+              >
+                🔴
+              </span>
+              <span className="weak-group-title">待重练</span>
+              <span className="weak-group-count">{groups.active.length} 道</span>
+            </h2>
+
+            {groups.active.length === 0 ? (
+              <div className="card weak-group-empty">
+                <div className="weak-group-empty-title">🎉 待重练已清空</div>
+                <div className="weak-group-empty-sub">
+                  历史错题都已恢复，可以继续学习了。
+                </div>
               </div>
-              <div className="weak-meta">
-                <span className="weak-dim">
-                  {q.dimension ?? "未分类"} · L{q.level_order}
-                </span>
-                <span className="weak-count">
-                  错误 {q.wrong_count} 次 · 最近一次 {relativeTime(q.last_wrong_at)}
-                </span>
-                {q.last_attempt_correct && (
-                  <span className="weak-recovered">最近一次已做对</span>
-                )}
+            ) : (
+              <div className="weak-list">
+                {groups.active.map((q) => (
+                  <WeakCard
+                    key={q.question_id}
+                    q={q}
+                    recovered={false}
+                    onPractice={openPractice}
+                  />
+                ))}
               </div>
-            </div>
-            <button
-              className="weak-practice-btn"
-              onClick={() => openPractice(q)}
-            >
-              重新练习
-            </button>
-          </article>
-        ))}
-      </div>
+            )}
+          </section>
+
+          {/* 第二组：已恢复 —— 默认折叠，数量常显：它们不是消失了，是已恢复 */}
+          <section className="weak-group">
+            <h2 className="weak-group-head">
+              <button
+                type="button"
+                className="weak-group-toggle"
+                onClick={() => setRecoveredOpen((v) => !v)}
+                aria-expanded={recoveredOpen}
+                aria-controls="weak-recovered-list"
+              >
+                <span
+                  className="weak-group-mark weak-group-mark-ok"
+                  aria-hidden={true}
+                >
+                  ✓
+                </span>
+                <span className="weak-group-title">已恢复</span>
+                <span className="weak-group-count">
+                  {groups.recovered.length} 道
+                </span>
+                <span className="weak-group-action">
+                  {recoveredOpen ? "收起" : "展开"}
+                </span>
+              </button>
+            </h2>
+
+            {recoveredOpen && (
+              <div className="weak-list" id="weak-recovered-list">
+                {groups.recovered.map((q) => (
+                  <WeakCard
+                    key={q.question_id}
+                    q={q}
+                    recovered={true}
+                    onPractice={openPractice}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </>
+      )}
 
       {practice.status !== "idle" && (
         <div className="practice-overlay" onClick={closePractice}>
-          <div
-            className="practice-panel"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="practice-panel" onClick={(e) => e.stopPropagation()}>
             {practice.status === "loading" && <p>加载中…</p>}
 
             {practice.status === "open" && (
@@ -168,9 +266,7 @@ export default function WeakQuestionsPage() {
                     </li>
                   ))}
                 </ul>
-                {practiceError && (
-                  <p className="status error">{practiceError}</p>
-                )}
+                {practiceError && <p className="status error">{practiceError}</p>}
                 <button className="practice-close" onClick={closePractice}>
                   取消
                 </button>
