@@ -1,0 +1,340 @@
+{
+  "slug": "l3-comprehensive",
+  "version": 1,
+  "title": "准备练习：用 SQL 交付城市日报",
+  "mission": "这六步是可选热身；独立毕业任务使用另一份输入，先在任务工作台自己实现。",
+  "correction": "HAVING 与 WHERE 不可按同层条件互换；SQL 命令不能全部视为惰性。输出文件不承诺保留排名，不能只凭 show 的样本或总计验收。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-comprehensive/read",
+      "knowledgeIds": [
+        "project.sql-input"
+      ],
+      "title": "先让字段和名字对上",
+      "intro": "准备数据：p1/A/70、p2/A/60、p3/B/140、p4/B/NULL。金额为整数元。",
+      "code": "raw = spark.read.option(\"header\", True).schema(__A__).csv(\"practice.csv\")\nraw.createOrReplaceTempView(\"orders\")",
+      "prompt": "A 应使用什么结构？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "\"id long, city string, amount string\"",
+              "feedback": "p1 不是整数，金额也应按约定读取。"
+            },
+            {
+              "id": "o2",
+              "text": "\"city long, amount boolean\"",
+              "feedback": "字段与类型都不符合输入。"
+            },
+            {
+              "id": "o1",
+              "text": "\"id string, city string, amount long\"",
+              "feedback": "对，按输入约定建立结构。"
+            }
+          ]
+        }
+      ],
+      "insight": "读入结构与 SQL 关系名都是分析链的输入契约。",
+      "ability": "先让字段和名字对上",
+      "reading": {
+        "id": "l3-comprehensive/read/reading",
+        "title": "先让字段和名字对上",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "读入结构与 SQL 关系名都是分析链的输入契约。",
+        "boundary": "这份准备练习不是毕业任务的数据，不能照搬结果。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-comprehensive/dedup",
+      "knowledgeIds": [
+        "project.sql-dedup"
+      ],
+      "title": "完全相同的导入行怎么办",
+      "intro": "同一条 p1/A/70 被重复导入一次，业务要求完全相同行只算一次。",
+      "code": "SELECT __A__ id, city, amount FROM orders",
+      "prompt": "A 应填什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "DISTINCT",
+              "feedback": "对，三列共同定义完整输出行的重复。"
+            },
+            {
+              "id": "o1",
+              "text": "LIMIT",
+              "feedback": "LIMIT 不是去重。"
+            },
+            {
+              "id": "o2",
+              "text": "HAVING",
+              "feedback": "HAVING 不放在这里，也不负责去重。"
+            }
+          ]
+        }
+      ],
+      "insight": "去重依据应与业务约定一致，不是随便按一个字段丢行。",
+      "ability": "完全相同的导入行怎么办",
+      "reading": {
+        "id": "l3-comprehensive/dedup/reading",
+        "title": "完全相同的导入行怎么办",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "去重依据应与业务约定一致，不是随便按一个字段丢行。",
+        "boundary": "同键冲突版本需要另定义保留规则，不能直接套用 DISTINCT。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-comprehensive/stages",
+      "knowledgeIds": [
+        "project.sql-stages"
+      ],
+      "title": "先保留有效单，再筛达标城市",
+      "intro": "使用准备数据，业务只统计正金额，城市总额需严格大于 100。",
+      "code": "SELECT city, SUM(amount) AS total FROM orders\nWHERE __A__ GROUP BY city HAVING __B__",
+      "prompt": "A 应选什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "SUM(amount) > 100",
+              "feedback": "同层 WHERE 不是筛聚合结果的位置。"
+            },
+            {
+              "id": "o1",
+              "text": "amount > 0",
+              "feedback": "对，先筛有效明细。"
+            },
+            {
+              "id": "o2",
+              "text": "amount IS NULL",
+              "feedback": "这会只保留缺失金额。"
+            }
+          ]
+        },
+        {
+          "id": "detail",
+          "label": "B：城市达标条件",
+          "correctOptionId": "x1",
+          "options": [
+            {
+              "id": "x0",
+              "text": "amount > 100",
+              "feedback": "这是单笔金额，不是城市总额。"
+            },
+            {
+              "id": "x2",
+              "text": "COUNT(*) > 100",
+              "feedback": "业务比较的是金额，不是笔数。"
+            },
+            {
+              "id": "x1",
+              "text": "SUM(amount) > 100",
+              "feedback": "对，按城市合计筛选。"
+            }
+          ]
+        }
+      ],
+      "insight": "WHERE 定义参与指标的订单，HAVING 定义交付哪些城市。",
+      "ability": "先保留有效单，再筛达标城市",
+      "reading": {
+        "id": "l3-comprehensive/stages/reading",
+        "title": "先保留有效单，再筛达标城市",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "WHERE 定义参与指标的订单，HAVING 定义交付哪些城市。",
+        "boundary": "本题 >100 与独立毕业任务的阈值不同，边界要重新读。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-comprehensive/stages-transfer",
+        "knowledgeId": "project.sql-stages",
+        "title": "恰好等于门槛要不要留",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "业务：城市合计至少 200 元。\n某城市两笔 90、110。",
+        "prompt": "正确判断是什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "用 WHERE amount >= 200，会保留两笔",
+              "feedback": "两笔都小于 200，会在求和前被排除。"
+            },
+            {
+              "id": "r2",
+              "text": "用 HAVING SUM(amount) > 200，也会保留",
+              "feedback": "严格大于不包括刚好 200。"
+            },
+            {
+              "id": "r0",
+              "text": "用 HAVING SUM(amount) >= 200，应该保留",
+              "feedback": "对，“至少”包含等号。"
+            }
+          ]
+        },
+        "insight": "不只要选对阶段，还要读对阈值边界。"
+      }
+    },
+    {
+      "id": "l3-comprehensive/metric",
+      "knowledgeIds": [
+        "project.sql-metrics"
+      ],
+      "title": "缺失金额还应算进有效订单吗",
+      "intro": "准备任务先执行 WHERE amount > 0，A 有 70、60，B 有 140、NULL。",
+      "code": "SELECT city, COUNT(*) AS cnt, SUM(amount) AS total\nFROM orders WHERE amount > 0 GROUP BY city",
+      "prompt": "结果是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "A:2/130，B:2/140",
+              "feedback": "B 的 NULL 行已被 WHERE 排除。"
+            },
+            {
+              "id": "o1",
+              "text": "A:1/70，B:1/140",
+              "feedback": "A 的两笔正金额都有效。"
+            },
+            {
+              "id": "o2",
+              "text": "A:2/130，B:1/140",
+              "feedback": "对，指标针对筛选后的集合计算。"
+            }
+          ]
+        }
+      ],
+      "insight": "计数口径必须与清洗阶段合在一起解释。",
+      "ability": "缺失金额还应算进有效订单吗",
+      "reading": {
+        "id": "l3-comprehensive/metric/reading",
+        "title": "缺失金额还应算进有效订单吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计数口径必须与清洗阶段合在一起解释。",
+        "boundary": "只核对总额可能漏掉重复计数或地区分配错误。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-comprehensive/rank",
+      "knowledgeIds": [
+        "project.sql-ranking"
+      ],
+      "title": "日报预览也要定义并列顺序",
+      "intro": "城市 A 与 B 的总额都是 200。希望同额按 city 升序。",
+      "code": "SELECT city, total FROM report ORDER BY __A__ LIMIT 1",
+      "prompt": "A 应填什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "total DESC, city ASC",
+              "feedback": "对，完整定义金额优先及并列规则。"
+            },
+            {
+              "id": "o1",
+              "text": "city DESC",
+              "feedback": "会优先 B，忽略金额排序需求。"
+            },
+            {
+              "id": "o2",
+              "text": "total DESC",
+              "feedback": "同额时没有定义 A/B 取舍。"
+            }
+          ]
+        }
+      ],
+      "insight": "排名规则适用于查询展示；文件读回后若需要排名，应重新排序。",
+      "ability": "日报预览也要定义并列顺序",
+      "reading": {
+        "id": "l3-comprehensive/rank/reading",
+        "title": "日报预览也要定义并列顺序",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "排名规则适用于查询展示；文件读回后若需要排名，应重新排序。",
+        "boundary": "目录分区与文件数量也不是排名规则。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-comprehensive/accept",
+      "knowledgeIds": [
+        "project.sql-acceptance"
+      ],
+      "title": "看到总额对了，够不够交付",
+      "intro": "输出总额与纸上计算一致，但还没核对各城市和写出后结果。",
+      "code": "report.show()\n# 总额看起来正确",
+      "prompt": "下一步应如何验收？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "直接认定毕业成功",
+              "feedback": "不同城市的错误可能互相抵消，文件也未验证。"
+            },
+            {
+              "id": "o2",
+              "text": "核对字段/类型/逐城市指标，写出读回并检查重跑",
+              "feedback": "对，查询正确与交付可用都要验证。"
+            },
+            {
+              "id": "o1",
+              "text": "只把 show 行数改大",
+              "feedback": "展示更多行仍不等于可运行断言和文件验收。"
+            }
+          ]
+        }
+      ],
+      "insight": "毕业任务要求新的输入、独立实现和可复现验收，不靠看懂一道陈述题完成。",
+      "ability": "看到总额对了，够不够交付",
+      "reading": {
+        "id": "l3-comprehensive/accept/reading",
+        "title": "看到总额对了，够不够交付",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "毕业任务要求新的输入、独立实现和可复现验收，不靠看懂一道陈述题完成。",
+        "boundary": "当前开发机的 Windows 文件系统限制仍存在，查询通过不等于文件阶段通过。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

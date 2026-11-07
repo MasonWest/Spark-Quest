@@ -1,0 +1,11 @@
+order_id,city,amount
+s401,north,120
+s402,north,130
+s403,south,250
+s404,south,-10
+s405,east,100
+s406,east,80
+s407,west,
+s408,north,0
+s403,south,250
+s409,delta,200

@@ -3,14 +3,16 @@ from pathlib import Path
 from contextlib import closing
 import json
 import sqlite3
+import sys
 from playwright.sync_api import sync_playwright
 
 root = Path(__file__).resolve().parents[2]
+slug = sys.argv[1] if len(sys.argv)>1 else "l2-comprehensive"
 with closing(sqlite3.connect((root / 'backend/spark_quest.db').as_uri() + '?mode=ro', uri=True)) as db:
     db.row_factory = sqlite3.Row
-    detail = dict(db.execute("SELECT * FROM lessons WHERE slug='l2-comprehensive'").fetchone())
+    detail = dict(db.execute("SELECT * FROM lessons WHERE slug=?", (slug,)).fetchone())
 detail['content'] = json.loads(detail['content'])
-detail.update(status='available', mastery_score=None, level_title='L2', next_lesson=None)
+detail.update(status='available', mastery_score=None, level_title=slug.split('-')[0].upper(), next_lesson=None)
 project = json.loads((root / 'frontend/src/content/capstones.json').read_text(encoding='utf-8'))['lessons'][detail['slug']]
 key = f"spark-quest:capstone:{project['id']}:draft"
 with sync_playwright() as p:
@@ -38,7 +40,7 @@ with sync_playwright() as p:
     page.set_viewport_size({'width': 390, 'height': 844})
     out = root.parent / 'ux_audit/learning-repair'
     out.mkdir(parents=True, exist_ok=True)
-    page.screenshot(path=str(out / 'l2-graduation-390.png'), full_page=True)
+    page.screenshot(path=str(out / f'{slug}-graduation-390.png'), full_page=True)
     before = page.evaluate('JSON.stringify(localStorage)')
     board.get_by_text('我卡住了，给一点提示', exact=True).click()
     for index, button in enumerate(['给我一个方向', '提示再具体一点', '看处理顺序骨架']):

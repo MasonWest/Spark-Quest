@@ -37,10 +37,10 @@ with sync_playwright() as p:
    out=root.parent/'ux_audit/learning-repair';out.mkdir(parents=True,exist_ok=True)
    page.screenshot(path=str(out/'l2-delayed-check-390.png'),full_page=True)
    page.reload();page.get_by_role('heading',name=bank['items'][1]['title'],exact=True).wait_for()
-  else:page.get_by_role('button',name='完成这一轮 →' if index==4 else '验证下一个 →').click()
+  else:page.get_by_role('button',name='完成这一轮 →' if index==len(bank['items'])-1 else '验证下一个 →').click()
   print('PASS',item['id'],'independent choice, explanation after submit, responsive')
  page.get_by_role('heading',name='这一轮验证结束了').wait_for()
- records=page.evaluate('JSON.parse(localStorage.getItem("spark-quest:delayed:v1"))');assert len(records)==5 and sum(e['correct'] for e in records)==4
+ records=page.evaluate('JSON.parse(localStorage.getItem("spark-quest:delayed:v1"))');assert len(records)==len(bank['items']) and sum(e['correct'] for e in records)==len(bank['items'])-1
  for key,state in fixtures.items():assert page.evaluate('(k)=>JSON.parse(localStorage.getItem(k))',key)==state
  page.goto('http://127.0.0.1:4173/');assert page.get_by_role('link',name='开始隔天验证 →').count()==0
  page.clock.fast_forward(24*60*60*1000)

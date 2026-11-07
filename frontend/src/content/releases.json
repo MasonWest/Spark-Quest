@@ -39,6 +39,42 @@
     "version": 2,
     "hash": "ef9665a11f9834ded1bf2cbb4384aa6e96481d7037e6b9f17644f2f90d0dac93"
   },
+  "l3-comprehensive": {
+    "version": 1,
+    "hash": "8ba299e42b94e054e30a0ddc5fb8bc85ef44b04e611bf9cd889280ca1478d361"
+  },
+  "l3-functions-and-udf": {
+    "version": 1,
+    "hash": "857d8903f067dd11f5d063748c5179087b2cd526636c1976d66e9e9550502a49"
+  },
+  "l3-groupby-having": {
+    "version": 1,
+    "hash": "42fdd4680a59f751d787970654bc40128b338e0c239587a9670786dae8d7066f"
+  },
+  "l3-joins-intro": {
+    "version": 1,
+    "hash": "a2eb6e60f4c6b5dbd9ebaf6f97a26bbb1c642b414783fd246b6f872f04033769"
+  },
+  "l3-select-basics": {
+    "version": 1,
+    "hash": "4b3f9b2b8234acf3435dc2544e8963d315e028b3b01ef407166cace37d5a43c3"
+  },
+  "l3-tables-and-formats": {
+    "version": 1,
+    "hash": "bf43c700f029b15b4fa5e2ec9d68ebb7024270f9d56d8fe29d8b84ba9aae27cb"
+  },
+  "l3-temp-views": {
+    "version": 1,
+    "hash": "2579ec9a1adc6d5925cde1d21d24c6c71295a89945eaf56b10affd229dfcaafa"
+  },
+  "l3-what-is-spark-sql": {
+    "version": 1,
+    "hash": "fa48e9da99db1b57e4f51b1f29ab650c00382c8837b90fed889507576f8d64f2"
+  },
+  "l3-where-order-limit": {
+    "version": 1,
+    "hash": "43fb8239086e2b6919a785544c3bd340f7e30df73ed82b18a944584c00dc3fa7"
+  },
   "l5-what-is-shuffle": {
     "version": 3,
     "hash": "1f97f2492c00b720c0af57b55e14496772ea0aaddfdd55d45b62866d7507f80b"
@@ -48,15 +84,15 @@
     "hash": "53938e41562f72a6269e99106ef74523506a402800f23c9f18322bbcc265ce77"
   },
   "delayed-checks": {
-    "version": 1,
-    "hash": "c0863c6c2902b40fef9e7d1af9cccc8d58396e0ffaa30ca34a2f7ba09e2f78be"
+    "version": 2,
+    "hash": "7f514678a44270fd12edfd25da82474e786472fb2791a03c2a539faf4ea0750c"
   },
   "standard-guides": {
-    "version": 1,
-    "hash": "471645ed67c60f6b09af65e8157330f39076e603311277523c7948bb5245f694"
+    "version": 2,
+    "hash": "73cdba6f8fc51e134278cd18f3b29d1bab2f50f040123ba3e9c415d784547621"
   },
   "capstones": {
-    "version": 1,
-    "hash": "466ae8e46785bb754e1d3245308b5fe10fe53e996419811c76ec0ade6396ede9"
+    "version": 2,
+    "hash": "0edba03b779d6443ae375ae2ca440b05ceccd249e9c5c4e634e6ff22aa6230ae"
   }
 }

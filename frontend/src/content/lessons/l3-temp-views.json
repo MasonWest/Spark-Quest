@@ -1,0 +1,226 @@
+{
+  "slug": "l3-temp-views",
+  "version": 1,
+  "title": "让 SQL 找到正确的那批数据",
+  "mission": "给订单挂牌，再检查替换、会话和生命周期。",
+  "correction": "普通临时视图属于创建它的会话；全局临时视图属于当前 Spark 应用，并非跨独立应用/集群永久共享。注册视图不等于复制、缓存或落盘。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-temp-views/register",
+      "knowledgeIds": [
+        "view.target"
+      ],
+      "title": "把名字牌挂在正确位置",
+      "intro": "clean 是已经筛选后的 DataFrame，SQL 要查询的名字是 daily。",
+      "code": "clean = orders.filter(F.col(\"amount\") > 0)\n# 注册后执行 SELECT * FROM daily",
+      "prompt": "哪一步能把 daily 对准 clean？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "orders.createOrReplaceTempView(\"daily\")",
+              "feedback": "这挂上的是原始 orders，不是 clean。"
+            },
+            {
+              "id": "o1",
+              "text": "clean.createOrReplaceTempView(\"daily\")",
+              "feedback": "对，视图应对应清洗后的查询。"
+            },
+            {
+              "id": "o2",
+              "text": "clean.show()",
+              "feedback": "展示数据不会注册名字。"
+            }
+          ]
+        }
+      ],
+      "insight": "注册哪个 DataFrame，SQL 就从哪个逻辑查询出发。",
+      "ability": "把名字牌挂在正确位置",
+      "reading": {
+        "id": "l3-temp-views/register/reading",
+        "title": "把名字牌挂在正确位置",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "注册哪个 DataFrame，SQL 就从哪个逻辑查询出发。",
+        "boundary": "它不自动 materialize、cache 或保存文件。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-temp-views/rebind",
+      "knowledgeIds": [
+        "view.rebind"
+      ],
+      "title": "变量改名，视图会跟着变吗",
+      "intro": "第一次注册时 df 中只有 10。",
+      "code": "df.createOrReplaceTempView(\"v\")\ndf = spark.createDataFrame([(99,)], \"amount long\")\n# 再查 SELECT amount FROM v",
+      "prompt": "v 仍指向哪份定义？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "自动变为 99",
+              "feedback": "需要再次注册替换定义。"
+            },
+            {
+              "id": "o2",
+              "text": "视图被 Python 赋值删除",
+              "feedback": "Python 赋值不删除 SQL 视图。"
+            },
+            {
+              "id": "o0",
+              "text": "第一次注册的 10",
+              "feedback": "对，Python 变量重绑定没有重新注册视图。"
+            }
+          ]
+        }
+      ],
+      "insight": "要更新 v，请对新 DataFrame 再次调用 createOrReplaceTempView。",
+      "ability": "变量改名，视图会跟着变吗",
+      "reading": {
+        "id": "l3-temp-views/rebind/reading",
+        "title": "变量改名，视图会跟着变吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "要更新 v，请对新 DataFrame 再次调用 createOrReplaceTempView。",
+        "boundary": "这不意味着物化了源数据；底层外部数据的变化仍需按数据源语义理解。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-temp-views/session",
+      "knowledgeIds": [
+        "view.global-scope"
+      ],
+      "title": "另一个会话为何找不到",
+      "intro": "应用中的 s1 注册了普通和全局临时视图，s2=s1.newSession()。",
+      "code": "df.createOrReplaceTempView(\"local_orders\")\ndf.createOrReplaceGlobalTempView(\"shared_orders\")\ns2 = spark.newSession()",
+      "prompt": "s2 中应使用哪个名字访问共享定义？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o2",
+              "text": "global_temp.shared_orders",
+              "feedback": "对，同一应用中的新会话可访问这个全局临时视图。"
+            },
+            {
+              "id": "o0",
+              "text": "local_orders",
+              "feedback": "普通临时视图不在另一个会话的临时目录里。"
+            },
+            {
+              "id": "o1",
+              "text": "shared_orders",
+              "feedback": "全局临时视图要带 global_temp 数据库前缀。"
+            }
+          ]
+        }
+      ],
+      "insight": "global_temp 的“全局”范围是当前 Spark 应用，不是任意独立程序。",
+      "ability": "另一个会话为何找不到",
+      "reading": {
+        "id": "l3-temp-views/session/reading",
+        "title": "另一个会话为何找不到",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "global_temp 的“全局”范围是当前 Spark 应用，不是任意独立程序。",
+        "boundary": "不能用它作为跨独立应用的持久共享表。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-temp-views/scope-transfer",
+        "knowledgeId": "view.global-scope",
+        "title": "应用已经退出",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "应用 A 创建 global_temp.stock 后退出。\n独立启动应用 B。",
+        "prompt": "应用 B 能仅凭这个名字继续访问 A 的临时视图吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能，global 表示永久",
+              "feedback": "global 不是永久存储。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，需要持久数据与目录安排或重新注册",
+              "feedback": "对，两个独立应用不共享这种临时视图。"
+            },
+            {
+              "id": "r2",
+              "text": "只要变量同名就能",
+              "feedback": "Python 变量名也不会恢复目录。"
+            }
+          ]
+        },
+        "insight": "区分会话、应用和持久存储的生命周期。"
+      }
+    },
+    {
+      "id": "l3-temp-views/persistence",
+      "knowledgeIds": [
+        "view.persistence"
+      ],
+      "title": "登记、缓存、保存是三回事",
+      "intro": "需求是让第二天独立启动的程序也能读取这批日报。",
+      "code": "report.createOrReplaceTempView(\"daily\")",
+      "prompt": "仅这一行能满足需求吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，它已经创建 Parquet",
+              "feedback": "没有任何文件保存调用。"
+            },
+            {
+              "id": "o2",
+              "text": "不能，需要持久化数据及相应访问安排",
+              "feedback": "对，临时名称会失效。"
+            },
+            {
+              "id": "o1",
+              "text": "能，它自动缓存并永久保存",
+              "feedback": "登记视图不等于缓存，更不等于永久存储。"
+            }
+          ]
+        }
+      ],
+      "insight": "临时视图服务当前分析，持久交付需要另行写出并约定位置。",
+      "ability": "登记、缓存、保存是三回事",
+      "reading": {
+        "id": "l3-temp-views/persistence/reading",
+        "title": "登记、缓存、保存是三回事",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "临时视图服务当前分析，持久交付需要另行写出并约定位置。",
+        "boundary": "不要把 session 内能查询当作下游隔天可用的保证。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

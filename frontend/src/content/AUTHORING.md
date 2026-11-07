@@ -95,3 +95,12 @@ L2 使用 `standardGuides.json`（独立版本与发布摘要）提供当前标�
 构建检查将 capstones 配置和所有下载文件的摘要一起锁定到 releases；修改工具包也需增加独立 capstones 版本，改变任务约定时另换 id 保留旧草稿。浏览器检查 `python scripts/check-capstone-ui.py`；Spark 反向校验 `python scripts/check-capstone-verifier.py`，拒绝总额正确但地区错误、漏去重、错误单位/类型、重复结果、硬编码旧答案与提前清洗原始输入等错误。
 
 开发机 PySpark 4.2.0 五组查询已实跑，七项错误结果拒绝检查通过，CSV 读取也已验证；Parquet 提交仍因 Windows NativeIO$Windows.access0 缺失失败。不能把它写成完整实作验收通过，仍需在文件系统支持完整的 Spark 环境补验。版本兼容性没有据此扩展到所有 Spark 发行版。
+
+
+## L3 整章编写源
+
+`frontend/scripts/author-l3-content.py` 是九课显式编写源，`--check` 比对输出、不写文件。普通运行生成九份 v1 lesson，并以稳定 ID 合并标准讲解和延迟题；已有 L2 条目保留。它不是自动按标题填词的出题器，每题有具体材料、逐项反馈、语义收束与适用边界。
+
+标准讲解、延迟题与毕业配置分别为独立 v2；L3 旧数据库阅读不冒充互动迁移记录。新课不要编造 legacyTaskIds。两章共用 CapstoneProject，SQL 任务的 build_report 接收 spark 和本次 orders，参考实现每次替换自己的视图，避免复用前一输入。
+
+L3 38 步/9 补救/9 延迟的原文与代码均经结构检查及浏览器回归；`check-l3-examples.py` 独立实跑关键语义与六种错误报告。验收不认证所有干扰项质量、所有 Spark 版本或长期学习保持。正式题源的 34 项纠错与既有库升级说明见根目录 L3_ROLLOUT_PLAN.md。

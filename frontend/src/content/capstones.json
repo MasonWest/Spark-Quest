@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "lessons": {
     "l2-comprehensive": {
       "id": "l2-graduation-v1",
@@ -63,6 +63,71 @@
         {
           "title": "处理顺序骨架",
           "body": "读取时声明结构 → 对完全重复的行去重 → 保留正金额 → 按地区计算笔数和金额 → 从总额派生千元值 → 写入指定练习目标 → 读回验收。先用 --query-only 排查查询，也要保留最后的文件验收。"
+        }
+      ]
+    },
+    "l3-comprehensive": {
+      "id": "l3-graduation-v1",
+      "title": "SQL 独立实作：筛出达标城市日报",
+      "estimatedMinutes": 50,
+      "brief": "运营交来一批可能重复导入的订单。请用 SQL 生成达标城市日报，处理缺失与重复，验证门槛边界，再交付可重跑的 Parquet 结果。",
+      "contract": [
+        "原始字段 order_id、city 为 string，amount 为 long（整数元）；空金额保留为 NULL，读取阶段不清洗或丢行。",
+        "完全相同的重复行只计一次；仅统计金额严格大于零的订单。本任务不包含同订单号冲突版本。",
+        "按 city 汇总，城市总额至少 200 元才输出。注意逐行有效规则与聚合后门槛分别在哪一层。",
+        "输出 city string、cnt long、total long（元）、total_k double（千元）；预览同额时按 city 升序，不要求文件保存排名。",
+        "注册本次输入为临时视图，用 SQL 表达主体查询；不能依赖前次残留视图，不能写死城市名、总额或结果行数。",
+        "写 Parquet 数据目录，同批次重跑不重复追加。这里只需单表分析，不为展示语法强加 JOIN 或 UDF。"
+      ],
+      "downloads": [
+        {
+          "label": "新订单 orders.csv",
+          "href": "/practice/l3-graduation/orders.csv"
+        },
+        {
+          "label": "SQL 任务骨架 starter.py",
+          "href": "/practice/l3-graduation/starter.py"
+        },
+        {
+          "label": "独立验收 verify.py",
+          "href": "/practice/l3-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l3-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载 SQL 参考实现 reference.py",
+        "href": "/practice/l3-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "逐组语义",
+          "body": "核对完整去重、正金额、COUNT/SUM、千元类型与每个城市的指标。"
+        },
+        {
+          "title": "门槛与输入变化",
+          "body": "单独检查 199 与恰好 200、新城市、换金额、重复/空值、空输入和全无效输入。"
+        },
+        {
+          "title": "真实文件与重跑",
+          "body": "读取 CSV、写出 Parquet、读回核对，再执行同批次，结果不得翻倍。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先划出两层筛选",
+          "body": "在纸上分别标记“哪些明细有效”和“哪些城市达标”。两层判断的对象不同，先别把全部条件堆到 WHERE。"
+        },
+        {
+          "title": "给每步找对应语法",
+          "body": "字段与名字见 SELECT/临时视图；完整行去重见 DISTINCT；逐行条件见 WHERE；城市门槛见 GROUP BY/HAVING。金额与千元字段要使用一致单位。"
+        },
+        {
+          "title": "处理顺序骨架",
+          "body": "读取并登记本次输入 → 内层 SELECT DISTINCT 整行 → WHERE 正金额 → 按城市聚合 → HAVING 城市达标 → 输出约定字段 → 写入隔离目标 → 读回并重跑验收。"
         }
       ]
     }

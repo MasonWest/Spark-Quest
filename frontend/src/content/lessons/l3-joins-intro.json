@@ -1,0 +1,226 @@
+{
+  "slug": "l3-joins-intro",
+  "version": 1,
+  "title": "把订单与用户正确配对",
+  "mission": "先理解匹配、丢行和放大，再谈连接性能。",
+  "correction": "多笔订单匹配一个唯一用户是正常明细粒度；右侧重复键才会额外放大订单。键类型不一致可能发生隐式转换或错误，不能断言必定全部不匹配。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-joins-intro/inner",
+      "knowledgeIds": [
+        "join.inner-unmatched"
+      ],
+      "title": "找不到用户的订单去哪了",
+      "intro": "orders：o1/u1、o2/u9；users：u1/Ana。",
+      "code": "SELECT o.id, u.name FROM orders o\nINNER JOIN users u ON o.user_id = u.user_id",
+      "prompt": "结果包含什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "o1/Ana 和 o2/NULL",
+              "feedback": "这更像保留左侧未匹配行的 LEFT JOIN。"
+            },
+            {
+              "id": "o2",
+              "text": "只有 o2/Ana",
+              "feedback": "u9 并不匹配 u1。"
+            },
+            {
+              "id": "o1",
+              "text": "只有 o1/Ana",
+              "feedback": "对，INNER 只留下匹配对。"
+            }
+          ]
+        }
+      ],
+      "insight": "连接类型决定未匹配行的去向，INNER 不保证保留全部订单。",
+      "ability": "找不到用户的订单去哪了",
+      "reading": {
+        "id": "l3-joins-intro/inner/reading",
+        "title": "找不到用户的订单去哪了",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "连接类型决定未匹配行的去向，INNER 不保证保留全部订单。",
+        "boundary": "本课先掌握 INNER；其他连接类型和执行策略留给后续连接章节。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-joins-intro/multiplicity",
+      "knowledgeIds": [
+        "join.multiplicity"
+      ],
+      "title": "两边都重复会产生几对",
+      "intro": "左表同一个键有 2 行，右表同键有 3 行，全部满足等值条件。",
+      "code": "SELECT * FROM left_rows l JOIN right_rows r ON l.k = r.k",
+      "prompt": "这个键会贡献几行？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o2",
+              "text": "6 行",
+              "feedback": "对，2×3 个匹配对。"
+            },
+            {
+              "id": "o0",
+              "text": "2 行",
+              "feedback": "每条左行都能匹配三条右行。"
+            },
+            {
+              "id": "o1",
+              "text": "3 行",
+              "feedback": "不是只按右侧行数保留。"
+            }
+          ]
+        }
+      ],
+      "insight": "JOIN 不会自动把同键记录去重。聚合前应先核对维表键是否唯一。",
+      "ability": "两边都重复会产生几对",
+      "reading": {
+        "id": "l3-joins-intro/multiplicity/reading",
+        "title": "两边都重复会产生几对",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "JOIN 不会自动把同键记录去重。聚合前应先核对维表键是否唯一。",
+        "boundary": "订单多对唯一用户是正常关系；维表重复会额外放大金额，不能只看连接键名字。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-joins-intro/multiplicity-transfer",
+        "knowledgeId": "join.multiplicity",
+        "title": "一笔金额为何变成两笔",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "订单一行：u1/50。\n用户维表两行：u1/A、u1/B。\nINNER JOIN 后 SUM(amount)。",
+        "prompt": "结果金额是多少？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "50",
+              "feedback": "订单匹配到两行，不会自动去重。"
+            },
+            {
+              "id": "r1",
+              "text": "100",
+              "feedback": "对，50 被复制到两个匹配结果里。"
+            },
+            {
+              "id": "r2",
+              "text": "0",
+              "feedback": "两行维表都能匹配。"
+            }
+          ]
+        },
+        "insight": "先检查维表唯一性，再解释聚合金额。"
+      }
+    },
+    {
+      "id": "l3-joins-intro/types",
+      "knowledgeIds": [
+        "join.key-types"
+      ],
+      "title": "键的类型不同，先别武断",
+      "intro": "左侧 user_id 是字符串，右侧是整数。尚未检查字符串内容。",
+      "code": "ON orders.user_id = users.user_id",
+      "prompt": "排查时哪个做法可靠？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "断言所有行绝不会匹配",
+              "feedback": "可能发生隐式转换，也可能遇到无效值或异常。"
+            },
+            {
+              "id": "o2",
+              "text": "核对类型、值与转换规则，再显式统一约定",
+              "feedback": "对，不能靠类型名直接猜最终匹配结果。"
+            },
+            {
+              "id": "o1",
+              "text": "只要字段名相同就一定匹配",
+              "feedback": "名字一致不保证类型和值一致。"
+            }
+          ]
+        }
+      ],
+      "insight": "显式约定连接键类型，有助于避免隐式转换掩盖质量问题。",
+      "ability": "键的类型不同，先别武断",
+      "reading": {
+        "id": "l3-joins-intro/types/reading",
+        "title": "键的类型不同，先别武断",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "显式约定连接键类型，有助于避免隐式转换掩盖质量问题。",
+        "boundary": "转换行为受表达式与配置影响，不能用一条口号替代验证。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-joins-intro/aliases",
+      "knowledgeIds": [
+        "join.alias"
+      ],
+      "title": "同名字段要说清来自哪边",
+      "intro": "orders 与 users 都包含 user_id。",
+      "code": "SELECT __A__, o.amount FROM orders o\nJOIN users u ON o.user_id = u.user_id",
+      "prompt": "A 哪个写法明确引用用户表的键？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "'u.user_id'",
+              "feedback": "这是固定字符串。"
+            },
+            {
+              "id": "o2",
+              "text": "user_id",
+              "feedback": "ON 连接后的同名列可能歧义。"
+            },
+            {
+              "id": "o0",
+              "text": "u.user_id",
+              "feedback": "对，表别名消除来源歧义。"
+            }
+          ]
+        }
+      ],
+      "insight": "别名既缩短语句，也让字段来源可审查。",
+      "ability": "同名字段要说清来自哪边",
+      "reading": {
+        "id": "l3-joins-intro/aliases/reading",
+        "title": "同名字段要说清来自哪边",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "别名既缩短语句，也让字段来源可审查。",
+        "boundary": "ON 与 USING 的输出列处理不同；本题明确使用 ON。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

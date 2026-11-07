@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -364,6 +364,337 @@
           "title": "用扰动检查规则是否稳固",
           "body": "复制一条记录、加入 NULL 或补入一个新地区，再预先推断哪些指标应改变。运行实现后与推断比较，检查清洗、分组和验收是否真正表达了需求。",
           "boundary": "扰动测试不是随意修改正式数据；在隔离练习输入上进行，写到新的目标目录并读回验收。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    },
+    "l3-what-is-spark-sql": {
+      "title": "给同一批订单换一种提问方式",
+      "sections": [
+        {
+          "id": "l3-what-is-spark-sql/name",
+          "title": "Python 变量还不是 SQL 表名",
+          "body": "SQL 的 FROM 解析关系名。DataFrame 可以注册为会话临时视图；目录表和支持的文件路径查询也是数据入口。",
+          "boundary": "名字解析成功不等于数据已计算或持久化。"
+        },
+        {
+          "id": "l3-what-is-spark-sql/result",
+          "title": "查询结果还能继续加工",
+          "body": "spark.sql 的 SELECT 查询返回 DataFrame，可接 select/filter 等 API。通常在 action 请求结果时计算查询数据。",
+          "boundary": "不要将 SELECT 的惰性查询规律推广到 INSERT、CREATE TABLE 等 SQL 命令。"
+        },
+        {
+          "id": "l3-what-is-spark-sql/equivalence",
+          "title": "换写法，先核对业务含义",
+          "body": "SQL 与 DataFrame API 都能表达结构化查询，并使用 Spark SQL 的分析与优化机制。语义等价是对照写法的起点。",
+          "boundary": "共享优化体系不等于任意写法都同计划、同开销。"
+        },
+        {
+          "id": "l3-what-is-spark-sql/commands",
+          "title": "看见 sql()，别一概等待 show",
+          "body": "SparkSession.sql 接受查询与 SQL 命令。SELECT 的 DataFrame 查询与 DDL/DML 命令需要分开理解，不能把所有调用归为无副作用的转换。",
+          "boundary": "本课不执行写入；实际操作前核对目标、权限和命令语义。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        },
+        {
+          "title": "SQL 查询与命令 API",
+          "url": "https://spark.apache.org/docs/3.5.7/api/scala/org/apache/spark/sql/SparkSession.html"
+        }
+      ]
+    },
+    "l3-temp-views": {
+      "title": "让 SQL 找到正确的那批数据",
+      "sections": [
+        {
+          "id": "l3-temp-views/register",
+          "title": "把名字牌挂在正确位置",
+          "body": "createOrReplaceTempView(name) 把 DataFrame 的查询注册为当前会话的临时视图，同名时替换定义。",
+          "boundary": "它不自动 materialize、cache 或保存文件。"
+        },
+        {
+          "id": "l3-temp-views/rebind",
+          "title": "变量改名，视图会跟着变吗",
+          "body": "视图登记的是注册时的查询定义，Python 名称后来重新绑定不会自动替换它。",
+          "boundary": "这不意味着物化了源数据；底层外部数据的变化仍需按数据源语义理解。"
+        },
+        {
+          "id": "l3-temp-views/session",
+          "title": "另一个会话为何找不到",
+          "body": "全局临时视图使用 global_temp 名称空间，可被同一 Spark 应用内的会话访问，其生命周期依附该应用。",
+          "boundary": "不能用它作为跨独立应用的持久共享表。"
+        },
+        {
+          "id": "l3-temp-views/persistence",
+          "title": "登记、缓存、保存是三回事",
+          "body": "登记视图、cache 查询与写出持久数据分别解决命名、复用计算与交付问题。",
+          "boundary": "不要把 session 内能查询当作下游隔天可用的保证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    },
+    "l3-select-basics": {
+      "title": "写一份字段清楚的订单投影",
+      "sections": [
+        {
+          "id": "l3-select-basics/literal",
+          "title": "同样写 amount，意思不同",
+          "body": "SQL 中普通标识符引用字段，单引号字符串表示常量；含空格等特殊字符的标识符使用反引号。",
+          "boundary": "不要把 Python 字符串的外层引号与 SQL 文本内部的引号混淆。"
+        },
+        {
+          "id": "l3-select-basics/units",
+          "title": "把计算和名字同时交代清楚",
+          "body": "SELECT 可以包含算术表达式和 AS 别名；把单位写进列名有助于避免后续重复换算。",
+          "boundary": "货币计算应核对精度与类型；本题用 double 演示千元展示，不替代精确财务记账。"
+        },
+        {
+          "id": "l3-select-basics/identifier",
+          "title": "含空格的列如何引用",
+          "body": "使用反引号引用含特殊字符的列名，再用明确别名简化下游使用。",
+          "boundary": "名称本身包含反引号时还需要转义；本题只处理空格。"
+        },
+        {
+          "id": "l3-select-basics/distinct",
+          "title": "只选城市后再去重",
+          "body": "SELECT DISTINCT 消除完整输出行的重复。只输出 city 时，判断的是城市是否重复。",
+          "boundary": "不要把 DISTINCT city,amount 理解成“只按 city 保留一条金额”。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select.html"
+        }
+      ]
+    },
+    "l3-where-order-limit": {
+      "title": "从订单里挑出真正的 Top N",
+      "sections": [
+        {
+          "id": "l3-where-order-limit/conditions",
+          "title": "业务括号不能靠猜",
+          "body": "WHERE 过滤聚合前的行。SQL 的布尔运算写 AND、OR、NOT，与 Column API 的 &、|、~ 属于不同语法层。",
+          "boundary": "OR 与 AND 混合时先核对括号和优先级。"
+        },
+        {
+          "id": "l3-where-order-limit/null",
+          "title": "空值真的等于空值吗",
+          "body": "普通比较的任一操作数为 NULL 时，结果通常为 NULL（未知）；WHERE 只保留 true。IS NULL 专门判断缺失。",
+          "boundary": "空字符串与 NULL 不同；需要把二者都视为缺失时要显式组合条件。"
+        },
+        {
+          "id": "l3-where-order-limit/limit",
+          "title": "取两行不等于最高两行",
+          "body": "LIMIT 约束输出行数；取最大若干条应与完整 ORDER BY 规则组合。",
+          "boundary": "即使某次运行碰巧得到最大值，也不能把它当成承诺。"
+        },
+        {
+          "id": "l3-where-order-limit/ties",
+          "title": "同分时还要定义谁在前",
+          "body": "ORDER BY 支持多个排序键和 ASC/DESC。固定 Top N 应定义足够的并列处理规则。",
+          "boundary": "若业务要保留所有同分项，固定 LIMIT 未必符合需求。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html"
+        }
+      ]
+    },
+    "l3-groupby-having": {
+      "title": "先筛订单，还是筛城市日报",
+      "sections": [
+        {
+          "id": "l3-groupby-having/stage",
+          "title": "两笔小单能不能组成大城市",
+          "body": "WHERE 决定哪些明细参与聚合，HAVING 决定哪些聚合组进入结果。把条件移动到另一阶段可能改变结果。",
+          "boundary": "聚合结果也可以在外层查询用 WHERE 过滤；不能在同层 WHERE 直接放 SUM 条件。"
+        },
+        {
+          "id": "l3-groupby-having/count",
+          "title": "数行与数已知金额",
+          "body": "COUNT(*) 统计行，COUNT(列) 统计该列的非空值。",
+          "boundary": "如果一行不是一张订单，COUNT(*) 也不能直接解释为订单数。"
+        },
+        {
+          "id": "l3-groupby-having/grain",
+          "title": "汇总后还想带上哪个订单号",
+          "body": "SELECT 中普通输出字段应属于分组键，其他输出应由合法聚合表达式产生。",
+          "boundary": "任意加 first 可能让语法通过，却未解决业务选择规则。"
+        },
+        {
+          "id": "l3-groupby-having/all-null",
+          "title": "全空城市会通过总额条件吗",
+          "body": "SUM/AVG 对全空输入组返回 NULL；HAVING 与 WHERE 一样只保留条件为 true 的结果。",
+          "boundary": "业务要展示零额城市时，需要明确补零与是否保留无订单城市。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-having.html"
+        }
+      ]
+    },
+    "l3-joins-intro": {
+      "title": "把订单与用户正确配对",
+      "sections": [
+        {
+          "id": "l3-joins-intro/inner",
+          "title": "找不到用户的订单去哪了",
+          "body": "INNER JOIN 按 ON 条件产生匹配的行对，任何一边未匹配的行不进入结果。",
+          "boundary": "本课先掌握 INNER；其他连接类型和执行策略留给后续连接章节。"
+        },
+        {
+          "id": "l3-joins-intro/multiplicity",
+          "title": "两边都重复会产生几对",
+          "body": "对于满足连接条件的同键行，左右每一个可匹配组合都会进入连接结果。",
+          "boundary": "订单多对唯一用户是正常关系；维表重复会额外放大金额，不能只看连接键名字。"
+        },
+        {
+          "id": "l3-joins-intro/types",
+          "title": "键的类型不同，先别武断",
+          "body": "键类型、可转换性、NULL 和实际值共同影响匹配。应先核对 Schema 与坏值，再决定转换。",
+          "boundary": "转换行为受表达式与配置影响，不能用一条口号替代验证。"
+        },
+        {
+          "id": "l3-joins-intro/aliases",
+          "title": "同名字段要说清来自哪边",
+          "body": "给关系起别名后使用别名.字段名限定来源，尤其适用于连接中出现同名列的情况。",
+          "boundary": "ON 与 USING 的输出列处理不同；本题明确使用 ON。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html"
+        }
+      ]
+    },
+    "l3-functions-and-udf": {
+      "title": "先找内置工具，再决定是否自定义",
+      "sections": [
+        {
+          "id": "l3-functions-and-udf/strings",
+          "title": "清理空格后再统一大小写",
+          "body": "优先检查内置字符串、日期、数值与条件函数能否表达需求；这些表达式能直接参与 Spark SQL 计划。",
+          "boundary": "具体性能仍需测量，不能仅凭“内置”二字保证任意表达式都更快。"
+        },
+        {
+          "id": "l3-functions-and-udf/coalesce",
+          "title": "缺失与空串不是同一个值",
+          "body": "COALESCE 返回参数中第一个非 NULL 值；空字符串是一个非 NULL 字符串。",
+          "boundary": "它不是通用的“缺失值自动识别器”；业务缺失口径必须明确。"
+        },
+        {
+          "id": "l3-functions-and-udf/case",
+          "title": "标签的第一条规则就漏了谁",
+          "body": "CASE WHEN 按匹配条件产生表达式结果；把 NULL 的业务分支明确写出来可以避免遗漏未知值。",
+          "boundary": "多个条件可能同时成立时，先匹配的分支决定结果；返回类型还需兼容。"
+        },
+        {
+          "id": "l3-functions-and-udf/udf",
+          "title": "SQL 调用 Python 函数还缺什么",
+          "body": "普通 Python UDF 可经 spark.udf.register 注册供 SQL 使用，需约定返回类型与 NULL 行为。",
+          "boundary": "不同 UDF 类型执行方式不同；跨语言开销与向量化收益应按实际场景测量。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-functions-builtin.html"
+        }
+      ]
+    },
+    "l3-tables-and-formats": {
+      "title": "名字、文件和写入命令分开看",
+      "sections": [
+        {
+          "id": "l3-tables-and-formats/catalog",
+          "title": "不启用 Hive，就不能有目录表吗",
+          "body": "数据源表可以将格式、位置等信息登记到 catalog；临时视图则是另一种命名关系。",
+          "boundary": "本路线不搭建外部 Hive Metastore；不据此承诺所有默认目录跨重启永久保留。"
+        },
+        {
+          "id": "l3-tables-and-formats/path",
+          "title": "直接从 Parquet 路径提问",
+          "body": "Spark SQL 对支持的文件源提供格式.路径形式的直接查询，路径标识符用反引号包围。",
+          "boundary": "示例只使用可信固定练习路径；不要把外部输入直接拼成 SQL 路径。"
+        },
+        {
+          "id": "l3-tables-and-formats/append",
+          "title": "同一批日报写两次会怎样",
+          "body": "INSERT INTO 向目标追加查询结果，INSERT OVERWRITE 表达覆盖语义。目标、列映射和分区规则必须先核对。",
+          "boundary": "这不提供任意文件系统上的完整事务保证；本课不执行这些写命令。"
+        },
+        {
+          "id": "l3-tables-and-formats/target",
+          "title": "写入前先确认目标存在",
+          "body": "写入命令需要合法的目标关系、Schema 与访问安排，SELECT 成功不能证明目标可写。",
+          "boundary": "本地练习优先用新的隔离路径，不操作生产表。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-data-sources-load-save-functions.html"
+        }
+      ]
+    },
+    "l3-comprehensive": {
+      "title": "准备练习：用 SQL 交付城市日报",
+      "sections": [
+        {
+          "id": "l3-comprehensive/read",
+          "title": "先让字段和名字对上",
+          "body": "独立 SQL 任务先确认字段名、类型、空值规则和输入关系名。",
+          "boundary": "这份准备练习不是毕业任务的数据，不能照搬结果。"
+        },
+        {
+          "id": "l3-comprehensive/dedup",
+          "title": "完全相同的导入行怎么办",
+          "body": "完全相同行的重复可用 SELECT DISTINCT 在同一组输出字段上消除。",
+          "boundary": "同键冲突版本需要另定义保留规则，不能直接套用 DISTINCT。"
+        },
+        {
+          "id": "l3-comprehensive/stages",
+          "title": "先保留有效单，再筛达标城市",
+          "body": "多步分析先按业务规则筛明细，再按分组指标筛结果；每一步都应能解释对分母的影响。",
+          "boundary": "本题 >100 与独立毕业任务的阈值不同，边界要重新读。"
+        },
+        {
+          "id": "l3-comprehensive/metric",
+          "title": "缺失金额还应算进有效订单吗",
+          "body": "定义指标时明确是在原始输入、去重后还是有效明细上计算，避免同名 cnt 表示不同集合。",
+          "boundary": "只核对总额可能漏掉重复计数或地区分配错误。"
+        },
+        {
+          "id": "l3-comprehensive/rank",
+          "title": "日报预览也要定义并列顺序",
+          "body": "对报表做 Top N 展示时定义完整排序键；保存数据集不等于保存文件中的全局行顺序。",
+          "boundary": "目录分区与文件数量也不是排名规则。"
+        },
+        {
+          "id": "l3-comprehensive/accept",
+          "title": "看到总额对了，够不够交付",
+          "body": "独立验收应检查逐组指标、类型、空结果与阈值边界，并实际验证输出可读和重复执行行为。",
+          "boundary": "当前开发机的 Windows 文件系统限制仍存在，查询通过不等于文件阶段通过。"
         }
       ],
       "sources": [

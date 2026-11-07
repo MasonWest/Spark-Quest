@@ -1,0 +1,226 @@
+{
+  "slug": "l3-functions-and-udf",
+  "version": 1,
+  "title": "先找内置工具，再决定是否自定义",
+  "mission": "清理文本、处理缺失、写条件标签，最后辨认 UDF 的使用边界。",
+  "correction": "UDF 需要显式处理空值与返回类型。不能笼统说所有 UDF 每行跨语言或 pandas UDF 一定更快；本课只比较需求与表达能力。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-functions-builtin.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-functions-and-udf/strings",
+      "knowledgeIds": [
+        "function.builtin"
+      ],
+      "title": "清理空格后再统一大小写",
+      "intro": "name 是字符串 \" ana \"。",
+      "code": "SELECT UPPER(TRIM(name)) AS normalized FROM people",
+      "prompt": "normalized 是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o2",
+              "text": "ANA",
+              "feedback": "对，先去空格再大写。"
+            },
+            {
+              "id": "o0",
+              "text": " ANA ",
+              "feedback": "TRIM 已经去掉首尾空格。"
+            },
+            {
+              "id": "o1",
+              "text": "ana",
+              "feedback": "UPPER 会转换为大写。"
+            }
+          ]
+        }
+      ],
+      "insight": "内置函数可以组合表达常见清洗，不必先写 Python 循环或 UDF。",
+      "ability": "清理空格后再统一大小写",
+      "reading": {
+        "id": "l3-functions-and-udf/strings/reading",
+        "title": "清理空格后再统一大小写",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "内置函数可以组合表达常见清洗，不必先写 Python 循环或 UDF。",
+        "boundary": "具体性能仍需测量，不能仅凭“内置”二字保证任意表达式都更快。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-functions-and-udf/coalesce",
+      "knowledgeIds": [
+        "function.coalesce-null"
+      ],
+      "title": "缺失与空串不是同一个值",
+      "intro": "name 三行：NULL、空字符串、Ana。",
+      "code": "SELECT COALESCE(name, 'unknown') AS name FROM people",
+      "prompt": "三行依次是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "unknown、unknown、Ana",
+              "feedback": "COALESCE 不把空字符串自动当作 NULL。"
+            },
+            {
+              "id": "o1",
+              "text": "unknown、空字符串、Ana",
+              "feedback": "对，只替换 NULL。"
+            },
+            {
+              "id": "o2",
+              "text": "NULL、空字符串、Ana",
+              "feedback": "第一个 NULL 会选择备用值。"
+            }
+          ]
+        }
+      ],
+      "insight": "要处理空字符串，先定义显式的空串清洗规则。",
+      "ability": "缺失与空串不是同一个值",
+      "reading": {
+        "id": "l3-functions-and-udf/coalesce/reading",
+        "title": "缺失与空串不是同一个值",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "要处理空字符串，先定义显式的空串清洗规则。",
+        "boundary": "它不是通用的“缺失值自动识别器”；业务缺失口径必须明确。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-functions-and-udf/coalesce-transfer",
+        "knowledgeId": "function.coalesce-null",
+        "title": "零分需要补成默认分吗",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "score 三行：NULL、0、8。\nSELECT COALESCE(score, 5) FROM scores",
+        "prompt": "结果依次是？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r2",
+          "options": [
+            {
+              "id": "r0",
+              "text": "5、5、8",
+              "feedback": "0 不是 NULL。"
+            },
+            {
+              "id": "r1",
+              "text": "NULL、0、8",
+              "feedback": "NULL 会使用后备值 5。"
+            },
+            {
+              "id": "r2",
+              "text": "5、0、8",
+              "feedback": "对，真实零分不变。"
+            }
+          ]
+        },
+        "insight": "默认值只替换缺失，不替换合法零值。"
+      }
+    },
+    {
+      "id": "l3-functions-and-udf/case",
+      "knowledgeIds": [
+        "function.case"
+      ],
+      "title": "标签的第一条规则就漏了谁",
+      "intro": "amount 包含 NULL、50、150。",
+      "code": "SELECT CASE WHEN amount IS NULL THEN '待核对'\nWHEN amount > 100 THEN '高额' ELSE '普通' END AS tag FROM orders",
+      "prompt": "三行标签依次是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "普通、普通、高额",
+              "feedback": "首分支显式接住 NULL。"
+            },
+            {
+              "id": "o2",
+              "text": "待核对、高额、普通",
+              "feedback": "50 未超过 100，150 才是高额。"
+            },
+            {
+              "id": "o1",
+              "text": "待核对、普通、高额",
+              "feedback": "对，按条件顺序选择匹配分支。"
+            }
+          ]
+        }
+      ],
+      "insight": "CASE 能直接表达这类标签，不必为了几个分支写 UDF。",
+      "ability": "标签的第一条规则就漏了谁",
+      "reading": {
+        "id": "l3-functions-and-udf/case/reading",
+        "title": "标签的第一条规则就漏了谁",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "CASE 能直接表达这类标签，不必为了几个分支写 UDF。",
+        "boundary": "多个条件可能同时成立时，先匹配的分支决定结果；返回类型还需兼容。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-functions-and-udf/udf",
+      "knowledgeIds": [
+        "function.udf-registration"
+      ],
+      "title": "SQL 调用 Python 函数还缺什么",
+      "intro": "函数已经处理 None，返回字符串标签。",
+      "code": "def label_score(s):\n    return \"missing\" if s is None else (\"high\" if s > 90 else \"low\")\n# SQL: SELECT label_score(score) FROM scores",
+      "prompt": "如何让 SQL 解析这个自定义函数？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "spark.udf.register(\"label_score\", label_score, \"string\")",
+              "feedback": "对，注册 SQL 名称并声明返回类型。"
+            },
+            {
+              "id": "o0",
+              "text": "只定义 Python 函数就自动可用",
+              "feedback": "SQL 不会自动查找 Python 局部函数。"
+            },
+            {
+              "id": "o2",
+              "text": "先把全部数据 collect 到 Python",
+              "feedback": "不需要为此收集整表。"
+            }
+          ]
+        }
+      ],
+      "insight": "先判断内置 CASE 是否足够；确需 UDF 时处理空值、声明类型并在代表数据上验证。",
+      "ability": "SQL 调用 Python 函数还缺什么",
+      "reading": {
+        "id": "l3-functions-and-udf/udf/reading",
+        "title": "SQL 调用 Python 函数还缺什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先判断内置 CASE 是否足够；确需 UDF 时处理空值、声明类型并在代表数据上验证。",
+        "boundary": "不同 UDF 类型执行方式不同；跨语言开销与向量化收益应按实际场景测量。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

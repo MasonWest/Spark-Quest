@@ -18,7 +18,9 @@ with sync_playwright() as p:
     errors = []
     page.on('pageerror', lambda e: errors.append(str(e)))
     page.route('**/api/lessons/**', lambda r: r.fulfill(json=[] if r.request.url.endswith('/notes') else next(d for d in lessons.values() if d['id'] == int(r.request.url.rsplit('/', 1)[1]))))
+    capstones=json.loads((root / "frontend/src/content/capstones.json").read_text(encoding="utf-8"))["lessons"]
     count = 0
+    expected = sum(bool(t.get("remediation")) for f in (root / "frontend/src/content/lessons").glob("*.json") for t in json.loads(f.read_text(encoding="utf-8"))["tasks"])
     for file in sorted((root / 'frontend/src/content/lessons').glob('*.json')):
         lesson = json.loads(file.read_text(encoding='utf-8'))
         for index, task in enumerate(lesson['tasks']):
@@ -26,11 +28,13 @@ with sync_playwright() as p:
             if not remedy:
                 continue
             page.goto(f"http://127.0.0.1:4173/lesson/{lessons[lesson['slug']]['id']}")
+            if lesson['slug'] in capstones: page.locator('#capstone-guided > summary').click()
             page.locator('.dfj-root').wait_for()
             key = f"spark-quest:learning:{lesson['slug']}:v{lesson['version']}"
             initial = dict(version=lesson['version'], runId='qa', cursorId=task['id'], completedIds=[t['id'] for t in lesson['tasks'][:index]], migratedIds=[], attempts=[])
             page.evaluate('([k,v])=>localStorage.setItem(k,JSON.stringify(v))', [key, initial])
             page.reload()
+            if lesson['slug'] in capstones: page.locator('#capstone-guided > summary').click()
             def choose(correct):
                 for i, field in enumerate(task['fields']):
                     option = next(o for o in field['options'] if (o['id'] == field['correctOptionId']) == correct)
@@ -77,5 +81,5 @@ with sync_playwright() as p:
             assert task['id'] in state['completedIds'] and len(state['completedIds']) == index + 1
             print('PASS', remedy['id'], 'wrong/retry/transfer/return, separate records, responsive')
             count += 1
-    assert count == 5 and not errors, (count, errors)
+    assert count == expected and not errors, (count, errors)
     browser.close()

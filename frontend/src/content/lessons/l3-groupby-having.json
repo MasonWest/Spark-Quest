@@ -1,0 +1,226 @@
+{
+  "slug": "l3-groupby-having",
+  "version": 1,
+  "title": "先筛订单，还是筛城市日报",
+  "mission": "用一组数值分清 WHERE、GROUP BY 和 HAVING 的职责。",
+  "correction": "WHERE 在聚合前，HAVING 在聚合后。GROUP BY 的物理交换与预聚合依赖计划，不能固定说必然某次数 Shuffle 或某种 Combine。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-having.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-groupby-having/stage",
+      "knowledgeIds": [
+        "aggregate.having-stage"
+      ],
+      "title": "两笔小单能不能组成大城市",
+      "intro": "A 城有 70、60，B 城有 120。想保留总额大于 100 的城市。",
+      "code": "SELECT city, SUM(amount) AS total FROM orders\nGROUP BY city HAVING SUM(amount) > 100",
+      "prompt": "结果是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只有 B/120",
+              "feedback": "这是把每笔 >100 放在 WHERE 时可能得到的结果。"
+            },
+            {
+              "id": "o1",
+              "text": "A/130 和 B/120",
+              "feedback": "对，先汇总再按城市总额筛。"
+            },
+            {
+              "id": "o2",
+              "text": "只有 A/130",
+              "feedback": "B 的总额也满足条件。"
+            }
+          ]
+        }
+      ],
+      "insight": "HAVING 不能被逐行金额筛选替代，否则组成总额的小订单会被丢掉。",
+      "ability": "两笔小单能不能组成大城市",
+      "reading": {
+        "id": "l3-groupby-having/stage/reading",
+        "title": "两笔小单能不能组成大城市",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "HAVING 不能被逐行金额筛选替代，否则组成总额的小订单会被丢掉。",
+        "boundary": "聚合结果也可以在外层查询用 WHERE 过滤；不能在同层 WHERE 直接放 SUM 条件。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-groupby-having/having-transfer",
+        "knowledgeId": "aggregate.having-stage",
+        "title": "两次访问组成活跃用户",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "u1 有访问时长 4、7；u2 有 8。\n需求：用户总时长 > 10。",
+        "prompt": "应如何筛？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "先 WHERE duration > 10",
+              "feedback": "会在求和前丢掉所有记录。"
+            },
+            {
+              "id": "r2",
+              "text": "LIMIT 10",
+              "feedback": "LIMIT 控制行数，不表达时长。"
+            },
+            {
+              "id": "r1",
+              "text": "先分组，再 HAVING SUM(duration) > 10",
+              "feedback": "对，u1 总时长 11，应留下。"
+            }
+          ]
+        },
+        "insight": "筛明细还是筛汇总，决定条件所在阶段。"
+      }
+    },
+    {
+      "id": "l3-groupby-having/count",
+      "knowledgeIds": [
+        "aggregate.sql-count"
+      ],
+      "title": "数行与数已知金额",
+      "intro": "同一城市的 amount 为 10、NULL、20。",
+      "code": "SELECT COUNT(*) AS rows, COUNT(amount) AS known FROM orders",
+      "prompt": "两列分别是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "2、2",
+              "feedback": "COUNT(*) 不会排除缺失金额行。"
+            },
+            {
+              "id": "o2",
+              "text": "3、3",
+              "feedback": "COUNT(amount) 不包含 NULL。"
+            },
+            {
+              "id": "o0",
+              "text": "3、2",
+              "feedback": "对，COUNT(*) 包含所有行，COUNT(amount) 忽略 NULL。"
+            }
+          ]
+        }
+      ],
+      "insight": "SQL 沿用相同的空值聚合语义，换语言不改变业务分母。",
+      "ability": "数行与数已知金额",
+      "reading": {
+        "id": "l3-groupby-having/count/reading",
+        "title": "数行与数已知金额",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SQL 沿用相同的空值聚合语义，换语言不改变业务分母。",
+        "boundary": "如果一行不是一张订单，COUNT(*) 也不能直接解释为订单数。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-groupby-having/grain",
+      "knowledgeIds": [
+        "aggregate.sql-grain"
+      ],
+      "title": "汇总后还想带上哪个订单号",
+      "intro": "每城有多张订单，结果约定每城一行。",
+      "code": "SELECT city, order_id, SUM(amount) FROM orders GROUP BY city",
+      "prompt": "这份查询有什么问题？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "order_id 既非分组键也未聚合，组内取值未定义",
+              "feedback": "对，需要明确粒度与字段选择规则。"
+            },
+            {
+              "id": "o0",
+              "text": "必须把 SUM 改为 COUNT 才行",
+              "feedback": "问题不在选了哪种聚合函数。"
+            },
+            {
+              "id": "o2",
+              "text": "没有问题，Spark 总是自动取第一张",
+              "feedback": "不能依赖自动取第一张这种不存在的约定。"
+            }
+          ]
+        }
+      ],
+      "insight": "先决定一行代表什么，再决定结果能保留哪些字段。",
+      "ability": "汇总后还想带上哪个订单号",
+      "reading": {
+        "id": "l3-groupby-having/grain/reading",
+        "title": "汇总后还想带上哪个订单号",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先决定一行代表什么，再决定结果能保留哪些字段。",
+        "boundary": "任意加 first 可能让语法通过，却未解决业务选择规则。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-groupby-having/all-null",
+      "knowledgeIds": [
+        "aggregate.sql-null-sum"
+      ],
+      "title": "全空城市会通过总额条件吗",
+      "intro": "Z 城两行金额都为 NULL。",
+      "code": "SELECT city, SUM(amount) AS total FROM orders\nGROUP BY city HAVING SUM(amount) > 0",
+      "prompt": "Z 城的 total 和最终去向是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "total=0，留下",
+              "feedback": "SUM 全空不自动补成 0。"
+            },
+            {
+              "id": "o1",
+              "text": "total=NULL，条件未知，不留下",
+              "feedback": "对，NULL > 0 不是 true。"
+            },
+            {
+              "id": "o2",
+              "text": "total=2，留下",
+              "feedback": "SUM 不是在数行。"
+            }
+          ]
+        }
+      ],
+      "insight": "求和与筛选的空值行为共同决定是否出现某个组。",
+      "ability": "全空城市会通过总额条件吗",
+      "reading": {
+        "id": "l3-groupby-having/all-null/reading",
+        "title": "全空城市会通过总额条件吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "求和与筛选的空值行为共同决定是否出现某个组。",
+        "boundary": "业务要展示零额城市时，需要明确补零与是否保留无订单城市。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

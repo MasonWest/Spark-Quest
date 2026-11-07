@@ -1,0 +1,638 @@
+[
+  {
+    "slug": "l3-what-is-spark-sql",
+    "prompt": "关于 Spark SQL 与 DataFrame API 的关系，正确的是？",
+    "correct_index": 3,
+    "answer": "共享 Spark SQL 优化体系，可表达等价查询",
+    "explanation": "先判断查询语义是否等价。共享优化体系不保证任意写法的物理计划与耗时都相同。",
+    "before": {
+      "prompt": "关于 Spark SQL 与 DataFrame API 的关系，正确的是？",
+      "options": [
+        "SQL 的执行速度比 API 快一倍左右",
+        "DataFrame API 不能用来做聚合运算",
+        "两者无法混用在同一条执行链里",
+        "SQL 编译成的执行计划和 API 等价"
+      ],
+      "correct_index": 3,
+      "explanation": "二者最终编译成相同逻辑/物理计划，性能一致。"
+    }
+  },
+  {
+    "slug": "l3-what-is-spark-sql",
+    "prompt": "想用 SQL 查询一个叫 df 的 DataFrame，第一步该？",
+    "correct_index": 1,
+    "answer": "先 df.createOrReplaceTempView(\"df\") 再查",
+    "explanation": "这里通过临时视图把当前 DataFrame 关联到指定 SQL 名称；SQL 还可以查询目录表或支持的数据源路径。",
+    "new_prompt": "当前只有 Python 变量 df，尚无同名关系；想用 SELECT * FROM df 查这份数据，应？",
+    "before": {
+      "prompt": "想用 SQL 查询一个叫 df 的 DataFrame，第一步该？",
+      "options": [
+        "直接 spark.sql(\"SELECT * FROM df\") 就能查询",
+        "先 df.createOrReplaceTempView(\"df\") 再查",
+        "先把 df 转成 pandas 再用本地 SQL 查",
+        "调用 df.toTable() 把它登记成一张表"
+      ],
+      "correct_index": 1,
+      "explanation": "SQL 只认注册过的名字，必须先注册成视图。"
+    }
+  },
+  {
+    "slug": "l3-what-is-spark-sql",
+    "prompt": "直接 spark.sql(\"SELECT * FROM my_df\") 报 Table or view not found，原因是？",
+    "correct_index": 2,
+    "answer": "先把这份 DataFrame 注册成 my_df 临时视图",
+    "explanation": "SQL 不自动按 Python 变量名查找 DataFrame；本题明确同名关系尚未注册。",
+    "new_prompt": "只有 DataFrame 变量 my_df、未登记同名关系，SELECT * FROM my_df 报找不到表，应？",
+    "before": {
+      "prompt": "直接 spark.sql(\"SELECT * FROM my_df\") 报 Table or view not found，原因是？",
+      "options": [
+        "SQL 的语法本身写错了，需要检查拼写",
+        "Spark 会话没有正常启动，需要重启",
+        "DataFrame 没有注册成视图",
+        "查询里引用的那个列名不存在"
+      ],
+      "correct_index": 2,
+      "explanation": "SQL 只认在 catalog 中注册过的名字，未注册的 DataFrame 变量名不是表名。"
+    }
+  },
+  {
+    "slug": "l3-what-is-spark-sql",
+    "prompt": "关于「SQL 比 API 慢」的说法，正确的是？",
+    "correct_index": 0,
+    "answer": "接口本身不决定快慢；核对等价语义、执行计划和实际指标",
+    "explanation": "SQL 与 API 使用共同的优化体系，性能取决于具体查询、数据与配置，不能按接口名称保证快慢。",
+    "before": {
+      "prompt": "关于「SQL 比 API 慢」的说法，正确的是？",
+      "options": [
+        "二者最终执行计划相同，性能差异来自写法本身",
+        "SQL 一定比 API 更慢，因为语法更繁琐",
+        "SQL 一定比 API 更快，因为它更容易优化",
+        "两者性能无法放在一起比较，没有意义"
+      ],
+      "correct_index": 0,
+      "explanation": "执行计划相同，性能差异只来自具体写法，而非接口选择。"
+    }
+  },
+  {
+    "slug": "l3-select-basics",
+    "prompt": "SELECT name, age 与 DataFrame API df.select(\"name\",\"age\") 的关系？",
+    "correct_index": 1,
+    "answer": "对相同输入表达相同列投影语义",
+    "explanation": "两种接口可表达相同列投影并使用 Spark SQL 优化体系；不据此承诺任意写法的物理计划或耗时完全相同。",
+    "before": {
+      "prompt": "SELECT name, age 与 DataFrame API df.select(\"name\",\"age\") 的关系？",
+      "options": [
+        "两者完全不同，无法互换",
+        "Catalyst 中等价",
+        "DataFrame API 会更快一些",
+        "SQL 的写法会更快一些"
+      ],
+      "correct_index": 1,
+      "explanation": "两者在 Catalyst 中生成等价逻辑计划，性能一致。"
+    }
+  },
+  {
+    "slug": "l3-select-basics",
+    "prompt": "为什么不建议把 Python 变量直接拼进 SQL 字符串？",
+    "correct_index": 2,
+    "answer": "容易引入注入或引号/类型错误，应使用受支持的参数方式",
+    "explanation": "不要直接拼接不可信值。具体参数绑定方式需按所用 Spark API 与版本使用，不能将风险简化成绝对无法缓存计划。",
+    "before": {
+      "prompt": "为什么不建议把 Python 变量直接拼进 SQL 字符串？",
+      "options": [
+        "写起来会比较麻烦一些",
+        "运行时会直接报错",
+        "有注入风险且计划无法缓存",
+        "Spark 并不支持这种写法"
+      ],
+      "correct_index": 2,
+      "explanation": "拼接既带来注入风险，又让每次字符串不同、计划无法复用缓存。"
+    }
+  },
+  {
+    "slug": "l3-select-basics",
+    "prompt": "调用 spark.sql 后变量里「没有数据」，原因？",
+    "correct_index": 3,
+    "answer": "SELECT 返回查询 DataFrame，通常需要 action 请求结果",
+    "explanation": "这里讨论普通 SELECT 查询；不要把惰性结论推广到 INSERT、DDL 等命令。",
+    "new_prompt": "执行普通 SELECT 后只得到查询 DataFrame，还没有请求展示或收集结果，原因？",
+    "before": {
+      "prompt": "调用 spark.sql 后变量里「没有数据」，原因？",
+      "options": [
+        "SQL 语句在执行时直接报错了",
+        "返回的 DataFrame 本身是空的",
+        "视图注册的时候写错了名字",
+        "spark.sql 惰性，需 Action 才执行"
+      ],
+      "correct_index": 3,
+      "explanation": "spark.sql 仅构造惰性 DataFrame，数据在 Action 时才算。"
+    }
+  },
+  {
+    "slug": "l3-where-order-limit",
+    "prompt": "为什么 ORDER BY 在大表上昂贵？",
+    "correct_index": 1,
+    "answer": "全局排序通常需要数据交换与排序，实际开销看执行计划",
+    "explanation": "既有分区、排序要求、Top N 优化及自适应计划会影响物理实现，不能断言必有固定次数 Shuffle。",
+    "before": {
+      "prompt": "为什么 ORDER BY 在大表上昂贵？",
+      "options": [
+        "它慢是因为语法本身比较复杂",
+        "它要全局有序，必触发 Shuffle",
+        "它会把数据完整复制一份再排序",
+        "它完全不做任何优化，所以慢"
+      ],
+      "correct_index": 1,
+      "explanation": "全局有序需要按排序键重分区，必触发一次 Shuffle。"
+    }
+  },
+  {
+    "slug": "l3-where-order-limit",
+    "prompt": "WHERE 条件通常如何被优化？",
+    "correct_index": 2,
+    "answer": "优化器会尝试尽早过滤；能否下推到数据源取决于条件与数据源",
+    "explanation": "谓词移动与数据源过滤下推有条件，并非所有 WHERE 都能完全在读取端执行。",
+    "before": {
+      "prompt": "WHERE 条件通常如何被优化？",
+      "options": [
+        "会被优化器直接忽略掉不使用",
+        "会被推迟到最后一步才执行",
+        "被 Catalyst 下推到读取端尽早过滤",
+        "会在真正写入的时候才被应用"
+      ],
+      "correct_index": 2,
+      "explanation": "Catalyst 常做谓词下推，让过滤尽早发生、减少后续数据量。"
+    }
+  },
+  {
+    "slug": "l3-where-order-limit",
+    "prompt": "WHERE phone = NULL 查不到空值行，原因？",
+    "correct_index": 3,
+    "answer": "普通比较得到未知（NULL），WHERE 只保留 true；判断缺失用 IS NULL",
+    "explanation": "phone = NULL 的比较结果为未知，而不是普通 false。WHERE 不保留未知条件，因此筛不到 NULL 行。",
+    "before": {
+      "prompt": "WHERE phone = NULL 查不到空值行，原因？",
+      "options": [
+        "这一列在表里面根本就没有对应的字段存在",
+        "SQL 的语法本身写错了，才导致直接报错",
+        "底层的表缺少合适的索引，所以查不到",
+        "NULL 不参与 = 比较，永远假，要用 IS NULL"
+      ],
+      "correct_index": 3,
+      "explanation": "NULL 是未知值，= NULL 永远为假，判断空必须用 IS NULL。"
+    }
+  },
+  {
+    "slug": "l3-where-order-limit",
+    "prompt": "取金额最高的 5 个城市，正确？",
+    "correct_index": 0,
+    "answer": "ORDER BY total DESC LIMIT 5",
+    "explanation": "先定义排序再 LIMIT；若要求稳定取舍，还需添加并列排序键。物理交换与排序成本需要查看计划。",
+    "before": {
+      "prompt": "取金额最高的 5 个城市，正确？",
+      "options": [
+        "ORDER BY total DESC LIMIT 5",
+        "LIMIT 5 ORDER BY total DESC",
+        "SELECT TOP 5 total FROM ...",
+        "SELECT MAX(total) FROM ..."
+      ],
+      "correct_index": 0,
+      "explanation": "先排序再 LIMIT 即 TopN；ORDER BY 触发 Shuffle。"
+    }
+  },
+  {
+    "slug": "l3-where-order-limit",
+    "prompt": "ORDER BY 与 Level 2 的 orderBy 关系？",
+    "correct_index": 0,
+    "answer": "可表达同一排序需求，具体物理交换与成本取决于计划",
+    "explanation": "接口可表达等价排序，不能保证任意输入都发生一次固定 Shuffle 或总是同耗时。",
+    "before": {
+      "prompt": "ORDER BY 与 Level 2 的 orderBy 关系？",
+      "options": [
+        "Catalyst 中等价，ORDER BY 触发 Shuffle",
+        "两者完全不同，根本无法相互替代地去使用",
+        "orderBy 的执行速度通常都会比 SQL 更快一些",
+        "SQL 里面根本没有排序这种能力可以去用"
+      ],
+      "correct_index": 0,
+      "explanation": "二者等价，ORDER BY 通常触发一次 Shuffle（Level 5 展开）。"
+    }
+  },
+  {
+    "slug": "l3-groupby-having",
+    "prompt": "WHERE sum(amount)>1000 报错，修复？",
+    "correct_index": 3,
+    "answer": "改成 HAVING sum(amount)>1000",
+    "explanation": "在同层分组查询中，用 HAVING 对聚合结果过滤；也可在外层查询对聚合后的列使用 WHERE，不能把它替换成单笔金额条件。",
+    "before": {
+      "prompt": "WHERE sum(amount)>1000 报错，修复？",
+      "options": [
+        "改成 FILTER sum(amount)>1000",
+        "直接把这一句删掉即可",
+        "改用 WHERE amount>1000",
+        "改成 HAVING sum(amount)>1000"
+      ],
+      "correct_index": 3,
+      "explanation": "聚合函数不能用于 WHERE，必须放 HAVING。"
+    }
+  },
+  {
+    "slug": "l3-groupby-having",
+    "prompt": "GROUP BY 通常触发？",
+    "correct_index": 0,
+    "answer": "上游分布不满足分组要求时通常交换数据，也可能进行局部聚合",
+    "explanation": "分组需要汇合相同键的贡献；是否交换、采用何种局部聚合及阶段数量均取决于计划。",
+    "before": {
+      "prompt": "GROUP BY 通常触发？",
+      "options": [
+        "一次 Shuffle（按 key 汇聚）+ 本地预聚合",
+        "完全不产生任何额外的执行代价和开销",
+        "只会额外触发一次全局排序的操作",
+        "只会额外触发一次写入操作而已"
+      ],
+      "correct_index": 0,
+      "explanation": "分组需按 key 重分区并汇聚，必触发 Shuffle，且常有 Map-side Combine。"
+    }
+  },
+  {
+    "slug": "l3-joins-intro",
+    "prompt": "为什么 JOIN 通常代价大？",
+    "correct_index": 3,
+    "answer": "可能需要交换、排序或构建匹配结构，还要处理匹配行数",
+    "explanation": "JOIN 的执行策略、已有分布和基数共同影响成本，不能假定所有连接都进行固定次数 Shuffle。",
+    "before": {
+      "prompt": "为什么 JOIN 通常代价大？",
+      "options": [
+        "它会把两张表都完整复制一份",
+        "它慢是因为 SQL 语法比较复杂",
+        "JOIN 本身没有任何额外代价",
+        "它要触发 Shuffle 按 key 重分区"
+      ],
+      "correct_index": 3,
+      "explanation": "JOIN 需按连接键重分区（Shuffle），代价大；一侧是小表时可走广播免掉它（见 L6）。"
+    }
+  },
+  {
+    "slug": "l3-joins-intro",
+    "prompt": "连接键类型不一致会导致？",
+    "correct_index": 3,
+    "answer": "可能转换、报错或不匹配，需核对值、类型与转换规则",
+    "explanation": "连接键类型不同不必然全部不匹配。合法值可能经过隐式转换匹配；坏值行为还受配置影响，宜显式统一约定。",
+    "options": [
+      "无论内容如何都一定成功转换并匹配",
+      "无论内容和配置如何都必定报错",
+      "字段名相同就一定匹配",
+      "可能转换、报错或不匹配，需核对值、类型与转换规则"
+    ],
+    "before": {
+      "prompt": "连接键类型不一致会导致？",
+      "options": [
+        "会自动做一次类型转换",
+        "运行时会直接报错",
+        "直接忽略掉该行",
+        "匹配不上（全空）"
+      ],
+      "correct_index": 3,
+      "explanation": "字符串≠整数，类型不一致会导致全部不匹配。"
+    }
+  },
+  {
+    "slug": "l3-joins-intro",
+    "prompt": "JOIN 与 Level 2 单表操作关系？",
+    "correct_index": 2,
+    "answer": "JOIN 组合关系的匹配行，执行策略与成本在 L6 深讲",
+    "explanation": "JOIN 可组合两个关系，包括同一来源的自连接；匹配基数和物理策略共同决定成本。",
+    "before": {
+      "prompt": "JOIN 与 Level 2 单表操作关系？",
+      "options": [
+        "JOIN 的执行本身是免费的",
+        "JOIN 只能在 DataFrame API 里用",
+        "JOIN 是多表，通常要 Shuffle，L6 深讲",
+        "JOIN 和 Level 2 的内容没有关系"
+      ],
+      "correct_index": 2,
+      "explanation": "JOIN 是多表操作，通常需 Shuffle，深入在 Level 6。"
+    }
+  },
+  {
+    "slug": "l3-functions-and-udf",
+    "prompt": "Spark SQL 内置函数位于？",
+    "correct_index": 2,
+    "answer": "pyspark.sql.functions（F）",
+    "explanation": "PySpark 的常用内置列表达式由 pyspark.sql.functions 提供；SQL 函数名与 Python 封装并非一概一一对应。",
+    "new_prompt": "PySpark 中 upper、when 等常用内置列表达式主要从哪个模块获取？",
+    "before": {
+      "prompt": "Spark SQL 内置函数位于？",
+      "options": [
+        "pyspark.sql.types 这个模块",
+        "Python 自带的 os 模块",
+        "pyspark.sql.functions（F）",
+        "Python 标准的 math 库"
+      ],
+      "correct_index": 2,
+      "explanation": "内置函数都在 pyspark.sql.functions 下（F 前缀）。"
+    }
+  },
+  {
+    "slug": "l3-functions-and-udf",
+    "prompt": "为什么优先用内置函数而非 UDF？",
+    "correct_index": 3,
+    "answer": "内置表达式可直接参与优化，先避免不必要的 Python 执行开销",
+    "explanation": "优先检查内置函数能否表达需求；具体性能要按代表数据与实现测量，不能笼统保证所有内置调用都更快。",
+    "before": {
+      "prompt": "为什么优先用内置函数而非 UDF？",
+      "options": [
+        "内置函数写起来更简单一些",
+        "UDF 在 Spark 里并不被支持",
+        "两者其实没有什么差别",
+        "内置走 Catalyst 原生优化更快"
+      ],
+      "correct_index": 3,
+      "explanation": "内置函数被 Catalyst 编译成原生算子，快且可优化。"
+    }
+  },
+  {
+    "slug": "l3-functions-and-udf",
+    "prompt": "UDF 为什么慢？",
+    "correct_index": 0,
+    "answer": "可能增加 JVM/Python 数据转换与 Python 执行开销，函数体较难被优化器分析",
+    "explanation": "这里针对普通 Python 标量 UDF，不代表所有 UDF 类型每行进行一次独立跨语言调用；具体开销与执行路径相关。",
+    "new_prompt": "相同需求可用内置表达式时，普通 Python 标量 UDF 可能增加什么开销？",
+    "before": {
+      "prompt": "UDF 为什么慢？",
+      "options": [
+        "它要 JVM↔Python 序列化往返且失去 Catalyst 优化",
+        "它的语法比内置函数要更加复杂一些",
+        "它并不支持用于聚合类的那类运算操作",
+        "它会把整份数据完整地复制一遍出来"
+      ],
+      "correct_index": 0,
+      "explanation": "UDF 每行触发一次跨语言调用并序列化，且绕过 Catalyst 优化。"
+    }
+  },
+  {
+    "slug": "l3-functions-and-udf",
+    "prompt": "把 Python 函数 score_category 变成可用列表达式，正确？",
+    "correct_index": 1,
+    "answer": "F.udf(score_category, \"string\") 包装为列表达式",
+    "explanation": "F.udf 可以构造供 DataFrame API 使用的列表达式；函数还需处理 NULL，返回类型须与实际值一致。SQL 按名称调用需要另行注册。",
+    "before": {
+      "prompt": "把 Python 函数 score_category 变成可用列表达式，正确？",
+      "options": [
+        "直接在 SQL 里写函数名调用",
+        "F.udf(score_category) 注册",
+        "用 def 定义完就能直接使用",
+        "写成 score_category() 调用"
+      ],
+      "correct_index": 1,
+      "explanation": "需用 F.udf 把 Python 函数注册成 UDF。"
+    }
+  },
+  {
+    "slug": "l3-functions-and-udf",
+    "prompt": "在 SQL 里直接调用普通 Python 函数报错，原因？",
+    "correct_index": 2,
+    "answer": "用 spark.udf.register 注册 SQL 名称并声明返回类型",
+    "explanation": "仅 F.udf 包装并不会自动把 Python 局部变量名登记为 SQL 函数。已验证的函数需按 SQL 名称注册后才能解析调用。",
+    "new_prompt": "Python 函数已验证正确、score 列存在，但 SQL 报函数名未解析，应？",
+    "before": {
+      "prompt": "在 SQL 里直接调用普通 Python 函数报错，原因？",
+      "options": [
+        "这个自定义函数本身写得有问题",
+        "引用的那一列名字写错了地方",
+        "SQL 不认普通 Python 函数，需 F.udf 注册",
+        "SQL 的整体语法写得不太对"
+      ],
+      "correct_index": 2,
+      "explanation": "SQL 文本里不能直接引用 Python 函数，必须经过 F.udf 注册。"
+    }
+  },
+  {
+    "slug": "l3-functions-and-udf",
+    "prompt": "行级 Python UDF vs pandas UDF，正确的是？",
+    "correct_index": 3,
+    "answer": "pandas UDF 按批向量化，但收益取决于逻辑、数据与转换开销",
+    "explanation": "向量化可能减少部分开销，但并非无条件更快。先看内置函数是否足够，确需自定义时再按实际场景比较。",
+    "before": {
+      "prompt": "行级 Python UDF vs pandas UDF，正确的是？",
+      "options": [
+        "两者的性能完全一样",
+        "行级 UDF 反而更快一些",
+        "两种 UDF 都不能实际使用",
+        "pandas UDF 向量化更快，优先"
+      ],
+      "correct_index": 3,
+      "explanation": "pandas UDF 向量化执行，比逐行 Python UDF 高效得多。"
+    }
+  },
+  {
+    "slug": "l3-tables-and-formats",
+    "prompt": "本路线明确不接入什么？",
+    "correct_index": 1,
+    "answer": "外部 Hive Metastore 集成",
+    "explanation": "这是路线范围约定，不代表没有外部 Hive Metastore 就绝不能创建数据源目录表，或所有表都不会保留。",
+    "before": {
+      "prompt": "本路线明确不接入什么？",
+      "options": [
+        "Parquet 这种列式存储格式",
+        "Hive Metastore（永久表）",
+        "CSV 这种文本存储格式",
+        "JSON 这种半结构化格式"
+      ],
+      "correct_index": 1,
+      "explanation": "既定约束明确不接 Hive Metastore，表非永久 Hive 表。"
+    }
+  },
+  {
+    "slug": "l3-tables-and-formats",
+    "prompt": "这里的「表」与数据库永久表区别？",
+    "correct_index": 2,
+    "answer": "临时视图属会话；数据源目录表的元数据生命周期取决于 catalog 配置",
+    "explanation": "临时视图与数据源目录表不是同一个概念。不能用是否开启 Hive 支持一概判断所有表跨会话或重启后的行为。",
+    "new_prompt": "临时视图与数据源目录表的生命周期，应如何区分？",
+    "before": {
+      "prompt": "这里的「表」与数据库永久表区别？",
+      "options": [
+        "两者本质上完全一样，没有任何区别",
+        "本路线的表读取起来会明显更快一些",
+        "本路线表是 session 内或文件级，非永久 Hive 表",
+        "本路线的表一旦注册后就不能再查询"
+      ],
+      "correct_index": 2,
+      "explanation": "未接 Hive 时表是临时/文件级，不跨 session 持久。"
+    }
+  },
+  {
+    "slug": "l3-tables-and-formats",
+    "prompt": "写出产生海量小文件，原因？",
+    "correct_index": 1,
+    "answer": "计算分区、目录分区值及写入过程共同影响文件数",
+    "explanation": "partitionBy 不承诺每 Task 只写一个文件或每目录恰好一个文件；检查实际分区、文件数量与大小再治理。",
+    "before": {
+      "prompt": "写出产生海量小文件，原因？",
+      "options": [
+        "数据量本身太少所导致的",
+        "partitionBy 每 Task 一文件",
+        "SQL 语句本身写错所导致的",
+        "列的数量太多所导致的"
+      ],
+      "correct_index": 1,
+      "explanation": "partitionBy 落盘每 Task 生成一个文件，易产生小文件（Level 7 坑）。"
+    }
+  },
+  {
+    "slug": "l3-tables-and-formats",
+    "prompt": "SaveMode 与 Level 2 write 的关系？",
+    "correct_index": 2,
+    "answer": "INSERT OVERWRITE 表达覆盖，INSERT INTO 表达追加",
+    "explanation": "这两种 INSERT 不能泛化为 error/ignore 的通用对应语法。还需核对目标表定义、列与分区规则。",
+    "before": {
+      "prompt": "SaveMode 与 Level 2 write 的关系？",
+      "options": [
+        "不一致（只有 DataFrame API 才有写出模式），SQL 侧并不存在",
+        "一致（overwrite/append/error/ignore），SQL 用 CREATE TABLE ... LOCATION",
+        "一致（overwrite/append/error/ignore），SQL 用 INSERT OVERWRITE/INTO",
+        "一致（append/overwrite/error/ignore），SQL 用 UPDATE ... SET"
+      ],
+      "correct_index": 2,
+      "explanation": "SQL 的 INSERT OVERWRITE/INTO 对应 API 的 overwrite/append。"
+    }
+  },
+  {
+    "slug": "l3-tables-and-formats",
+    "prompt": "注册视图 vs CREATE TABLE ... LOCATION，正确的是？",
+    "correct_index": 3,
+    "answer": "二者都不等于对已有数据做一次物化拷贝",
+    "explanation": "临时视图登记查询定义，针对已有数据的 CREATE TABLE ... LOCATION 登记格式/位置等元数据；不要与 CTAS 或实际写入混淆。",
+    "new_prompt": "注册临时视图，与把已有路径登记为 CREATE TABLE ... LOCATION，正确的是？",
+    "before": {
+      "prompt": "注册视图 vs CREATE TABLE ... LOCATION，正确的是？",
+      "options": [
+        "后者会把数据真正移动一次",
+        "前者执行起来会更快一些",
+        "两者不能混合使用",
+        "都只是登记，不移动数据"
+      ],
+      "correct_index": 3,
+      "explanation": "两者都只登记逻辑映射，不移动/复制数据。"
+    }
+  },
+  {
+    "slug": "l3-tables-and-formats",
+    "prompt": "期望「永久表」跨 session 存在却失败，原因？",
+    "correct_index": 0,
+    "answer": "检查实际 catalog 与元数据持久化配置，而非仅凭有没有 Hive",
+    "explanation": "给定数据路径可读且 SQL/权限已确认，仍要检查当前应用使用的 catalog、元数据目录与生命周期约定。没有外部 Hive 并不必然解释所有表丢失。",
+    "new_prompt": "数据路径可读、SQL 与权限已确认，但新应用找不到以前的目录表，应优先检查？",
+    "options": [
+      "检查实际 catalog 与元数据持久化配置，而非仅凭有没有 Hive",
+      "断定数据一定已删除，无需检查路径",
+      "断定只要加 LIMIT 就会找回表名",
+      "断定所有未接 Hive 的表都只能活在单个会话"
+    ],
+    "before": {
+      "prompt": "期望「永久表」跨 session 存在却失败，原因？",
+      "options": [
+        "没接 Hive（enableHiveSupport）",
+        "磁盘上的数据已经被删掉了",
+        "SQL 语句本身写得不对",
+        "当前用户并没有操作权限"
+      ],
+      "correct_index": 0,
+      "explanation": "本路线不接 Hive，表非持久，跨 session 需重新注册。"
+    }
+  },
+  {
+    "slug": "l3-comprehensive",
+    "prompt": "读 CSV 后让 SQL 能查，正确？",
+    "correct_index": 1,
+    "answer": "先 createOrReplaceTempView",
+    "explanation": "本题使用临时视图为当前 DataFrame 命名，便于 SQL 按名字查询；它不是唯一数据入口，也不持久化数据。",
+    "before": {
+      "prompt": "读 CSV 后让 SQL 能查，正确？",
+      "options": [
+        "直接对 DataFrame 执行 SELECT",
+        "先 createOrReplaceTempView",
+        "先把它转成 pandas 再查询",
+        "调用 toTable 把它登记成表"
+      ],
+      "correct_index": 1,
+      "explanation": "必须先注册成视图，SQL 才能按名字查。"
+    }
+  },
+  {
+    "slug": "l3-comprehensive",
+    "prompt": "为什么写出前先用 show 验证？",
+    "correct_index": 2,
+    "answer": "先做样本排查，再用逐组断言与读回验证确认交付",
+    "explanation": "show 可帮助发现明显问题，但样本看起来正常不能证明全量正确；应验证类型、逐组指标和文件结果。",
+    "new_prompt": "写出前后，怎样把 show 样本检查与完整验收结合？",
+    "before": {
+      "prompt": "为什么写出前先用 show 验证？",
+      "options": [
+        "这样写起来更快",
+        "语法上必须这么做",
+        "避免写出脏数据",
+        "这是强制的规范"
+      ],
+      "correct_index": 2,
+      "explanation": "先验证聚合与类型，避免错误落盘。"
+    }
+  },
+  {
+    "slug": "l3-comprehensive",
+    "prompt": "综合练习中哪一步是 Action（真正执行）？",
+    "correct_index": 3,
+    "answer": "实际保存方法或 INSERT OVERWRITE 写入命令",
+    "explanation": "请求写入的调用会执行保存工作；SELECT 查询、类型推断与文件发现需要分别理解，不能说只有最后一步才可能做任何工作。",
+    "new_prompt": "综合任务中，哪个调用明确请求写入输出数据？",
+    "before": {
+      "prompt": "综合练习中哪一步是 Action（真正执行）？",
+      "options": [
+        "在注册临时视图的时候",
+        "在 spark.sql 返回结果的那一刻",
+        "在读取 CSV 文件的那一步里",
+        "最后的写出（INSERT OVERWRITE / write）"
+      ],
+      "correct_index": 3,
+      "explanation": "只有最后的写出（Write）是 Action，触发前面整条链执行。"
+    }
+  },
+  {
+    "slug": "l3-comprehensive",
+    "prompt": "聚合后过滤写在 WHERE 报错，修复？",
+    "correct_index": 0,
+    "answer": "同层分组查询用 HAVING；或在外层查询对聚合列用 WHERE",
+    "explanation": "关键是先聚合后筛组，不能把同层 WHERE 改成单笔金额条件来替代聚合门槛。",
+    "before": {
+      "prompt": "聚合后过滤写在 WHERE 报错，修复？",
+      "options": [
+        "HAVING",
+        "FILTER",
+        "删",
+        "改 SELECT"
+      ],
+      "correct_index": 0,
+      "explanation": "聚合后过滤必须用 HAVING。"
+    }
+  },
+  {
+    "slug": "l3-comprehensive",
+    "prompt": "spark.sql(...) 返回的是？",
+    "correct_index": 3,
+    "answer": "普通 SELECT 查询返回可继续组合的 DataFrame",
+    "explanation": "明确限定 SELECT；DDL/DML 命令的执行语义不能一概套用 SELECT 的惰性规律。",
+    "new_prompt": "spark.sql(\"SELECT ...\") 的返回结果是什么？",
+    "before": {
+      "prompt": "spark.sql(...) 返回的是？",
+      "options": [
+        "执行完的结果表",
+        "Python 的 list 对象",
+        "一个数据库连接对象",
+        "惰性 DataFrame"
+      ],
+      "correct_index": 3,
+      "explanation": "spark.sql 返回惰性 DataFrame。"
+    }
+  }
+]

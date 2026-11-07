@@ -88,8 +88,8 @@ if (oldDelayed) requireThat(delayed.version > oldDelayed.version || (delayed.ver
 next['delayed-checks'] = { version: delayed.version, hash: delayedHash };
 const guides = JSON.parse(fs.readFileSync(path.join(root, 'src/content/standardGuides.json'), 'utf8'));
 requireThat(Number.isInteger(guides.version) && guides.version > 0, 'invalid standard guide version');
-const l2Slugs = Object.keys(next).filter(slug => slug.startsWith('l2-'));
-requireThat(Object.keys(guides.lessons).length === l2Slugs.length && l2Slugs.every(slug => guides.lessons[slug]), 'standard guides must cover L2');
+const guidedSlugs = Object.keys(next).filter(slug => /^l[23]-/.test(slug));
+requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover L2 and L3');
 for (const [slug, guide] of Object.entries(guides.lessons)) {
   const lesson = JSON.parse(fs.readFileSync(path.join(dir, `${slug}.json`), 'utf8'));
   requireThat(text(guide.title) && Array.isArray(guide.sections), `${slug}: invalid guide`);

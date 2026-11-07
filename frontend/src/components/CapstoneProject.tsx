@@ -28,13 +28,13 @@ export default function CapstoneProject({ project, detail }: { project: Capstone
     try { localStorage.setItem(key, JSON.stringify(draft)); setNotice("草稿已保存在当前浏览器；这不是实作验收结果。"); }
     catch { setNotice("暂时无法保存，请先复制草稿到本地文件。实作仍可继续。"); }
   }
-  return <section className="cp-root" aria-label="L2 独立毕业实作">
+  return <section className="cp-root" aria-label={`${detail.level_title} 独立毕业实作`}>
     <header className="cp-header"><p>毕业任务 · 约 {project.estimatedMinutes} 分钟</p><h2>{project.title}</h2><p>{project.brief}</p></header>
     <div className="cp-body">
       <section><h3>01 接任务，先读交付约定</h3><ol className="cp-contract">{project.contract.map(rule => <li key={rule}>{rule}</li>)}</ol><p>使用与六步准备练习不同的新数据，先不要打开参考实现。</p>
         <div className="cp-downloads">{project.downloads.map(asset => <a key={asset.href} href={asset.href} download>{asset.label} ↓</a>)}</div>
       </section>
-      <section><h3>02 自己推导，再动手写</h3><label className="cp-field">你预测会留下哪些订单？各地区应得到什么？<textarea value={draft.prediction} onChange={e => { setDraft({ ...draft, prediction: e.target.value }); setNotice(""); }} rows={4} placeholder="先算笔数、金额与单位；结果相同的地区也要分别核对。" /></label>
+      <section><h3>02 自己推导，再动手写</h3><label className="cp-field">你预测会留下哪些订单？各分组应得到什么？<textarea value={draft.prediction} onChange={e => { setDraft({ ...draft, prediction: e.target.value }); setNotice(""); }} rows={4} placeholder="先算笔数、金额与单位；结果相同的分组也要分别核对。" /></label>
         <label className="cp-field">你的实现计划<textarea value={draft.plan} onChange={e => { setDraft({ ...draft, plan: e.target.value }); setNotice(""); }} rows={3} placeholder="写下每一步负责什么。代码请在下载的 starter.py 中完成。" /></label>
         <details><summary>我卡住了，给一点提示</summary><p>按需逐级展开，先试着继续，再看下一层。</p>{project.hints.slice(0, hints).map((hint, i) => <div className="cp-hint" key={hint.title}><strong>提示 {i + 1} · {hint.title}</strong><p>{hint.body}</p></div>)}{hints < project.hints.length && <button className="btn-ghost" onClick={() => setHints(n => n + 1)}>{hints === 0 ? "给我一个方向" : hints === 1 ? "提示再具体一点" : "看处理顺序骨架"}</button>}</details>
       </section>

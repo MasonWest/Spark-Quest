@@ -8,6 +8,7 @@ slugs=sys.argv[1:] or ['l2-what-is-dataframe','l2-create-dataframe','l2-schema-t
 with closing(sqlite3.connect((root/'backend/spark_quest.db').as_uri()+'?mode=ro',uri=True)) as db:
  db.row_factory=sqlite3.Row
  lessons={r['slug']:dict(r) for r in db.execute('SELECT * FROM lessons')}
+capstones=json.loads((root/'frontend/src/content/capstones.json').read_text(encoding='utf-8'))['lessons']
 guides=json.loads((root/'frontend/src/content/standardGuides.json').read_text(encoding='utf-8'))['lessons']
 for d in lessons.values():d['content']=json.loads(d['content']);d.update(status='available',mastery_score=None,level_title='L2',next_lesson=None)
 def normalize(text):return re.sub(r'[\W_①-⑳]','',text)
@@ -18,7 +19,7 @@ with sync_playwright() as p:
  for slug in slugs:
   d=lessons[slug];lesson=json.loads((root/'frontend/src/content/lessons'/f'{slug}.json').read_text(encoding='utf-8'))
   page.goto(f"http://127.0.0.1:4173/lesson/{d['id']}")
-  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  if slug in capstones:page.locator('#capstone-guided > summary').click()
   key=f"spark-quest:learning:{slug}:v{lesson['version']}"
   for i,t in enumerate(lesson['tasks']):
    standard=next((s for s in guides.get(slug,{}).get('sections',[]) if s['id']==t['id']),None)
@@ -66,7 +67,7 @@ with sync_playwright() as p:
   page.get_by_role('heading',name='这次练会了什么？').wait_for()
   assert page.get_by_role('link',name='开始测验').get_attribute('href')==f"/lesson/{d['id']}/quiz"
   page.reload()
-  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  if slug in capstones:page.locator('#capstone-guided > summary').click()
   page.get_by_role('heading',name='这次练会了什么？').wait_for()
   print('PASS',slug,'original links, concept bridges, source jump, responsive and completion')
  assert not errors,errors

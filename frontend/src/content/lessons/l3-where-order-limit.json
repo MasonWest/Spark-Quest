@@ -1,0 +1,226 @@
+{
+  "slug": "l3-where-order-limit",
+  "version": 1,
+  "title": "从订单里挑出真正的 Top N",
+  "mission": "用正确的空值条件和并列规则，避免只取到碰巧出现的几行。",
+  "correction": "与 NULL 的普通比较得到未知，并非恒为 false。WHERE 只保留 true；ORDER BY/LIMIT 的物理实现要看计划，不能断言固定 Shuffle 次数。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-where-order-limit/conditions",
+      "knowledgeIds": [
+        "where.conditions"
+      ],
+      "title": "业务括号不能靠猜",
+      "intro": "A=north/40，B=south/200，C=north/150。",
+      "code": "SELECT id FROM orders\nWHERE city = 'north' AND amount > 100",
+      "prompt": "会留下哪些订单？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只有 C",
+              "feedback": "对，地区与金额条件同时满足。"
+            },
+            {
+              "id": "o1",
+              "text": "A 和 C",
+              "feedback": "A 的金额没有超过 100。"
+            },
+            {
+              "id": "o2",
+              "text": "B 和 C",
+              "feedback": "B 不在 north。"
+            }
+          ]
+        }
+      ],
+      "insight": "SQL 文本中用 AND/OR/NOT 组合条件，复杂条件应显式加括号。",
+      "ability": "业务括号不能靠猜",
+      "reading": {
+        "id": "l3-where-order-limit/conditions/reading",
+        "title": "业务括号不能靠猜",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SQL 文本中用 AND/OR/NOT 组合条件，复杂条件应显式加括号。",
+        "boundary": "OR 与 AND 混合时先核对括号和优先级。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-where-order-limit/null",
+      "knowledgeIds": [
+        "where.null"
+      ],
+      "title": "空值真的等于空值吗",
+      "intro": "phone 三行分别为 NULL、空字符串、123。",
+      "code": "SELECT * FROM people WHERE phone = NULL",
+      "prompt": "会留下哪行？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "NULL 那行",
+              "feedback": "普通等号不能用来判断 NULL。"
+            },
+            {
+              "id": "o1",
+              "text": "没有行，因为比较结果是未知而非 true",
+              "feedback": "对，WHERE 不保留未知条件。"
+            },
+            {
+              "id": "o2",
+              "text": "空字符串那行",
+              "feedback": "空字符串也不是 NULL。"
+            }
+          ]
+        }
+      ],
+      "insight": "要查缺失电话，写 phone IS NULL；不要把未知理解成普通 false 值。",
+      "ability": "空值真的等于空值吗",
+      "reading": {
+        "id": "l3-where-order-limit/null/reading",
+        "title": "空值真的等于空值吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "要查缺失电话，写 phone IS NULL；不要把未知理解成普通 false 值。",
+        "boundary": "空字符串与 NULL 不同；需要把二者都视为缺失时要显式组合条件。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-where-order-limit/null-transfer",
+        "knowledgeId": "where.null",
+        "title": "只找未知库存",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "stock 三行：NULL、0、8。\nSELECT * FROM inventory WHERE __A__",
+        "prompt": "A 怎么写才只留下未知库存？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r2",
+          "options": [
+            {
+              "id": "r0",
+              "text": "stock = NULL",
+              "feedback": "比较结果未知，不能筛出 NULL。"
+            },
+            {
+              "id": "r1",
+              "text": "stock = 0",
+              "feedback": "会留下真实零库存。"
+            },
+            {
+              "id": "r2",
+              "text": "stock IS NULL",
+              "feedback": "对，明确检查缺失。"
+            }
+          ]
+        },
+        "insight": "IS NULL 是缺失判断，零值需要另一条业务规则。"
+      }
+    },
+    {
+      "id": "l3-where-order-limit/limit",
+      "knowledgeIds": [
+        "where.limit"
+      ],
+      "title": "取两行不等于最高两行",
+      "intro": "表中金额有 10、90、50，没有排序约定。",
+      "code": "SELECT amount FROM orders LIMIT 2",
+      "prompt": "能保证什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "保证得到 90、50",
+              "feedback": "Top N 需要明确 ORDER BY。"
+            },
+            {
+              "id": "o1",
+              "text": "保证均匀随机抽样",
+              "feedback": "LIMIT 不是随机抽样接口。"
+            },
+            {
+              "id": "o2",
+              "text": "最多取两行，但不保证最大或随机",
+              "feedback": "对，数量约束不等于顺序或抽样保证。"
+            }
+          ]
+        }
+      ],
+      "insight": "没有排序的 LIMIT 不表达“最好”“最早”或“随机”。",
+      "ability": "取两行不等于最高两行",
+      "reading": {
+        "id": "l3-where-order-limit/limit/reading",
+        "title": "取两行不等于最高两行",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "没有排序的 LIMIT 不表达“最好”“最早”或“随机”。",
+        "boundary": "即使某次运行碰巧得到最大值，也不能把它当成承诺。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-where-order-limit/ties",
+      "knowledgeIds": [
+        "where.tie-break"
+      ],
+      "title": "同分时还要定义谁在前",
+      "intro": "A/200，B/200，C/300，按金额高优先，同额按 id 升序。",
+      "code": "SELECT id FROM orders ORDER BY amount DESC, id ASC LIMIT 2",
+      "prompt": "输出顺序是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o2",
+              "text": "C、A",
+              "feedback": "对，第二排序键解决并列。"
+            },
+            {
+              "id": "o0",
+              "text": "C、B",
+              "feedback": "同额按 id 升序，应先 A。"
+            },
+            {
+              "id": "o1",
+              "text": "A、B",
+              "feedback": "C 金额最高，应在最前。"
+            }
+          ]
+        }
+      ],
+      "insight": "先完整定义排序，再截取边界，Top N 才有可解释的取舍。",
+      "ability": "同分时还要定义谁在前",
+      "reading": {
+        "id": "l3-where-order-limit/ties/reading",
+        "title": "同分时还要定义谁在前",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先完整定义排序，再截取边界，Top N 才有可解释的取舍。",
+        "boundary": "若业务要保留所有同分项，固定 LIMIT 未必符合需求。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

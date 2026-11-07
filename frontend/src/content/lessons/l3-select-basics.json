@@ -1,0 +1,248 @@
+{
+  "slug": "l3-select-basics",
+  "version": 1,
+  "title": "写一份字段清楚的订单投影",
+  "mission": "从列名、常量与单位出发，产出能被下游理解的结果。",
+  "correction": "单引号表示字符串，反引号引用标识符。SELECT 输出的别名决定结果字段；DISTINCT 按完整输出列组合去重。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-select-basics/literal",
+      "knowledgeIds": [
+        "select.literal"
+      ],
+      "title": "同样写 amount，意思不同",
+      "intro": "orders 中 amount=120。",
+      "code": "SELECT amount, 'amount' AS label FROM orders",
+      "prompt": "这一行两列分别是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "120 和 120",
+              "feedback": "第二个表达式不是列引用。"
+            },
+            {
+              "id": "o2",
+              "text": "amount 和 amount 两个字段名",
+              "feedback": "查询结果包含值，不只是名称。"
+            },
+            {
+              "id": "o0",
+              "text": "120 和字符串 amount",
+              "feedback": "对，单引号内是固定文本。"
+            }
+          ]
+        }
+      ],
+      "insight": "读取列值与给所有行放一个标签，是不同的投影表达式。",
+      "ability": "同样写 amount，意思不同",
+      "reading": {
+        "id": "l3-select-basics/literal/reading",
+        "title": "同样写 amount，意思不同",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "读取列值与给所有行放一个标签，是不同的投影表达式。",
+        "boundary": "不要把 Python 字符串的外层引号与 SQL 文本内部的引号混淆。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-select-basics/literal-transfer",
+        "knowledgeId": "select.literal",
+        "title": "标签也叫 city",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "-- city 的值是 north\nSELECT city, 'city' AS tag FROM stores",
+        "prompt": "输出的 tag 是什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "字符串 city",
+              "feedback": "对，单引号指定常量。"
+            },
+            {
+              "id": "r0",
+              "text": "north",
+              "feedback": "north 是第一列的值。"
+            },
+            {
+              "id": "r2",
+              "text": "NULL",
+              "feedback": "常量字符串不因字段内容而变成 NULL。"
+            }
+          ]
+        },
+        "insight": "常量的文本可以恰好与列名相同，含义仍不同。"
+      }
+    },
+    {
+      "id": "l3-select-basics/units",
+      "knowledgeIds": [
+        "select.expression-alias"
+      ],
+      "title": "把计算和名字同时交代清楚",
+      "intro": "amount 是整数元，运营需要千元字段 amount_k。",
+      "code": "SELECT __A__ AS __B__ FROM orders",
+      "prompt": "A 应选哪一个？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "amount / 1000.0",
+              "feedback": "对，除以 1000.0。"
+            },
+            {
+              "id": "o0",
+              "text": "amount * 1000.0",
+              "feedback": "从元到千元应缩小一千倍。"
+            },
+            {
+              "id": "o2",
+              "text": "'amount'",
+              "feedback": "这是字符串，不是金额表达式。"
+            }
+          ]
+        },
+        {
+          "id": "detail",
+          "label": "B：输出列名",
+          "correctOptionId": "x1",
+          "options": [
+            {
+              "id": "x0",
+              "text": "amount",
+              "feedback": "会掩盖单位变化。"
+            },
+            {
+              "id": "x1",
+              "text": "amount_k",
+              "feedback": "对，明确千元口径。"
+            },
+            {
+              "id": "x2",
+              "text": "cnt",
+              "feedback": "cnt 通常表示数量，不是金额。"
+            }
+          ]
+        }
+      ],
+      "insight": "表达式负责单位，别名负责把单位变化暴露给下游。",
+      "ability": "把计算和名字同时交代清楚",
+      "reading": {
+        "id": "l3-select-basics/units/reading",
+        "title": "把计算和名字同时交代清楚",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "表达式负责单位，别名负责把单位变化暴露给下游。",
+        "boundary": "货币计算应核对精度与类型；本题用 double 演示千元展示，不替代精确财务记账。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-select-basics/identifier",
+      "knowledgeIds": [
+        "select.identifier"
+      ],
+      "title": "含空格的列如何引用",
+      "intro": "表里有一个真实字段叫 order amount。",
+      "code": "SELECT __A__ AS amount FROM orders",
+      "prompt": "哪个写法引用这个字段？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "'order amount'",
+              "feedback": "这是固定字符串。"
+            },
+            {
+              "id": "o1",
+              "text": "`order amount`",
+              "feedback": "对，反引号包住完整标识符。"
+            },
+            {
+              "id": "o2",
+              "text": "order amount",
+              "feedback": "空格会参与 SQL 语法解析，不是完整列名引用。"
+            }
+          ]
+        }
+      ],
+      "insight": "标识符与字符串常量的引号不能互换。",
+      "ability": "含空格的列如何引用",
+      "reading": {
+        "id": "l3-select-basics/identifier/reading",
+        "title": "含空格的列如何引用",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "标识符与字符串常量的引号不能互换。",
+        "boundary": "名称本身包含反引号时还需要转义；本题只处理空格。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-select-basics/distinct",
+      "knowledgeIds": [
+        "select.distinct"
+      ],
+      "title": "只选城市后再去重",
+      "intro": "明细有 (north,10)、(north,20)、(south,10)。",
+      "code": "SELECT DISTINCT city FROM orders",
+      "prompt": "结果包含几行？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "3 行，因为原明细不同",
+              "feedback": "去重依据已经是输出的 city，不是全部原始明细。"
+            },
+            {
+              "id": "o2",
+              "text": "1 行，因为金额 10 重复",
+              "feedback": "本查询没有输出金额。"
+            },
+            {
+              "id": "o1",
+              "text": "2 行，因为输出城市只有两个",
+              "feedback": "对，north 和 south 各一行。"
+            }
+          ]
+        }
+      ],
+      "insight": "DISTINCT 对 SELECT 的整组输出列去重；增加输出列会改变重复定义。",
+      "ability": "只选城市后再去重",
+      "reading": {
+        "id": "l3-select-basics/distinct/reading",
+        "title": "只选城市后再去重",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "DISTINCT 对 SELECT 的整组输出列去重；增加输出列会改变重复定义。",
+        "boundary": "不要把 DISTINCT city,amount 理解成“只按 city 保留一条金额”。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

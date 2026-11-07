@@ -1,0 +1,226 @@
+{
+  "slug": "l3-tables-and-formats",
+  "version": 1,
+  "title": "名字、文件和写入命令分开看",
+  "mission": "找到数据入口，再弄清追加、覆盖与目标表的要求。",
+  "correction": "不接外部 Hive Metastore 也可使用数据源目录表；能否跨重启保留取决于 catalog 配置。INSERT INTO 是追加，不能泛指 error/ignore；写命令不需要再接 show 才生效。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-data-sources-load-save-functions.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-tables-and-formats/catalog",
+      "knowledgeIds": [
+        "table.catalog"
+      ],
+      "title": "不启用 Hive，就不能有目录表吗",
+      "intro": "当前 Spark 支持数据源表，准备把已有 Parquet 路径登记到 catalog。",
+      "code": "CREATE TABLE daily USING parquet LOCATION '/practice/daily'",
+      "prompt": "哪个判断准确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只有 Hive 才能使用任何 CREATE TABLE",
+              "feedback": "数据源表不要求一定接外部 Hive Metastore。"
+            },
+            {
+              "id": "o2",
+              "text": "可登记数据源表；元数据持久性取决于 catalog 配置",
+              "feedback": "对，不能仅凭有没有 Hive 下结论。"
+            },
+            {
+              "id": "o1",
+              "text": "这是临时视图的另一种名字",
+              "feedback": "目录表与会话临时视图需要区分。"
+            }
+          ]
+        }
+      ],
+      "insight": "文件负责数据，catalog 负责名字与元数据；它们的生命周期要分别约定。",
+      "ability": "不启用 Hive，就不能有目录表吗",
+      "reading": {
+        "id": "l3-tables-and-formats/catalog/reading",
+        "title": "不启用 Hive，就不能有目录表吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "文件负责数据，catalog 负责名字与元数据；它们的生命周期要分别约定。",
+        "boundary": "本路线不搭建外部 Hive Metastore；不据此承诺所有默认目录跨重启永久保留。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-tables-and-formats/path",
+      "knowledgeIds": [
+        "table.direct-path"
+      ],
+      "title": "直接从 Parquet 路径提问",
+      "intro": "日报已经写在可信练习路径 /practice/daily。",
+      "code": "SELECT city FROM parquet.`/practice/daily`",
+      "prompt": "这里 parquet 与反引号内的内容分别表示什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "目录数据库名与已注册表名",
+              "feedback": "这里访问的是文件路径，并非已登记的表名。"
+            },
+            {
+              "id": "o2",
+              "text": "输出格式与结果别名",
+              "feedback": "这是读取入口，不是输出声明。"
+            },
+            {
+              "id": "o0",
+              "text": "数据源格式与文件路径",
+              "feedback": "对，是直接文件查询的一种入口。"
+            }
+          ]
+        }
+      ],
+      "insight": "SQL 也可访问受支持的数据源路径；“只能查注册视图”不是完整规则。",
+      "ability": "直接从 Parquet 路径提问",
+      "reading": {
+        "id": "l3-tables-and-formats/path/reading",
+        "title": "直接从 Parquet 路径提问",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SQL 也可访问受支持的数据源路径；“只能查注册视图”不是完整规则。",
+        "boundary": "示例只使用可信固定练习路径；不要把外部输入直接拼成 SQL 路径。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-tables-and-formats/append",
+      "knowledgeIds": [
+        "table.insert-append"
+      ],
+      "title": "同一批日报写两次会怎样",
+      "intro": "daily 是已创建的可写表，每批结果有 3 行，没有额外去重机制。",
+      "code": "INSERT INTO daily SELECT * FROM batch;\nINSERT INTO daily SELECT * FROM batch;",
+      "prompt": "同一批次会新增几行？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "6 行，追加了两次",
+              "feedback": "对，相同批次被追加两次。"
+            },
+            {
+              "id": "o0",
+              "text": "3 行，自动去重",
+              "feedback": "INSERT INTO 不自动按批次去重。"
+            },
+            {
+              "id": "o2",
+              "text": "0 行，因为没接 show",
+              "feedback": "写命令不靠 show 才产生副作用。"
+            }
+          ]
+        }
+      ],
+      "insight": "设计重跑策略时，要先区分追加与替换，不能只看语句是否执行成功。",
+      "ability": "同一批日报写两次会怎样",
+      "reading": {
+        "id": "l3-tables-and-formats/append/reading",
+        "title": "同一批日报写两次会怎样",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "设计重跑策略时，要先区分追加与替换，不能只看语句是否执行成功。",
+        "boundary": "这不提供任意文件系统上的完整事务保证；本课不执行这些写命令。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-tables-and-formats/append-transfer",
+        "knowledgeId": "table.insert-append",
+        "title": "两行库存又跑了一遍",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "一个空的练习表，每次 INSERT INTO 写入相同两行，运行两次。",
+        "prompt": "没有去重逻辑时最终几行？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r2",
+          "options": [
+            {
+              "id": "r0",
+              "text": "2",
+              "feedback": "追加不会自动幂等。"
+            },
+            {
+              "id": "r2",
+              "text": "4",
+              "feedback": "对，2+2=4。"
+            },
+            {
+              "id": "r1",
+              "text": "0",
+              "feedback": "已经执行了两次写命令。"
+            }
+          ]
+        },
+        "insight": "相同输入重复追加仍会重复，重跑需要明确策略。"
+      }
+    },
+    {
+      "id": "l3-tables-and-formats/target",
+      "knowledgeIds": [
+        "table.write-target"
+      ],
+      "title": "写入前先确认目标存在",
+      "intro": "SQL 准备向 daily 写入结果。当前只创建了 orders 临时视图。",
+      "code": "INSERT OVERWRITE TABLE daily SELECT city, SUM(amount) FROM orders GROUP BY city",
+      "prompt": "应先核对什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只要 orders 存在，daily 自动正确建立",
+              "feedback": "不能假定目标表已存在且结构匹配。"
+            },
+            {
+              "id": "o2",
+              "text": "daily 的目录定义、可写性和列对应规则",
+              "feedback": "对，输入可查询与输出可写是两项约定。"
+            },
+            {
+              "id": "o1",
+              "text": "把 daily 当普通临时视图即可写文件",
+              "feedback": "普通临时视图不是任意可写物理表。"
+            }
+          ]
+        }
+      ],
+      "insight": "完整交付不只是一段 SELECT，目标格式和位置也要事先约定。",
+      "ability": "写入前先确认目标存在",
+      "reading": {
+        "id": "l3-tables-and-formats/target/reading",
+        "title": "写入前先确认目标存在",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "完整交付不只是一段 SELECT，目标格式和位置也要事先约定。",
+        "boundary": "本地练习优先用新的隔离路径，不操作生产表。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

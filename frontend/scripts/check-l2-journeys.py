@@ -8,6 +8,7 @@ with closing(sqlite3.connect((root/'backend/spark_quest.db').as_uri()+'?mode=ro'
  lessons={r['slug']:dict(r) for r in db.execute('SELECT * FROM lessons')}
 for l in lessons.values():
  l['content']=json.loads(l['content']);l.update(status='available',mastery_score=None,level_title=f"Level {l['slug'].split('-')[0][1:]}",next_lesson=None)
+capstones=json.loads((root/'frontend/src/content/capstones.json').read_text(encoding='utf-8'))['lessons']
 content={p.stem:json.loads(p.read_text(encoding='utf-8')) for p in (root/'frontend/src/content/lessons').glob('*.json')}
 answers={slug:[[next(i for i,o in enumerate(f['options']) if o['id']==f['correctOptionId']) for f in t['fields']] for t in l['tasks']] for slug,l in content.items()}
 
@@ -23,10 +24,10 @@ with sync_playwright() as p:
  for slug,steps in answers.items():
   l=lessons[slug];url=f"http://127.0.0.1:4173/lesson/{l['id']}"
   page.goto(url)
-  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  if slug in capstones:page.locator('#capstone-guided > summary').click()
   page.locator('.lj-mission').wait_for()
-  if slug!='l2-comprehensive':assert page.locator('.dfj-reference').first.get_attribute('open') is None
-  if slug.startswith('l2-'):
+  if slug not in capstones:assert page.locator('.dfj-reference').first.get_attribute('open') is None
+  if slug.startswith(('l2-','l3-')):
    assert page.locator('#lesson-reference').get_attribute('open') is None
    assert page.locator('#lesson-original').get_attribute('open') is None
   elif content[slug]['correction']:assert page.get_by_text('原文勘误 · 阅读时以此为准').is_visible()
@@ -51,7 +52,7 @@ with sync_playwright() as p:
    page.get_by_role('button',name='看看我的收获' if n==len(steps)-1 else '继续下一步 →').click()
    if n==0:
     page.reload()
-    if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+    if slug in capstones:page.locator('#capstone-guided > summary').click()
     page.get_by_text(f'第 2 步 / 共 {len(steps)} 步',exact=False).wait_for()
   page.get_by_role('heading',name='这次练会了什么？').wait_for()
   assert page.locator('.lj-evidence').count()==len(steps)
@@ -61,7 +62,7 @@ with sync_playwright() as p:
     response=page.request.get('http://127.0.0.1:4173/practice/l2/'+asset)
     assert response.ok and len(response.body())>50,asset
   page.reload()
-  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  if slug in capstones:page.locator('#capstone-guided > summary').click()
   page.get_by_role('heading',name='这次练会了什么？').wait_for()
   assert page.get_by_role('link',name='开始测验').get_attribute('href')==f"/lesson/{l['id']}/quiz"
   page.get_by_role('button',name='重新练一遍').click();page.locator('.lj-mission').wait_for()

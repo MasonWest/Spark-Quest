@@ -1,0 +1,226 @@
+{
+  "slug": "l3-what-is-spark-sql",
+  "version": 1,
+  "title": "给同一批订单换一种提问方式",
+  "mission": "用 SQL 完成已经熟悉的订单分析，分清名字、查询结果与执行命令。",
+  "correction": "SQL 与 API 共享优化体系，但不能保证任意两种写法计划和耗时相同。SELECT 查询与 INSERT/DDL 命令执行时机不同；SQL 也能访问目录表和文件路径，不只临时视图。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html",
+  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "tasks": [
+    {
+      "id": "l3-what-is-spark-sql/name",
+      "knowledgeIds": [
+        "sql.relation-name"
+      ],
+      "title": "Python 变量还不是 SQL 表名",
+      "intro": "orders 是一个 DataFrame 变量，当前会话还没有注册同名关系。",
+      "code": "orders = spark.createDataFrame([(120,)], \"amount long\")\nspark.sql(\"SELECT amount FROM orders\")",
+      "prompt": "要让下面的查询找到这批数据，先补哪一步？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "orders.createOrReplaceTempView(\"orders\")",
+              "feedback": "对，把当前 DataFrame 注册为 SQL 可解析的关系名。"
+            },
+            {
+              "id": "o0",
+              "text": "orders.show()",
+              "feedback": "show 只展示行，不登记 SQL 名称。"
+            },
+            {
+              "id": "o2",
+              "text": "给变量改名叫 table",
+              "feedback": "Python 变量名不会自动加入 SQL 目录。"
+            }
+          ]
+        }
+      ],
+      "insight": "SQL 通过关系名找到逻辑计划，而不是查找 Python 局部变量。",
+      "ability": "Python 变量还不是 SQL 表名",
+      "reading": {
+        "id": "l3-what-is-spark-sql/name/reading",
+        "title": "Python 变量还不是 SQL 表名",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SQL 通过关系名找到逻辑计划，而不是查找 Python 局部变量。",
+        "boundary": "名字解析成功不等于数据已计算或持久化。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-what-is-spark-sql/result",
+      "knowledgeIds": [
+        "sql.result-dataframe"
+      ],
+      "title": "查询结果还能继续加工",
+      "intro": "视图 orders 已存在，金额分别是 80 和 150。",
+      "code": "result = spark.sql(\"SELECT amount FROM orders WHERE amount > 100\")\nresult.withColumn(\"amount_k\", F.col(\"amount\") / 1000.0)",
+      "prompt": "result 是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "已经收集到 Python 的列表",
+              "feedback": "需要 collect 等操作才收集到 Python；这里没有。"
+            },
+            {
+              "id": "o2",
+              "text": "可继续调用 DataFrame API 的查询结果",
+              "feedback": "对，SELECT 返回 DataFrame，可以与 API 组合。"
+            },
+            {
+              "id": "o1",
+              "text": "只能打印的字符串",
+              "feedback": "SQL 文本是输入，返回值不是文本。"
+            }
+          ]
+        }
+      ],
+      "insight": "同一条查询可以先写 SQL，再接 DataFrame API；需要结果时再执行 show、collect 或写出。",
+      "ability": "查询结果还能继续加工",
+      "reading": {
+        "id": "l3-what-is-spark-sql/result/reading",
+        "title": "查询结果还能继续加工",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "同一条查询可以先写 SQL，再接 DataFrame API；需要结果时再执行 show、collect 或写出。",
+        "boundary": "不要将 SELECT 的惰性查询规律推广到 INSERT、CREATE TABLE 等 SQL 命令。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      },
+      "remediation": {
+        "id": "l3-what-is-spark-sql/result-transfer",
+        "knowledgeId": "sql.result-dataframe",
+        "title": "换成库存查询",
+        "intro": "换一份材料，只验证刚才这个判断。",
+        "code": "stock = spark.sql(\"SELECT quantity FROM inventory\")\nstock.filter(F.col(\"quantity\") > 0)",
+        "prompt": "第二行能表达什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "给 SQL 字符串删字符",
+              "feedback": "stock 不是查询文本。"
+            },
+            {
+              "id": "r2",
+              "text": "把库存写到磁盘",
+              "feedback": "没有任何保存操作。"
+            },
+            {
+              "id": "r0",
+              "text": "继续组成一个筛选查询",
+              "feedback": "对，stock 是 DataFrame。"
+            }
+          ]
+        },
+        "insight": "返回 DataFrame 让 SQL 和 API 可以衔接。"
+      }
+    },
+    {
+      "id": "l3-what-is-spark-sql/equivalence",
+      "knowledgeIds": [
+        "sql.api-equivalence"
+      ],
+      "title": "换写法，先核对业务含义",
+      "intro": "orders 已注册，SQL 与 API 都对同一 DataFrame 工作。",
+      "code": "a = orders.filter(F.col(\"amount\") > 100).select(\"amount\")\nb = spark.sql(\"SELECT amount FROM orders WHERE amount > 100\")",
+      "prompt": "能稳妥地得到哪个结论？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "所有 SQL 都比 API 快",
+              "feedback": "写法本身不能保证更快。"
+            },
+            {
+              "id": "o2",
+              "text": "所有 SQL 与 API 的物理计划必然逐字相同",
+              "feedback": "数据源、表达式和配置不同都可能影响计划。"
+            },
+            {
+              "id": "o0",
+              "text": "两者表达同一筛选需求",
+              "feedback": "对，先判断语义是否等价。"
+            }
+          ]
+        }
+      ],
+      "insight": "共享优化器是理解两套接口的桥梁，性能结论仍要看计划与测量。",
+      "ability": "换写法，先核对业务含义",
+      "reading": {
+        "id": "l3-what-is-spark-sql/equivalence/reading",
+        "title": "换写法，先核对业务含义",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "共享优化器是理解两套接口的桥梁，性能结论仍要看计划与测量。",
+        "boundary": "共享优化体系不等于任意写法都同计划、同开销。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
+    {
+      "id": "l3-what-is-spark-sql/commands",
+      "knowledgeIds": [
+        "sql.command-execution"
+      ],
+      "title": "看见 sql()，别一概等待 show",
+      "intro": "这里只判断执行约定，不在浏览器运行写入。目标表已存在。",
+      "code": "spark.sql(\"SELECT * FROM orders\")\nspark.sql(\"INSERT INTO target SELECT * FROM orders\")",
+      "prompt": "哪句判断更准确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "SELECT 组成查询；INSERT 是可能在调用时执行的命令",
+              "feedback": "对，应区分查询与命令。"
+            },
+            {
+              "id": "o0",
+              "text": "两句都必须接 show 才可能写数据",
+              "feedback": "SELECT 与 INSERT 不能套用同一规则。"
+            },
+            {
+              "id": "o2",
+              "text": "INSERT 返回后也绝不可能写入",
+              "feedback": "把所有 sql() 都当惰性查询会漏掉写入副作用。"
+            }
+          ]
+        }
+      ],
+      "insight": "排查重复写入时，不要因为没有 show 就认定 INSERT 没有执行。",
+      "ability": "看见 sql()，别一概等待 show",
+      "reading": {
+        "id": "l3-what-is-spark-sql/commands/reading",
+        "title": "看见 sql()，别一概等待 show",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "排查重复写入时，不要因为没有 show 就认定 INSERT 没有执行。",
+        "boundary": "本课不执行写入；实际操作前核对目标、权限和命令语义。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    }
+  ]
+}

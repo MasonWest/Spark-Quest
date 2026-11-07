@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "items": [
     {
       "id": "filter.null-condition-delayed-v1",
@@ -125,6 +125,231 @@
       ],
       "correctOptionId": "o1",
       "explanation": "avg 忽略 NULL，三个已知距离的平均值为 (12+18+30)/3=20。若要按四次记录摊分，需要明确另写计算。"
+    },
+    {
+      "id": "l3-what-is-spark-sql/result-delayed-v1",
+      "slug": "l3-what-is-spark-sql",
+      "taskId": "l3-what-is-spark-sql/result",
+      "knowledgeId": "sql.result-dataframe",
+      "title": "SQL 查询返回什么",
+      "code": "q = spark.sql(\"SELECT id FROM customers\")\nq.limit(2)",
+      "prompt": "关于 q，哪个判断成立？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "Python 字典"
+        },
+        {
+          "id": "d2",
+          "text": "已落盘的临时表"
+        },
+        {
+          "id": "d1",
+          "text": "可以继续组合查询的 DataFrame"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "SELECT 返回 DataFrame，limit 可以继续组合查询；既没有收集成字典，也没有写成表。"
+    },
+    {
+      "id": "l3-temp-views/scope-delayed-v1",
+      "slug": "l3-temp-views",
+      "taskId": "l3-temp-views/session",
+      "knowledgeId": "view.global-scope",
+      "title": "全局视图的范围",
+      "code": "一个 Spark 应用里：s1 创建 global_temp.metrics；s2=s1.newSession()。",
+      "prompt": "哪个判断成立？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "s2 可在同一应用中访问 global_temp.metrics"
+        },
+        {
+          "id": "d1",
+          "text": "独立重启程序后这个临时视图永久存在"
+        },
+        {
+          "id": "d2",
+          "text": "s2 必须写 local.metrics"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "global_temp 临时视图可以在同一应用内跨会话访问，不是跨应用的永久目录。"
+    },
+    {
+      "id": "l3-select-basics/literal-delayed-v1",
+      "slug": "l3-select-basics",
+      "taskId": "l3-select-basics/literal",
+      "knowledgeId": "select.literal",
+      "title": "列引用还是固定标签",
+      "code": "-- product = book\nSELECT product, 'product' AS kind FROM items",
+      "prompt": "kind 的值是？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "book"
+        },
+        {
+          "id": "d2",
+          "text": "字符串 product"
+        },
+        {
+          "id": "d1",
+          "text": "字段不存在"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "product 是列引用，单引号内的 product 是固定字符串；kind 得到字符串 product。"
+    },
+    {
+      "id": "l3-where-order-limit/null-delayed-v1",
+      "slug": "l3-where-order-limit",
+      "taskId": "l3-where-order-limit/null",
+      "knowledgeId": "where.null",
+      "title": "缺失时间的筛选",
+      "code": "ts 三行：NULL、2026-01-01、2026-01-02。\nSELECT * FROM events WHERE ts IS NULL",
+      "prompt": "会保留什么？",
+      "options": [
+        {
+          "id": "d1",
+          "text": "所有行"
+        },
+        {
+          "id": "d2",
+          "text": "没有行"
+        },
+        {
+          "id": "d0",
+          "text": "只有未知时间那行"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "IS NULL 对未知时间得到 true，因此只保留那行；它与 ts = NULL 不同。"
+    },
+    {
+      "id": "l3-groupby-having/having-delayed-v1",
+      "slug": "l3-groupby-having",
+      "taskId": "l3-groupby-having/stage",
+      "knowledgeId": "aggregate.having-stage",
+      "title": "小额订单能组成达标组吗",
+      "code": "X 城 40、80；Y 城 90。\nGROUP BY city HAVING SUM(amount) > 100",
+      "prompt": "会保留哪个城市？",
+      "options": [
+        {
+          "id": "d2",
+          "text": "只有 X"
+        },
+        {
+          "id": "d0",
+          "text": "X 和 Y"
+        },
+        {
+          "id": "d1",
+          "text": "只有 Y"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "X 的合计 120 达标，Y 的 90 不达标。HAVING 看组内合计，不要求每笔都超过 100。"
+    },
+    {
+      "id": "l3-joins-intro/multiplicity-delayed-v1",
+      "slug": "l3-joins-intro",
+      "taskId": "l3-joins-intro/multiplicity",
+      "knowledgeId": "join.multiplicity",
+      "title": "JOIN 后为什么多了",
+      "code": "左表 k=7 有 3 行，右表 k=7 有 2 行。\nINNER JOIN ON l.k=r.k",
+      "prompt": "该键产生几行？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "3"
+        },
+        {
+          "id": "d2",
+          "text": "6"
+        },
+        {
+          "id": "d1",
+          "text": "5"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "每条左行匹配两条右行，3×2=6。JOIN 不会自动压缩同键记录。"
+    },
+    {
+      "id": "l3-functions-and-udf/coalesce-delayed-v1",
+      "slug": "l3-functions-and-udf",
+      "taskId": "l3-functions-and-udf/coalesce",
+      "knowledgeId": "function.coalesce-null",
+      "title": "空字符串会自动补上吗",
+      "code": "code 三行：空字符串、NULL、A。\nSELECT COALESCE(code, 'NA') FROM items",
+      "prompt": "结果依次是？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "NA、NA、A"
+        },
+        {
+          "id": "d2",
+          "text": "空字符串、NULL、A"
+        },
+        {
+          "id": "d1",
+          "text": "空字符串、NA、A"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "空字符串非 NULL，因此保留；只有 NULL 使用 NA。"
+    },
+    {
+      "id": "l3-tables-and-formats/append-delayed-v1",
+      "slug": "l3-tables-and-formats",
+      "taskId": "l3-tables-and-formats/append",
+      "knowledgeId": "table.insert-append",
+      "title": "写命令会自动防重复吗",
+      "code": "练习表初始空。相同 4 行结果执行两次 INSERT INTO。",
+      "prompt": "无其他机制时总行数是？",
+      "options": [
+        {
+          "id": "d1",
+          "text": "8"
+        },
+        {
+          "id": "d0",
+          "text": "4"
+        },
+        {
+          "id": "d2",
+          "text": "0"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "INSERT INTO 追加，两次各 4 行得到 8 行；不自动去重，也不需要再调用 show。"
+    },
+    {
+      "id": "l3-comprehensive/stages-delayed-v1",
+      "slug": "l3-comprehensive",
+      "taskId": "l3-comprehensive/stages",
+      "knowledgeId": "project.sql-stages",
+      "title": "至少与超过的区别",
+      "code": "某组金额 120、80，需求是合计至少 200。",
+      "prompt": "应使用什么条件？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "WHERE amount > 200"
+        },
+        {
+          "id": "d1",
+          "text": "HAVING SUM(amount) >= 200"
+        },
+        {
+          "id": "d2",
+          "text": "HAVING SUM(amount) > 200"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "至少包含边界，且筛组内合计应在聚合后使用 HAVING SUM(amount) >= 200。"
     }
   ]
 }
