@@ -30,6 +30,7 @@
 }
 
 .quiz-prompt {
+  overflow-wrap: anywhere;
   font-size: 16px;
   font-weight: 600;
   margin: 4px 0 12px;
@@ -66,9 +67,12 @@
 
 .quiz-option input {
   margin-top: 3px;
+  flex-shrink: 0;
 }
 
 .quiz-option-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
   font-family: inherit;
 }

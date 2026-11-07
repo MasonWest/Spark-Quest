@@ -43,6 +43,23 @@ BASE = Path(__file__).resolve().parent
 DB = BASE / "spark_quest.db"
 COURSE = BASE / "app" / "course_seed.json"
 QUIZ = BASE / "app" / "quiz_seed.json"
+REVIEWED = BASE / "app" / "l2_reviewed_bank.json"
+
+
+def reviewed_entries():
+    return json.loads(REVIEWED.read_text(encoding="utf-8"))["lessons"] if REVIEWED.exists() else []
+
+
+def check_reviewed(cur):
+    mismatches = 0
+    for entry in reviewed_entries():
+        for q in entry["questions"]:
+            rows = cur.execute("SELECT q.options,q.correct_index,q.explanation,q.dimension FROM quizzes q JOIN lessons l ON l.id=q.lesson_id WHERE l.slug=? AND q.prompt=?", (entry["lesson_slug"],q["prompt"])).fetchall()
+            if len(rows) != 1 or json.loads(rows[0][0]) != q["options"] or rows[0][1:] != (q["correct_index"],q["explanation"],q["dimension"]):
+                mismatches += 1
+    print(f"[reviewed_bank] mismatches={mismatches}")
+    return mismatches
+
 
 
 def norm(s: str) -> str:
@@ -124,6 +141,9 @@ def sync_quiz(cur, apply: bool):
                 q["correct_index"] = ci
                 q["explanation"] = ex
                 q["dimension"] = dm
+        for reviewed in reviewed_entries():
+            if reviewed["lesson_slug"] == entry["lesson_slug"]:
+                seen.update(norm(q["prompt"]) for q in reviewed["questions"])
         new += len(set(m) - seen)
     print(f"[quiz_seed]   questions matched={matched} drift={drift} orphan={orphan} db_only={new}")
     if apply and drift:
@@ -143,6 +163,10 @@ def main() -> int:
 
     con = sqlite3.connect(DB)
     cur = con.cursor()
+    if check_reviewed(cur):
+        con.close()
+        print("[FAIL] reviewed bank differs; use an explicit content migration, not DB-to-seed overwrite")
+        return 1
     _, c_drift, c_orphan = sync_course(cur, apply)
     _, q_drift, q_orphan, q_new = sync_quiz(cur, apply)
     con.close()

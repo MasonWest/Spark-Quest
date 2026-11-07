@@ -6,7 +6,7 @@ export interface JourneyTask {
   table?: { caption?: string; columns: string[]; rows: (string | number)[][] };
   reading?: {
     id: string; title: string; sectionTitle?: string; startMarker: string; endMarker: string;
-    connection: string; boundary: string;
+    connection: string; boundary: string; caution?: string;
   };
 }
 export interface JourneyLesson {

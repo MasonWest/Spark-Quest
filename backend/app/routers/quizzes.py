@@ -39,6 +39,7 @@ from ..services import (
     record_activity,
 )
 from ..badge_service import evaluate_badges, increment_user_stats
+from ..l2_question_bank import questions_for_phase
 
 router = APIRouter(prefix="/api")
 
@@ -125,7 +126,8 @@ def get_quiz(lesson_id: int, db: Session = Depends(get_db)):
     ).all()
 
     # Phase 6.1: sample 5 from the bank, preferring dimension diversity.
-    questions = _sample_quiz_questions(all_questions, n=5)
+    questions = _sample_quiz_questions(questions_for_phase(lesson.slug, all_questions, "assessment"), n=5)
+    random.shuffle(questions)
 
     return QuizFetchOut(
         lesson_id=lesson.id,
@@ -186,6 +188,8 @@ def submit_quiz(lesson_id: int, payload: QuizSubmitIn, db: Session = Depends(get
         selected_by_q[ans.question_id] = ans.selected_index
 
     total = len(ordered_ids)
+    if lesson.slug.startswith("l2-") and total != 5:
+        raise HTTPException(status_code=422, detail="L2 课末检验需提交 5 道不同的题")
     correct = 0
     weak_points: List[int] = []
     results: List[QuizResultItem] = []

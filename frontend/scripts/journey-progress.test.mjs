@@ -11,14 +11,14 @@ function storage() { const m = new Map(); return { getItem: k => m.get(k) ?? nul
 test('migrates old partial/completed progress without fabricating attempts', () => {
   for (const step of [0, 2, lesson.tasks.length]) {
     const s=storage(); s.setItem(`spark-quest:journey:${lesson.slug}:v1`,JSON.stringify({step,helped:[0]}));
-    const p=loadProgress(lesson,s); assert.equal(p.completedIds.length,step); assert.equal(p.attempts.length,0);
+    const p=loadProgress({...lesson,version:1},s); assert.equal(p.completedIds.length,step); assert.equal(p.attempts.length,0);
     assert.equal(p.cursorId,lesson.legacyTaskIds[step]??null);
     if(step) assert.match(evidence(p,lesson.tasks[0].id),/旧版/);
   }
 });
 test('intro numeric progress migrates to the unified player', () => {
   const intro=JSON.parse(fs.readFileSync(new URL('../src/content/lessons/l2-what-is-dataframe.json',import.meta.url),'utf8'));
-  const s=storage();s.setItem('spark-quest:df-intro:v1','3');assert.equal(loadProgress(intro,s).cursorId,null);
+  const s=storage();s.setItem('spark-quest:df-intro:v1','3');assert.equal(loadProgress({...intro,version:1},s).cursorId,null);
 });
 test('task/option reorder cannot change cursor or correct answer identity', () => {
   const s=storage();const p=freshProgress(lesson);p.cursorId=lesson.tasks[1].id;s.setItem(progressKey(lesson),JSON.stringify(p));
@@ -29,7 +29,7 @@ test('task/option reorder cannot change cursor or correct answer identity', () =
 });
 test('revision change starts a separate record and retains old data', () => {
   const s=storage();s.setItem(progressKey(lesson),JSON.stringify(freshProgress(lesson)));s.setItem(`spark-quest:journey:${lesson.slug}:v1`,JSON.stringify({step:4}));
-  const next={...lesson,version:2};assert.equal(loadProgress(next,s).completedIds.length,0);assert.ok(s.getItem(progressKey(lesson)));
+  const next={...lesson,version:lesson.version+1};assert.equal(loadProgress(next,s).completedIds.length,0);assert.ok(s.getItem(progressKey(lesson)));
 });
 test('attempts snapshot answers, record first errors and survive a new run', () => {
   const t=lesson.tasks[0];const f=t.fields[0];let p=freshProgress(lesson);const answers={[f.id]:f.options.find(o=>o.id!==f.correctOptionId).id};

@@ -1,6 +1,6 @@
 {
   "slug": "l2-write-data",
-  "version": 1,
+  "version": 2,
   "title": "把成绩单交到下一站",
   "mission": "地区报表做好了，下一位同事需要能重新读取的结果。今天把“算完”变成“交付并核验”。",
   "correction": "partitionBy 决定目录布局，不保证减少小文件，也不等于只生成一个文件。show 只能抽查，不能证明全量正确。overwrite 的覆盖范围受目标与配置影响，本课只使用专门的练习输出目录；写出后重新读取不保证沿用写出前的排序。",
@@ -41,7 +41,16 @@
         }
       ],
       "insight": "读写时交接的是数据集路径。想确认内容，应读回数据集，而不是只凭文件名猜结果。",
-      "ability": "把输出目录作为数据集读回"
+      "ability": "把输出目录作为数据集读回",
+      "reading": {
+        "id": "step-fa4b4ab105-reading",
+        "title": "路径代表的，是单个文件还是一份数据集？",
+        "sectionTitle": "基本写法",
+        "startMarker": "【基本写法】",
+        "endMarker": "【写入模式 mode（非常重要）】",
+        "connection": "write.parquet 指向一个数据集目录，read.parquet 可以重新读取该目录。多个 part 文件不等于多份互不相关的报表，也不自动说明写出失败。",
+        "boundary": "文件数取决于写任务、布局等因素。把结果读回来验证，比按目录中文件的个数猜数据行数更可靠。"
+      }
     },
     {
       "id": "step-89f9993c8e",
@@ -77,7 +86,16 @@
         }
       ],
       "insight": "在专门练习目录中，完整结果重建可明确选择 overwrite；真实数据不能只为消除报错就随手覆盖。默认模式遇到已有路径会报错，ignore 则保留原目标而跳过本次写入。",
-      "ability": "区分追加、覆盖与重复运行的影响"
+      "ability": "区分追加、覆盖与重复运行的影响",
+      "reading": {
+        "id": "step-89f9993c8e-reading",
+        "title": "重跑时，追加和重建各自承诺什么？",
+        "sectionTitle": "写入模式 mode（非常重要）",
+        "startMarker": "【写入模式 mode（非常重要）】",
+        "endMarker": "【partitionBy：按列分区落盘】",
+        "connection": "同样三行结果追加两次，通常会得到六行。append 不认识“这批日报之前写过”，不能替你提供业务去重或幂等。",
+        "boundary": "overwrite 也不是任意生产目录都适用的重跑方案，覆盖范围受目标和配置影响；本课只用专用练习目录。ignore 会跳过已有目标，不保证更新成最新结果。"
+      }
     },
     {
       "id": "step-f84125a6f2",
@@ -113,7 +131,16 @@
         }
       ],
       "insight": "选择分区列要匹配读取方式与数据规模。很小的三行汇总报表未必需要再按地区拆成目录。",
-      "ability": "区分目录分区、小文件与数据去重"
+      "ability": "区分目录分区、小文件与数据去重",
+      "reading": {
+        "id": "step-f84125a6f2-reading",
+        "title": "按日期分目录，为什么仍可能有小文件？",
+        "sectionTitle": "partitionBy：按列分区落盘",
+        "startMarker": "【partitionBy：按列分区落盘】",
+        "endMarker": "【JDBC（点到为止）】",
+        "connection": "partitionBy(\"dt\") 让目录与日期值关联，下游按 dt 过滤时可能跳过无关目录。但同一天仍可能由多个任务各写一个文件。",
+        "boundary": "分区裁剪的收益取决于查询条件和布局；目录分区不承担去重，也不保证单文件。高基数唯一 ID 通常不适合机械用作目录分区列。"
+      }
     },
     {
       "id": "step-fde7ea2a2e",
@@ -171,7 +198,16 @@
         }
       ],
       "insight": "结构、行数、总量与关键明细相互补充。再次展示排名时重新 orderBy，不能依赖文件读取的行顺序。",
-      "ability": "读回结果并按指标验收"
+      "ability": "读回结果并按指标验收",
+      "reading": {
+        "id": "step-fde7ea2a2e-reading",
+        "title": "从“写出成功”走到“交付合格”",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【基本写法】",
+        "connection": "把结果落到别的系统只是交付动作；你刚才额外检查了读回行数与 total 合计。只有“输出存在”，还不能证明字段、指标和业务范围正确。",
+        "boundary": "show 是抽查，不是全量质量证明；写出前排序也不保证读回次序。真实验收还需关键明细或分组指标，数据大时要选择成本合适的检查。"
+      }
     }
   ],
   "legacyTaskIds": [

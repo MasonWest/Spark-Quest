@@ -19,6 +19,7 @@ Design constraints (Phase 6b, deliberately minimal):
 """
 
 import json
+import random
 from datetime import datetime
 from typing import List, Optional
 
@@ -46,6 +47,7 @@ from ..services import (
 )
 from ..badge_service import evaluate_badges, increment_user_stats
 from .quizzes import _parse_options, _sample_quiz_questions
+from ..l2_question_bank import questions_for_phase
 
 router = APIRouter(prefix="/api")
 
@@ -130,10 +132,11 @@ def get_review(lesson_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="No quiz for this lesson")
 
     questions = _sample_quiz_questions(
-        list(all_questions),
+        questions_for_phase(lesson.slug, all_questions, "review"),
         n=REVIEW_QUESTION_COUNT,
         priority_dims=_priority_dimensions(mastery, db),
     )
+    random.shuffle(questions)
 
     return ReviewFetchOut(
         lesson_id=lesson.id,

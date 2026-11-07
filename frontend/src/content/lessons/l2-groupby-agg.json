@@ -1,6 +1,6 @@
 {
   "slug": "l2-groupby-agg",
-  "version": 1,
+  "version": 2,
   "title": "给每个地区交一张成绩单",
   "mission": "把订单明细汇总成地区报表：有多少单、卖了多少、平均是多少。先算对，再考虑执行成本。",
   "correction": "count('*') 统计行，count('amount') 只数非空金额；avg 忽略 NULL，不能擅自把它当成零。分组后只有分组键与聚合结果可用于后续引用；是否需要 Shuffle 要看数据分布和执行计划。",
@@ -41,7 +41,16 @@
         }
       ],
       "insight": "groupBy 决定哪些行放在一组，sum 决定在组内怎么算。结果行对应地区，不再对应一笔笔订单。",
-      "ability": "按分组键推演聚合结果"
+      "ability": "按分组键推演聚合结果",
+      "reading": {
+        "id": "step-87efcc5bd0-reading",
+        "title": "分组之后，一行代表什么？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【两种写法】",
+        "connection": "north 的 120 与 80 合成一行 total=200。原文“一堆算一个汇总值”意味着结果粒度从订单变成地区，不能继续把报告一行当成一单。",
+        "boundary": "其他地区不会参与 north 组的金额。分组通常涉及分布要求，但是否新增 Shuffle 还要看上游分布与实际计划。"
+      }
     },
     {
       "id": "step-6f1f372e24",
@@ -99,7 +108,16 @@
         }
       ],
       "insight": "报表字段名要写清楚。“订单数”和“有效金额数”描述的是不同指标。",
-      "ability": "区分行数与非空值计数"
+      "ability": "区分行数与非空值计数",
+      "reading": {
+        "id": "step-6f1f372e24-reading",
+        "title": "同叫 count，数的对象为什么不同？",
+        "sectionTitle": "常用聚合函数（都在 F 下）",
+        "startMarker": "【常用聚合函数（都在 F 下）】",
+        "endMarker": "【关键约束】",
+        "connection": "count(\"*\") 数三条订单行；count(\"amount\") 只数两个非空金额。这是指标定义的区别，报表中要把两个名字说清楚。",
+        "boundary": "count 列值忽略 NULL，不等于忽略所有“业务无效值”；零、负数或重复是否有效，仍由你的规则决定。"
+      }
     },
     {
       "id": "step-c7978bddd1",
@@ -135,7 +153,16 @@
         }
       ],
       "insight": "想按总订单数算某种业务均值，需要先明确缺失值规则；不能把函数默认行为和业务定义混为一谈。",
-      "ability": "推演 NULL 对聚合分母的影响"
+      "ability": "推演 NULL 对聚合分母的影响",
+      "reading": {
+        "id": "step-c7978bddd1-reading",
+        "title": "平均值的分母，是否包含未知金额？",
+        "sectionTitle": "常用聚合函数（都在 F 下）",
+        "startMarker": "【常用聚合函数（都在 F 下）】",
+        "endMarker": "【关键约束】",
+        "connection": "本题 avg 计算两个已知金额的平均值：(120+80)/2=100。你没有把未知金额擅自当零，也没有让一个空值使整组都失效。",
+        "boundary": "全空组的 avg 返回 NULL，count(\"amount\") 为 0；如果业务另有补零或按总订单数均摊的定义，必须明确实现，不能直接套 avg 的默认行为。"
+      }
     },
     {
       "id": "step-09661e764f",
@@ -193,7 +220,16 @@
         }
       ],
       "insight": "report 后续可以 select('region', 'cnt', 'total')；原来的明细列 amount 已被汇总，不能再当作报告中的普通列引用。",
-      "ability": "组合多个聚合并为指标命名"
+      "ability": "组合多个聚合并为指标命名",
+      "reading": {
+        "id": "step-09661e764f-reading",
+        "title": "一次聚合，为什么可以交付多个指标？",
+        "sectionTitle": "两种写法",
+        "startMarker": "【两种写法】",
+        "endMarker": "【常用聚合函数（都在 F 下）】",
+        "connection": "agg 中的 count 与 sum 各自定义一个地区指标，alias 给它们稳定的名字 cnt 与 total。结果保留 region，但原始 amount 明细已不再是普通结果列。",
+        "boundary": "groupBy 返回分组操作对象，聚合后才得到汇总 DataFrame。若要保留其他字段，需要决定它是分组键还是采用何种合法聚合，不应随意用 first 掩盖业务歧义。"
+      }
     }
   ],
   "legacyTaskIds": [

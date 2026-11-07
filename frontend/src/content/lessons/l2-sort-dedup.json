@@ -1,6 +1,6 @@
 {
   "slug": "l2-sort-dedup",
-  "version": 1,
+  "version": 2,
   "title": "排好名次，再说什么叫重复",
   "mission": "运营要找大额订单，还要清理重复数据。排序与去重各有规则，不能靠写在一起就猜它会保留谁。",
   "correction": "dropDuplicates(subset) 不保证保留输入中首次出现、最新或最大的行；先 orderBy 再 dropDuplicates 也不能保证这个规则。要每个用户的最大金额可先 groupBy 聚合；要整行按规则取一条，后续用带明确排序的窗口函数。",
@@ -41,7 +41,16 @@
         }
       ],
       "insight": "limit 本身不定义业务顺序。存在并列时，要稳定决定哪条排前面，还需要补充唯一的排序依据。",
-      "ability": "用降序与 limit 表达 Top N"
+      "ability": "用降序与 limit 表达 Top N",
+      "reading": {
+        "id": "step-936a1f3bda-reading",
+        "title": "为什么先 limit 再排序不是同一个问题？",
+        "sectionTitle": "limit",
+        "startMarker": "【limit】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先按金额降序再取两行，得到全局金额最大的 200 与 120。若先 limit，只能在任意截取的少量记录里排名，可能已经漏掉最大的订单。",
+        "boundary": "没有指定排序时，不应把 limit 当成稳定的业务顺序。Top N 可能有执行优化，但不能据此假定它完全不用检查大部分输入。"
+      }
     },
     {
       "id": "step-4d7d78c62c",
@@ -99,7 +108,17 @@
         }
       ],
       "insight": "按 user 去重只定义谁算同一组，没有定义 u1 的金额应该保留 120 还是 80。",
-      "ability": "按业务键区分整行重复与部分字段重复"
+      "ability": "按业务键区分整行重复与部分字段重复",
+      "reading": {
+        "id": "step-4d7d78c62c-reading",
+        "title": "先定义重复，再选择去重工具",
+        "sectionTitle": "去重细节",
+        "startMarker": "【去重细节】",
+        "endMarker": "【limit】",
+        "connection": "按整行去重，u1 的 120 与 80 是不同记录；只按 user 去重，它们属于同一重复键。区别来自判重规则，不是 distinct 更强或更弱。",
+        "boundary": "原文“其余列取首次出现的值”不构成 Spark 的保留保证；dropDuplicates(subset) 没指定首次、最新或最大的业务规则。",
+        "caution": "原文中“其余列取首次出现的值”需要纠正：按键去重不承诺保留哪一行。"
+      }
     },
     {
       "id": "step-3538b5a3ab",
@@ -135,7 +154,17 @@
         }
       ],
       "insight": "只要每个用户的最大金额，用 groupBy('user').agg(F.max('amount').alias('max_amount'))。若还需要那笔订单的其他列，后续用窗口按金额与唯一订单号排序选择。",
-      "ability": "识别排序后按键去重的不可靠假设"
+      "ability": "识别排序后按键去重的不可靠假设",
+      "reading": {
+        "id": "step-3538b5a3ab-reading",
+        "title": "把排序写在前面，能增加保留承诺吗？",
+        "sectionTitle": "去重细节",
+        "startMarker": "【去重细节】",
+        "endMarker": "【limit】",
+        "connection": "你刚才拒绝了 orderBy 后 dropDuplicates 就一定保留最大金额的假设。去重 API 的契约没有因此改变；可靠逻辑要明确表达每用户最大值或组内排序选择。",
+        "boundary": "仅要每用户最大金额可用 groupBy + max；若需要那一笔订单的其他列，后续要用有明确并列规则的窗口等方案。不能把偶然观察到的输出当作保证。",
+        "caution": "原文把去重描述成保留首次，这一说法不可靠；排序后去重也不能据此保证取最大值。"
+      }
     },
     {
       "id": "step-a8cd2aa0f2",
@@ -193,7 +222,16 @@
         }
       ],
       "insight": "排序规则来自业务。明确次要排序键，比观察某次输出后认定“Spark 总会这样排”更可靠。",
-      "ability": "用次要排序键解决并列顺序"
+      "ability": "用次要排序键解决并列顺序",
+      "reading": {
+        "id": "step-a8cd2aa0f2-reading",
+        "title": "同分时谁排前，为什么需要第二把尺？",
+        "sectionTitle": "排序细节",
+        "startMarker": "【排序细节】",
+        "endMarker": "【去重细节】",
+        "connection": "金额相同的 o1、o2 先比较不出先后，再用唯一订单号升序决定 o1 在前。你把业务的并列规则写成了两个排序键。",
+        "boundary": "若第二个键也不唯一，仍可能没有稳定的全序。本题订单号唯一且非空；真实业务还要约定 NULL 位置与更多并列条件。"
+      }
     }
   ],
   "legacyTaskIds": [

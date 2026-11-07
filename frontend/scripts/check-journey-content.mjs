@@ -35,6 +35,7 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
       requireThat(f.options.some(o => o.id === f.correctOptionId), `${file}/${t.id}: dangling correctOptionId`);
     }
     if (t.reading) {
+      for (const k of ['sectionTitle', 'caution']) if (t.reading[k] !== undefined) requireThat(text(t.reading[k]), `${file}/${t.id}: empty reading ${k}`);
       for (const k of ['id', 'title', 'startMarker', 'endMarker', 'connection', 'boundary']) requireThat(text(t.reading[k]), `${file}/${t.id}: missing reading ${k}`);
       const original = originals.get(l.slug) ?? '';
       const start = original.indexOf(t.reading.startMarker);

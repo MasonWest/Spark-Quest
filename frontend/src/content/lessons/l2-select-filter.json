@@ -1,6 +1,6 @@
 {
   "slug": "l2-select-filter",
-  "version": 1,
+  "version": 2,
   "title": "给运营一份刚刚好的订单",
   "mission": "运营只要 north 地区、金额大于 100 的订单，并且只需要地区和金额。把要求翻译成查询。",
   "correction": "Column 的 == 是正确的相等比较，不能和 Python 的 and/or 一起列为禁用。filter 会减少输出行数，但通常不会自动缩减分区数；谓词下推是否减少实际文件读取，取决于数据源、条件与执行计划。",
@@ -63,7 +63,16 @@
         }
       ],
       "insight": "按列描述需求，按行描述条件。选完仍是新的 DataFrame，下一步再请求展示。",
-      "ability": "把选列与筛行需求分开表达"
+      "ability": "把选列与筛行需求分开表达",
+      "reading": {
+        "id": "step-65f91c5681-reading",
+        "title": "挑列和挑行为什么要分开想？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【Column 表达式的陷阱（重点）】",
+        "connection": "你为 region、amount 选择 select，为 north 且金额大于 100 选择 filter。先确定结果的字段，再明确哪些记录符合业务条件，能把宽泛需求拆成两项可检查的约定。",
+        "boundary": "filter 与 where 是别名；select 与 filter 不是彼此的别名。返回结果行数减少，也不等于执行分区数自动减少。"
+      }
     },
     {
       "id": "step-a4e9ad8ec5",
@@ -99,7 +108,16 @@
         }
       ],
       "insight": "&、|、~ 对应列条件的与、或、非；不是把 Python 条件照抄到分布式数据上。",
-      "ability": "用正确运算符组合 Column 条件"
+      "ability": "用正确运算符组合 Column 条件",
+      "reading": {
+        "id": "step-a4e9ad8ec5-reading",
+        "title": "为什么 == 能用，and 却不能照搬？",
+        "sectionTitle": "Column 表达式的陷阱（重点）",
+        "startMarker": "【Column 表达式的陷阱（重点）】",
+        "endMarker": "【常用配套】",
+        "connection": "== 和 > 生成列条件；& 将列条件组合成一个表达式。Python and 会尝试先把 Column 当作单个真假值，所以不能承担同样的组合职责。",
+        "boundary": "这是 Column 表达式语境，普通 Python 的 and/or 本身没有问题。SQL 字符串条件中则使用 SQL 的 AND/OR，不要把两种写法混为一谈。"
+      }
     },
     {
       "id": "step-444ef9a2c7",
@@ -135,7 +153,16 @@
         }
       ],
       "insight": "如果业务要保留未知金额，应明确写出 isNull() 分支；不要让空值处理靠猜测。",
-      "ability": "推演包含 NULL 的筛选结果"
+      "ability": "推演包含 NULL 的筛选结果",
+      "reading": {
+        "id": "step-444ef9a2c7-reading",
+        "title": "哪些行能通过过滤，不只看真和假？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【Column 表达式的陷阱（重点）】",
+        "connection": "本题 null > 100 的结果未知，filter 只保留条件为 true 的行。原文“只保留符合条件的记录”落到空值时，就需要明确这种三值语义。",
+        "boundary": "未知并不自动当作零，也不自动保留。业务若要留下未知金额，应把 isNull() 分支明确写入条件；非空校验与金额范围是不同规则。"
+      }
     },
     {
       "id": "step-429109750e",
@@ -171,7 +198,16 @@
         }
       ],
       "insight": "回到运营需求：selected = orders.filter((orders['region'] == 'north') & (orders['amount'] > 100)).select('region', 'amount')。结果为 north/120，原始查询可继续用于核对。",
-      "ability": "保存新查询并保留原始 DataFrame"
+      "ability": "保存新查询并保留原始 DataFrame",
+      "reading": {
+        "id": "step-429109750e-reading",
+        "title": "流水线已经描述好了，原查询为何没变？",
+        "sectionTitle": "一个直观的心智模型",
+        "startMarker": "【一个直观的心智模型】",
+        "endMarker": "⚠️ 比喻的边界（很重要）：",
+        "connection": "selected 保存筛选后的新查询；orders 仍是原始数据的查询描述。把它想成建立新的处理路线，比想成直接删掉仓库里的货更准确。",
+        "boundary": "这只是计划比喻，读取准备可能已经有工作。filter 会在求值时真正影响结果行，不是仅做一个永远不减少数据的标记；优化器也不保证任何过滤都能下推到文件读取。"
+      }
     }
   ],
   "legacyTaskIds": [

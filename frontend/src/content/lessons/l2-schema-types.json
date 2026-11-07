@@ -1,6 +1,6 @@
 {
   "slug": "l2-schema-types",
-  "version": 1,
+  "version": 2,
   "title": "给订单写一份说明书",
   "mission": "订单金额开始出现小数和空值。今天把“看起来像数字”变成明确的数据约定。",
   "correction": "显式 Schema 不等于自动 FAILFAST。CSV 默认解析模式是 PERMISSIVE，类型不符可能产生 null；要按需设置 mode='FAILFAST'。nullable=False 也不能当成所有文件读取入口都保证执行的业务非空校验。",
@@ -41,7 +41,16 @@
         }
       ],
       "insight": "Schema 负责结构和类型；金额是否为正、订单号是否重复，是另一层数据质量规则。",
-      "ability": "把字段类型与业务合法性区分开"
+      "ability": "把字段类型与业务合法性区分开",
+      "reading": {
+        "id": "step-92c4ee417f-reading",
+        "title": "表的说明书能证明什么？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么显式声明更好】",
+        "connection": "A 的 string 与 B 的 decimal 是结构事实；金额是否为正、订单号是否重复，则需要查看具体值。你刚才把两类检查分开了。",
+        "boundary": "Schema 能约定字段类型与可空性，不能证明所有业务值合格。显式声明也不自动启用 FAILFAST，更不能替代业务数据质量检查。"
+      }
     },
     {
       "id": "step-61ba507e24",
@@ -99,7 +108,16 @@
         }
       ],
       "insight": "声明类型时，先想值的含义、范围和精度，再选类型；不是让所有看起来像数字的字段都用同一种类型。",
-      "ability": "为地区和十进制金额编写 Schema"
+      "ability": "为地区和十进制金额编写 Schema",
+      "reading": {
+        "id": "step-61ba507e24-reading",
+        "title": "先想字段含义，再挑类型",
+        "sectionTitle": "常见数据类型",
+        "startMarker": "【常见数据类型】",
+        "endMarker": "【怎么看 Schema】",
+        "connection": "region 对应文本；amount 按本题约定需要十进制定点数。StructField 把列名、类型和可空性组合成一个字段描述。",
+        "boundary": "本题 DecimalType(10,2) 是具体约定，不是所有金额的通用精度；范围、舍入规则与溢出策略仍需按业务决定。nullable=False 也不是所有文件入口都会严格执行的非空校验。"
+      }
     },
     {
       "id": "step-17de387626",
@@ -135,7 +153,16 @@
         }
       ],
       "insight": "Schema 回答“按什么类型读”，解析模式回答“读坏了怎么办”。它们是两项不同决定。",
-      "ability": "区分 Schema 与损坏记录处理策略"
+      "ability": "区分 Schema 与损坏记录处理策略",
+      "reading": {
+        "id": "step-17de387626-reading",
+        "title": "说明书的比喻，哪里不能照字面理解？",
+        "sectionTitle": "Schema 心智模型",
+        "startMarker": "【一个直观的心智模型】",
+        "endMarker": "⚠️ 比喻的边界",
+        "connection": "“把清单贴在箱外”帮助理解显式 Schema。它规定按什么类型读，但坏记录怎么办，还需要 mode 等解析策略；因此刚才额外选择了 FAILFAST。",
+        "boundary": "清单不能让解析器“不开箱就读懂所有值”。原文的“不必抽样”指省去类型推断，不指免除实际数据读取与验证。CSV 默认 PERMISSIVE，不能从显式 Schema 推导出遇错必报。"
+      }
     },
     {
       "id": "step-82726972ef",
@@ -171,7 +198,16 @@
         }
       ],
       "insight": "这次你建立了三层判断：字段类型、解析失败策略、业务质量检查。三层都成立，才更接近可靠的数据输入。",
-      "ability": "用实际数据检查金额非空规则"
+      "ability": "用实际数据检查金额非空规则",
+      "reading": {
+        "id": "step-82726972ef-reading",
+        "title": "从结构检查，走到实际值检查",
+        "sectionTitle": "查看 Schema 的方式",
+        "startMarker": "【怎么看 Schema】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "printSchema、schema、dtypes 都能帮助认识结构；本题还要用 isNull 条件和 count 查出缺金额订单。知道字段可为空，与知道实际有几行为空，是两个答案。",
+        "boundary": "count 是一次求值，有执行成本；printSchema 展示结构，不等于执行全量数据验证。对于本题的非空业务规则，发现异常后还应明确拒收、隔离或修复方式，不应悄悄当成合格数据。"
+      }
     }
   ],
   "legacyTaskIds": [

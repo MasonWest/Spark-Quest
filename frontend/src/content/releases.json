@@ -1,43 +1,43 @@
 {
   "l2-comprehensive": {
-    "version": 1,
-    "hash": "f4aad4beac00bd7d29219238ab369f491eafde9623ff89f69d7ca79799778a76"
+    "version": 2,
+    "hash": "31ff8eedeec84c733535fd0ffd32ba211b0c9fdf30122285b8cca2b6821877d5"
   },
   "l2-create-dataframe": {
-    "version": 1,
-    "hash": "4eb6e09f330e30aee79b84071e7a8f959d8ca5a118839ba79e2001be0a86db7c"
+    "version": 2,
+    "hash": "973b128c22ec87904ff196e6c3381630907b9810768ca499acdb2be49a5627f2"
   },
   "l2-groupby-agg": {
-    "version": 1,
-    "hash": "6587f017783e57169ed69f48bd28f11efc722fa75486e061029727d0065cc6f5"
+    "version": 2,
+    "hash": "d5cba97c5c58ee7ee4f2f80bb8cc12298ffe04d1216b595f1687d25dd9ef86b7"
   },
   "l2-inspect": {
-    "version": 1,
-    "hash": "16680a3bfb1c274f7932746bdb071900135d2b6e17f0bd03557c5abee8be55ec"
+    "version": 2,
+    "hash": "2230f17ab4527f15b44d011515f3bd01a50ff6200ed85e4452283121ce30479a"
   },
   "l2-schema-types": {
-    "version": 1,
-    "hash": "4a2b24b245a647f7be5746cc454a41829b3b2b62bc09f083dea4109dfe379a07"
+    "version": 2,
+    "hash": "13381a02bcffd38bcaa02fd40b41e0fa990098671618b5dcaaf16b05bc2b9292"
   },
   "l2-select-filter": {
-    "version": 1,
-    "hash": "bb8c0eb5bb2646dfcf4bf5d948e4898683340fbad3f138ee01abc7742be3fc66"
+    "version": 2,
+    "hash": "f6bee426a2702fe0c4073e343b0a1cef5725dcca6b0f0703896e946af117d49f"
   },
   "l2-sort-dedup": {
-    "version": 1,
-    "hash": "6e2639dd48f560dcc4da351f531262e18b65759856a1c7e1bf4b45be9bbe2a3b"
+    "version": 2,
+    "hash": "727138329955256ba96e0ca5bb969814fd2102e3a83cfd7c3d5e3faea4d33628"
   },
   "l2-what-is-dataframe": {
-    "version": 1,
-    "hash": "0567584cf6b673d66e3a5e3a9700ed71870f2f066187d850bfc5b9a3e706ff4a"
+    "version": 2,
+    "hash": "49d8f2442d1203ddd81e492f6185e8b5898db717f088dc9cba862368c2f00ba7"
   },
   "l2-withcolumn": {
-    "version": 1,
-    "hash": "7cef3e05a04d33222d92f805376997f851c6995dd93e6b5710a4f2a197437cc7"
+    "version": 2,
+    "hash": "bfc77b0733bc75ab6e1da5ba870f47d0c6a38bdae53f81ba835f2fe7a534bc44"
   },
   "l2-write-data": {
-    "version": 1,
-    "hash": "a706082f1f57f4f9c48a14873220834b57ea9febe9311e342cd3b758a991df72"
+    "version": 2,
+    "hash": "ef9665a11f9834ded1bf2cbb4384aa6e96481d7037e6b9f17644f2f90d0dac93"
   },
   "l5-what-is-shuffle": {
     "version": 3,

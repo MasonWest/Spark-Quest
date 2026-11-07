@@ -1,6 +1,6 @@
 {
   "slug": "l2-withcolumn",
-  "version": 1,
+  "version": 2,
   "title": "给每笔订单贴上标签",
   "mission": "运营要在原始订单旁加上千元金额和大额标签。今天只加工列，不丢掉订单。",
   "correction": "withColumn 返回新 DataFrame；同名替换只发生在返回的查询中。NULL 条件不会自动进入 when 的 true 分支；未命中时走 otherwise，省略 otherwise 则返回 NULL。",
@@ -63,7 +63,16 @@
         }
       ],
       "insight": "withColumn 的第二个参数描述每一行如何生成新值，不是先在 Python 里算好一个整列表。",
-      "ability": "新增计算列并保留原值"
+      "ability": "新增计算列并保留原值",
+      "reading": {
+        "id": "step-eee3d903be-reading",
+        "title": "新列名和计算表达式，各自决定什么？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么要用 pyspark.sql.functions（习惯上 import 成 F）】",
+        "connection": "amount_k 决定结果字段叫什么；amount/1000.0 决定每笔订单怎样换算。新名字让原 amount 保留，方便交付时核对金额单位。",
+        "boundary": "Column 描述逐行计算，不是本地的一整个数值列表。是否保留原字段取决于返回查询的表达式和列名，不能把新增与覆盖混着理解。"
+      }
     },
     {
       "id": "step-2117be145c",
@@ -99,7 +108,16 @@
         }
       ],
       "insight": "列引用用 col，固定值用 lit。先弄清你要的是“取已有字段”还是“给定一个值”。",
-      "ability": "区分列引用与常量表达式"
+      "ability": "区分列引用与常量表达式",
+      "reading": {
+        "id": "step-2117be145c-reading",
+        "title": "固定值与已有字段，为什么要分清？",
+        "sectionTitle": "常见表达",
+        "startMarker": "【常见表达】",
+        "endMarker": "【一个容易混淆的点】",
+        "connection": "给每行加 web 来源时使用 lit(\"web\")；col(\"web\") 则是在找一列叫 web 的字段。两者都能形成表达式，但含义不同。",
+        "boundary": "withColumn 的第二个参数需要 Column，裸字符串不是本题的常量表达式。不要把所有字符串参数在所有 API 中的用法一概而论。"
+      }
     },
     {
       "id": "step-b387e09c4f",
@@ -135,7 +153,16 @@
         }
       ],
       "insight": "修复方式：F.when(F.col('amount').isNull(), '待核对').when(F.col('amount') >= 100, '大额').otherwise('普通')。先明确未知状态，再判断数值。",
-      "ability": "识别条件列中的空值分支遗漏"
+      "ability": "识别条件列中的空值分支遗漏",
+      "reading": {
+        "id": "step-b387e09c4f-reading",
+        "title": "条件没命中，默认分支会接住谁？",
+        "sectionTitle": "常见表达",
+        "startMarker": "【常见表达】",
+        "endMarker": "【一个容易混淆的点】",
+        "connection": "null >= 100 没有得到 true，因此当前写法进入 otherwise(\"普通\")。要得到“待核对”，必须先增加明确的 isNull 分支，业务意图不能靠标签名字自动实现。",
+        "boundary": "when 选择条件为 true 的分支；未知不等于 true。省略 otherwise 时，未命中会得到 NULL；有默认值时要确认它是否误接了未知状态。"
+      }
     },
     {
       "id": "step-c872654bbc",
@@ -171,7 +198,16 @@
         }
       ],
       "insight": "生成、命名和保存三件事都要明确。它们决定下游拿到的是原金额、新金额，还是一列没有被接住的结果。",
-      "ability": "推演同名列替换与 DataFrame 不可变性"
+      "ability": "推演同名列替换与 DataFrame 不可变性",
+      "reading": {
+        "id": "step-c872654bbc-reading",
+        "title": "同名覆盖，到底覆盖哪一个查询？",
+        "sectionTitle": "一个容易混淆的点",
+        "startMarker": "【一个容易混淆的点】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "converted 里的 amount 是换算值，orders 仍使用原金额。同名替换发生在返回的 DataFrame 上，不会倒过来改变你原来的查询变量。",
+        "boundary": "如果用 orders = orders.withColumn(...) 重新绑定变量名，后续 orders 会指向新查询；这仍不是对旧 DataFrame 的原地修改。"
+      }
     }
   ],
   "legacyTaskIds": [

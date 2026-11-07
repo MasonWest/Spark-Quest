@@ -1,6 +1,6 @@
 {
   "slug": "l2-inspect",
-  "version": 1,
+  "version": 2,
   "title": "给订单做一次体检",
   "mission": "同事问“数据没问题吧？”今天用结构、样本和统计回答，而不是凭第一眼放心。",
   "correction": "printSchema() 展示 Schema，不应被教成会执行整条数据查询的 Action。show(n) 限制展示行数，但聚合、排序等上游仍可能处理大量数据。df[0] 在 PySpark 中可以引用第一列，不是获取第一行。",
@@ -63,7 +63,16 @@
         }
       ],
       "insight": "先明确你想知道什么，再选工具，避免为一个小问题启动不必要的全量操作。",
-      "ability": "按结构或内容选择检视工具"
+      "ability": "按结构或内容选择检视工具",
+      "reading": {
+        "id": "step-575eab8f9e-reading",
+        "title": "先问清楚：你要看结构还是内容？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【三个核心动作】",
+        "connection": "你刚才为类型选择 printSchema，为五行完整文本选择 show(5, truncate=False)。它们分别回答结构与值的问题，不是同一种检查换个名字。",
+        "boundary": "printSchema 展示结构，不应被归为触发整条数据查询的 Action。show 会请求数据结果，但有限展示也不保证上游只处理少量数据。"
+      }
     },
     {
       "id": "step-b8c533c9f4",
@@ -99,7 +108,16 @@
         }
       ],
       "insight": "show 是观察窗口，不是全表质量证明。需要多少证据，取决于你要回答的问题。",
-      "ability": "区分展示上限、总行数与质量验证"
+      "ability": "区分展示上限、总行数与质量验证",
+      "reading": {
+        "id": "step-b8c533c9f4-reading",
+        "title": "20 行是展示上限，还是数据总数？",
+        "sectionTitle": "为什么 show 默认只看 20 行",
+        "startMarker": "【为什么 show 默认只看 20 行】",
+        "endMarker": "【列引用的坑】",
+        "connection": "原文说明了默认展示上限。十万行表只显示二十行，并不说明创建或读取时丢掉了其余数据；需要总行数时应明确请求 count。",
+        "boundary": "不要把原文“先 count 再决定”当成每次查看数据的固定前置步骤；count 本身可能昂贵。样本中没有异常也不能证明全表无异常。"
+      }
     },
     {
       "id": "step-80c09d882d",
@@ -135,7 +153,16 @@
         }
       ],
       "insight": "小输出不保证小开销。先看查询做了什么，再判断检视是否便宜。",
-      "ability": "识别小结果背后的上游计算成本"
+      "ability": "识别小结果背后的上游计算成本",
+      "reading": {
+        "id": "step-80c09d882d-reading",
+        "title": "观察窗口很小，计算为什么仍可能很大？",
+        "sectionTitle": "⚠️ 比喻的边界（很重要）：",
+        "startMarker": "⚠️ 比喻的边界（很重要）：",
+        "endMarker": "【写下代码后，Spark 内部发生了什么】",
+        "connection": "你刚才把展示五行和上游找全局最大值分开了。样本窗口限制的是交到屏幕上的结果，不是所有上游算子的输入规模。",
+        "boundary": "orderBy、聚合等上游仍可能处理大量输入。原文的“代价”应结合具体计划理解；collect 大数据有 Driver 风险，count 也不意味着随后全量 collect 就安全。"
+      }
     },
     {
       "id": "step-240e830909",
@@ -171,7 +198,16 @@
         }
       ],
       "insight": "注意 df[0] 在 PySpark 中也可以引用第一列；它不是取第一行。需要前几行本地样本时可以 take(n)，同时控制返回规模。",
-      "ability": "正确引用带空格的列，并区分列与行"
+      "ability": "正确引用带空格的列，并区分列与行",
+      "reading": {
+        "id": "step-240e830909-reading",
+        "title": "带空格的列名，为什么适合用字符串引用？",
+        "sectionTitle": "列引用的坑",
+        "startMarker": "【列引用的坑】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "orders[\"order note\"] 产生列引用，select 再使用这个引用选出备注。它没有把备注内容提前取回 Python，也没有将字符串当成实际单元格。",
+        "boundary": "列名含点号等特殊含义字符时还要适当转义。PySpark 的 df[0] 可以引用第一列，不能把它理解成获取第一行，也不能笼统说 DataFrame 不支持任何下标。"
+      }
     }
   ],
   "legacyTaskIds": [

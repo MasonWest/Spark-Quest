@@ -1,6 +1,6 @@
 {
   "slug": "l2-what-is-dataframe",
-  "version": 1,
+  "version": 2,
   "title": "动手理解 · DataFrame",
   "mission": "从四条订单开始，理解列、Schema 与惰性变换。",
   "correction": "",
@@ -65,7 +65,16 @@
         }
       ],
       "insight": "你已经读懂了一小段 DataFrame 代码：它让你按列名表达要什么数据。数据可以分布在多个分区中，无须先收集到本机。",
-      "ability": "读懂按条件筛行、按列名选列的简单链路"
+      "ability": "读懂按条件筛行、按列名选列的简单链路",
+      "reading": {
+        "id": "step-53733597a3-reading",
+        "title": "表格外观，和你刚才筛行有什么关系？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【它和 RDD 的关系（重要）】",
+        "connection": "你刚才按 amount 筛行、按列名选列，正是在操作“有命名列的记录”。north/120 和 south/200 被保留，不需要先把所有数据变成本地 Python 列表。",
+        "boundary": "“分布式表”不表示数据一定已经在多台机器的内存中；local 模式、小数据和尚未执行的查询也可以使用 DataFrame。Excel 比喻只帮助理解行列，不代表它有本地表格的修改方式。"
+      }
     },
     {
       "id": "step-7fe0cf2318",
@@ -125,7 +134,16 @@
         }
       ],
       "insight": "表格是外观，Schema 是结构。Spark 知道列与表达式的结构，才能分析查询并选择执行方式；不等于所有脏数据都会自动被修好。",
-      "ability": "区分数据样子与 Schema，并知道如何检查类型"
+      "ability": "区分数据样子与 Schema，并知道如何检查类型",
+      "reading": {
+        "id": "step-7fe0cf2318-reading",
+        "title": "Schema 为什么值得单独看？",
+        "sectionTitle": "心智模型",
+        "startMarker": "【一个直观的心智模型】",
+        "endMarker": "⚠️ 比喻的边界",
+        "connection": "把“带装箱清单”的比喻落到代码上：printSchema 展示 region、amount 的名字与类型。字符串 120 和整数 120 可能打印相似，但结构不同。",
+        "boundary": "RDD 也有元素类型，不能把“没贴标签”理解成没有任何类型；这里强调的是 SQL 优化器可见的命名列结构。Schema 不是业务质量保证，也不会自动把所有错误值修好。"
+      }
     },
     {
       "id": "step-87ed0e81b0",
@@ -185,7 +203,16 @@
         }
       ],
       "insight": "DataFrame 不是已经拉到 Python 内存里的列表；你可以先描述变换，再用 Action 请求结果。也不要把惰性理解成所有读取和元数据操作都绝不产生工作。",
-      "ability": "分清筛选、选列与去重，并辨认变换和 Action"
+      "ability": "分清筛选、选列与去重，并辨认变换和 Action",
+      "reading": {
+        "id": "step-87ed0e81b0-reading",
+        "title": "筛选和选列为何可以先写、后请求结果？",
+        "sectionTitle": "正式的技术定义",
+        "startMarker": "【正式的技术定义】",
+        "endMarker": "【写下代码后，Spark 内部发生了什么】",
+        "connection": "两次 north 都保留，是因为选列不去重。filter、select 描述所需结果，show 请求展示；“声明式”让你表达需要什么，而不是手动安排每条记录怎样跨分区执行。",
+        "boundary": "惰性描述已有 DataFrame 的这些变换，不表示读取文件、创建本地样本或推断 Schema 时绝无工作。DataFrame 也不承诺比任何 RDD 写法都快；实际效果取决于查询与执行。"
+      }
     }
   ],
   "legacyTaskIds": [

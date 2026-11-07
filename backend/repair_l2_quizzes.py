@@ -31,9 +31,13 @@ def repair(apply=False, corrections_file="app/l2_quiz_corrections.json"):
             options = json.loads(raw)
             if correct != fix["correct_index"] or correct != question["correct_index"] or options != question["options"] or explanation != question["explanation"]:
                 raise RuntimeError("DB/seed drift; inspect before repair: " + fix["prompt"])
-            if options[correct] == fix["answer"] and explanation == fix["explanation"] and question["prompt"] == new_prompt:
+            desired_options = list(fix.get("options", options))
+            if len(desired_options) != len(options) or len(set(desired_options)) != len(desired_options):
+                raise RuntimeError("Invalid replacement options")
+            desired_options[correct] = fix["answer"]
+            if options == desired_options and explanation == fix["explanation"] and question["prompt"] == new_prompt:
                 continue
-            options[correct] = fix["answer"]
+            options = desired_options
             question.update(options=options, explanation=fix["explanation"], prompt=new_prompt)
             changes.append((json.dumps(options, ensure_ascii=False), fix["explanation"], new_prompt, qid))
         if not apply or not changes:

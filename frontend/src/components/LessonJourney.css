@@ -25,3 +25,4 @@
 .lj-reading-boundary { font-size:13px; padding-top:16px; }
 .lj-reading-boundary p { font-size:13px; margin-bottom:0; }
 .lj-reading-source { border:0; background:transparent; padding:14px 0 0; color:var(--sq-primary); font-size:13px; text-align:left; cursor:pointer; min-height:44px; }
+.lj-reading-caution { padding:12px; background:var(--sq-warning-light); border:1px solid var(--sq-warning-border); border-radius:10px; font-size:13px !important; }

@@ -1,0 +1,2233 @@
+{
+  "version": 1,
+  "scope": "100 legacy L2 questions; immutable snapshot, classification is editorial guidance, not a mastery state",
+  "questions": [
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "DataFrame 最准确的定义是？",
+        "options": [
+          "以命名列组织的分布式数据集（带 Schema 的表）",
+          "Spark 在 Driver 端维护、可随时原地修改的本地二维表",
+          "按行切分但不记录列名与类型的纯分布式集合",
+          "RDD 之上仅为了代码简洁而存在的语法糖层"
+        ],
+        "correct_index": 0,
+        "explanation": "DataFrame 是「以命名列组织的分布式数据集」：底层按分区分布式存放，同时带有 Schema（列名+类型）。它不是单机 pandas，也不是文件系统或元数据数据库。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "Spark 为什么要在 RDD 之上再提供 DataFrame 这一层？",
+        "options": [
+          "为了在单机也能像 pandas 那样直接原地修改数据",
+          "为了在保留分布式能力的同时，让 Catalyst 能看懂结构并自动优化",
+          "因为列式存储强制要求数据必须带 Schema 才能读取，否则连文件都无法被成功打开",
+          "为了让 Driver 能够串行、逐行地处理全部记录"
+        ],
+        "correct_index": 1,
+        "explanation": "DataFrame 在 RDD 之上加了 Schema（列名+类型），让 Catalyst 优化器能像 SQL 引擎一样做谓词下推、列裁剪、join 重排，这正是它比裸 RDD 快的根本原因。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 2,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "creation_work_overgeneralized_as_no_work"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "写下 spark.createDataFrame(rows, schema) 后，下列说法正确的是？",
+        "options": [
+          "会先把 rows 全部收集到 Driver 端逐行校验类型，再据此建立分区与计划",
+          "会立刻在集群上启动一个 Job，把 rows 并行读入 Executor 并缓存在内存里",
+          "只是登记数据与结构，并未真正计算；show() 之类的 Action 出现后才执行",
+          "会先扫描一遍数据推断出每列类型，再据此分配 Task 并立即开始计算"
+        ],
+        "correct_index": 2,
+        "explanation": "createDataFrame 只是「登记」数据与结构；和所有 Transformation 一样惰性，真正读取/计算要等 show / count 等 Action 触发。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "下列哪类任务最符合「优先用 DataFrame」的场景？",
+        "options": [
+          "对几百行的小表做求和，更在意代码写得多短而不关心执行效率",
+          "对图片、音频这类非结构化文件做特征提取并预处理成向量",
+          "需要自己手写每台机器上的循环逻辑，逐条处理原始记录",
+          "对 TB 级结构化数据做分组聚合，并希望 Spark 自动优化"
+        ],
+        "correct_index": 3,
+        "explanation": "DataFrame 的价值在「数据大到单机工具处理不动、且需自动优化」时最明显；小数据用 pandas 更简单，非结构化/底层控制才用 RDD。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 4,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于 DataFrame 与 RDD 的关系，说法错误的是？",
+        "options": [
+          "DataFrame 和 RDD 是两种互相独立、可以互相替代的抽象",
+          "DataFrame 的查询会先经 Catalyst 优化再翻译成 RDD 执行",
+          "DataFrame 通过 Schema 让你以列名而非下标访问数据",
+          "DataFrame 与 RDD 共用分区、血缘与 Task 这一套执行机制"
+        ],
+        "correct_index": 0,
+        "explanation": "DataFrame 与 RDD 不是并列替代关系：DataFrame 底层执行模型就是 RDD，它是「上层声明式 API」而非独立替代物。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "你想立刻在控制台看到 DataFrame 的前几行数据，却只看到对象的描述，应该？",
+        "options": [
+          "直接 print(df) 就会自动把全部数据行逐条打印出来",
+          "调用 df.show() 这类 Action 来真正触发并展示数据",
+          "必须先把它重新创建一个 RDD，之后才能看到里面的数据",
+          "需要先修改 Spark 的源码，让它在打印时顺便展示数据"
+        ],
+        "correct_index": 1,
+        "explanation": "DataFrame 惰性，print(df) 不会触发执行；要看数据需用 show()/take() 等 Action。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 6,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "DataFrame 底层的数据是以什么形式存放和计算的？",
+        "options": [
+          "全部集中在 Driver 单机的内存里，按列组织好之后等待计算",
+          "只以 CSV 文件的形式存在于磁盘上，从不进入内存参与计算",
+          "按分区分布式存放，底层仍以 RDD 的 Task 机制执行",
+          "全部放在客户端浏览器里，由页面来负责渲染与计算"
+        ],
+        "correct_index": 2,
+        "explanation": "DataFrame 数据按分区分布式存放，底层执行仍由 RDD 分区与 Task 机制驱动。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 7,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "要得到一个 DataFrame 的「列名 + 类型」概览，应该？",
+        "options": [
+          "df.show()（只看数据行）",
+          "df.collect()",
+          "df.count()",
+          "df.printSchema()"
+        ],
+        "correct_index": 3,
+        "explanation": "printSchema 打印字段名与数据类型；show 看数据、collect 拉回本地、count 数行数。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 8,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么有了 pandas 这样的单机表，Spark 还要提供 DataFrame？",
+        "options": [
+          "因为数据可能大到单机内存装不下，且需要集群并行加速",
+          "因为它的写法比 pandas 更短，能省下不少模板代码",
+          "因为 pandas 完全不支持列名，只能按下标访问字段",
+          "因为它不需要任何真实数据，就能完成一次计算"
+        ],
+        "correct_index": 0,
+        "explanation": "核心动机是规模与并行：当数据超内存或需分布式加速时，Spark DataFrame 才派上用场。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-what-is-dataframe",
+      "legacy_index": 9,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "关于 DataFrame 这种「表」的说法，正确的是？",
+        "options": [
+          "它是 Driver 里一个普通的 Python 二维列表，只是多了列名",
+          "它是带 Schema 的二维表抽象，数据按分区分布在集群而非单机数组",
+          "它就是磁盘上那个 CSV 文件本身，读取时才临时载入内存",
+          "它只能同时保存一行数据，多行需要反复重建对象"
+        ],
+        "correct_index": 1,
+        "explanation": "DataFrame 是带列名/类型的二维表抽象，但底层数据按分区分布在集群，并非单机内存里的列表。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "spark.read.csv(path) 返回的对象是？",
+        "options": [
+          "已经被 Spark 全部读入 Driver 内存的本地 pandas.DataFrame",
+          "一个 DataFrame；建表时可能先做文件发现等准备工作",
+          "一个记录文件位置、尚未解析内容的文件句柄",
+          "一个已经物化、可直接索引的 RDD[Row]"
+        ],
+        "correct_index": 1,
+        "explanation": "读取器返回 DataFrame，不等于数据已经全部装入内存。文件发现、元数据获取和 Schema 推断可能提前发生；业务查询的求值仍可延后到 Action。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "读 CSV 时通常要加 .option('header', True)，主要是为了？",
+        "options": [
+          "指示 Spark 跳过空行以加快读取速度",
+          "告诉 Spark 该文件使用哪种字符编码",
+          "让 Spark 把第一行当作表头（列名），否则表头会变成数据",
+          "要求 Spark 在读取前先验一遍 Schema 是否匹配，不匹配的文件会被直接丢弃"
+        ],
+        "correct_index": 2,
+        "explanation": "不加 header，CSV 第一行会被当成普通数据，出现名为「name」的奇怪取值；加 header 才把首行当列名。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 2,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "读 CSV 后调用 show(10)，数据真正被读取发生在？",
+        "options": [
+          "spark.read.csv 被调用的一瞬间，数据就已经全部读取并进入内存",
+          "程序启动后由 Driver 自动地、无条件地先把整张表读一遍",
+          "只在 Driver 端由单个进程顺序读取并解析，完全不经由集群",
+          "show() 请求结果时执行所需查询；推断 Schema 等工作可能更早发生"
+        ],
+        "correct_index": 3,
+        "explanation": "show 是 Action，会请求并展示查询结果；不能因此断言此前绝未读取过文件。CSV inferSchema 等准备步骤可能已经检查数据。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "要把一个 Python 列表 [('Alice',34),('Bob',28)] 变成分布式 DataFrame，应使用？",
+        "options": [
+          "spark.createDataFrame(rows, ['name','age'])",
+          "pd.DataFrame(rows)（得到的是单机 pandas 对象）",
+          "sc.parallelize(rows)（得到的是 RDD 而非 DataFrame）",
+          "spark.read.csv('rows')（把 rows 当成文件路径去读）"
+        ],
+        "correct_index": 0,
+        "explanation": "createDataFrame 把内存集合 + 列名/StructType 变成 DataFrame；pd.DataFrame 是单机对象，parallelize 得到的是 RDD。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "关于 CSV 读取后的数据类型，下列说法错误的是？",
+        "options": [
+          "不加 inferSchema 时，Spark 会默认把所有列都当成字符串类型来读",
+          "即使不加 inferSchema，Spark 也会自动把所有列准确识别为正确的类型",
+          "加 inferSchema 时，Spark 会抽样推断列类型，但仍可能因样本偏差猜错",
+          "生产环境更推荐用 schema=StructType 显式声明类型，比自动推断更可靠"
+        ],
+        "correct_index": 1,
+        "explanation": "不加 inferSchema 时 Spark 不会「准确识别」，而是把所有列默认当成 StringType；正确做法是显式声明或开启 inferSchema。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么 spark.read 系列方法返回 DataFrame 是『惰性』的设计？",
+        "options": [
+          "因为 Spark 根本读不了文件，只能先返回一个占位对象",
+          "因为这样能让上层代码写得更短、更省事一些",
+          "让业务查询先形成计划，再在请求结果时执行；准备工作可能提前发生",
+          "因为读取文件这件事本身不需要做任何优化"
+        ],
+        "correct_index": 2,
+        "explanation": "惰性求值方便 Spark 分析和优化查询，但读取器可能提前发现文件、获取元数据或推断 Schema。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "spark.createDataFrame(rows, schema) 与 spark.read.csv(path) 的共同点是？",
+        "options": [
+          "两者都会立刻把全部数据读进 Driver 内存里再返回",
+          "前者用于读文件、后者用于读集合，正好说反了",
+          "两者返回的都是 RDD 而不是 DataFrame",
+          "都返回 DataFrame；建表或推断类型时也可能先做工作"
+        ],
+        "correct_index": 3,
+        "explanation": "本地列表建表会处理和检查本地数据；读取文件可能发现文件、推断结构。二者都不能被概括成“创建时完全不读取或处理数据”。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 7,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "已知 schema=StructType([...])，把一个已有 RDD 转成带结构的 DataFrame，应？",
+        "options": [
+          "spark.createDataFrame(rdd, schema)",
+          "rdd.toDF()，在这个场景里不需要再传入任何 schema",
+          "spark.read.csv(rdd)，也就是把 RDD 当成文件路径来读",
+          "rdd.show()，先把数据打印出来，再照着补上列结构"
+        ],
+        "correct_index": 0,
+        "explanation": "createDataFrame 同时接受集合或 RDD 与 schema，把无结构 RDD 变成有结构的 DataFrame。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 8,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "spark.read.format('json').load(path) 中 format/load 的作用是？",
+        "options": [
+          "立刻把文件内容全部读出来，并逐行打印到控制台上给你看",
+          "指定数据源格式为 json 并加载为 DataFrame（仍是惰性）",
+          "先删除掉本地那个同名的旧文件，然后再返回一个新的对象",
+          "把 Python 的普通类型先整体转换一遍，最后再返回新结果"
+        ],
+        "correct_index": 1,
+        "explanation": "format 指定数据源类型，load 读取为 DataFrame；依旧惰性，真正读等 Action。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-create-dataframe",
+      "legacy_index": 9,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "用 createDataFrame 时如果不给 schema 而只给元组/Row，Spark 会？",
+        "options": [
+          "直接报错，因为没有显式给出 schema 就无法创建",
+          "把所有列都当成文本来处理，并按 a、b、c 依次命名",
+          "尝试从数据推断列名与类型（如元组默认 _1、_2 命名）",
+          "自动去连接一个数据库，把缺失的结构补全后再返回"
+        ],
+        "correct_index": 2,
+        "explanation": "不给 schema 时 Spark 会尽量推断结构（元组用 _1/_2 命名或按 Row 字段推断）。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "Schema（StructType）的主要作用是什么？",
+        "options": [
+          "描述数据应当写入哪个输出目录与文件格式",
+          "描述集群中 Executor 的数量与内存配置",
+          "描述每一列的名称、数据类型以及是否可空",
+          "描述 Spark 会把这份数据切成多少个分区"
+        ],
+        "correct_index": 2,
+        "explanation": "Schema 是「表的说明书」：列名 + 数据类型 + 是否可空（nullable），它让 Spark 知道能对该列做什么运算、能否优化。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "生产环境为何更推荐显式 StructType 声明 Schema，而非 inferSchema？",
+        "options": [
+          "因为 inferSchema 在 Spark 里还没有实现，根本用不了",
+          "因为显式声明能把数据压得更小、更省内存",
+          "因为 inferSchema 一定会把所有数字都猜成字符串",
+          "明确字段类型、避免额外类型推断；异常处理还需配置"
+        ],
+        "correct_index": 3,
+        "explanation": "显式 Schema 固定结构与类型，省去推断开销。CSV 解析模式默认 PERMISSIVE，显式 Schema 本身不保证遇坏即报错；需要时设置 mode=FAILFAST。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 2,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "显式声明 Schema 后读取数据，遇到「字符串无法转成 IntegerType」的行会怎样？",
+        "options": [
+          "取决于数据源和解析模式；CSV 默认模式下异常字段可能为 null",
+          "自动把该值替换为 null，好让程序继续跑而不中断",
+          "自动把该值转成字符串，尽量保留住原始信息",
+          "静默跳过这一行，只记一条警告日志后继续"
+        ],
+        "correct_index": 0,
+        "explanation": "在 CSV 中，Schema 决定按什么类型解析，mode 决定如何处理损坏记录。默认 PERMISSIVE；需要遇到损坏记录时报错应选择 FAILFAST，不能仅凭显式 Schema 判断。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 3,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "金额字段需要避免浮点误差、保持精确，应该使用哪种类型？",
+        "options": [
+          "DoubleType（二进制浮点，存在舍入误差）",
+          "DecimalType",
+          "IntegerType（只能存整数，无法表示小数）",
+          "StringType（虽精确但无法进行数值运算）"
+        ],
+        "correct_index": 1,
+        "explanation": "金钱等需要精确十进制计算的场景应用 DecimalType，避免 DoubleType 的二进制浮点误差；大整数用 LongType。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest",
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "关于字段的 nullable，下列说法错误的是？",
+        "options": [
+          "字段默认就是 nullable=True，也就是说默认允许该列出现空值",
+          "nullable 这个设置会影响 join 与聚合时对 null 值的处理逻辑",
+          "字段默认 nullable=False，因此 DataFrame 中不可能出现空值",
+          "可以对关键的外键列显式地设置 nullable=False，用来约束非空"
+        ],
+        "correct_index": 2,
+        "explanation": "Spark 字段 nullable 默认是 True（可空），不是 False；忽略这一点可能导致 join / 聚合时意外出现 null。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "StructField('age', IntegerType(), True) 三个参数分别指？",
+        "options": [
+          "列名、默认值、以及该字段允许的最大长度",
+          "字段的数据类型、列名、以及附带的注释文字",
+          "字段在表中的下标、类型、以及小数精度",
+          "列名、数据类型、是否可空"
+        ],
+        "correct_index": 3,
+        "explanation": "StructField 依次为 name、dataType、nullable，描述单列的结构。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 6,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "显式声明 Schema 与完全不声明（让 Spark 推断）相比，主要代价是？",
+        "options": [
+          "需要维护类型约定，并单独决定解析失败与业务校验策略",
+          "运行会变得更慢，而且出错的可能性也更高",
+          "就无法再读取 CSV 这类没有结构的文件了",
+          "最终得到的列数会比让 Spark 推断时明显减少"
+        ],
+        "correct_index": 0,
+        "explanation": "显式 Schema 的代价是维护字段类型、范围与精度；它不自动提供业务质量保证，也不等同于 FAILFAST。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 7,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "要让某列允许为空并声明为整数，应写？",
+        "options": [
+          "StructField('cnt', IntegerType(), False) 表示可空",
+          "StructField('cnt', IntegerType(), True)",
+          "StructField('cnt', 'int')",
+          "IntegerType('cnt', True)"
+        ],
+        "correct_index": 1,
+        "explanation": "nullable=True 表示允许空值；写法为 StructField(name, type, nullable)。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 8,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "StringType、IntegerType、BooleanType 等属于？",
+        "options": [
+          "Python 自带的内置类型，可以直接当作 schema 来用",
+          "Spark 对文件名的一种约定，用来识别数据源",
+          "Spark 的 DataType 体系，用于描述每列的数据类型",
+          "磁盘上某一种具体的存储格式的名字"
+        ],
+        "correct_index": 2,
+        "explanation": "这些是 pyspark.sql.types 中的 DataType，组成 Schema 的类型系统。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-schema-types",
+      "legacy_index": 9,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么浮点金额不用 DoubleType 而用 DecimalType？",
+        "options": [
+          "DoubleType 根本无法存小数，只能用整数来表达",
+          "DecimalType 的运算速度比 DoubleType 更快一些",
+          "DoubleType 这个类型在 Spark 里已经被废弃了",
+          "DecimalType 用十进制精度表示，避免二进制浮点的舍入误差"
+        ],
+        "correct_index": 3,
+        "explanation": "Double 是二进制浮点会有舍入误差；金额需 DecimalType 的十进制精确表示。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.show(20) 的作用是？",
+        "options": [
+          "分页打印整张表的全部行，无论规模多大",
+          "仅打印列名与数据类型组成的 Schema 结构",
+          "返回一个新的 DataFrame 供后续继续链式调用",
+          "以表格形式打印前 20 行（默认数量）并触发执行"
+        ],
+        "correct_index": 3,
+        "explanation": "show(n) 以表格打印前 n 行（默认 20），本身是 Action 会触发执行；printSchema 才看结构。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "show() 默认只展示 20 行，这样设计是为了？",
+        "options": [
+          "防止刷屏，也避免把可能极巨大的表全量拉回 Driver",
+          "因为 Spark 引擎存在限制，单次最多只能取出 20 行",
+          "因为 DataFrame 在内存中本来就只缓存了约 20 行",
+          "因为超过 20 行后剩余数据会被 Spark 自动丢弃"
+        ],
+        "correct_index": 0,
+        "explanation": "刻意设计：防止一不小心把上亿行全打印出来刷屏甚至撑爆 Driver；要看更多先 count 评估量级。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 2,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "用 df.age 这种「属性式」引用列的局限是？",
+        "options": [
+          "会立刻触发一次 Action，把整列数据都读到 Driver",
+          "当列名含空格或与 DataFrame 已有方法名冲突时无法使用",
+          "只对数值类型的列有效，字符串列无法使用",
+          "会直接修改原 DataFrame 的列结构并写回磁盘"
+        ],
+        "correct_index": 1,
+        "explanation": "属性式写法对含空格的列名（如 df.order amount）或重名方法无效，此时要用 df['col'] 或 col('col')。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 3,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想确认某列到底是 string 还是 bigint，应该？",
+        "options": [
+          "用 df.show() 看几行数值，肉眼判断像不像数字",
+          "用 df.count() 统计行数，从行数推断类型",
+          "用 df.printSchema() 或 df.dtypes 查看类型",
+          "用 df.collect() 把所有数据拉回本地再逐个判断，这是最稳妥也最常用的做法"
+        ],
+        "correct_index": 2,
+        "explanation": "printSchema / dtypes 直接给出每列类型，是排查「为什么不能做数值运算」的第一动作。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于检视操作的错误说法是？",
+        "options": [
+          "show() 是 Action，会真正触发一次作业执行",
+          "列名含空格时应使用 df['order amount'] 或 col('order amount')",
+          "printSchema() 用于查看字段名与数据类型的结构",
+          "可以用 Python 的 len(df) 直接获取 DataFrame 的行数"
+        ],
+        "correct_index": 3,
+        "explanation": "DataFrame 不是本地集合，没有 len(df)；看行数用 df.count()，看前几行用 show / take。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 5,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "show() 与 collect() 在执行上有何关系？",
+        "options": [
+          "都是 Action；show 限制展示量，collect 收集全部结果行",
+          "collect 是 Transformation，show 不触发执行",
+          "show 和 collect 这两种操作都不会触发作业执行",
+          "collect 不触发执行，只有 show 才会触发"
+        ],
+        "correct_index": 0,
+        "explanation": "show 和 collect 都请求执行结果；show 限制展示行数，collect 收集所有结果行到 Driver。但 show 的上游聚合或排序仍可能处理大量数据，小输出不保证小开销。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "take(n) 与 show(n) 的区别是？",
+        "options": [
+          "两者其实完全一样，都会返回一份本地列表供你直接拿去使用",
+          "take(n) 返回 Row 列表供本地使用；show(n) 只打印表格、不返回数据",
+          "take 并不会触发执行，它只是把这次操作登记进执行计划中",
+          "show 会返回一份列表，而 take 只负责把数据打印到屏幕上"
+        ],
+        "correct_index": 1,
+        "explanation": "take(n) 把前 n 行以 Row 列表形式取回本地；show(n) 只打印、不便后续处理。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 7,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想在 Notebook 里拿到前 5 行数据做本地处理，应？",
+        "options": [
+          "df.show(5)，然后靠肉眼解析屏幕上的输出",
+          "df.printSchema()，从结构信息里取出前 5 行",
+          "df.take(5) 或 df.limit(5).collect()",
+          "df.count()，先数出一共有多少行再做处理"
+        ],
+        "correct_index": 2,
+        "explanation": "take/collect 把数据以对象形式取回本地；show 只打印、不便后续处理。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 8,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.dtypes 返回的是什么？",
+        "options": [
+          "表中的行数，以及每个分区里各有多少行数据",
+          "一段数据样本，通常就是表里最前面的若干行",
+          "这份 DataFrame 对应的执行计划文本",
+          "一个 [(列名, 类型字符串), ...] 的列表"
+        ],
+        "correct_index": 3,
+        "explanation": "dtypes 给出每列的名称与类型（字符串形式），便于快速核对结构。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-inspect",
+      "legacy_index": 9,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么不能依赖 print(df) 来查看数据内容？",
+        "options": [
+          "DataFrame 惰性，未触发的计算不会被打印成数据行",
+          "print 函数对 DataFrame 对象本来就是无效的",
+          "打印会把内部的数据对象直接从内存里删掉",
+          "必须连上网之后才能把 DataFrame 打印出来"
+        ],
+        "correct_index": 0,
+        "explanation": "DataFrame 是惰性计划，直接 print 不会执行计算、看不到真实数据行；要看需用 Action。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "select 与 filter 分别用于？",
+        "options": [
+          "select 用来挑列（投影），filter 用来挑行（过滤）",
+          "select 用来挑行，filter 用来挑列，正好相反",
+          "两者功能完全一样，都是用来挑行的",
+          "两者都会就地把原 DataFrame 改掉，而非返回新表"
+        ],
+        "correct_index": 0,
+        "explanation": "select = 投影（选列），filter / where = 过滤（选行），二者功能等价；两者都返回新 DataFrame，不修改原表。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么 filter 的多条件必须用 & / | 而非 Python 的 and / or？",
+        "options": [
+          "因为 & 与 | 这两种运算符运行起来比 and / or 更快一些",
+          "因为条件必须是 Column 表达式，and/or 会先把 Column 当布尔求值而报错",
+          "因为 filter 本身并不支持多个条件的组合，必须拆成多次来调用",
+          "因为 and / or 并不是 Python 提供的合法运算符，所以不能使用"
+        ],
+        "correct_index": 1,
+        "explanation": "Python 的 and/or 会先把两个 Column 当布尔判断，抛 ValueError；必须用位运算 & | ~ 且每个条件单独加括号。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 2,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "对于 df.filter((df.age>18) & (df.city=='BJ'))，下列说法正确的是？",
+        "options": [
+          "它是 Action，调用时会立即触发整条计算链从头到尾地执行一遍运行",
+          "其中的 & 符号可以直接替换成 Python 里的 and，两者完全等价互换",
+          "它是 Transformation，只记账不立即执行；Catalyst 还可能把过滤下推到读取阶段",
+          "它会在 Driver 端一次性把整张表过滤完毕后，再分发到各个分区上去"
+        ],
+        "correct_index": 2,
+        "explanation": "filter 是 Transformation，不立即执行；而且 Catalyst 常把 filter 下推（谓词下推）到读取阶段提前过滤，减少后续数据量。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想保留「年龄 18–60 且城市为北京或上海」的行，应写成？",
+        "options": [
+          "df.filter(df.age.between(18,60) and df.city.isin('BJ','SH'))",
+          "df.filter(df.age>=18 & df.age<=60 & df.city=='SH')",
+          "df.filter(df.age.between(18,60)).filter(df.city=='BJ' or df.city=='SH')",
+          "df.filter((df.age.between(18,60)) & (df.city.isin('BJ','SH')))"
+        ],
+        "correct_index": 3,
+        "explanation": "多条件必须用 Column 运算符：区间用 between，集合用 isin，组合用 & 且每个条件加括号；Python 的 and/or 会报错。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于 filter 的错误说法是？",
+        "options": [
+          "用 df.city is 'BJ' 可以正确判断相等",
+          "filter 返回新 DataFrame，不会改变原表",
+          "多条件必须用 (c1) & (c2) 的形式且每个条件单独加括号",
+          "filter 与 where 在功能上完全等价"
+        ],
+        "correct_index": 0,
+        "explanation": "is 比较对象身份而非值，永远得不到预期结果；判断相等用 ==，判断空值用 isNull()/isNotNull()。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么 select 只选需要的列通常能让作业更快？",
+        "options": [
+          "因为这样能把代码写得更短，读起来也更省事",
+          "因为 Catalyst 可做列裁剪，跳过不需要的列、减少数据量",
+          "因为一旦表的列太多，Spark 就会直接报错",
+          "因为 select 必须写在 filter 之前才会生效"
+        ],
+        "correct_index": 1,
+        "explanation": "只选必要列让优化器做列裁剪（column pruning），少读少传数据，提升性能。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "filter 与 where 的关系是？",
+        "options": [
+          "filter 的运行速度更快，所以应该优先使用它",
+          "where 只能用于数字类型的列，字符串列不行",
+          "两者功能完全等价，where 是 filter 的别名",
+          "两者毫无关系，是两套完全独立的算子"
+        ],
+        "correct_index": 2,
+        "explanation": "在 Spark 中 where 就是 filter 的别名，语义与性能一致。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 7,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest",
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "下面哪段代码一定会在运行时报错？",
+        "options": [
+          "df.filter((df.age > 18) & (df.city == 'BJ'))（这是完全正确的写法）",
+          "df.filter(df.age > 18)（只过滤了单个条件，不会报错）",
+          "df.where(df.city == 'BJ')（where 与 filter 完全等价）",
+          "df.filter(df.age > 18 and df.city == 'BJ')（用 Python and 而非 &）"
+        ],
+        "correct_index": 3,
+        "explanation": "用 Python 的 and/or 会把 Column 当布尔立即求值而报 ValueError；须用 & | ~ 且加括号。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 8,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "只保留 city 为 'BJ' 且 age 大于 30 的行，正确的是？",
+        "options": [
+          "df.filter((df.city == 'BJ') & (df.age > 30))",
+          "df.filter(df.city == 'BJ' and df.age > 30)（Python and 会报错）",
+          "df.select('BJ', 30)（这样能挑出符合条件的两列）",
+          "df.where(df.city = 'BJ')（缺少条件 age > 30）"
+        ],
+        "correct_index": 0,
+        "explanation": "多条件用 Column 运算符 &，每个条件单独加括号；Python and 会报错。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-select-filter",
+      "legacy_index": 9,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "select 表达式除了列名，还可以接受？",
+        "options": [
+          "只能写字符串形式的列名，不可以写任何形式的表达式内容出来",
+          "Column 表达式，如 F.col('a')、df.b、F.expr('a+1')",
+          "只能写数字字面量，用来构造出一个固定的常量列来展示",
+          "只能在里面写一个星号 * 来表示出这张表里的全部列"
+        ],
+        "correct_index": 1,
+        "explanation": "select 可接受列名字符串或任意 Column 表达式（含运算、函数），非常灵活。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "withColumn(name, expr) 的作用是？",
+        "options": [
+          "直接修改传进来的那个 DataFrame，把它的列就地更新",
+          "新增（或同名则覆盖）一列，返回一个新的 DataFrame",
+          "从 DataFrame 中删掉指定的那一列，并返回新表",
+          "把满足某个条件的若干行从表里过滤掉"
+        ],
+        "correct_index": 1,
+        "explanation": "withColumn 第一个参数若与已有列同名则覆盖，否则新增；返回新 DataFrame，原表不变。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest",
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "对 Column 做运算时，必须用 F.abs / F.round 等 Spark 函数，而不能用 Python 内置 abs / round，是因为？",
+        "options": [
+          "因为 Python 内置函数跑得更慢，会成为整个作业的性能瓶颈",
+          "因为 Spark 完全不允许在 Python 代码里调用任何自定义函数",
+          "Column 不是具体数值，只有 Spark 函数才能描述「怎么算」并保持分布式执行",
+          "因为内置函数只能作用于字符串类型的列，对数值列都无效"
+        ],
+        "correct_index": 2,
+        "explanation": "Column 是「延迟计算的占位」，不是具体数值；裸用 Python 函数无法表达「逐行怎么算」，且会破坏分布式执行。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 2,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.withColumn('flag', F.lit(1)) 中 F.lit(1) 的作用是？",
+        "options": [
+          "复制已有的某一列的数据到新列中",
+          "触发整条 Transformation 链立即执行",
+          "为 DataFrame 的每一行生成一个自增的行号",
+          "放一个固定常量值作为新列的每个单元格"
+        ],
+        "correct_index": 3,
+        "explanation": "F.lit(常量) 生成一个「每一行都相同」的常量列；它不会触发执行。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想新增一列「是否成年」：age>=18 为 'adult'，否则 'minor'，应？",
+        "options": [
+          "df.withColumn('tag', F.when(df.age>=18, 'adult').otherwise('minor'))",
+          "df.withColumn('tag', if df.age>=18 then 'adult' else 'minor')",
+          "df.filter(df.age>=18).withColumn('tag', F.lit('adult'))",
+          "df.select('adult' if df.age>=18 else 'minor')"
+        ],
+        "correct_index": 0,
+        "explanation": "逐行分支必须用 F.when(...).otherwise(...)（对应 SQL 的 CASE WHEN）；Python 的 if/else 在 Driver 端一次性判定，无法逐行分支。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于 withColumn 的错误说法是？",
+        "options": [
+          "同名会覆盖该列，异名则新增一列",
+          "withColumn 会修改传入的 DataFrame 原对象",
+          "返回的是新 DataFrame，原表不会被改动",
+          "when 漏写 otherwise 会让不满足条件的行该列为 null"
+        ],
+        "correct_index": 1,
+        "explanation": "DataFrame 不可变，withColumn 返回新对象；原 DataFrame 不会被改动，必须用变量接住返回值或链式调用。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么 DataFrame 提供 withColumn 而不是让你改原表的某一格？",
+        "options": [
+          "因为直接去修改某一个单元格在 Spark 里运行起来会更快一些",
+          "因为 Spark 本身就不允许往一张表里面去新增任何一列",
+          "因为 DataFrame 不可变，任何变换都返回新表以保证 lineage/并行安全",
+          "因为原表存放在磁盘上，根本没有办法对它做原地修改"
+        ],
+        "correct_index": 2,
+        "explanation": "DataFrame 不可变，withColumn 返回新表；这保证了血缘可重放与并发安全。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "withColumn 与 select 增列的区别是？",
+        "options": [
+          "两者完全相同，都能在保留原有列的前提下新增出一列来用",
+          "select 不能新增列，只能挑选出表里面已经存在的那些列",
+          "withColumn 会先把其它列全部删掉，然后再补上这一列",
+          "withColumn 在保留原列基础上加/改一列；select 需显式列出要保留的所有列"
+        ],
+        "correct_index": 3,
+        "explanation": "withColumn 自动保留其它列；select 要自己把原有列都写出来才不丢列。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 7,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "写了 df.withColumn('x', df.a + 1) 却没看到 x 列，是因为？",
+        "options": [
+          "withColumn 返回新 DataFrame，必须接住返回值（或链式）才生效",
+          "withColumn 这个方法本身存在 bug，需要重启内核才行",
+          "新列名不合法，所以被 Spark 静默地忽略掉了",
+          "a 这一列根本不存在，所以整个调用被跳过了"
+        ],
+        "correct_index": 0,
+        "explanation": "DataFrame 不可变，withColumn 返回新对象；不用变量接住或不链式，改动就丢失了。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 8,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.withColumn('abs_a', F.abs(df.a)) 中 F.abs 为什么能在集群上执行？",
+        "options": [
+          "因为它在 Driver 端按行挨个循环执行整列的计算与累加",
+          "F.abs 是 Spark 函数，把『逐行怎么算』编进执行计划下推到 Executor",
+          "因为 Python 内置的 abs 函数其实也能够分布式地并行执行",
+          "因为这些数据其实早就已经全部落在 Driver 的内存上了"
+        ],
+        "correct_index": 1,
+        "explanation": "Spark 函数把计算描述发到各 Executor 并行执行；Python 内置函数拿不到分布式数据。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-withcolumn",
+      "legacy_index": 9,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "把 'name' 列统一转为大写新增为 'name_up'，应？",
+        "options": [
+          "df.withColumn('name_up', df.name.upper())（Python 字符串方法无效）",
+          "df.select(F.upper('name'))",
+          "df.withColumn('name_up', F.upper(df.name))",
+          "df.addColumn('name_up', F.upper('name'))"
+        ],
+        "correct_index": 2,
+        "explanation": "字符串处理要用 F.upper 等 Spark 函数；df.name.upper() 是 Python 方法，对 Column 无效。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "distinct() 与 dropDuplicates(['name']) 的区别是？",
+        "options": [
+          "两者完全一样，都是把整行完全相同的记录去掉",
+          "dropDuplicates 按整行去重，distinct 按指定列去重",
+          "distinct 按「整行完全相同」去重；dropDuplicates 按指定的列组合去重",
+          "两者都只能在分组之后使用才有意义"
+        ],
+        "correct_index": 2,
+        "explanation": "distinct 看整行是否完全相同；dropDuplicates(['col']) 只按指定列判断重复，更可控，是日常更常用的写法。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么 orderBy 通常需要触发一次 Shuffle？",
+        "options": [
+          "因为要先打印排序结果，所以必须经过网络",
+          "因为要重新统计每个分区的行数",
+          "因为要先把数据全部读入 Driver 的内存里再排序，这样才能保证顺序绝对正确",
+          "通常需要按排序键划分有序范围，再在分区内排序"
+        ],
+        "correct_index": 3,
+        "explanation": "分布式全局排序通常通过范围分区与分区内排序实现；相同键不必被承诺全部汇聚到同一分区，是否交换数据以实际计划为准。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 2,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.orderBy(F.desc('amount')).limit(10) 表达的语义是？",
+        "options": [
+          "先按金额降序排序，再取排序后的前 10 行（TopN）",
+          "先取出前 10 行，再在这 10 行内部做一次排序",
+          "随机取出 10 行，不保证任何先后顺序",
+          "只取金额最大的那一行，并返回它的 10 个字段"
+        ],
+        "correct_index": 0,
+        "explanation": "limit 一般配合 orderBy 实现 TopN：先全局排序，再取前 N；并不是先取再排。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 3,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想按城市去重，每个城市保留一行，但不指定保留哪行，应？",
+        "options": [
+          "df.distinct()（要求整行都相同才算重复）",
+          "df.dropDuplicates(['city'])",
+          "df.drop('city')（这是删除列，不是去重）",
+          "df.orderBy('city').limit(1)（只取一行，非按城市去重）"
+        ],
+        "correct_index": 1,
+        "explanation": "dropDuplicates 按 city 合并重复键，但不保证保留首次、最新或最大的一行。需要保留规则时应另外明确表达。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于排序的错误说法是？",
+        "options": [
+          "降序排序要用 F.desc('age') 或 df.age.desc() 这类表达式来表达",
+          "orderBy 与 sort 这两个方法在功能上是完全等价的，可以互换",
+          "orderBy('age desc') 可以在字符串参数里直接写 'desc' 指定降序",
+          "多列排序时，只需要依次把多个排序表达式传进即可"
+        ],
+        "correct_index": 2,
+        "explanation": "orderBy 的字符串参数只当列名，不会解析 'desc' 关键字；降序要用 F.desc() 或 .desc()。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么去重前常常先思考『按哪些列算重复』？",
+        "options": [
+          "因为去重一定会丢掉一部分数据，所以必须先想清楚后果",
+          "因为不指定列的话，Spark 在运行时会直接抛出错误",
+          "因为按指定列去重的执行速度通常会明显更快一些",
+          "因为 distinct 看整行、dropDuplicates 只看指定列，语义差别很大"
+        ],
+        "correct_index": 3,
+        "explanation": "整行去重与按列去重结果不同；明确维度才能选对 distinct 还是 dropDuplicates。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "limit 与 take 在『取前 N 行』上的区别是？",
+        "options": [
+          "limit 是 Transformation 返回新 DataFrame；take 是 Action 返回本地列表",
+          "limit 是 Action 返回本地列表；take 是 Transformation 返回新 DataFrame",
+          "limit 与 take 都是 Action，都会把结果返回成本地的列表",
+          "limit 与 take 都是 Transformation，都只返回一个新的 DataFrame"
+        ],
+        "correct_index": 0,
+        "explanation": "limit 返回新的（惰性）DataFrame；take(n) 是 Action，把前 n 行取回本地。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 7,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想按『城市+日期』去重却写成 dropDuplicates()（不传列），会？",
+        "options": [
+          "会自动按所有列一起判断重复，正好是想要的效果",
+          "按整行完全相同才算重复，可能去不掉真正想去的重复",
+          "会直接报错，提示必须显式传入去重的列名",
+          "一行都不会被去掉，结果和原表完全一样"
+        ],
+        "correct_index": 1,
+        "explanation": "不传列时 dropDuplicates 退化为整行去重；若只想按部分列去重需显式传入列列表。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 8,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "orderBy 触发的 Shuffle 中，数据如何被重新组织？",
+        "options": [
+          "把数据随机打乱顺序，让每个分区的大小更均匀",
+          "把数据整体复制到 Driver 内存里再统一排序",
+          "通常按排序键的范围重新分布数据，再在各分区内排序",
+          "直接把数据落到磁盘上，不做任何排序处理"
+        ],
+        "correct_index": 2,
+        "explanation": "范围分区结合分区内排序实现全局排序；不要把全局排序简化为必须把所有相同键都放进同一分区。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-sort-dedup",
+      "legacy_index": 9,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "金额非空、用户非空且至少有 5 个用户；要返回每个用户的最大金额，再取金额最高的 5 个用户（并列按用户升序），合理写法是？",
+        "options": [
+          "df.dropDuplicates(['user']).orderBy(F.desc('amount')).limit(5)",
+          "df.orderBy(F.desc('amount')).limit(5).dropDuplicates(['user'])",
+          "df.dropDuplicates(['user']).limit(5).orderBy(F.desc('amount'))",
+          "df.groupBy('user').agg(F.max('amount').alias('mx')).orderBy(F.desc('mx'), F.asc('user')).limit(5)"
+        ],
+        "correct_index": 3,
+        "explanation": "先按用户计算最大金额，再按最大金额降序和用户升序取五个用户。排序后 dropDuplicates 不保证保留每组最大金额，且去重后的输出次序也无保证。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.groupBy('city').agg(F.sum('amount')) 表达的是？",
+        "options": [
+          "先对全表的 amount 直接求和，完全忽略分组键",
+          "按行号自动分组，保证每一组恰好只有一行",
+          "对每个 city 分别求平均值，而不是求和",
+          "按 city 分组，并对每个组的 amount 求和"
+        ],
+        "correct_index": 3,
+        "explanation": "groupBy 指定分组键，agg 指定聚合方式；sum 对每个组内的 amount 求和，而非对全表。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "groupBy 操作通常会触发 Shuffle，原因是？",
+        "options": [
+          "需要把相同分组键的行汇聚到同一节点，才能在该组上聚合",
+          "因为要把聚合后的结果打印出来展示给用户",
+          "因为需要按聚合列再额外做一次全局排序",
+          "因为要先把数据源从磁盘上重新读取一遍"
+        ],
+        "correct_index": 0,
+        "explanation": "分组聚合需要把相同 key 的行汇聚到同一分区，这就是一次 Shuffle——Spark 最常见的 Shuffle 来源之一。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 2,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "groupBy 之后，非分组列能否直接在 select 中使用？",
+        "options": [
+          "能，Spark 会自动从重复值里任取一个，不需要显式指定",
+          "不能，非分组列必须被聚合（如 F.first）或加入 groupBy，否则报错",
+          "只能 select 分组键，其它列一律不允许出现在 select 中，哪怕它们并不需要被聚合",
+          "只有数值类型的非分组列才能直接使用，字符列不行"
+        ],
+        "correct_index": 1,
+        "explanation": "一个组里非分组列可能有多个值，Spark 不知道取哪个；这和 SQL 的 GROUP BY 约束完全一致。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "想统计每个城市的订单数与总销售额，应？",
+        "options": [
+          "df.groupBy('city').agg(F.count('amount').alias('cnt'), F.avg('amount').alias('total'))",
+          "df.groupBy('city').agg(F.count('*').alias('cnt'), F.max('amount').alias('total'))",
+          "df.groupBy('city').agg(F.count('*').alias('cnt'), F.sum('amount').alias('total'))",
+          "df.groupBy('city').agg(F.count('city').alias('cnt'), F.min('amount').alias('total'))"
+        ],
+        "correct_index": 2,
+        "explanation": "agg 可一次对多列做不同聚合并用 alias 起名；count('*') 统计行数，sum 统计销售额。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于聚合的错误说法是？",
+        "options": [
+          "聚合出的列建议用 alias 起名，便于下游引用",
+          "多分组键等价于 SQL 的 GROUP BY a, b",
+          "count('*') 统计行数（含 null 行），count('col') 只统计该列非 null 数",
+          "count('*') 和 count('col') 的结果永远相同"
+        ],
+        "correct_index": 3,
+        "explanation": "count('*') 统计总行数（含 null 行），count('col') 只统计该列非 null 数，二者通常不同。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么分组聚合是 Spark 中最常见的 Shuffle 来源？",
+        "options": [
+          "因为需要把相同 key 的行汇聚到同一节点才能聚合",
+          "因为聚合之后必须把结果打印出来给用户看",
+          "因为要先把数据源文件从头到尾重新读一遍",
+          "因为需要按聚合列再做一次全局排序"
+        ],
+        "correct_index": 0,
+        "explanation": "聚合要求同 key 同处，必然触发 Shuffle 重新分布数据，故很常见。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "agg(F.sum('a')) 与 groupBy('k').sum('a') 的关系是？",
+        "options": [
+          "两者完全不是一回事，语义与执行都不同",
+          "sum 是 agg 的便捷写法，底层都走 agg 聚合",
+          "sum 不会触发聚合，只做一次简单的投影",
+          "agg 只能用于分组，不能用来求和"
+        ],
+        "correct_index": 1,
+        "explanation": "groupBy 后的 .sum/.count 等都是 agg 的语法糖，最终都通过 agg 表达。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 7,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "groupBy('city').agg(F.avg('amount')) 结果列名叫 'avg(amount)'，下游引用报错，应？",
+        "options": [
+          "忽略掉这个列名，直接用原来那个名字继续往下写就可以了",
+          "重新做一次 groupBy，让结果里面的列名自动刷新一遍就好了",
+          "用 alias 改名，如 .agg(F.avg('amount').alias('avg_amt'))",
+          "把最终写出去的文件名改掉，让结果里的列名跟着一起变"
+        ],
+        "correct_index": 2,
+        "explanation": "聚合默认列名带表达式，下游难引用；用 alias 起清晰名字是通用做法。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 8,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "在 groupBy 聚合时，Catalyst 通常还会尝试做？",
+        "options": [
+          "把全部数据先复制到 Driver 端，再统一做一次聚合运算",
+          "直接禁用掉所有优化，让聚合老老实实地逐行去执行",
+          "先按聚合列做一次全局排序，然后再删掉重复的那些行",
+          "在 map 端预聚合（partial aggregation）以减少 Shuffle 数据量"
+        ],
+        "correct_index": 3,
+        "explanation": "Spark 常做部分聚合（如先本地 combine）再 shuffle，显著降低传输量，类似 reduceByKey。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-groupby-agg",
+      "legacy_index": 9,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "要同时算每个城市的最大金额与行数，应？",
+        "options": [
+          "df.groupBy('city').agg(F.max('amount').alias('mx'), F.count('*').alias('cnt'))",
+          "df.groupBy('city').agg(F.sum('amount').alias('mx'), F.count('*').alias('cnt'))",
+          "df.groupBy('city').agg(F.max('amount').alias('mx'), F.sum('*').alias('cnt'))",
+          "df.groupBy('city').agg(F.min('amount').alias('mx'), F.count('city').alias('cnt'))"
+        ],
+        "correct_index": 0,
+        "explanation": "agg 可一次声明多个聚合并分别 alias；缺 groupBy 会对全表聚合而非分组。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 0,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest",
+        "writer_property_confused_with_write_action"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.write 属于？",
+        "options": [
+          "一个 Action，会触发前面整条 Transformation 链真正执行",
+          "一个 Transformation，只把写出配置登记进计划",
+          "一个只读的检查操作，不会真正触发作业执行",
+          "一种特殊的聚合，只统计将要写出的行数"
+        ],
+        "correct_index": 0,
+        "explanation": "write 和 show / count 一样是 Action，会触发前面所有 Transformation 真正执行，常作为 Job 的终点。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "write 的默认写入模式是 errorIfExists（mode 默认），这意味着？",
+        "options": [
+          "默认会把已有输出直接覆盖掉",
+          "目标路径已存在时直接抛异常，防止误覆盖",
+          "默认以追加方式写入，不会清空旧数据，因此重复运行也会越来越安全",
+          "默认会忽略本次写入，什么都不会发生"
+        ],
+        "correct_index": 1,
+        "explanation": "默认 mode 是 errorIfExists，路径已存在就抛 AnalysisException——这是新手最常见的写入报错来源；需显式 overwrite/append。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 2,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "df.write.partitionBy('dt','city').parquet(path) 会产生？",
+        "options": [
+          "把所有数据合并写入单个大文件里，方便后续整体读取",
+          "按随机生成的名字拆成多个互不相关的小文件",
+          "按列值建立嵌套目录（如 dt=.../city=...），支撑下游分区裁剪",
+          "只在内存中生效便于调试，并不会真正落盘保存"
+        ],
+        "correct_index": 2,
+        "explanation": "partitionBy 按列值生成嵌套目录，下游查询可只扫描需要的目录（分区裁剪），大幅提升性能。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "希望下游按日期读取时可跳过无关目录；关于写出布局与小文件，合理的方案是？",
+        "options": [
+          "把所有数据写进单个 CSV 大文件，最直观也最简单",
+          "使用 mode('append') 不断追加到原目录，避免覆盖旧数据，同时也最利于下游读取",
+          "完全不使用分区，让输出目录保持扁平、不分层",
+          "按日期等合适维度分区并使用 Parquet，文件数量另外管理"
+        ],
+        "correct_index": 3,
+        "explanation": "目录分区可支持按分区列过滤时跳过无关目录，但不保证减少小文件；文件数量还受任务数、数据分布、追加频率等因素影响。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于写出的错误说法是？",
+        "options": [
+          "write 是 Transformation，写完不会触发执行",
+          "Parquet 是推荐的写出格式：列式、压缩、自带 Schema",
+          "写 CSV 通常需要 option('header', True) 才能保留表头",
+          "partitionBy 选高基数或唯一 ID 列会产生海量小目录"
+        ],
+        "correct_index": 0,
+        "explanation": "write 是 Action，会真正执行；卡住往往是因为 Shuffle / 数据量大，而不是「没执行」。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么写出默认采用 errorIfExists 而不是覆盖？",
+        "options": [
+          "因为覆盖写出的速度比直接报错更快一些",
+          "为了防误覆盖生产数据，路径已存在就报错提醒你显式决定",
+          "因为 Spark 本身就不支持覆盖已有的路径",
+          "因为写出这件事原本就不需要用户确认"
+        ],
+        "correct_index": 1,
+        "explanation": "默认报错而非覆盖，是安全优先：避免一条命令把已有输出悄悄冲掉。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "mode('overwrite') 与 mode('append') 的区别是？",
+        "options": [
+          "两者效果完全一样，只是写法上不同",
+          "append 会先把旧数据清空之后再写入",
+          "overwrite 先清空目标再写；append 在原有之上追加",
+          "overwrite 实际上是以追加的方式写入"
+        ],
+        "correct_index": 2,
+        "explanation": "overwrite 覆盖（先删后写），append 追加；语义相反，选错会丢数据或重复。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 7,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "重复运行同一 write 代码却报『path already exists』，是因为？",
+        "options": [
+          "磁盘已经满了，写不进去新的文件",
+          "当前 Python 的版本和 Spark 不兼容",
+          "网络连接中断了，导致写出失败",
+          "默认 mode 是 errorIfExists，路径存在即报错"
+        ],
+        "correct_index": 3,
+        "explanation": "这正是默认 errorIfExists 的行为；需显式指定 overwrite 或 append 才能重复运行。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 8,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "partitionBy 写出的目录结构对下游查询有何影响？",
+        "options": [
+          "按列值分层目录，下游可分区裁剪只扫相关目录",
+          "会把所有数据都写进一个单独的大文件里",
+          "对下游查询没有任何影响，只是目录好看",
+          "会打乱数据的先后顺序，影响读取"
+        ],
+        "correct_index": 0,
+        "explanation": "分区目录让下游按分区列过滤时跳过无关目录（分区裁剪），显著提速。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-write-data",
+      "legacy_index": 9,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "要把结果以 Parquet 写出到 out/，且允许重复运行覆盖，应？",
+        "options": [
+          "df.write.parquet('out/')，默认在路径已存在时会报错",
+          "df.write.mode('overwrite').parquet('out/')",
+          "df.write.mode('append').csv('out/')",
+          "df.write.format('json').save('out/')"
+        ],
+        "correct_index": 1,
+        "explanation": "用 mode('overwrite') + parquet 既用列式高效格式，又允许重复运行覆盖。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 0,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "在「读 CSV → filter → withColumn → groupBy → orderBy → write」链路中，哪些是 Transformation？",
+        "options": [
+          "filter / withColumn / groupBy / orderBy 都是 Action，只有 write 是 Transformation",
+          "filter / withColumn / groupBy / orderBy 都是 Transformation，只有 write 是 Action",
+          "read / filter / withColumn / groupBy 都是 Transformation，只有 orderBy 是 Action",
+          "filter / groupBy / orderBy / write 都是 Transformation，只有 read 是 Action"
+        ],
+        "correct_index": 1,
+        "explanation": "列出的 filter、withColumn、groupBy 和 orderBy 是惰性变换；write 请求写出结果。读取器返回 DataFrame，但文件发现或 Schema 推断可能提前执行，不能把所有读取准备都归为零工作。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 1,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "在正式 write 之前，先用 show(20) 验证聚合结果的好处是？",
+        "options": [
+          "能显著加快最终写出的速度",
+          "能自动减少需要写出的数据量",
+          "有助于发现样本中的计算错误；全量正确性还需其他检查",
+          "能避免触发任何 Shuffle 操作"
+        ],
+        "correct_index": 2,
+        "explanation": "show 抽查可以发现部分问题，但不能证明全量正确。应结合字段、行数、总量与关键明细核对。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 2,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "groupBy('region').sum('amount') 得到的聚合列，默认列名是？",
+        "options": [
+          "会自动命名为 'total'，可以直接引用",
+          "与原列名 'amount' 完全相同，不会冲突",
+          "会自动命名为分组键 'region'，不会重复",
+          "类似 'sum(amount)'，通常需要用 alias 改名"
+        ],
+        "correct_index": 3,
+        "explanation": "默认聚合列名形如 'sum(amount)'，难以下游引用，建议用 agg(F.sum('amount').alias('total')) 改名。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 3,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "在 ETL 中过滤「amount 非正或为空」的行，条件应写成？",
+        "options": [
+          "(df.amount > 0) & df.amount.isNotNull()",
+          "df.amount > 0 and df.amount.isNotNull()",
+          "df.amount > 0 or df.amount == None",
+          "df.filter(amount > 0)（未使用 Column 写法）"
+        ],
+        "correct_index": 0,
+        "explanation": "多条件用 & 且每个条件单独加括号；判断空值用 isNotNull()，不能用 Python 的 None 直接比较。",
+        "dimension": "apply"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 4,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest",
+        "negative_or_absolute_stem_review"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "以下关于这个迷你 ETL 链路的错误说法是？",
+        "options": [
+          "filter 的多条件必须用 & 号，并且每个条件都要单独加括号",
+          "Action 前读取器绝不会读取文件，即使启用了 CSV inferSchema",
+          "groupBy 与 orderBy 通常各自都会触发一次 Shuffle 操作",
+          "write 才是真正触发整条链路执行的那个 Action（动作）"
+        ],
+        "correct_index": 1,
+        "explanation": "该说法错误：CSV inferSchema 需要额外遍历数据；文件发现、元数据获取等工作也可能提前发生。惰性求值不等于读入阶段零工作。",
+        "dimension": "concept"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 5,
+      "proposed_use": "teaching",
+      "note": "适合概念建立或讲解检查，和课中目标接近；不再作为新课末检验直接抽取。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "整条 ETL 链路中，发生的 Shuffle 通常来自哪些步骤？",
+        "options": [
+          "read 与 filter 这类操作也会各自触发一次 Shuffle",
+          "只有最后的 write 一步会触发 Shuffle",
+          "groupBy / orderBy 等需要跨分区重排的操作",
+          "整条链路里全程都没有发生任何 Shuffle"
+        ],
+        "correct_index": 2,
+        "explanation": "Shuffle 出现在需跨分区重分布处（groupBy、orderBy、按列去重等），而非 read/filter。",
+        "dimension": "mechanism"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 6,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "为什么先 show 验证、确认无误后再 write 是好习惯？",
+        "options": [
+          "因为 show 的执行速度比 write 更快一些",
+          "因为 write 本身不支持数据量较大的表",
+          "因为 show 在语法上必须写在 write 前面",
+          "有助于尽早发现样本错误，再结合指标验收决定是否交付"
+        ],
+        "correct_index": 3,
+        "explanation": "先抽查能尽早暴露部分错误，但 show 不是全量正确性证明，也不缓存或自动加速后续 write。",
+        "dimension": "why"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 7,
+      "proposed_use": "review_candidate",
+      "note": "可用于回忆概念，但正式延迟复习优先使用新的换材料题组。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "『先做 Transformation 链、最后用 Action 触发』与『每步立即执行』相比？",
+        "options": [
+          "前者能整体优化（下推/裁剪/融合），后者失去这些机会",
+          "两者的运行性能其实完全一样，没有区别",
+          "后者比前者更快，因为每一步都能及时执行",
+          "前者反而不能做任何优化，只是写法好看"
+        ],
+        "correct_index": 0,
+        "explanation": "惰性让优化器拿到完整 DAG 做整体优化；每步即执行则无法全局优化。",
+        "dimension": "comparison"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 8,
+      "proposed_use": "remediation",
+      "note": "适合定位常见误区，需核对干扰项和技术边界；原题保留给已有错题记录。",
+      "flags": [
+        "correct_uniquely_longest"
+      ],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "已创建 df，执行 result = df.filter(df.amount > 0) 后语句很快返回但没有数据行打印，合理解释是？",
+        "options": [
+          "Python 进程本身崩溃了，需要重启一下内核才可以恢复运行",
+          "result 只保存查询描述；show/count/write 等 Action 才请求结果",
+          "数据为空的时候一定会出现这种一直卡住不动的现象",
+          "显示器的刷新问题，和计算本身其实并没有任何关系"
+        ],
+        "correct_index": 1,
+        "explanation": "构建变换查询没有输出，不等于进程卡住。需要先区分尚未请求结果与已提交任务但执行缓慢，后者要结合 UI 和日志诊断。",
+        "dimension": "debug"
+      }
+    },
+    {
+      "lesson_slug": "l2-comprehensive",
+      "legacy_index": 9,
+      "proposed_use": "assessment_candidate",
+      "note": "有应用意图，但仍需新情境、唯一可答性与干扰项审查；新课末采用独立题组。",
+      "flags": [],
+      "status": "excluded_from_new_quiz_and_review_draws",
+      "original": {
+        "type": "single_choice",
+        "prompt": "要读 CSV → 过滤异常行 → 按城市聚合 → 取金额前 10 写出，正确骨架是？",
+        "options": [
+          "read.csv → filter → groupBy('city').agg(...) → write → orderBy(desc).limit(10)",
+          "read.csv → groupBy('city').agg(...) → filter → orderBy(desc).limit(10) → write",
+          "read.csv → filter → groupBy('city').agg(...) → orderBy(desc).limit(10) → write",
+          "read.csv → filter → orderBy(desc).limit(10) → groupBy('city').agg(...) → write"
+        ],
+        "correct_index": 2,
+        "explanation": "典型顺序：读→过滤→聚合→排序取 TopN→写出；write 作 Action 触发整条链。",
+        "dimension": "apply"
+      }
+    }
+  ]
+}

@@ -1520,11 +1520,11 @@
           "options": [
             "会先把 rows 全部收集到 Driver 端逐行校验类型，再据此建立分区与计划",
             "会立刻在集群上启动一个 Job，把 rows 并行读入 Executor 并缓存在内存里",
-            "只是登记数据与结构，并未真正计算；show() 之类的 Action 出现后才执行",
+            "创建时可能处理样本或推断结构；后续业务变换仍可惰性求值",
             "会先扫描一遍数据推断出每列类型，再据此分配 Task 并立即开始计算"
           ],
           "correct_index": 2,
-          "explanation": "createDataFrame 只是「登记」数据与结构；和所有 Transformation 一样惰性，真正读取/计算要等 show / count 等 Action 触发。",
+          "explanation": "本地样本创建会处理或检查数据；文件发现与类型推断可能先做工作。不能将创建 DataFrame 一概说成没有任何计算。",
           "dimension": "mechanism"
         },
         {
@@ -1814,13 +1814,13 @@
           "type": "single_choice",
           "prompt": "关于字段的 nullable，下列说法错误的是？",
           "options": [
-            "字段默认就是 nullable=True，也就是说默认允许该列出现空值",
-            "nullable 这个设置会影响 join 与聚合时对 null 值的处理逻辑",
-            "字段默认 nullable=False，因此 DataFrame 中不可能出现空值",
-            "可以对关键的外键列显式地设置 nullable=False，用来约束非空"
+            "StructField 的 nullable 默认是 True",
+            "NULL 运算结果由比较、过滤、聚合等算子语义决定",
+            "nullable=False 能保证任意文件读取入口都没有实际空值",
+            "文件读取后的业务非空要求还需要对实际值检查"
           ],
           "correct_index": 2,
-          "explanation": "Spark 字段 nullable 默认是 True（可空），不是 False；忽略这一点可能导致 join / 聚合时意外出现 null。",
+          "explanation": "nullable 是字段结构属性；实际非空要求仍需按读取入口、解析策略及业务规则验证。NULL 运算行为由算子语义决定。",
           "dimension": "concept"
         },
         {
@@ -2450,13 +2450,13 @@
           "type": "single_choice",
           "prompt": "groupBy 操作通常会触发 Shuffle，原因是？",
           "options": [
-            "需要把相同分组键的行汇聚到同一节点，才能在该组上聚合",
+            "聚合需要满足分组键的分布要求，上游不满足时通常重分布",
             "因为要把聚合后的结果打印出来展示给用户",
             "因为需要按聚合列再额外做一次全局排序",
             "因为要先把数据源从磁盘上重新读取一遍"
           ],
           "correct_index": 0,
-          "explanation": "分组聚合需要把相同 key 的行汇聚到同一分区，这就是一次 Shuffle——Spark 最常见的 Shuffle 来源之一。",
+          "explanation": "同键贡献需汇合，支持局部聚合时可先组合局部结果。需要 Shuffle 与否取决于已有分布及计划，不要求每条原始明细都跨机器。",
           "dimension": "mechanism"
         },
         {
@@ -2502,13 +2502,13 @@
           "type": "single_choice",
           "prompt": "为什么分组聚合是 Spark 中最常见的 Shuffle 来源？",
           "options": [
-            "因为需要把相同 key 的行汇聚到同一节点才能聚合",
+            "上游分布不满足按键聚合要求时通常需要交换数据",
             "因为聚合之后必须把结果打印出来给用户看",
             "因为要先把数据源文件从头到尾重新读一遍",
             "因为需要按聚合列再做一次全局排序"
           ],
           "correct_index": 0,
-          "explanation": "聚合要求同 key 同处，必然触发 Shuffle 重新分布数据，故很常见。",
+          "explanation": "按键汇合常带来重分布，局部预聚合可以减少交换内容；不能一概等同于把所有原始记录跨节点搬到同一机器。",
           "dimension": "why"
         },
         {
@@ -2526,7 +2526,7 @@
         },
         {
           "type": "single_choice",
-          "prompt": "groupBy('city').agg(F.avg('amount')) 结果列名叫 'avg(amount)'，下游引用报错，应？",
+          "prompt": "groupBy 聚合后的默认列名为 avg(amount)，希望下游使用清晰的 avg_amt 字段，应？",
           "options": [
             "忽略掉这个列名，直接用原来那个名字继续往下写就可以了",
             "重新做一次 groupBy，让结果里面的列名自动刷新一遍就好了",
@@ -2534,7 +2534,7 @@
             "把最终写出去的文件名改掉，让结果里的列名跟着一起变"
           ],
           "correct_index": 2,
-          "explanation": "聚合默认列名带表达式，下游难引用；用 alias 起清晰名字是通用做法。",
+          "explanation": "默认表达式列名并非天然无法引用；显式 alias 便于稳定、清楚地下游引用。",
           "dimension": "debug"
         },
         {
@@ -2572,13 +2572,13 @@
           "type": "single_choice",
           "prompt": "df.write 属于？",
           "options": [
-            "一个 Action，会触发前面整条 Transformation 链真正执行",
+            "DataFrameWriter 入口，实际保存方法才请求写出",
             "一个 Transformation，只把写出配置登记进计划",
             "一个只读的检查操作，不会真正触发作业执行",
             "一种特殊的聚合，只统计将要写出的行数"
           ],
           "correct_index": 0,
-          "explanation": "write 和 show / count 一样是 Action，会触发前面所有 Transformation 真正执行，常作为 Job 的终点。",
+          "explanation": "df.write 属性返回写入器；配置 mode 不等于已保存，调用 parquet/csv/save 等保存方法才请求写出。",
           "dimension": "concept"
         },
         {

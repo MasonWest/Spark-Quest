@@ -1481,3 +1481,37 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 - 内容版本升 v3，原五步和选项 ID 保留；依既定版本隔离规则 v1/v2 记录留存，v3 使用独立记录。未重算任何正式成绩。
 - 内容检查、构建、CSS、七组单测通过；新增 `frontend/scripts/check-shuffle-readings.py` 对五步逐一验证：引用与原文显示内容一致（仅剥除 Markdown 标记）、阅读开合不改学习记录、错误/正确两种辅助入口、回完整原文、320/390/768/1440px、完成页/测验链接/刷新恢复。使用实际 DB 派生只读 API fixture，无用户数据库写入。
 - 截图 `ux_audit/learning-repair/shuffle-integrated-1-390.png` 至 `shuffle-integrated-5-390.png`。本轮仅 Shuffle 整课融合，其他课程保持原状，旧十道题用途划分/异题补救尚未开展。
+
+
+## 2026-11-07 · 项目检查点推送及 L2 打磨第一批
+
+- 仅在 `spark-quest-app` 嵌套仓库提交 `c235dc4` 并经用户指定的一次性代理 127.0.0.1:7890 推送至 `MasonWest/Spark-Quest` 的 origin/main；外层工作区未提交。未改 Git 全局代理。数据库/备份/缓存不推送；PWA 四个 PNG 产品图标增加精确 gitignore 例外并纳入检查点。
+- 推送后开始 L2：前三课（DataFrame 是什么、创建、Schema）共 11 步补齐 reading 关联、概念联系与适用边界；内容版本升 v2，保留稳定步骤/选项 ID 和旧版记录。引用仍从原 API 正文提取，没有另一份全文副本。
+- 新增 `L2_POLISH_PLAN.md`，明确原文融合、正式题库质量、课末新情境检验、补救/复习、关键示例验证是不同验收项。其余七课阅读融合及整章题库分工未完成，不标记整个 L2 完成。
+- 修正进度单测对内容永远停在 v1 的假设：旧迁移测试明确测试 v1；版本隔离使用当前版本+1。构建、CSS、七组单测通过；`frontend/scripts/check-linked-readings.py` 验证前三课所有 11 个阅读入口、原文显示内容（忽略 Markdown 列表版式）、答对后收束/边界、完整参考跳转、四种宽度和刷新完成页，全部通过；使用只读 API fixture，未写学习 DB。
+- 这批打磨保留在本地，未混入已经推送的 c235dc4 检查点。
+
+
+## 2026-11-07 · L2 剩余七课原文融合打磨
+
+- 为检视、筛选、列加工、排序去重、聚合、写出、综合挑战共 30 步补齐 reading：从当前实例结果回到对应原文，再明确概念和适用边界。至此 L2 十课 41 步均已融合，原正文与笔记保留。
+- 配文重点：printSchema 与数据求值、show 展示量和上游成本、Column 条件与 NULL、lit/col/when、不可变查询、去重不保证首次/最大、排序并列规则、count/avg 空值语义、分区目录不等于单文件、写入模式与指标验收。综合挑战强调与旧 sales.csv 案例区分，按当前新数据推导，不照搬原文结果。
+- reading 增加可选 caution，在引用包含已知错误的原文（本轮为去重“首次出现”）之前先纠正口径；原文仍按原样引用，避免悄悄改写历史讲义。构建检查增加该可选字段的非空校验。
+- 七课版本均升 v2，任务与选项 ID 保持，旧 v1 本机记录保留；正式题库、后台成绩、解锁/SRS 与用户数据库均未改。本轮仍是本地工作，未追加推送到检查点之后。
+- 验证：内容/原文定位检查、TypeScript/Vite 构建、CSS、七组记录/提取单测通过；扩展 check-linked-readings.py，七课 30 步逐一验证错误分支、重试、阅读不改答题记录、原文显示内容、概念收束、caution、原文跳转、完成与续学、320/390/768/1440px。API 使用现有 DB 的只读 fixture；原文比对忽略 Markdown/列表格式标记。
+- 截图 `ux_audit/learning-repair/l2-*-reading-390.png`。L2_POLISH_PLAN.md 已将十课融合标记完成，仍保留正式题库用途、课末新情境检验/延迟复习和 Windows Parquet 写出验证待办；不把本轮标记为整个 L2 所有质量项全部验收。
+
+
+## 2026-11-07 · L2 正式题库分工与独立检验接入
+
+- 旧 L2 100 题建立逐题用途/结构风险清单 `backend/app/l2_legacy_question_audit.json`，保留审查前原始快照；人读报告 `backend/L2_QUESTION_AUDIT.md`。用途建议为课中解释、误区素材、复习或应用检验候选，不代表原题全部获得技术认证。原题不再进入新的 L2 GET 测验/复习抽题，但 ID 与历史/错题重练入口保留。
+- 新增独立题源 `backend/app/l2_reviewed_bank.json` 共 100 题：每课 5 assessment、3 review、2 remediation。来自 50 个目标模板的两套材料，含概念回忆和字段/数值/需求变式，不宣称 100 个独立新概念。每课测验五题、复习另五题；补救题目前进入复习回合，没有实时按错项分支插题。
+- 新题用稳定 key 与 knowledge_id；当前存库以 lesson slug + 不变题干定位，修改已安装新题需显式迁移。`app/l2_question_bank.py` 为追加式补齐与用途路由，应用初始化补齐缺失题；其他章节抽样策略保持，L2 两种题组顺序打乱。L2 检验要求五个不同 ID，学习 4/5、复习 5/5、粘性掌握和课程级 SRS 保持。
+- `install_l2_reviewed_bank.py` 默认 dry-run，apply 先备份并校验已有题行与历史记录未变。本次开发服务热重载先由初始化追加了 100 题，因此手动安装器运行时 pending/inserted=0，随后备份是追加后的状态，不冒称插入前备份。
+- 另经备份修正旧题 6 处事实：创建时的工作、nullable 保证、分组的分布要求、默认聚合列名可引用、write 属性 vs 实际保存动作。使用 `l2_legacy_fact_corrections_v2.json`，保留正确答案位置、ID 与历史作答；历史分数不重算。
+- 当前原题源 661 + 新策划题 100 = DB 761；L2 旧 100 题只为兼容与素材保留。sync_seed.py 增加独立策划题检查，漂移时拒绝无意覆盖，原题同步不再把这 100 题误报 db_only；dry-run course/quiz/reviewed 全部 drift=0。
+- 新题答案位置 A/B/C/D 各 25，正确项唯一最长 28/100；旧题审查前快照为 51/100。指标只能帮助发现形式线索，不能替代学习效果验证。
+- 验证：backend/test_l2_bank.py 七组隔离内存库测试通过，覆盖回滚/幂等、十课 5+5 分离、返回不泄答案、五题约束、4/5 与 5/5、粘性掌握、旧五题在途提交兼容、其他章节未改变、作者源可复现。前端构建/CSS/七组进度测试通过。
+- 浏览器检查十课测验/复习共 20 页面，320/390/768px、选答与按钮启用；使用只读 DB 派生的模拟 API，不提交用户成绩。新长代码选项暴露 320px 溢出，已在 QuizPage.css 修正换行/min-width。截图 `ux_audit/learning-repair/l2-new-assessment-390.png`。
+- backend/check_l2_assessment_examples.py 在 PySpark 4.2.0 实跑两套材料的 OR/NULL、when、全空聚合、count/avg、带 seq 的 limit/sort、并列排序、清洗分组和 DataFrameWriter 属性，断言通过。未实跑实际文件写入模式，也未认证 Spark 3.5 运行兼容；Windows 退出时仍有 Access denied 输出。真实写出环境与长期教学有效性仍待验证。
+- 本批未推送；原文融合之外，正式题库第一轮分工已完成，实时异题补救、扩大每课多套检验、标准原文归档与教学效果评估仍是后续工作。

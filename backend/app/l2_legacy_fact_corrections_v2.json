@@ -1,0 +1,51 @@
+[
+  {
+    "slug": "l2-what-is-dataframe",
+    "prompt": "写下 spark.createDataFrame(rows, schema) 后，下列说法正确的是？",
+    "correct_index": 2,
+    "answer": "创建时可能处理样本或推断结构；后续业务变换仍可惰性求值",
+    "explanation": "本地样本创建会处理或检查数据；文件发现与类型推断可能先做工作。不能将创建 DataFrame 一概说成没有任何计算。"
+  },
+  {
+    "slug": "l2-schema-types",
+    "prompt": "关于字段的 nullable，下列说法错误的是？",
+    "correct_index": 2,
+    "answer": "nullable=False 能保证任意文件读取入口都没有实际空值",
+    "explanation": "nullable 是字段结构属性；实际非空要求仍需按读取入口、解析策略及业务规则验证。NULL 运算行为由算子语义决定。",
+    "options": [
+      "StructField 的 nullable 默认是 True",
+      "NULL 运算结果由比较、过滤、聚合等算子语义决定",
+      "nullable=False 能保证任意文件读取入口都没有实际空值",
+      "文件读取后的业务非空要求还需要对实际值检查"
+    ]
+  },
+  {
+    "slug": "l2-groupby-agg",
+    "prompt": "groupBy 操作通常会触发 Shuffle，原因是？",
+    "correct_index": 0,
+    "answer": "聚合需要满足分组键的分布要求，上游不满足时通常重分布",
+    "explanation": "同键贡献需汇合，支持局部聚合时可先组合局部结果。需要 Shuffle 与否取决于已有分布及计划，不要求每条原始明细都跨机器。"
+  },
+  {
+    "slug": "l2-groupby-agg",
+    "prompt": "为什么分组聚合是 Spark 中最常见的 Shuffle 来源？",
+    "correct_index": 0,
+    "answer": "上游分布不满足按键聚合要求时通常需要交换数据",
+    "explanation": "按键汇合常带来重分布，局部预聚合可以减少交换内容；不能一概等同于把所有原始记录跨节点搬到同一机器。"
+  },
+  {
+    "slug": "l2-groupby-agg",
+    "prompt": "groupBy('city').agg(F.avg('amount')) 结果列名叫 'avg(amount)'，下游引用报错，应？",
+    "correct_index": 2,
+    "answer": "用 alias 改名，如 .agg(F.avg('amount').alias('avg_amt'))",
+    "explanation": "默认表达式列名并非天然无法引用；显式 alias 便于稳定、清楚地下游引用。",
+    "new_prompt": "groupBy 聚合后的默认列名为 avg(amount)，希望下游使用清晰的 avg_amt 字段，应？"
+  },
+  {
+    "slug": "l2-write-data",
+    "prompt": "df.write 属于？",
+    "correct_index": 0,
+    "answer": "DataFrameWriter 入口，实际保存方法才请求写出",
+    "explanation": "df.write 属性返回写入器；配置 mode 不等于已保存，调用 parquet/csv/save 等保存方法才请求写出。"
+  }
+]

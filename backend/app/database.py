@@ -58,6 +58,10 @@ def init_db() -> None:
     migrate.run_migrations()
     _seed_course_data()
     _seed_quizzes()
+    from .l2_question_bank import seed_reviewed_bank
+    with Session(engine) as session:
+        seed_reviewed_bank(session)
+        session.commit()
 
     # Phase 9.2: badge catalog must exist before the historical unlock, and
     # the LEVEL_* definitions are derived from course_levels -- so this runs

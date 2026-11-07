@@ -1,6 +1,6 @@
 {
   "slug": "l2-create-dataframe",
-  "version": 1,
+  "version": 2,
   "title": "把订单接进来",
   "mission": "运营同事交来四条订单。今天把它们变成有名字、有类型的 DataFrame。",
   "correction": "原文中“创建或读取只登记计划、Action 前绝不读数据”过于绝对：本地集合的处理、文件发现和 Schema 推断可能提前做工作；CSV 的 inferSchema 会额外遍历数据。header 只管列名，不负责类型。",
@@ -41,7 +41,16 @@
         }
       ],
       "insight": "造几行可控样本，是验证处理逻辑的好起点。创建方式要与数据所在的位置和格式匹配。",
-      "ability": "用本地列表创建一个带列名的 DataFrame"
+      "ability": "用本地列表创建一个带列名的 DataFrame",
+      "reading": {
+        "id": "step-1316abdccc-reading",
+        "title": "本地样本与文件，该从哪个入口开始？",
+        "sectionTitle": "三种创建方式",
+        "startMarker": "【三种创建方式】",
+        "endMarker": "【两个关键选项（读 CSV 必记）】",
+        "connection": "rows 已经是两条 Python 元组，因此直接交给 createDataFrame；只有当输入是文件路径时，才选择对应的 read 方法。",
+        "boundary": "原文写 parallelize + createDataFrame 是一种方式，不是必需的两步。createDataFrame 可直接接收本地列表；准备本地样本也不意味着会把生产全量数据先集中到 Driver。"
+      }
     },
     {
       "id": "step-db3471f92c",
@@ -99,7 +108,16 @@
         }
       ],
       "insight": "组合起来是 spark.read.option(\"header\", True).option(\"inferSchema\", True).csv(\"orders.csv\")。已经有确定的类型约定时，还可以直接提供 schema。",
-      "ability": "分清 CSV 的表头选项和类型推断选项"
+      "ability": "分清 CSV 的表头选项和类型推断选项",
+      "reading": {
+        "id": "step-db3471f92c-reading",
+        "title": "表头与类型，为什么是两个开关？",
+        "sectionTitle": "CSV 读取选项",
+        "startMarker": "【两个关键选项（读 CSV 必记）】",
+        "endMarker": "【它仍然是惰性的】",
+        "connection": "header 解决“列叫什么”，inferSchema 解决“从数据推断列类型”。只开 header，金额仍可能为 string，所以两种需求要分开表达。",
+        "boundary": "在未提供显式 Schema 的普通 CSV 读取里，inferSchema 默认关闭。打开它会额外遍历数据，samplingRatio 会影响用于推断的数据比例；不能把推断理解成总只看前几行，也不能断言字符串参与任何数值表达式都必然报错。"
+      }
     },
     {
       "id": "step-042153aa70",
@@ -135,7 +153,16 @@
         }
       ],
       "insight": "看到提前发生的读取，先分清是在准备元数据、推断类型，还是执行你的业务查询。",
-      "ability": "解释 CSV 类型推断为何可能在 Action 前读取数据"
+      "ability": "解释 CSV 类型推断为何可能在 Action 前读取数据",
+      "reading": {
+        "id": "step-042153aa70-reading",
+        "title": "读入时的内部工作，和后续求值怎么分开？",
+        "sectionTitle": "读取过程",
+        "startMarker": "【写下代码后，Spark 内部发生了什么】",
+        "endMarker": "所以「读」本身",
+        "connection": "原文解释了 Executor 执行分片读取的角色。你刚才观察到的提前任务，可能是类型推断等准备；之后的业务查询仍可等待 Action 再求值，这两件事并不矛盾。",
+        "boundary": "原文按简化链路描述 show/count 才读取，不能把它解释成此前零读取。CSV 推断、文件发现和元数据获取都可能提前工作；本地列表创建也会处理和检查样本。"
+      }
     },
     {
       "id": "step-1e20169b95",
@@ -171,7 +198,16 @@
         }
       ],
       "insight": "你现在有两条路径：本地小样本用 createDataFrame；外部文件根据格式选择 read.csv、read.json 或 read.parquet。",
-      "ability": "根据数据来源选择创建入口"
+      "ability": "根据数据来源选择创建入口",
+      "reading": {
+        "id": "step-1e20169b95-reading",
+        "title": "格式已知时，怎样选择读取器？",
+        "sectionTitle": "创建 DataFrame 的来源",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【三种创建方式】",
+        "connection": "同一份订单换成 Parquet 文件，入口就换成 read.parquet。业务字段没有变，不代表底层格式的读取方式也相同。",
+        "boundary": "CSV 的 header/inferSchema 不能机械套到所有格式。Parquet 带类型信息，通常不需要再用 CSV 式的类型推断；Schema 合并、分区发现等仍可能有准备成本。"
+      }
     }
   ],
   "legacyTaskIds": [
