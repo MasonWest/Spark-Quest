@@ -1,0 +1,321 @@
+{
+  "slug": "l2-comprehensive",
+  "version": 1,
+  "title": "章末挑战：交付一份地区日报",
+  "mission": "换一批订单，独立串起流程。输入 6 行，只汇总正金额；输出各地区订单数 cnt、总额 total 和 total_k。预期结果先自己推导，完整参考解法完成后再看。",
+  "correction": "本挑战的新增列 total_k 在聚合后生成，避免先算 amount_k 又在聚合时丢弃。CSV 推断和元数据获取可能提前执行；show 抽样不等于全量验收。输出 Parquet 不承诺保存排名，展示时应重新排序。",
+  "source": "https://spark.apache.org/docs/3.5.6/sql-getting-started.html",
+  "next": "L2 的读、查、改、算、写已串起来。可以下载本地任务亲手运行，再进入 Spark SQL；互动完成并不代替独立编程验证。",
+  "project": {
+    "downloads": [
+      {
+        "label": "订单 CSV",
+        "href": "/practice/l2/orders.csv"
+      },
+      {
+        "label": "任务骨架",
+        "href": "/practice/l2/starter.py"
+      },
+      {
+        "label": "运行与验收说明",
+        "href": "/practice/l2/README.txt"
+      }
+    ],
+    "solution": {
+      "label": "下载参考实现 solution.py",
+      "href": "/practice/l2/solution.py"
+    }
+  },
+  "tasks": [
+    {
+      "id": "step-b3ddc568a0",
+      "knowledgeIds": [
+        "comprehensive"
+      ],
+      "title": "接任务，先定输入约定",
+      "intro": "订单号和地区是文本，amount 为整数元。空金额要读成 null，随后由业务规则排除。spark 是已有的 SparkSession。",
+      "code": "# orders.csv\norder_id,region,amount\no201,north,150\no202,north,50\no203,south,240\no204,east,90\no205,south,-20\no206,east,\n\norders = spark.read.option(\"header\", True).schema(__A__).csv(\"orders.csv\")",
+      "prompt": "选择与任务约定一致的 Schema，而不是按显示出来的字符猜类型。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：输入类型",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "\"order_id string, region string, amount long\"",
+              "feedback": "对，o201 是文本，地区也是文本，金额按整数读取。"
+            },
+            {
+              "id": "option-2",
+              "text": "\"order_id long, region string, amount long\"",
+              "feedback": "o201 包含字母，不是整数订单号。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"order_id string, region string, amount boolean\"",
+              "feedback": "金额不是真假值，BooleanType 不符合输入约定。"
+            }
+          ]
+        }
+      ],
+      "insight": "原始行数是 6，不代表有效订单也是 6。接下来由正金额规则决定保留哪些行。",
+      "ability": "从需求选择输入 Schema"
+    },
+    {
+      "id": "step-c880c1a1e8",
+      "knowledgeIds": [
+        "comprehensive"
+      ],
+      "title": "筛掉异常，先算剩几行",
+      "intro": "业务只统计金额严格大于零的订单。输入中的 -20 和 null 都不能进入地区销售额。",
+      "code": "clean = orders.filter(__A__)\n# 金额依次：150、50、240、90、-20、null",
+      "prompt": "选择清洗条件，再预测有效行数。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：有效金额条件",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.col(\"amount\").isNotNull()",
+              "feedback": "只排除空值仍会保留 -20，不满足正金额规则。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.col(\"amount\") > 0",
+              "feedback": "对，负数不满足，null 比较也不为 true；本题两种异常都会被排除。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.col(\"amount\") >= -20",
+              "feedback": "这会把 -20 留下来，不符合严格大于零。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "clean 的行数",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "4",
+              "feedback": "对，四笔正金额保留。"
+            },
+            {
+              "id": "option-2",
+              "text": "5",
+              "feedback": "同时有一笔负金额和一笔空金额，需要排除两行。"
+            },
+            {
+              "id": "option-3",
+              "text": "6",
+              "feedback": "原始行数不是清洗后的行数。"
+            }
+          ]
+        }
+      ],
+      "insight": "F 表示 pyspark.sql.functions。这里的过滤足够排除未知金额；若要审计异常，另行保留 rejected 查询，不要悄悄改写源文件。",
+      "ability": "依据业务规则清洗并预测有效行数"
+    },
+    {
+      "id": "step-564e6a62de",
+      "knowledgeIds": [
+        "comprehensive"
+      ],
+      "title": "汇总成报表，自己选表达式",
+      "intro": "交付字段是 region、cnt、total。你需要的是每个地区的订单数与金额之和。",
+      "code": "report = clean.groupBy(\"region\").agg(\n    __A__.alias(\"cnt\"),\n    __B__.alias(\"total\")\n)",
+      "prompt": "补齐表达式。保留明细的写法不能直接当作组内汇总。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：订单数",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.sum(\"amount\")",
+              "feedback": "金额求和不是订单数量。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.count(\"*\")",
+              "feedback": "对，每笔有效订单计为一行。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.countDistinct(\"region\")",
+              "feedback": "每个地区组内的地区值相同，只数地区种类不能得到订单数。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "B：销售总额",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.avg(\"amount\")",
+              "feedback": "平均值不是本次要求的总销售额。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.col(\"amount\")",
+              "feedback": "同组有多笔金额，必须明确如何汇总，不能直接保留明细列。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.sum(\"amount\")",
+              "feedback": "对，将组内金额求和。"
+            }
+          ]
+        }
+      ],
+      "insight": "请先在脑中写下三个地区的 cnt 和 total，再进入下一步核对；不要只记函数拼法。",
+      "ability": "把业务指标翻译为分组聚合"
+    },
+    {
+      "id": "step-ecf0b207ad",
+      "knowledgeIds": [
+        "comprehensive"
+      ],
+      "title": "核对成绩，再加千元列",
+      "intro": "north 有 150 和 50；south 留下 240；east 留下 90。对 total 换算千元，原 total 仍保留。",
+      "code": "final = report.withColumn(\"total_k\", __A__)\n# 按 total 降序、region 升序展示",
+      "prompt": "选择换算表达式，并判断总额与排名。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：千元表达式",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.col(\"amount\") / 1000.0",
+              "feedback": "聚合结果已没有明细列 amount，应该引用 total。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.col(\"total\") / 1000.0",
+              "feedback": "对，聚合后换算 total，并保留原始总额作核对。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.lit(1000)",
+              "feedback": "这只会给每行放固定的 1000，没有进行金额换算。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "总额与地区排名",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "530；south、north、east",
+              "feedback": "对，总额 240+200+90=530，最大的是 south。"
+            },
+            {
+              "id": "option-2",
+              "text": "510；south、north、east",
+              "feedback": "510 把本应排除的 -20 计进去了。"
+            },
+            {
+              "id": "option-3",
+              "text": "530；north、south、east",
+              "feedback": "north 总额 200，低于 south 的 240，不能排在它前面。"
+            }
+          ]
+        }
+      ],
+      "insight": "预期三行：south/1/240/0.24，north/2/200/0.20，east/1/90/0.09。显示 0.2 与 0.20 是格式差异，不是金额不同。",
+      "ability": "核对汇总并在正确阶段新增派生列"
+    },
+    {
+      "id": "step-6a1a6061aa",
+      "knowledgeIds": [
+        "comprehensive"
+      ],
+      "title": "交付方案：重跑不翻倍",
+      "intro": "练习要求每次重新生成完整报表，专用输出目录为 practice/l2_final；不允许用追加制造重复日报。",
+      "code": "final.write.mode(__A__).parquet(\"practice/l2_final\")\n# 这里只操作任务专用练习目录",
+      "prompt": "选择这项练习要求下的写入模式。生产目录必须另外明确覆盖范围和发布策略。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：练习写入模式",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "\"append\"",
+              "feedback": "追加会保留旧报表，重复运行可能让结果翻倍。"
+            },
+            {
+              "id": "option-2",
+              "text": "\"ignore\"",
+              "feedback": "目标已存在时会跳过本次新结果，不符合重新生成的要求。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"overwrite\"",
+              "feedback": "对，明确覆盖专用练习输出；不能把这个选择泛化到所有业务写入。"
+            }
+          ]
+        }
+      ],
+      "insight": "读回后检查字段、3 行、总额 530 与每地区指标。只看到程序无异常，不算验收完成。",
+      "ability": "为可重复执行的练习选择写入策略"
+    },
+    {
+      "id": "step-1fb694f68d",
+      "knowledgeIds": [
+        "comprehensive"
+      ],
+      "title": "最后验收：少一笔，多一笔，能发现吗？",
+      "intro": "你读回的结果还是 3 个地区，金额合计也恰好是 530，但 north 的 cnt 为 1。不要只检查一个总量。",
+      "code": "# 实际读回（部分）：\n# north | cnt=1 | total=200\n# 需求预期：north 有 150、50 两笔有效订单",
+      "prompt": "这份报表可以验收吗？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "交付判断",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "可以，总金额正确就足够",
+              "feedback": "金额总量正确并不能证明计数指标也正确。"
+            },
+            {
+              "id": "option-2",
+              "text": "不可以，north 的订单数应为 2，还需核对地区明细",
+              "feedback": "对，north 的 cnt 不符合预期。金额、订单数、地区集合都应核对，不能互相替代。"
+            },
+            {
+              "id": "option-3",
+              "text": "可以，3 行说明三笔订单都在",
+              "feedback": "聚合后的每行代表地区，不代表一笔订单。"
+            }
+          ]
+        }
+      ],
+      "insight": "完成这轮推理后，下载任务在本地亲手实现。先写自己的方案，再展开参考实现；用可执行断言验证每地区明细，才补上“会选择”到“能完成”的距离。",
+      "ability": "用多个独立指标验收交付结果"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-b3ddc568a0",
+    "step-c880c1a1e8",
+    "step-564e6a62de",
+    "step-ecf0b207ad",
+    "step-6a1a6061aa",
+    "step-1fb694f68d"
+  ]
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "Shuffle 最准确的定位是？",
+    "correct_index": 3,
+    "answer": "按分区规则重新分布数据，可能读本地或远端交换数据",
+    "explanation": "Shuffle 重分布数据到目标分区，可以在单机多分区中发生；跨机器网络不是每条记录必经的条件。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "为什么 groupBy / orderBy 通常会触发 Shuffle？（join 要分策略）",
+    "correct_index": 1,
+    "answer": "需要满足分组或排序的分布要求，上游不满足时通常重分布",
+    "explanation": "聚合需要同键汇合，全局排序通常需要范围分布。上游分布已满足要求时可能不新增交换，具体看执行计划。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "写下 df.groupBy('city').count() 触发 Action 后，Shuffle 阶段发生什么？",
+    "correct_index": 0,
+    "answer": "按 city 分区，目标端读取本地或远端交换数据并归并",
+    "explanation": "哈希聚合可先局部预聚合，再写出分区化中间数据；目标任务读取对应数据。本地读取不必跨机器网络，Driver 不承担全量中转。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "在计划里认出 Shuffle，应该看哪个节点？",
+    "correct_index": 3,
+    "answer": "ShuffleExchange，例如明确标注 hashpartitioning 的 Exchange",
+    "explanation": "明确的 ShuffleExchange 是重分布线索；BroadcastExchange 不是同一种交换，不能把一切 Exchange 名称等同于 Shuffle。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "Shuffle 发生时数据在谁之间传输？",
+    "correct_index": 2,
+    "answer": "任务写出并读取 Shuffle 分区数据，可在本地或远端获取",
+    "explanation": "集群任务从对应的 Shuffle 数据块中读取，可能本地也可能远端；不要求先把所有业务数据送回 Driver。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "为什么 Shuffle 是「某些操作特别慢」的根源？",
+    "correct_index": 3,
+    "answer": "可能涉及序列化、磁盘读写、网络读取及排序或聚合",
+    "explanation": "交换代价取决于实际字节数、读写、网络与处理开销；不代表每条记录都跨机器，也不意味着所有 Shuffle 都有同样成本。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "df.groupBy('city').count().explain() 会显示几个 Stage？",
+    "correct_index": 1,
+    "answer": "2 段（单一 Shuffle 边界前后）",
+    "explanation": "仅在本题明确限定的简化单边界 DAG 中按两段理解。真实 SQL/AQE 作业不能只用静态 explain 的 Exchange 数机械推断最终 Stage 数。",
+    "new_prompt": "在简化教学 DAG 中，仅一处 Shuffle 边界、没有其他分支，边界前后可分为几段计算？"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "看到代码里有 Exchange，第一反应应是？",
+    "correct_index": 2,
+    "answer": "先确认是否为 ShuffleExchange，再检查其目的与实际代价",
+    "explanation": "Shuffle 信号值得检查，不代表结果错误；BroadcastExchange 等交换节点需与 ShuffleExchange 区分。"
+  },
+  {
+    "slug": "l5-what-is-shuffle",
+    "prompt": "关于「Shuffle 能否避免」，正确的是？",
+    "correct_index": 0,
+    "answer": "可能减少；取决于上游分布是否满足需求以及所用算法",
+    "explanation": "重分布能否省去取决于所需分布与已有分布；广播连接可避免某些连接端的 Shuffle，但不能据此承诺整条查询没有任何交换。"
+  },
+  {
+    "slug": "l7-what-is-tuning",
+    "prompt": "关于 explain() 在调优中的作用，正确的是？",
+    "correct_index": 3,
+    "answer": "用于查看计划，不提供此次运行的完整实际耗时",
+    "explanation": "explain 展示计划，通常不执行完整结果查询；分析、优化与元数据准备仍有成本，不能称为绝对零成本。运行后的 AQE 最终计划也要结合实际执行查看。"
+  },
+  {
+    "slug": "l7-what-is-tuning",
+    "prompt": "在 Spark UI 里看到「Task 耗时最大值远大于中位数」，最可能的结论是？",
+    "correct_index": 1,
+    "answer": "存在拖尾；把倾斜当待验证假设，再联查任务数据量等证据",
+    "explanation": "耗时长尾可来自数据量差异、资源竞争、GC、重试或其他原因；需要结合每任务读取量、处理量和资源指标验证，不能仅凭耗时断言已证明倾斜。",
+    "new_prompt": "Spark UI 中 Task 最大耗时远大于中位数，仅凭这条信息，合理判断是？"
+  },
+  {
+    "slug": "l7-what-is-tuning",
+    "prompt": "explain 与 Spark UI 的分工，正确的是？",
+    "correct_index": 0,
+    "answer": "explain 看计划结构；Spark UI 联看实际耗时、数据量与资源",
+    "explanation": "计划和运行指标互补；相同计划在不同数据与资源下耗时可能不同。查看计划本身有分析准备成本，不称为零成本。"
+  },
+  {
+    "slug": "l7-what-is-tuning",
+    "prompt": "为什么改非瓶颈处等于白改？",
+    "correct_index": 1,
+    "answer": "关键路径上的瓶颈通常应优先，其他改动收益也需实测",
+    "explanation": "作业耗时还受串行、并行、资源竞争与调度影响；不能把整体耗时简化为某个最长任务的唯一函数，也不能断言非瓶颈处任何改动都零收益。",
+    "new_prompt": "为什么调优通常先定位关键路径上的瓶颈？"
+  },
+  {
+    "slug": "l7-what-is-tuning",
+    "prompt": "面对一个跑得慢的作业，第一步应该做？",
+    "correct_index": 3,
+    "answer": "对照基线与输入资源条件，结合计划和运行指标定位",
+    "explanation": "先确认输入和运行条件，再结合计划与指标提出可检验假设。缺少条件时明确承认信息不足；不靠配置名称猜答案。"
+  },
+  {
+    "slug": "l7-what-is-tuning",
+    "prompt": "关于「减量」与「调速」的关系，正确的是？",
+    "correct_index": 1,
+    "answer": "先检查可保持语义的减量机会，再测量实际收益",
+    "explanation": "少读、少传可能减少负担，但效果取决于工作负载、已有优化与资源状况，不能保证总比任何参数调整有效。"
+  }
+]

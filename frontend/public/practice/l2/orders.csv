@@ -1,0 +1,7 @@
+order_id,region,amount
+o201,north,150
+o202,north,50
+o203,south,240
+o204,east,90
+o205,south,-20
+o206,east,

@@ -1,0 +1,205 @@
+{
+  "slug": "l2-groupby-agg",
+  "version": 1,
+  "title": "给每个地区交一张成绩单",
+  "mission": "把订单明细汇总成地区报表：有多少单、卖了多少、平均是多少。先算对，再考虑执行成本。",
+  "correction": "count('*') 统计行，count('amount') 只数非空金额；avg 忽略 NULL，不能擅自把它当成零。分组后只有分组键与聚合结果可用于后续引用；是否需要 Shuffle 要看数据分布和执行计划。",
+  "source": "https://spark.apache.org/docs/3.5.6/sql-ref-null-semantics.html",
+  "next": "地区成绩单做好了。接下来把结果安全地写出去，再用一项综合任务串起整个流程。",
+  "tasks": [
+    {
+      "id": "step-87efcc5bd0",
+      "knowledgeIds": [
+        "groupby-agg"
+      ],
+      "title": "先手算，再写汇总",
+      "intro": "沿用最早的四条订单，先不看函数名。north 有两单，south 和 east 各一单。",
+      "code": "# region | amount\n# north  | 120\n# north  | 80\n# south  | 200\n# east   | 60\norders.groupBy(\"region\").agg(F.sum(\"amount\").alias(\"total\"))",
+      "prompt": "只看 north 这一组，total 应该是多少？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "分组求和",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "120",
+              "feedback": "120 只是一笔订单，没有加上另一笔 80。"
+            },
+            {
+              "id": "option-2",
+              "text": "200",
+              "feedback": "对，north 的 120+80=200。south 的 200 不会加进 north 组。"
+            },
+            {
+              "id": "option-3",
+              "text": "460",
+              "feedback": "460 是所有地区合计，忽略了按 region 分组。"
+            }
+          ]
+        }
+      ],
+      "insight": "groupBy 决定哪些行放在一组，sum 决定在组内怎么算。结果行对应地区，不再对应一笔笔订单。",
+      "ability": "按分组键推演聚合结果"
+    },
+    {
+      "id": "step-6f1f372e24",
+      "knowledgeIds": [
+        "groupby-agg"
+      ],
+      "title": "三张订单，两笔已知金额",
+      "intro": "north 又来了一张金额未知的订单。报表同时需要订单总数与已知金额数。",
+      "code": "# region | amount\n# north  | 120\n# north  | 80\n# north  | null\n# 按 region 分组后分别 count(\"*\") 和 count(\"amount\")",
+      "prompt": "两个计数分别是多少？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "count(\"*\")：订单行数",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "2",
+              "feedback": "空金额仍是一行订单，不能从总订单数里排除。"
+            },
+            {
+              "id": "option-2",
+              "text": "3",
+              "feedback": "对，三行都计入订单行数。"
+            },
+            {
+              "id": "option-3",
+              "text": "null",
+              "feedback": "count 统计数量，不会因为存在一行 null 就整体返回 null。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "count(\"amount\")：非空金额数",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "2",
+              "feedback": "对，120 和 80 两个非空金额计入。"
+            },
+            {
+              "id": "option-2",
+              "text": "3",
+              "feedback": "count 列值会跳过该列的 null，不等于 count('*')。"
+            },
+            {
+              "id": "option-3",
+              "text": "0",
+              "feedback": "仍有两个非空金额，不会全部被排除。"
+            }
+          ]
+        }
+      ],
+      "insight": "报表字段名要写清楚。“订单数”和“有效金额数”描述的是不同指标。",
+      "ability": "区分行数与非空值计数"
+    },
+    {
+      "id": "step-c7978bddd1",
+      "knowledgeIds": [
+        "groupby-agg"
+      ],
+      "title": "平均金额，能把未知算成零吗？",
+      "intro": "仍是 120、80、null 三笔订单。本题只问 Spark 的 avg 结果，不替业务决定未知金额如何处理。",
+      "code": "orders.groupBy(\"region\").agg(F.avg(\"amount\").alias(\"avg_amount\"))\n# north 组金额：120、80、null",
+      "prompt": "north 的 avg_amount 是多少？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "推演平均值",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "约 66.67，因为分母为三行",
+              "feedback": "这是把未知金额当作零后除以三，avg 没有自动进行这种业务填补。"
+            },
+            {
+              "id": "option-2",
+              "text": "null，因为有一笔未知",
+              "feedback": "avg 会忽略 null，不是只要组内有 null 就整体无结果。"
+            },
+            {
+              "id": "option-3",
+              "text": "100，因为只对两个非空值求平均",
+              "feedback": "对，(120+80)/2=100。若全部为空，avg 才返回 null。"
+            }
+          ]
+        }
+      ],
+      "insight": "想按总订单数算某种业务均值，需要先明确缺失值规则；不能把函数默认行为和业务定义混为一谈。",
+      "ability": "推演 NULL 对聚合分母的影响"
+    },
+    {
+      "id": "step-09661e764f",
+      "knowledgeIds": [
+        "groupby-agg"
+      ],
+      "title": "交付报表，给结果起好名字",
+      "intro": "运营要每地区的订单数 cnt 和销售额 total。一次聚合生成两列，避免默认表达式列名难读。",
+      "code": "report = orders.groupBy(\"region\").agg(\n    __A__.alias(\"cnt\"),\n    __B__.alias(\"total\")\n)",
+      "prompt": "补上计数与求和表达式。分组后结果包含 region、cnt、total。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：订单总数",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.count(\"amount\")",
+              "feedback": "如果金额有 null，这会少数订单，不是总行数。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.count(\"*\")",
+              "feedback": "对，订单数按行计数。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.sum(\"amount\")",
+              "feedback": "sum 是金额合计，不是订单数量。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "B：销售额",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.sum(\"amount\")",
+              "feedback": "对，在组内对非空金额求和。别名 total 使下游更清楚。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.col(\"amount\")",
+              "feedback": "amount 不是分组键，也没有被聚合；一组有多笔金额，不能直接保留为一个值。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.avg(\"amount\")",
+              "feedback": "这是平均金额，不是销售额合计。"
+            }
+          ]
+        }
+      ],
+      "insight": "report 后续可以 select('region', 'cnt', 'total')；原来的明细列 amount 已被汇总，不能再当作报告中的普通列引用。",
+      "ability": "组合多个聚合并为指标命名"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-87efcc5bd0",
+    "step-6f1f372e24",
+    "step-c7978bddd1",
+    "step-09661e764f"
+  ]
+}

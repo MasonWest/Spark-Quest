@@ -1130,3 +1130,96 @@ Level 4 → L5/L6 之后，对执行与优化主线的最后一环 Level 7（les
 
 ### Architecture
 -
+
+
+## 2026-11-06 · 学习体验修理第一步
+
+- L2「DataFrame 是什么」（slug `l2-what-is-dataframe`，当前 ID 12）接入三步互动样板：预测筛选/选列结果 → 查看 Schema → 换条件验证行筛选与重复行保留。
+- 针对每个错误选项给出解释，正确后补充概念，完成展示具体学习收获。旧课文折叠为可展开参考，笔记、课后测验、后端掌握和解锁规则保留。
+- 互动只在当前浏览器 localStorage 保存步骤，版本键 `spark-quest:df-intro:v1`；不写掌握、错题或打卡记录，不声称运行 Spark 或验证独立编程能力。
+- 修复入门 PySpark 关系题（当前题 ID 60）：选项与解析直接回答 Python 官方接口关系。DB/seed 同步，保留题 ID、correct_index=3，保留历史答题记录。既有历史得分不重新评分。
+- `backend/repair_intro_question.py` 默认 dry-run，`--apply` 先创建 DB 和 seed 备份，重复执行无变化。历史进度/笔记/打卡/统计/徽章/答题日志的前后摘要一致。
+- 验证：TypeScript + Vite 构建、CSS 命名空间；浏览器 fixture 验证错误反馈、重试、三步完成、刷新续学、重置、测验链接及 320/390/768/1440px 无溢出；未做真实 Spark 运行。截图：工作区 `ux_audit/learning-repair/dataframe-390.png`。
+- 内容依据：https://spark.apache.org/docs/3.5.6/sql-getting-started.html 。当前为单课样板，未完成全章重构、全库干扰项修理或变式错题调度。
+
+
+## 2026-11-07 · L2 互动课程扩展（第 2–4 课）
+
+- 新增创建 DataFrame（ID 13）、Schema 与数据类型（14）、检视数据（15）互动课程；每课四个任务，共 12 个。连续订单情境，含单选推理与多空配对补全；每个选项有专门反馈。
+- 内容集中在 `frontend/src/content/l2Journeys.ts`，通用渲染器 `components/LessonJourney.tsx`；第一节原有样板保留。
+- 按课程 slug/version 独立保存本设备进度和曾用错误反馈的步骤；刷新恢复、重置、回看；完成展示具体收获与辅助记录。未引入后端掌握状态或新的打卡判据。
+- 原文完整保留并默认折叠；针对读取惰性边界、CSV Schema/FAILFAST、printSchema/show/列下标在课程中显示醒目勘误。笔记、测验与解锁规则保留。
+- 8 道正式测验的错误口径已在 DB/seed 同步纠正。`backend/repair_l2_quizzes.py` 支持 dry-run/--apply，使用 `app/l2_quiz_corrections.json`；修改前 DB 与 seed 备份，保留题 ID、prompt、correct_index；重复执行无变化。历史进度、笔记、打卡、徽章、统计、答题日志摘要一致；历史分数不重算。
+- 依据 Spark 3.5.6 官方 API/CSV 文档（source 链接在课程数据内）；不是对所有 Spark 版本的兼容性认证。
+- 验证：TypeScript/Vite 构建、CSS 命名检查；运行 `python frontend/scripts/check-l2-journeys.py`（需先在 frontend 启动 4173 端口的 preview；使用本地 Python Playwright）。检查三课 12 个任务的错误/正确分支、补全、刷新续学、重置、测验链接、320/390/768/1440px 布局、存储拒绝降级、第一节回归。浏览器 API 使用数据库派生 fixture，未运行真实 Spark。截图 `ux_audit/learning-repair/l2-*-390.png`。
+- 仍待推进：L2 第 5–10 课、真正的异题补救与延迟复习、章末独立挑战。当前错误反馈后调整原题，不声称已实现自适应异题调度。
+
+
+## 2026-11-07 · L2 互动课程扩展（第 5–8 课）
+
+- 新增 `l2-select-filter`（16）、`l2-withcolumn`（17）、`l2-sort-dedup`（18）、`l2-groupby-agg`（19），每课四步，共 16 个任务。L2 当前 8/10 课已接入互动（首课旧样板 + 七课通用渲染器）。
+- 新内容集中在 `frontend/src/content/l2ProcessingJourneys.ts`，订单情境覆盖多条件、NULL 筛选、常量/计算列、when 空值分支、查询不可变性、Top N、按键去重无保留保证、并列排序、count/avg 空值语义及多指标报表。每个选项附专门反馈，保留原文、笔记和原有正式测验流程。
+- 对保留原文的技术表述加勘误：Column == 合法；filter 可减输出行而未必减分区；dropDuplicates 不承诺第一条/最大/最新；排序不是所有相同键必须汇聚一处。
+- 正式题库修复 4 道排序/去重题，DB/seed 同步，备份在 backend 下。两道改写题干以去掉“保留首次”和排序去重能保证最大值的错误前提；四题均保留题 ID 与正确答案索引。迁移工具增加显式 new_prompt 支持，重复执行 pending=0，历史记录摘要一致，旧分数不重算。
+- 验证：构建、CSS 命名空间；`frontend/scripts/check-l2-journeys.py` 扩展为七课共 28 个任务的完整浏览器回归（API fixture），含错误分支、双空补全、续学、重置、测验链接、320/390/768/1440px，以及首课回归与存储拒绝降级。截图在 `ux_audit/learning-repair/`。
+- 额外运行 `python backend/check_l2_processing.py`，本机 PySpark 4.2.0 实际执行合成订单查询，筛选、NULL、计算列/常量列、when、不可变查询、排序/去重键、计数/平均值、每用户最大值断言通过，退出码 0。Spark Windows 退出阶段另有 Access denied 输出；不影响已完成断言，未做 Spark 3.5 运行兼容验证。未读取学习数据库。
+- 内容口径参考 Spark 3.5.6 官方 filter/withColumn/dropDuplicates/NULL 文档，链接在互动课数据中。
+- 后续：第 9 课数据写出、第 10 课独立综合任务，异题补救与延迟复习尚待实现。
+
+
+## 2026-11-07 · L2 互动课程收尾（第 9–10 课）
+
+- `l2-write-data`（ID 20）新增四步交付练习：输出目录、追加重跑、partitionBy 与小文件、读回验收。
+- `l2-comprehensive`（21）新增六步章末挑战，使用新订单 o201–o206，六行原始输入、四行有效订单。预期 south=(1,240,0.24)、north=(2,200,0.20)、east=(1,90,0.09)，总额 530。依次完成类型约定、清洗、聚合、派生列、写入策略和逐地区验收。
+- L2 全部十课现在均有互动内容（共 41 步；首课三步，八课各四步，综合课六步）。原文、笔记与正式测验规则保留；互动不自动认证独立编程能力。
+- 新数据在 `frontend/src/content/l2DeliveryJourneys.ts`；通用组件支持 project 下载区，综合课首步给任务文件，完成后可展开参考实现下载。
+- 可下载任务：`frontend/public/practice/l2/orders.csv`、`starter.py`、`README.txt`、`solution.py`。参考实现每次创建新的隔离输出目录，不覆盖既有文件；包含逐地区 cnt/total/total_k、字段、行数和总额断言；仅对已知三行小报表 collect。参考代码不读取应用数据库，不自动写入学习进度。
+- 对旧文补充勘误：目录分区不保证少文件、show 抽样不是全量证明、读取准备可能提前发生、写出不承诺读回顺序、聚合后计算 total_k 避免无效中间列。
+- 同步修复 6 道正式题库题目或解析；本轮修改前备份 DB/seed，题 ID/正确索引与历史记录保持。所有累计 18 个 L2 修复项的 DB/seed 一致、选项无重复、迁移重复执行无变化。
+- 验证：TypeScript/Vite、CSS；浏览器九课 38 步完整回归加首课样板回归（API fixture），含六步续学、重试、下载资源、参考展开、重置、测验链接、320/390/768/1440px。下载脚本语法检查通过。
+- 真实 PySpark 4.2.0：综合任务 CSV 读取、有效行数、聚合、排名、逐地区断言通过；刻意破坏 north cnt 的结果被成功拦截。`backend/check_l2_delivery.py` 完整运行在 Parquet 写出阶段失败：Windows Hadoop native `NativeIO$Windows.access0` 缺失；未通过写出/读回与 mode 实验，不能宣称全程通过。可使用 --query-only 明确跳过文件系统写出验证。尚未完成 Spark 3.5 实机验证。
+- 后续不宜直接机械扩展全库：先使用 L2 完整学习路径，评估疲劳、原题重试的记忆效应和章末本地任务完成情况，再设计异题补救/延迟复习与 L3。
+
+
+## 2026-11-07 · 互动课程骨架整理
+
+- 十课 41 步统一由 `frontend/src/components/LessonJourney.tsx` 渲染，移除首课专用组件与旧 TS 内容副本；首课订单表保留。内容改为 `src/content/lessons/<slug>.json`，通用 `content/journeys.ts` 自动注册。
+- 明确 lesson version、task/field/option ID、correctOptionId、knowledgeIds，下载项目资源改为内容配置；播放器不再硬编码 L2 文件路径。现有知识点标签仍为课程级，不等于已实现误区调度。
+- 互动进度由步骤下标改为步骤 ID；记录每次作答的选项、正确项快照、结果、时间与轮次。重练开启新轮次并保留旧回答；摘要区分首次答对、反馈后完成和旧版记录缺失。存储失败提供提示。本轮仍为浏览器本地记录，无后端同步，无成绩/解锁/打卡/SRS 改动。
+- 旧首课数字进度与其余九课 step/helped 进度通过固定 legacyTaskIds 快照兼容；不编造旧答题事实。不同内容版本独立存储并保留旧版。
+- 结束页集中正式测验、已掌握课程的复习/下一课、路线入口和项目参考文件；原文与笔记折叠可展开；互动页移除重复的底部测验区和旧预告。非互动课程保留旧流程。
+- 新增 `check-journey-content.mjs`：校验身份唯一性、答案引用、逐项反馈、表格结构、下载文件和内容发布版本。`releases.json` 保存版本摘要，已发布同版本内容变更被阻止。npm build 自动先检查内容。编写/版本迁移规则见 `frontend/src/content/AUTHORING.md`。
+- 验证：六组进度测试覆盖旧版部分/完成进度、首课迁移、步骤与选项重排、版本隔离、回答快照/重练、损坏与拒绝存储；TypeScript/Vite、内容与 CSS 检查通过。浏览器十课完整回归通过（API fixture），并额外验证旧完成状态迁入、未知首次记录、稳定 ID 回答存储/刷新、available/mastered/locked 结束页分支。结束页截图 `ux_audit/learning-repair/unified-finish-390.png`。
+- 内容保持原有 41 步，未修改后端数据库或正式题库。异题补救/延迟复习、课后测验重新编排、跨设备记录仍待后续。
+
+
+## 2026-11-07 · 难点互动样板：L5 Shuffle / L7 调优方法论
+
+- 新增 `frontend/src/content/lessons/l5-what-is-shuffle.json`（现有 ID 42，v1，五步）与 `l7-what-is-tuning.json`（58，v1，六步），自动注册到通用播放器；无章节专用组件或分支。原文/笔记仍保留，正式解锁不变。
+- L5：局部不等于全局 → 指定路由下同键汇合（明确为教学路由，不假装真实哈希）→ 局部预聚合减量 → 明确哈希 Exchange 线索 → local Shuffle 与热点键风险。数据表新增可选 caption，非订单章节可使用自己的表题。
+- L7：证据不足不盲调 → 阶段/任务分布 → 拖尾假设验证 → 针对整数求和试验 groupByKey/mapValues(sum) 与 reduceByKey → 以输出正确性和同条件多次测量验收 → 新症状下重新诊断。所有耗时与字节量明确为教学构造，不是运行监控、性能基准或提速承诺。
+- 修正两个样板现有正式测验的 15 道答案/解析，三道同时改写有误前提的题干（Stage 推断、拖尾结论、非瓶颈改动）。保留题目 ID/答案位置与历史记录，DB/seed 备份、对齐、重复执行无变化。使用 `repair_l2_quizzes.py --corrections app/hard_sample_quiz_corrections.json --apply`；默认 L2 修复文件行为保留。
+- 内容检查与版本基线更新为 12 课/52 步；构建、CSS、六组记录单测通过。通用浏览器脚本覆盖全部 12 课，含两样板 11 步的错误/正确分支、补全、刷新、结束与重练、测验链接和 320/390/768/1440px。测试 API 使用 fixture，历史学习数据未写入。
+- `backend/check_hard_lesson_examples.py` 在本机 PySpark 4.2.0 实跑：两输入分区、明确教学路由、局部和/全局和、local 运行下 ShuffledRDD 依赖、整数求和改写等价性、丢掉 north 被判不等价。断言通过，退出码 0；Windows 退出阶段仍有 Access denied 输出。没有做计时比较、Spark 3.5 运行兼容认证或真实集群倾斜诊断。
+- 截图：`ux_audit/learning-repair/l5-what-is-shuffle-390.png`、`l7-what-is-tuning-390.png`。技术依据为各课 source 指向的 Spark 3.5.6 官方 RDD/UI 文档，补充核对性能调优文档。
+- 目前仅验证两课内容与通用骨架可承载；用户理解程度、延迟迁移能力与长期学习动力仍需实际使用。未全面改造 L5/L7，其余章节原题库的长度提示等质量问题仍需逐课处理。
+
+
+## 2026-11-07 · Shuffle 单段融合试验
+
+- 范围仅为 `l5-what-is-shuffle` 的 `route-partial-keys` 步骤：做题前按需借原文理解，错误后给出重读入口，答对后把路由推演连回原理，再可选阅读原心智模型和补充比喻边界。
+- 新 `JourneyReading` 直接从 API 返回的本课 explanation 按明确边界提取原段落；互动 JSON 不复制原文。片段下保留“打开本课完整原文”按钮，直接展开并定位现有参考区。后台正文与正式测验未改。
+- 泛化内容字段为 task.reading（id/title/startMarker/endMarker/connection/boundary）。构建检查关联的 course_seed 原段落是否存在且起点唯一；运行时 API 文本若漂移，给出查完整原文的降级入口，不显示错段落。
+- Shuffle 内容版本升为 v2，步骤与选项 ID 不变。按既定版本隔离规则，v1 本机记录保留，v2 独立记录；不是丢失或覆盖旧记录。
+- 验证：构建、CSS、七组单测；浏览器验证原文片段逐字一致、开合不影响答题记录、完整参考区跳转、错/对两种上下文、320/390/768/1440px、原文标记缺失降级；使用 fixture API，无学习数据库写入。截图 `ux_audit/learning-repair/shuffle-reading-390.png`。
+- 本轮没有对全课逐段关联、没有重新分配十道旧题、没有引入异题补救。用户先体验一段，再判断推广方式。
+
+
+## 2026-11-07 · Shuffle 整课原文融合（v3）
+
+- `l5-what-is-shuffle` 五步全部配置 task.reading：局部/全局关联人话理解；按键路由关联心智模型；局部预聚合关联内部执行；Exchange 关联正式定义；local/热点键关联原文中的通常代价与例外。
+- 各步均提供题前可选解释、错误后的重读入口、正确后的“把判断连成原理”和可选原文/适用边界。原文直接从 API explanation 提取，五个范围不重叠，不新增正文副本，不修改 DB 或正式题库。
+- 通用 reading 增加可选 sectionTitle，按真实引用内容显示人话理解/心智模型/技术定义等标题；边界统一叫“这段解释的适用边界”，不把技术定义误标成比喻。
+- 内容版本升 v3，原五步和选项 ID 保留；依既定版本隔离规则 v1/v2 记录留存，v3 使用独立记录。未重算任何正式成绩。
+- 内容检查、构建、CSS、七组单测通过；新增 `frontend/scripts/check-shuffle-readings.py` 对五步逐一验证：引用与原文显示内容一致（仅剥除 Markdown 标记）、阅读开合不改学习记录、错误/正确两种辅助入口、回完整原文、320/390/768/1440px、完成页/测验链接/刷新恢复。使用实际 DB 派生只读 API fixture，无用户数据库写入。
+- 截图 `ux_audit/learning-repair/shuffle-integrated-1-390.png` 至 `shuffle-integrated-5-390.png`。本轮仅 Shuffle 整课融合，其他课程保持原状，旧十道题用途划分/异题补救尚未开展。

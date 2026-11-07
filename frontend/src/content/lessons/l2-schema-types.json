@@ -1,0 +1,183 @@
+{
+  "slug": "l2-schema-types",
+  "version": 1,
+  "title": "给订单写一份说明书",
+  "mission": "订单金额开始出现小数和空值。今天把“看起来像数字”变成明确的数据约定。",
+  "correction": "显式 Schema 不等于自动 FAILFAST。CSV 默认解析模式是 PERMISSIVE，类型不符可能产生 null；要按需设置 mode='FAILFAST'。nullable=False 也不能当成所有文件读取入口都保证执行的业务非空校验。",
+  "source": "https://spark.apache.org/docs/3.5.6/sql-data-sources-csv.html",
+  "next": "类型约定写好了。下一课用合适的工具检查它，避免“看了几行就以为全表没问题”。",
+  "tasks": [
+    {
+      "id": "step-92c4ee417f",
+      "knowledgeIds": [
+        "schema-types"
+      ],
+      "title": "同样显示 120，其实不是一回事",
+      "intro": "两个订单表打印出来都像是 120 元，但 Schema 不同。先读结构，再决定怎么处理。",
+      "code": "# 表 A\namount: string (nullable = true)\n# 表 B\namount: decimal(10,2) (nullable = true)",
+      "prompt": "哪一个判断能从 Schema 直接得到？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "读取结构",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "A 与 B 都是数值列，只是打印格式不同",
+              "feedback": "string 与 decimal 是不同类型，显示相似并不能消除这个区别。"
+            },
+            {
+              "id": "option-2",
+              "text": "A 是文本列，B 是十进制定点数列",
+              "feedback": "对，Schema 说明类型。B 的类型允许进行十进制运算，但业务规则仍需要单独检查。"
+            },
+            {
+              "id": "option-3",
+              "text": "B 的所有金额一定都合法且大于零",
+              "feedback": "类型没有表达“必须大于零”这个业务规则，nullable=true 还允许空值。"
+            }
+          ]
+        }
+      ],
+      "insight": "Schema 负责结构和类型；金额是否为正、订单号是否重复，是另一层数据质量规则。",
+      "ability": "把字段类型与业务合法性区分开"
+    },
+    {
+      "id": "step-61ba507e24",
+      "knowledgeIds": [
+        "schema-types"
+      ],
+      "title": "把金额和地区放进正确的槽位",
+      "intro": "沿用 region、amount 两列。为本课的金额约定十进制精度 10、小数位 2，地区保存文本。",
+      "code": "from pyspark.sql.types import StructType, StructField, StringType, DecimalType\nschema = StructType([\n    StructField(\"region\", __A__, True),\n    StructField(\"amount\", __B__, True),\n])",
+      "prompt": "补齐两个字段的类型。这里的 True 表示允许空值。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：地区类型",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "StringType()",
+              "feedback": "对，north、south 是文本，使用 StringType。"
+            },
+            {
+              "id": "option-2",
+              "text": "IntegerType()",
+              "feedback": "地区名不是整数，不能只因为有固定类别就使用 IntegerType。"
+            },
+            {
+              "id": "option-3",
+              "text": "BooleanType()",
+              "feedback": "BooleanType 表达真假，不能保存 north 这样的地区名。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "B：金额类型",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "StringType()",
+              "feedback": "文本能存字符，但不符合本题的十进制金额约定。"
+            },
+            {
+              "id": "option-2",
+              "text": "DecimalType(10, 2)",
+              "feedback": "对，总精度 10、小数位 2。精度与范围仍要按实际业务选择。"
+            },
+            {
+              "id": "option-3",
+              "text": "LongType()",
+              "feedback": "LongType 是整数，不能表达本课需要的两位小数。"
+            }
+          ]
+        }
+      ],
+      "insight": "声明类型时，先想值的含义、范围和精度，再选类型；不是让所有看起来像数字的字段都用同一种类型。",
+      "ability": "为地区和十进制金额编写 Schema"
+    },
+    {
+      "id": "step-17de387626",
+      "knowledgeIds": [
+        "schema-types"
+      ],
+      "title": "说明书写对了，坏数据会自动报错吗？",
+      "intro": "CSV 里混进 amount=oops。你希望解析遇到损坏记录时终止任务，不能只依赖显式 Schema。",
+      "code": "orders = (spark.read.schema(schema)\n    .option(\"header\", True)\n    .option(\"mode\", __A__)\n    .csv(\"orders.csv\"))",
+      "prompt": "哪一个解析模式符合“发现损坏记录就报错”的要求？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：解析模式",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "\"PERMISSIVE\"",
+              "feedback": "PERMISSIVE 是默认模式，解析异常字段可能变成 null；它不符合遇坏即停的目标。"
+            },
+            {
+              "id": "option-2",
+              "text": "\"DROPMALFORMED\"",
+              "feedback": "DROPMALFORMED 会忽略损坏记录，不符合必须报错的要求。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"FAILFAST\"",
+              "feedback": "对，需要显式选择 FAILFAST。具体坏数据的识别还与读取格式及实际读取列有关。"
+            }
+          ]
+        }
+      ],
+      "insight": "Schema 回答“按什么类型读”，解析模式回答“读坏了怎么办”。它们是两项不同决定。",
+      "ability": "区分 Schema 与损坏记录处理策略"
+    },
+    {
+      "id": "step-82726972ef",
+      "knowledgeIds": [
+        "schema-types"
+      ],
+      "title": "换一批订单，补上业务检查",
+      "intro": "本次读入成功，但有 amount=null 的订单。项目约定每笔订单都必须有金额，读入成功不等于验收成功。",
+      "code": "# 读入后的实际值\n# north | 120.00\n# south | null\n# east  | 60.00",
+      "prompt": "你会用哪种方式验证这一条业务规则？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "金额非空检查",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "orders.filter(orders[\"amount\"].isNull()).count()",
+              "feedback": "对，统计空金额行数，期望为 0；若不为 0，应根据业务拒收、隔离或修复，而不是默默当成合格数据。"
+            },
+            {
+              "id": "option-2",
+              "text": "orders.printSchema()",
+              "feedback": "Schema 只说明结构，不能替代对实际值的非空检查。"
+            },
+            {
+              "id": "option-3",
+              "text": "orders.show(1)",
+              "feedback": "只查看一行可能刚好跳过坏订单，无法验证所有订单的金额非空。"
+            }
+          ]
+        }
+      ],
+      "insight": "这次你建立了三层判断：字段类型、解析失败策略、业务质量检查。三层都成立，才更接近可靠的数据输入。",
+      "ability": "用实际数据检查金额非空规则"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-92c4ee417f",
+    "step-61ba507e24",
+    "step-17de387626",
+    "step-82726972ef"
+  ]
+}

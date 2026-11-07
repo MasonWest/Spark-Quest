@@ -1,0 +1,196 @@
+{
+  "slug": "l2-what-is-dataframe",
+  "version": 1,
+  "title": "动手理解 · DataFrame",
+  "mission": "从四条订单开始，理解列、Schema 与惰性变换。",
+  "correction": "",
+  "source": "https://spark.apache.org/docs/3.5.6/sql-getting-started.html",
+  "next": "下一步用课后测验验证这些判断。",
+  "tasks": [
+    {
+      "id": "step-53733597a3",
+      "knowledgeIds": [
+        "what-is-dataframe"
+      ],
+      "title": "先猜一猜：四条订单，算得动吗？",
+      "intro": "你拿到一份订单数据。先不背定义，看看这段代码要交付什么结果。",
+      "code": "orders.filter(orders[\"amount\"] > 100).select(\"region\", \"amount\").show()",
+      "prompt": "filter 保留金额大于 100 的行，select 只保留指定列。结果包含哪些订单？（不考虑行顺序）",
+      "table": {
+        "columns": [
+          "region",
+          "amount"
+        ],
+        "rows": [
+          [
+            "north",
+            120
+          ],
+          [
+            "north",
+            80
+          ],
+          [
+            "south",
+            200
+          ],
+          [
+            "east",
+            60
+          ]
+        ]
+      },
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "filter 保留金额大于 100 的行，select 只保留指定列。结果包含哪些订单？（不考虑行顺序）",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "north 120、south 200",
+              "feedback": "对，先筛行，再选列。120 和 200 满足条件，80 和 60 被过滤。"
+            },
+            {
+              "id": "option-2",
+              "text": "north 120、north 80、south 200、east 60",
+              "feedback": "select 决定保留哪些列，不会取消 filter 的行筛选。逐行比较 amount 和 100，再判断一次。"
+            },
+            {
+              "id": "option-3",
+              "text": "region、amount 两个列名，没有数据行",
+              "feedback": "select 选出的列仍然包含数据。show() 会展示筛选后的行，而不只是列名。"
+            }
+          ]
+        }
+      ],
+      "insight": "你已经读懂了一小段 DataFrame 代码：它让你按列名表达要什么数据。数据可以分布在多个分区中，无须先收集到本机。",
+      "ability": "读懂按条件筛行、按列名选列的简单链路"
+    },
+    {
+      "id": "step-7fe0cf2318",
+      "knowledgeIds": [
+        "what-is-dataframe"
+      ],
+      "title": "有列名，还需要知道什么？",
+      "intro": "DataFrame 不只是看起来像表。Schema 记录了每一列的名字、类型，以及是否允许为空。",
+      "code": "root\n |-- region: string (nullable = true)\n |-- amount: long (nullable = true)",
+      "prompt": "同事说：amount 看起来是数字，所以肯定是数值列。你会先怎么确认？",
+      "table": {
+        "columns": [
+          "region",
+          "amount"
+        ],
+        "rows": [
+          [
+            "north",
+            120
+          ],
+          [
+            "north",
+            80
+          ],
+          [
+            "south",
+            200
+          ],
+          [
+            "east",
+            60
+          ]
+        ]
+      },
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "同事说：amount 看起来是数字，所以肯定是数值列。你会先怎么确认？",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "用 count() 确认订单的总行数",
+              "feedback": "count() 回答有多少行，不能告诉你列的类型。我们要确认的是 amount 能否作为数值处理。"
+            },
+            {
+              "id": "option-2",
+              "text": "用 printSchema() 确认 amount 的类型",
+              "feedback": "对，这里的 long 是整数类型。显示为 120 的值也可能是字符串，Schema 才说明类型。"
+            },
+            {
+              "id": "option-3",
+              "text": "用 show() 多展示几行订单",
+              "feedback": "show() 可以帮助看数据内容，但显示为 120 并不能区分字符串和整数。请直接查看 Schema。"
+            }
+          ]
+        }
+      ],
+      "insight": "表格是外观，Schema 是结构。Spark 知道列与表达式的结构，才能分析查询并选择执行方式；不等于所有脏数据都会自动被修好。",
+      "ability": "区分数据样子与 Schema，并知道如何检查类型"
+    },
+    {
+      "id": "step-87ed0e81b0",
+      "knowledgeIds": [
+        "what-is-dataframe"
+      ],
+      "title": "换个条件，还能判断吗？",
+      "intro": "现在仍然使用这四条订单。我们不再看金额，只看地区；已有 DataFrame 的 filter 和 select 是惰性变换。",
+      "code": "north_orders = orders.filter(orders[\"region\"] == \"north\")\nregions = north_orders.select(\"region\")",
+      "prompt": "下一行运行 regions.show()。应展示什么？（select 不会自动去重）",
+      "table": {
+        "columns": [
+          "region",
+          "amount"
+        ],
+        "rows": [
+          [
+            "north",
+            120
+          ],
+          [
+            "north",
+            80
+          ],
+          [
+            "south",
+            200
+          ],
+          [
+            "east",
+            60
+          ]
+        ]
+      },
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "下一行运行 regions.show()。应展示什么？（select 不会自动去重）",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "north，一行；相同地区自动合并",
+              "feedback": "选列不等于去重。输入里 north 有两条订单，选出 region 后仍保留两行。"
+            },
+            {
+              "id": "option-2",
+              "text": "north、south、east，三个不同地区",
+              "feedback": "先前的 filter 只保留 north，south 和 east 已经不在这个结果里。"
+            },
+            {
+              "id": "option-3",
+              "text": "north、north，两行；每条订单各留一行",
+              "feedback": "对，两条 north 订单各留一行。show() 是 Action，会触发这个查询求值并展示结果。"
+            }
+          ]
+        }
+      ],
+      "insight": "DataFrame 不是已经拉到 Python 内存里的列表；你可以先描述变换，再用 Action 请求结果。也不要把惰性理解成所有读取和元数据操作都绝不产生工作。",
+      "ability": "分清筛选、选列与去重，并辨认变换和 Action"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-53733597a3",
+    "step-7fe0cf2318",
+    "step-87ed0e81b0"
+  ]
+}

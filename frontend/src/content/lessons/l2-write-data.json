@@ -1,0 +1,183 @@
+{
+  "slug": "l2-write-data",
+  "version": 1,
+  "title": "把成绩单交到下一站",
+  "mission": "地区报表做好了，下一位同事需要能重新读取的结果。今天把“算完”变成“交付并核验”。",
+  "correction": "partitionBy 决定目录布局，不保证减少小文件，也不等于只生成一个文件。show 只能抽查，不能证明全量正确。overwrite 的覆盖范围受目标与配置影响，本课只使用专门的练习输出目录；写出后重新读取不保证沿用写出前的排序。",
+  "source": "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrameWriter.mode.html",
+  "next": "你已走到交付这一步。最后一课换一批订单，完成整套流程，再用预期结果验收。",
+  "tasks": [
+    {
+      "id": "step-fa4b4ab105",
+      "knowledgeIds": [
+        "write-data"
+      ],
+      "title": "一个路径，不一定是一个文件",
+      "intro": "你把报表写成 Parquet，打开文件夹却看到 part- 开头的数据文件和辅助文件。",
+      "code": "report.write.parquet(\"practice/region_report\")\n# practice/region_report/\n#   part-00000-....parquet\n#   ...",
+      "prompt": "这说明什么？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "理解输出",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "写出失败，必须手动合并才能读取",
+              "feedback": "Spark 可以直接从整个 Parquet 目录读取，不必先手动合成单个文件。"
+            },
+            {
+              "id": "option-2",
+              "text": "路径是输出目录，可由多个数据文件组成",
+              "feedback": "对，用 spark.read.parquet('practice/region_report') 读取这个目录。具体文件数取决于写任务等因素。"
+            },
+            {
+              "id": "option-3",
+              "text": "part 文件只是缓存，真正结果还没保存",
+              "feedback": "part 文件通常就是输出数据文件；不要把输出目录和运行时缓存混为一谈。"
+            }
+          ]
+        }
+      ],
+      "insight": "读写时交接的是数据集路径。想确认内容，应读回数据集，而不是只凭文件名猜结果。",
+      "ability": "把输出目录作为数据集读回"
+    },
+    {
+      "id": "step-89f9993c8e",
+      "knowledgeIds": [
+        "write-data"
+      ],
+      "title": "重复跑一次，订单怎么翻倍了？",
+      "intro": "某次练习把三行地区报表成功写入新目录。第二次把完全相同的报表再追加到该目录，期间没有其他写入。",
+      "code": "report.write.mode(\"append\").parquet(\"practice/report\")\n# 同样代码成功运行两次；report 每次都是 3 行",
+      "prompt": "按普通文件追加语义，读回后应有多少行？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "推演重跑结果",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "3 行，append 会按内容自动去重",
+              "feedback": "append 不会自动识别这批结果已经写过。"
+            },
+            {
+              "id": "option-2",
+              "text": "6 行，两次结果都被追加",
+              "feedback": "对，重复追加通常造成重复数据。要能安全重跑，需明确目标路径与写入策略。"
+            },
+            {
+              "id": "option-3",
+              "text": "0 行，第二次会清空目录",
+              "feedback": "清空不是 append 的语义。"
+            }
+          ]
+        }
+      ],
+      "insight": "在专门练习目录中，完整结果重建可明确选择 overwrite；真实数据不能只为消除报错就随手覆盖。默认模式遇到已有路径会报错，ignore 则保留原目标而跳过本次写入。",
+      "ability": "区分追加、覆盖与重复运行的影响"
+    },
+    {
+      "id": "step-f84125a6f2",
+      "knowledgeIds": [
+        "write-data"
+      ],
+      "title": "按日期交付，目录和文件是两回事",
+      "intro": "下游总按日期读取订单。这里 dt 是业务日期，不是唯一订单号。",
+      "code": "(orders.write\n    .partitionBy(\"dt\")\n    .parquet(\"practice/by_day\"))",
+      "prompt": "哪种判断准确？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "判断分区写出",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "每个日期目录必定只有一个文件",
+              "feedback": "目录分区不等于单文件承诺，同一个日期目录可包含多个数据文件。"
+            },
+            {
+              "id": "option-2",
+              "text": "会按 dt 值建目录，但文件数还受写入任务等影响",
+              "feedback": "对，类似 dt=2026-11-07/。按日期过滤可利用分区裁剪，但小文件仍要单独管理。"
+            },
+            {
+              "id": "option-3",
+              "text": "partitionBy 会按日期自动删除重复订单",
+              "feedback": "分区布局不承担业务去重，重复订单需要另外识别与处理。"
+            }
+          ]
+        }
+      ],
+      "insight": "选择分区列要匹配读取方式与数据规模。很小的三行汇总报表未必需要再按地区拆成目录。",
+      "ability": "区分目录分区、小文件与数据去重"
+    },
+    {
+      "id": "step-fde7ea2a2e",
+      "knowledgeIds": [
+        "write-data"
+      ],
+      "title": "写完了，用什么证明交付正确？",
+      "intro": "本次预期报表 3 行，total 合计 530。只看到输出目录存在，不足以确认内容符合预期。",
+      "code": "saved = spark.read.parquet(\"practice/final_report\")\n# 下游需要确认：字段、行数、金额合计",
+      "prompt": "最合适的验收组合是什么？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "检查结果行数",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "saved.count() == 3",
+              "feedback": "对，count 返回数据行数；这次数据量很小，可以与预期比较。"
+            },
+            {
+              "id": "option-2",
+              "text": "saved.show(3) == 3",
+              "feedback": "show 是打印，不返回这里可比较的行数。"
+            },
+            {
+              "id": "option-3",
+              "text": "目录里恰好有 3 个文件",
+              "feedback": "文件数与结果行数没有一一对应关系。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "确认金额合计",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "saved.select(\"total\")",
+              "feedback": "select 只生成查询，既不求和，也没有和预期值比较。"
+            },
+            {
+              "id": "option-2",
+              "text": "saved.agg(F.sum(\"total\")).first()[0] == 530",
+              "feedback": "对，聚合实际结果并比较预期；F 已导入为 pyspark.sql.functions。"
+            },
+            {
+              "id": "option-3",
+              "text": "saved.printSchema()",
+              "feedback": "Schema 能检查类型，不能验证具体金额合计。"
+            }
+          ]
+        }
+      ],
+      "insight": "结构、行数、总量与关键明细相互补充。再次展示排名时重新 orderBy，不能依赖文件读取的行顺序。",
+      "ability": "读回结果并按指标验收"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-fa4b4ab105",
+    "step-89f9993c8e",
+    "step-f84125a6f2",
+    "step-fde7ea2a2e"
+  ]
+}

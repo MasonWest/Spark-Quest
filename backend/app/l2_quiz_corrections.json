@@ -1,0 +1,132 @@
+[
+  {
+    "slug": "l2-create-dataframe",
+    "prompt": "spark.read.csv(path) 返回的对象是？",
+    "correct_index": 1,
+    "answer": "一个 DataFrame；建表时可能先做文件发现等准备工作",
+    "explanation": "读取器返回 DataFrame，不等于数据已经全部装入内存。文件发现、元数据获取和 Schema 推断可能提前发生；业务查询的求值仍可延后到 Action。"
+  },
+  {
+    "slug": "l2-create-dataframe",
+    "prompt": "读 CSV 后调用 show(10)，数据真正被读取发生在？",
+    "correct_index": 3,
+    "answer": "show() 请求结果时执行所需查询；推断 Schema 等工作可能更早发生",
+    "explanation": "show 是 Action，会请求并展示查询结果；不能因此断言此前绝未读取过文件。CSV inferSchema 等准备步骤可能已经检查数据。"
+  },
+  {
+    "slug": "l2-create-dataframe",
+    "prompt": "为什么 spark.read 系列方法返回 DataFrame 是『惰性』的设计？",
+    "correct_index": 2,
+    "answer": "让业务查询先形成计划，再在请求结果时执行；准备工作可能提前发生",
+    "explanation": "惰性求值方便 Spark 分析和优化查询，但读取器可能提前发现文件、获取元数据或推断 Schema。"
+  },
+  {
+    "slug": "l2-create-dataframe",
+    "prompt": "spark.createDataFrame(rows, schema) 与 spark.read.csv(path) 的共同点是？",
+    "correct_index": 3,
+    "answer": "都返回 DataFrame；建表或推断类型时也可能先做工作",
+    "explanation": "本地列表建表会处理和检查本地数据；读取文件可能发现文件、推断结构。二者都不能被概括成“创建时完全不读取或处理数据”。"
+  },
+  {
+    "slug": "l2-schema-types",
+    "prompt": "生产环境为何更推荐显式 StructType 声明 Schema，而非 inferSchema？",
+    "correct_index": 3,
+    "answer": "明确字段类型、避免额外类型推断；异常处理还需配置",
+    "explanation": "显式 Schema 固定结构与类型，省去推断开销。CSV 解析模式默认 PERMISSIVE，显式 Schema 本身不保证遇坏即报错；需要时设置 mode=FAILFAST。"
+  },
+  {
+    "slug": "l2-schema-types",
+    "prompt": "显式声明 Schema 后读取数据，遇到「字符串无法转成 IntegerType」的行会怎样？",
+    "correct_index": 0,
+    "answer": "取决于数据源和解析模式；CSV 默认模式下异常字段可能为 null",
+    "explanation": "在 CSV 中，Schema 决定按什么类型解析，mode 决定如何处理损坏记录。默认 PERMISSIVE；需要遇到损坏记录时报错应选择 FAILFAST，不能仅凭显式 Schema 判断。"
+  },
+  {
+    "slug": "l2-schema-types",
+    "prompt": "显式声明 Schema 与完全不声明（让 Spark 推断）相比，主要代价是？",
+    "correct_index": 0,
+    "answer": "需要维护类型约定，并单独决定解析失败与业务校验策略",
+    "explanation": "显式 Schema 的代价是维护字段类型、范围与精度；它不自动提供业务质量保证，也不等同于 FAILFAST。"
+  },
+  {
+    "slug": "l2-inspect",
+    "prompt": "show() 与 collect() 在执行上有何关系？",
+    "correct_index": 0,
+    "answer": "都是 Action；show 限制展示量，collect 收集全部结果行",
+    "explanation": "show 和 collect 都请求执行结果；show 限制展示行数，collect 收集所有结果行到 Driver。但 show 的上游聚合或排序仍可能处理大量数据，小输出不保证小开销。"
+  },
+  {
+    "slug": "l2-sort-dedup",
+    "prompt": "为什么 orderBy 通常需要触发一次 Shuffle？",
+    "correct_index": 3,
+    "answer": "通常需要按排序键划分有序范围，再在分区内排序",
+    "explanation": "分布式全局排序通常通过范围分区与分区内排序实现；相同键不必被承诺全部汇聚到同一分区，是否交换数据以实际计划为准。"
+  },
+  {
+    "slug": "l2-sort-dedup",
+    "prompt": "想按城市去重，只保留每个城市首次出现的那一行，应？",
+    "correct_index": 1,
+    "answer": "df.dropDuplicates(['city'])",
+    "explanation": "dropDuplicates 按 city 合并重复键，但不保证保留首次、最新或最大的一行。需要保留规则时应另外明确表达。",
+    "new_prompt": "想按城市去重，每个城市保留一行，但不指定保留哪行，应？"
+  },
+  {
+    "slug": "l2-sort-dedup",
+    "prompt": "orderBy 触发的 Shuffle 中，数据如何被重新组织？",
+    "correct_index": 2,
+    "answer": "通常按排序键的范围重新分布数据，再在各分区内排序",
+    "explanation": "范围分区结合分区内排序实现全局排序；不要把全局排序简化为必须把所有相同键都放进同一分区。"
+  },
+  {
+    "slug": "l2-sort-dedup",
+    "prompt": "要取『金额最高且去重后的前 5 个不同用户』，合理写法是？",
+    "correct_index": 3,
+    "answer": "df.groupBy('user').agg(F.max('amount').alias('mx')).orderBy(F.desc('mx'), F.asc('user')).limit(5)",
+    "explanation": "先按用户计算最大金额，再按最大金额降序和用户升序取五个用户。排序后 dropDuplicates 不保证保留每组最大金额，且去重后的输出次序也无保证。",
+    "new_prompt": "金额非空、用户非空且至少有 5 个用户；要返回每个用户的最大金额，再取金额最高的 5 个用户（并列按用户升序），合理写法是？"
+  },
+  {
+    "slug": "l2-write-data",
+    "prompt": "想减少小文件、并让下游按日期查询更快，写出时应？",
+    "correct_index": 3,
+    "answer": "按日期等合适维度分区并使用 Parquet，文件数量另外管理",
+    "explanation": "目录分区可支持按分区列过滤时跳过无关目录，但不保证减少小文件；文件数量还受任务数、数据分布、追加频率等因素影响。",
+    "new_prompt": "希望下游按日期读取时可跳过无关目录；关于写出布局与小文件，合理的方案是？"
+  },
+  {
+    "slug": "l2-comprehensive",
+    "prompt": "在「读 CSV → filter → withColumn → groupBy → orderBy → write」链路中，哪些是 Transformation？",
+    "correct_index": 1,
+    "answer": "filter / withColumn / groupBy / orderBy 都是 Transformation，只有 write 是 Action",
+    "explanation": "列出的 filter、withColumn、groupBy 和 orderBy 是惰性变换；write 请求写出结果。读取器返回 DataFrame，但文件发现或 Schema 推断可能提前执行，不能把所有读取准备都归为零工作。"
+  },
+  {
+    "slug": "l2-comprehensive",
+    "prompt": "在正式 write 之前，先用 show(20) 验证聚合结果的好处是？",
+    "correct_index": 2,
+    "answer": "有助于发现样本中的计算错误；全量正确性还需其他检查",
+    "explanation": "show 抽查可以发现部分问题，但不能证明全量正确。应结合字段、行数、总量与关键明细核对。"
+  },
+  {
+    "slug": "l2-comprehensive",
+    "prompt": "以下关于这个迷你 ETL 链路的错误说法是？",
+    "correct_index": 1,
+    "answer": "Action 前读取器绝不会读取文件，即使启用了 CSV inferSchema",
+    "explanation": "该说法错误：CSV inferSchema 需要额外遍历数据；文件发现、元数据获取等工作也可能提前发生。惰性求值不等于读入阶段零工作。"
+  },
+  {
+    "slug": "l2-comprehensive",
+    "prompt": "为什么先 show 验证、确认无误后再 write 是好习惯？",
+    "correct_index": 3,
+    "answer": "有助于尽早发现样本错误，再结合指标验收决定是否交付",
+    "explanation": "先抽查能尽早暴露部分错误，但 show 不是全量正确性证明，也不缓存或自动加速后续 write。"
+  },
+  {
+    "slug": "l2-comprehensive",
+    "prompt": "链路写好运行却『一直卡着没输出』，最可能的原因是？",
+    "correct_index": 1,
+    "answer": "result 只保存查询描述；show/count/write 等 Action 才请求结果",
+    "explanation": "构建变换查询没有输出，不等于进程卡住。需要先区分尚未请求结果与已提交任务但执行缓慢，后者要结合 UI 和日志诊断。",
+    "new_prompt": "已创建 df，执行 result = df.filter(df.amount > 0) 后语句很快返回但没有数据行打印，合理解释是？"
+  }
+]

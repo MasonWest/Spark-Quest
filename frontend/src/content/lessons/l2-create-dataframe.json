@@ -1,0 +1,183 @@
+{
+  "slug": "l2-create-dataframe",
+  "version": 1,
+  "title": "把订单接进来",
+  "mission": "运营同事交来四条订单。今天把它们变成有名字、有类型的 DataFrame。",
+  "correction": "原文中“创建或读取只登记计划、Action 前绝不读数据”过于绝对：本地集合的处理、文件发现和 Schema 推断可能提前做工作；CSV 的 inferSchema 会额外遍历数据。header 只管列名，不负责类型。",
+  "source": "https://spark.apache.org/docs/3.5.6/sql-data-sources-csv.html",
+  "next": "数据进来了。下一课检查：声明了类型，是不是就能挡住所有脏数据？",
+  "tasks": [
+    {
+      "id": "step-1316abdccc",
+      "knowledgeIds": [
+        "create-dataframe"
+      ],
+      "title": "第一单，从两条小数据开始",
+      "intro": "先在本地造一个能反复验证的小样本。spark 是已经创建好的 SparkSession；这里只用两条订单。",
+      "code": "rows = [(\"north\", 120), (\"south\", 200)]\norders = spark.____(rows, [\"region\", \"amount\"])",
+      "prompt": "补上创建方法。这里的 rows 是 Python 列表，不是文件路径。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "创建方法",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "read.csv",
+              "feedback": "read.csv 需要 CSV 路径；这里已经有 Python 元组列表。"
+            },
+            {
+              "id": "option-2",
+              "text": "createDataFrame",
+              "feedback": "对，createDataFrame 可以直接接收本地列表，不需要先 parallelize。这里只给列名，类型仍由数据推断。"
+            },
+            {
+              "id": "option-3",
+              "text": "read.parquet",
+              "feedback": "Parquet 读取器接收文件路径，不能把 Python 元组列表当文件读。"
+            }
+          ]
+        }
+      ],
+      "insight": "造几行可控样本，是验证处理逻辑的好起点。创建方式要与数据所在的位置和格式匹配。",
+      "ability": "用本地列表创建一个带列名的 DataFrame"
+    },
+    {
+      "id": "step-db3471f92c",
+      "knowledgeIds": [
+        "create-dataframe"
+      ],
+      "title": "表头回来了，类型怎么还不对？",
+      "intro": "同事改发 CSV。你加了 header=True，得到下面的 Schema。金额显示为 120，并不代表类型已经是整数。",
+      "code": "region,amount\nnorth,120\nnorth,80\nsouth,200\neast,60\n\n# orders.printSchema()\n# region: string\n# amount: string",
+      "prompt": "在未提供显式 schema 的前提下，补齐两个 CSV 选项：使用首行列名，并自动推断类型。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "使用首行列名：option(____, True)",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "\"inferSchema\"",
+              "feedback": "inferSchema 负责推断类型，不负责把第一行认作列名。"
+            },
+            {
+              "id": "option-2",
+              "text": "\"header\"",
+              "feedback": "对，header=True 使用首行作为列名。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"delimiter\"",
+              "feedback": "delimiter 决定分隔符，需要字符值，不是这里的 True。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "自动推断类型：option(____, True)",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "\"header\"",
+              "feedback": "header 不会把 string 变成数值类型。"
+            },
+            {
+              "id": "option-2",
+              "text": "\"mode\"",
+              "feedback": "mode 是异常记录的处理模式，不是类型推断开关。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"inferSchema\"",
+              "feedback": "对，inferSchema=True 会从数据推断类型，也会增加一次数据遍历。"
+            }
+          ]
+        }
+      ],
+      "insight": "组合起来是 spark.read.option(\"header\", True).option(\"inferSchema\", True).csv(\"orders.csv\")。已经有确定的类型约定时，还可以直接提供 schema。",
+      "ability": "分清 CSV 的表头选项和类型推断选项"
+    },
+    {
+      "id": "step-042153aa70",
+      "knowledgeIds": [
+        "create-dataframe"
+      ],
+      "title": "没有 show，为什么已经读文件了？",
+      "intro": "你打开了 inferSchema。同事看到任务已经开始，怀疑 Spark 的惰性执行失效了。",
+      "code": "orders = spark.read.csv(\"orders.csv\", header=True, inferSchema=True)\n# 还没有 orders.show()",
+      "prompt": "哪种解释最准确？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "判断原因",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "惰性执行失效，创建时已把所有行放进 Driver",
+              "feedback": "推断类型需要工作，但不等于把整张表收集进 Driver，也不意味着所有后续查询已经完成。"
+            },
+            {
+              "id": "option-2",
+              "text": "推断 Schema 可能先读数据，后续查询仍可惰性执行",
+              "feedback": "对，惰性针对查询求值，不能推导出文件发现和类型推断都零成本。"
+            },
+            {
+              "id": "option-3",
+              "text": "任务只是界面占位，没有任何文件读取",
+              "feedback": "CSV 类型推断确实需要检查数据，不只是显示一个占位任务。"
+            }
+          ]
+        }
+      ],
+      "insight": "看到提前发生的读取，先分清是在准备元数据、推断类型，还是执行你的业务查询。",
+      "ability": "解释 CSV 类型推断为何可能在 Action 前读取数据"
+    },
+    {
+      "id": "step-1e20169b95",
+      "knowledgeIds": [
+        "create-dataframe"
+      ],
+      "title": "交接单：这次是 Parquet",
+      "intro": "同事把四条订单保存成了 Parquet 文件。你已经知道格式，直接使用对应读取器。",
+      "code": "# 文件路径：warehouse/orders.parquet\norders = spark.read.____(\"warehouse/orders.parquet\")",
+      "prompt": "选一个能读取该文件格式的方法。不要把 CSV 的选项当成所有格式都需要的步骤。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "文件读取器",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "csv",
+              "feedback": "CSV 解析器读的是分隔文本，不能因为文件里是表格数据就用 csv。"
+            },
+            {
+              "id": "option-2",
+              "text": "json",
+              "feedback": "JSON 解析器针对 JSON 文本；这份文件是 Parquet。"
+            },
+            {
+              "id": "option-3",
+              "text": "parquet",
+              "feedback": "对，Parquet 保存类型信息，通常不需要像 CSV 那样再打开 inferSchema。"
+            }
+          ]
+        }
+      ],
+      "insight": "你现在有两条路径：本地小样本用 createDataFrame；外部文件根据格式选择 read.csv、read.json 或 read.parquet。",
+      "ability": "根据数据来源选择创建入口"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-1316abdccc",
+    "step-db3471f92c",
+    "step-042153aa70",
+    "step-1e20169b95"
+  ]
+}

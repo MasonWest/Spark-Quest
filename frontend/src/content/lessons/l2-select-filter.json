@@ -1,0 +1,183 @@
+{
+  "slug": "l2-select-filter",
+  "version": 1,
+  "title": "给运营一份刚刚好的订单",
+  "mission": "运营只要 north 地区、金额大于 100 的订单，并且只需要地区和金额。把要求翻译成查询。",
+  "correction": "Column 的 == 是正确的相等比较，不能和 Python 的 and/or 一起列为禁用。filter 会减少输出行数，但通常不会自动缩减分区数；谓词下推是否减少实际文件读取，取决于数据源、条件与执行计划。",
+  "source": "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.filter.html",
+  "next": "你已能挑选需要的订单。接下来给每一单加上计算列和业务标签。",
+  "tasks": [
+    {
+      "id": "step-65f91c5681",
+      "knowledgeIds": [
+        "select-filter"
+      ],
+      "title": "需求里藏着两把剪刀",
+      "intro": "仍用四条订单：north/120、north/80、south/200、east/60。本步只判断两种操作各自负责什么。",
+      "code": "# 输入列：order_id, region, amount\n# 目标：只保留 region、amount\n# 同时只要 north 且 amount > 100 的行",
+      "prompt": "分别为“挑列”和“挑行”选择工具。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "挑列",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "select(\"region\", \"amount\")",
+              "feedback": "对，select 决定输出哪些列。"
+            },
+            {
+              "id": "option-2",
+              "text": "filter(\"region = north\")",
+              "feedback": "filter 用于筛行，这个 SQL 条件中的 north 还缺少字符串引号。"
+            },
+            {
+              "id": "option-3",
+              "text": "count()",
+              "feedback": "count 统计行数，不会返回要求的两个字段。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "挑行",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "select(\"north\")",
+              "feedback": "select 的字符串参数是列名；north 是地区值，不是这里的列名。"
+            },
+            {
+              "id": "option-2",
+              "text": "filter((orders[\"region\"] == \"north\") & (orders[\"amount\"] > 100))",
+              "feedback": "对，== 与 > 产生 Column 条件，& 组合条件，每个条件单独加括号。"
+            },
+            {
+              "id": "option-3",
+              "text": "orderBy(\"region\")",
+              "feedback": "排序改变结果次序，不负责剔除不符合条件的订单。"
+            }
+          ]
+        }
+      ],
+      "insight": "按列描述需求，按行描述条件。选完仍是新的 DataFrame，下一步再请求展示。",
+      "ability": "把选列与筛行需求分开表达"
+    },
+    {
+      "id": "step-a4e9ad8ec5",
+      "knowledgeIds": [
+        "select-filter"
+      ],
+      "title": "代码看着像 Python，为什么不能用 and？",
+      "intro": "你把两个条件都写对了，却在连接条件时遇到错误。",
+      "code": "orders.filter(orders[\"region\"] == \"north\" and orders[\"amount\"] > 100)",
+      "prompt": "哪一个改法表达了原本的两个条件同时成立？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "修复条件",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "(orders[\"region\"] == \"north\") | (orders[\"amount\"] > 100)",
+              "feedback": "| 表示或，会把 south/200 和 north/80 也选进来。"
+            },
+            {
+              "id": "option-2",
+              "text": "(orders[\"region\"] == \"north\") & (orders[\"amount\"] > 100)",
+              "feedback": "对，& 组合两个 Column 条件。== 在这里正确，不能换成 is。"
+            },
+            {
+              "id": "option-3",
+              "text": "(orders[\"region\"] is \"north\") & (orders[\"amount\"] > 100)",
+              "feedback": "is 比较 Python 对象身份，不会构造所需的列值比较。"
+            }
+          ]
+        }
+      ],
+      "insight": "&、|、~ 对应列条件的与、或、非；不是把 Python 条件照抄到分布式数据上。",
+      "ability": "用正确运算符组合 Column 条件"
+    },
+    {
+      "id": "step-444ef9a2c7",
+      "knowledgeIds": [
+        "select-filter"
+      ],
+      "title": "金额未知的订单去了哪里？",
+      "intro": "收到一批补充订单，金额允许为空。筛选条件只保留求值结果为 true 的行。",
+      "code": "# region | amount\n# north  | 120\n# north  | null\n# south  | 200\norders.filter(orders[\"amount\"] > 100)",
+      "prompt": "不考虑顺序，输出是哪两行？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "预测筛选结果",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "north/120 与 south/200",
+              "feedback": "对，null > 100 的结果未知，不为 true，因此这行不保留。"
+            },
+            {
+              "id": "option-2",
+              "text": "north/120 与 north/null",
+              "feedback": "north/null 不满足明确为 true 的金额条件；south/200 则满足。"
+            },
+            {
+              "id": "option-3",
+              "text": "三行全部保留",
+              "feedback": "未知不等于满足条件，null 行不会因为没有明确小于 100 就自动通过。"
+            }
+          ]
+        }
+      ],
+      "insight": "如果业务要保留未知金额，应明确写出 isNull() 分支；不要让空值处理靠猜测。",
+      "ability": "推演包含 NULL 的筛选结果"
+    },
+    {
+      "id": "step-429109750e",
+      "knowledgeIds": [
+        "select-filter"
+      ],
+      "title": "筛过了，原表为什么还在？",
+      "intro": "你要保留原始订单作核对，同时交付筛选结果。filter 不会原地修改 orders。",
+      "code": "orders.filter(orders[\"amount\"] > 100)\norders.show()",
+      "prompt": "想让后续明确使用筛选结果，应该怎样保存？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "接住结果",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "orders.show() 会自动显示上次 filter 的结果",
+              "feedback": "未接住的变换结果不会自动替换 orders。"
+            },
+            {
+              "id": "option-2",
+              "text": "orders[\"amount\"] = orders[\"amount\"] > 100",
+              "feedback": "这是本地表格式的赋值思路，不是 Spark DataFrame 的筛行写法。"
+            },
+            {
+              "id": "option-3",
+              "text": "selected = orders.filter(orders[\"amount\"] > 100)",
+              "feedback": "对，使用 selected 继续处理，orders 仍代表原来的查询。"
+            }
+          ]
+        }
+      ],
+      "insight": "回到运营需求：selected = orders.filter((orders['region'] == 'north') & (orders['amount'] > 100)).select('region', 'amount')。结果为 north/120，原始查询可继续用于核对。",
+      "ability": "保存新查询并保留原始 DataFrame"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-65f91c5681",
+    "step-a4e9ad8ec5",
+    "step-444ef9a2c7",
+    "step-429109750e"
+  ]
+}

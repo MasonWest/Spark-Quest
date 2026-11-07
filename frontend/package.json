@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "check:css": "node scripts/check-css-namespace.mjs",
     "check:css:all": "node scripts/check-css-namespace.mjs --all",
-    "test:weak-grouping": "node --test scripts/weak-grouping.test.ts"
+    "test:weak-grouping": "node --test scripts/weak-grouping.test.ts",
+    "check:content": "node scripts/check-journey-content.mjs",
+    "test:journey": "node --test scripts/journey-progress.test.mjs",
+    "prebuild": "npm run check:content"
   },
   "dependencies": {
     "react": "^18.3.1",

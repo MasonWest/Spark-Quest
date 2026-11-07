@@ -46,13 +46,13 @@
           "type": "single_choice",
           "prompt": "关于 Spark 与 PySpark 的关系，正确的是？",
           "options": [
-            "PySpark 是用 Python 重写的另一套计算引擎",
-            "PySpark 比 Scala 版 Spark 的功能更多更完整",
-            "只要装上 PySpark 就完全不需要 Java 环境了",
-            "数据大到 pandas 处理不动时，才应考虑上 Spark"
+            "PySpark 是独立于 Spark 的 Python 计算引擎",
+            "PySpark 是把 pandas 自动转成分布式的工具",
+            "PySpark 是只供本地调试使用的简化版 Spark",
+            "PySpark 是通过 Python 使用 Spark 的官方接口"
           ],
           "correct_index": 3,
-          "explanation": "PySpark 是 Spark 的官方 Python 接口；当数据上 GB 或单机内存装不下时，才值得引入 Spark，而非无脑替换 pandas。",
+          "explanation": "PySpark 是 Apache Spark 的官方 Python 接口，让你用 Python 调用 Spark 的能力。它不是另一套计算引擎，也不只用于本地调试；Spark 仍有相应的运行环境要求。",
           "dimension": "concept"
         },
         {
@@ -1628,12 +1628,12 @@
           "prompt": "spark.read.csv(path) 返回的对象是？",
           "options": [
             "已经被 Spark 全部读入 Driver 内存的本地 pandas.DataFrame",
-            "一个 DataFrame，但此时尚未真正读取数据（惰性）",
+            "一个 DataFrame；建表时可能先做文件发现等准备工作",
             "一个记录文件位置、尚未解析内容的文件句柄",
             "一个已经物化、可直接索引的 RDD[Row]"
           ],
           "correct_index": 1,
-          "explanation": "spark.read.csv 返回的是 Spark DataFrame，且是惰性的——只是登记读取计划，数据并未真正读入。",
+          "explanation": "读取器返回 DataFrame，不等于数据已经全部装入内存。文件发现、元数据获取和 Schema 推断可能提前发生；业务查询的求值仍可延后到 Action。",
           "dimension": "concept"
         },
         {
@@ -1656,10 +1656,10 @@
             "spark.read.csv 被调用的一瞬间，数据就已经全部读取并进入内存",
             "程序启动后由 Driver 自动地、无条件地先把整张表读一遍",
             "只在 Driver 端由单个进程顺序读取并解析，完全不经由集群",
-            "show() 这个 Action 触发时，各 Executor 读取自己负责的分片并解析"
+            "show() 请求结果时执行所需查询；推断 Schema 等工作可能更早发生"
           ],
           "correct_index": 3,
-          "explanation": "read 是惰性的，只记账；show 作为 Action 触发时，Driver 把任务分发给各 Executor，由 Executor 读取各自分片并解析。",
+          "explanation": "show 是 Action，会请求并展示查询结果；不能因此断言此前绝未读取过文件。CSV inferSchema 等准备步骤可能已经检查数据。",
           "dimension": "mechanism"
         },
         {
@@ -1694,11 +1694,11 @@
           "options": [
             "因为 Spark 根本读不了文件，只能先返回一个占位对象",
             "因为这样能让上层代码写得更短、更省事一些",
-            "为了先把读取计划交给 Catalyst 优化，真正读取等 Action 触发",
+            "让业务查询先形成计划，再在请求结果时执行；准备工作可能提前发生",
             "因为读取文件这件事本身不需要做任何优化"
           ],
           "correct_index": 2,
-          "explanation": "惰性让读取也进入统一优化计划，可与后续过滤/投影一起被下推优化。",
+          "explanation": "惰性求值方便 Spark 分析和优化查询，但读取器可能提前发现文件、获取元数据或推断 Schema。",
           "dimension": "why"
         },
         {
@@ -1708,10 +1708,10 @@
             "两者都会立刻把全部数据读进 Driver 内存里再返回",
             "前者用于读文件、后者用于读集合，正好说反了",
             "两者返回的都是 RDD 而不是 DataFrame",
-            "都返回 DataFrame，且都是惰性的（不立即读取/物化）"
+            "都返回 DataFrame；建表或推断类型时也可能先做工作"
           ],
           "correct_index": 3,
-          "explanation": "两者都构造 DataFrame 且不立即物化；createDataFrame 记内存集合，read 记文件来源。",
+          "explanation": "本地列表建表会处理和检查本地数据；读取文件可能发现文件、推断结构。二者都不能被概括成“创建时完全不读取或处理数据”。",
           "dimension": "comparison"
         },
         {
@@ -1778,23 +1778,23 @@
             "因为 inferSchema 在 Spark 里还没有实现，根本用不了",
             "因为显式声明能把数据压得更小、更省内存",
             "因为 inferSchema 一定会把所有数字都猜成字符串",
-            "避免抽样推断出错、类型不符当场报错（fail-fast），且不抽样更快"
+            "明确字段类型、避免额外类型推断；异常处理还需配置"
           ],
           "correct_index": 3,
-          "explanation": "inferSchema 靠抽样猜测，可能因样本偏差猜错且更慢；显式 StructType 不抽样、不猜，类型不符直接报错，问题暴露得更早。",
+          "explanation": "显式 Schema 固定结构与类型，省去推断开销。CSV 解析模式默认 PERMISSIVE，显式 Schema 本身不保证遇坏即报错；需要时设置 mode=FAILFAST。",
           "dimension": "why"
         },
         {
           "type": "single_choice",
           "prompt": "显式声明 Schema 后读取数据，遇到「字符串无法转成 IntegerType」的行会怎样？",
           "options": [
-            "直接报错（fail-fast），而不是悄悄存成 null 或错误类型",
+            "取决于数据源和解析模式；CSV 默认模式下异常字段可能为 null",
             "自动把该值替换为 null，好让程序继续跑而不中断",
             "自动把该值转成字符串，尽量保留住原始信息",
             "静默跳过这一行，只记一条警告日志后继续"
           ],
           "correct_index": 0,
-          "explanation": "显式 schema 的 fail-fast 特性能在解析阶段就拦下脏数据，避免「脏数据悄悄污染后续计算」。",
+          "explanation": "在 CSV 中，Schema 决定按什么类型解析，mode 决定如何处理损坏记录。默认 PERMISSIVE；需要遇到损坏记录时报错应选择 FAILFAST，不能仅凭显式 Schema 判断。",
           "dimension": "debug"
         },
         {
@@ -1840,13 +1840,13 @@
           "type": "single_choice",
           "prompt": "显式声明 Schema 与完全不声明（让 Spark 推断）相比，主要代价是？",
           "options": [
-            "需要多写一些类型定义，换来可控与 fail-fast",
+            "需要维护类型约定，并单独决定解析失败与业务校验策略",
             "运行会变得更慢，而且出错的可能性也更高",
             "就无法再读取 CSV 这类没有结构的文件了",
             "最终得到的列数会比让 Spark 推断时明显减少"
           ],
           "correct_index": 0,
-          "explanation": "代价是多写类型声明，换来的是类型可控、不抽样、错误更早暴露。",
+          "explanation": "显式 Schema 的代价是维护字段类型、范围与精度；它不自动提供业务质量保证，也不等同于 FAILFAST。",
           "dimension": "comparison"
         },
         {
@@ -1962,13 +1962,13 @@
           "type": "single_choice",
           "prompt": "show() 与 collect() 在执行上有何关系？",
           "options": [
-            "两者都是 Action，都会触发作业执行；show 只取前 n 行打印",
+            "都是 Action；show 限制展示量，collect 收集全部结果行",
             "collect 是 Transformation，show 不触发执行",
             "show 和 collect 这两种操作都不会触发作业执行",
             "collect 不触发执行，只有 show 才会触发"
           ],
           "correct_index": 0,
-          "explanation": "show 和 collect 都是 Action，都会真正触发计算；show 仅取前若干行展示。",
+          "explanation": "show 和 collect 都请求执行结果；show 限制展示行数，collect 收集所有结果行到 Driver。但 show 的上游聚合或排序仍可能处理大量数据，小输出不保证小开销。",
           "dimension": "mechanism"
         },
         {
@@ -2318,10 +2318,10 @@
             "因为要先打印排序结果，所以必须经过网络",
             "因为要重新统计每个分区的行数",
             "因为要先把数据全部读入 Driver 的内存里再排序，这样才能保证顺序绝对正确",
-            "需要把相同排序键的数据汇聚到同一分区，才能完成全局有序"
+            "通常需要按排序键划分有序范围，再在分区内排序"
           ],
           "correct_index": 3,
-          "explanation": "全局有序要求相同排序键的数据在同一处分区处理，因此需要一次 Shuffle（Level 5 会展开）。",
+          "explanation": "分布式全局排序通常通过范围分区与分区内排序实现；相同键不必被承诺全部汇聚到同一分区，是否交换数据以实际计划为准。",
           "dimension": "mechanism"
         },
         {
@@ -2339,7 +2339,7 @@
         },
         {
           "type": "single_choice",
-          "prompt": "想按城市去重，只保留每个城市首次出现的那一行，应？",
+          "prompt": "想按城市去重，每个城市保留一行，但不指定保留哪行，应？",
           "options": [
             "df.distinct()（要求整行都相同才算重复）",
             "df.dropDuplicates(['city'])",
@@ -2347,7 +2347,7 @@
             "df.orderBy('city').limit(1)（只取一行，非按城市去重）"
           ],
           "correct_index": 1,
-          "explanation": "dropDuplicates(['city']) 按 city 判断重复，保留首次出现的行；distinct 要整行相同才算重复。",
+          "explanation": "dropDuplicates 按 city 合并重复键，但不保证保留首次、最新或最大的一行。需要保留规则时应另外明确表达。",
           "dimension": "apply"
         },
         {
@@ -2408,24 +2408,24 @@
           "options": [
             "把数据随机打乱顺序，让每个分区的大小更均匀",
             "把数据整体复制到 Driver 内存里再统一排序",
-            "按排序键分区，使相同/相邻键的数据汇聚，便于全局有序",
+            "通常按排序键的范围重新分布数据，再在各分区内排序",
             "直接把数据落到磁盘上，不做任何排序处理"
           ],
           "correct_index": 2,
-          "explanation": "orderBy 通过 Shuffle 按排序键重新分区，把同键数据放一起才能完成全局排序。",
+          "explanation": "范围分区结合分区内排序实现全局排序；不要把全局排序简化为必须把所有相同键都放进同一分区。",
           "dimension": "mechanism"
         },
         {
           "type": "single_choice",
-          "prompt": "要取『金额最高且去重后的前 5 个不同用户』，合理写法是？",
+          "prompt": "金额非空、用户非空且至少有 5 个用户；要返回每个用户的最大金额，再取金额最高的 5 个用户（并列按用户升序），合理写法是？",
           "options": [
             "df.dropDuplicates(['user']).orderBy(F.desc('amount')).limit(5)",
             "df.orderBy(F.desc('amount')).limit(5).dropDuplicates(['user'])",
             "df.dropDuplicates(['user']).limit(5).orderBy(F.desc('amount'))",
-            "df.orderBy(F.desc('amount')).dropDuplicates(['user']).limit(5)"
+            "df.groupBy('user').agg(F.max('amount').alias('mx')).orderBy(F.desc('mx'), F.asc('user')).limit(5)"
           ],
           "correct_index": 3,
-          "explanation": "先按金额降序，再按用户去重并取前 5，得到金额最高的 5 个不同用户；顺序很重要。",
+          "explanation": "先按用户计算最大金额，再按最大金额降序和用户升序取五个用户。排序后 dropDuplicates 不保证保留每组最大金额，且去重后的输出次序也无保证。",
           "dimension": "apply"
         }
       ]
@@ -2609,15 +2609,15 @@
         },
         {
           "type": "single_choice",
-          "prompt": "想减少小文件、并让下游按日期查询更快，写出时应？",
+          "prompt": "希望下游按日期读取时可跳过无关目录；关于写出布局与小文件，合理的方案是？",
           "options": [
             "把所有数据写进单个 CSV 大文件，最直观也最简单",
             "使用 mode('append') 不断追加到原目录，避免覆盖旧数据，同时也最利于下游读取",
             "完全不使用分区，让输出目录保持扁平、不分层",
-            "用 partitionBy 按有意义的低/中基数列分区，并使用 Parquet"
+            "按日期等合适维度分区并使用 Parquet，文件数量另外管理"
           ],
           "correct_index": 3,
-          "explanation": "Parquet 列式压缩 + 按有意义的维度分区，既减少小文件又利于分区裁剪；避免用高基数/唯一 ID 列分区。",
+          "explanation": "目录分区可支持按分区列过滤时跳过无关目录，但不保证减少小文件；文件数量还受任务数、数据分布、追加频率等因素影响。",
           "dimension": "apply"
         },
         {
@@ -2713,7 +2713,7 @@
             "filter / groupBy / orderBy / write 都是 Transformation，只有 read 是 Action"
           ],
           "correct_index": 1,
-          "explanation": "read / filter / withColumn / groupBy / orderBy 都是惰性 Transformation，只有 write（或 show/count）这类 Action 才触发执行。",
+          "explanation": "列出的 filter、withColumn、groupBy 和 orderBy 是惰性变换；write 请求写出结果。读取器返回 DataFrame，但文件发现或 Schema 推断可能提前执行，不能把所有读取准备都归为零工作。",
           "dimension": "concept"
         },
         {
@@ -2722,11 +2722,11 @@
           "options": [
             "能显著加快最终写出的速度",
             "能自动减少需要写出的数据量",
-            "避免把计算错误的聚合结果直接落盘",
+            "有助于发现样本中的计算错误；全量正确性还需其他检查",
             "能避免触发任何 Shuffle 操作"
           ],
           "correct_index": 2,
-          "explanation": "先 show 验证聚合与类型正确，再 write，可避免把错误数据直接写进文件。",
+          "explanation": "show 抽查可以发现部分问题，但不能证明全量正确。应结合字段、行数、总量与关键明细核对。",
           "dimension": "apply"
         },
         {
@@ -2760,12 +2760,12 @@
           "prompt": "以下关于这个迷你 ETL 链路的错误说法是？",
           "options": [
             "filter 的多条件必须用 & 号，并且每个条件都要单独加括号",
-            "整条链路只有最后的 Action 才触发执行，所以 read 也会立即执行",
+            "Action 前读取器绝不会读取文件，即使启用了 CSV inferSchema",
             "groupBy 与 orderBy 通常各自都会触发一次 Shuffle 操作",
             "write 才是真正触发整条链路执行的那个 Action（动作）"
           ],
           "correct_index": 1,
-          "explanation": "惰性指「只有 Action 才触发」，并不意味着 read 是 Action——read 是 Transformation，只是记账，只有 write/show/count 才是触发点。",
+          "explanation": "该说法错误：CSV inferSchema 需要额外遍历数据；文件发现、元数据获取等工作也可能提前发生。惰性求值不等于读入阶段零工作。",
           "dimension": "concept"
         },
         {
@@ -2788,10 +2788,10 @@
             "因为 show 的执行速度比 write 更快一些",
             "因为 write 本身不支持数据量较大的表",
             "因为 show 在语法上必须写在 write 前面",
-            "避免把错误/脏数据写入存储，且 write 一旦执行代价高"
+            "有助于尽早发现样本错误，再结合指标验收决定是否交付"
           ],
           "correct_index": 3,
-          "explanation": "write 是昂贵的 Action 且会落盘；先 show/limit 抽查可尽早拦截错误。",
+          "explanation": "先抽查能尽早暴露部分错误，但 show 不是全量正确性证明，也不缓存或自动加速后续 write。",
           "dimension": "why"
         },
         {
@@ -2809,15 +2809,15 @@
         },
         {
           "type": "single_choice",
-          "prompt": "链路写好运行却『一直卡着没输出』，最可能的原因是？",
+          "prompt": "已创建 df，执行 result = df.filter(df.amount > 0) 后语句很快返回但没有数据行打印，合理解释是？",
           "options": [
             "Python 进程本身崩溃了，需要重启一下内核才可以恢复运行",
-            "整条链全是 Transformation，缺少 Action（write/show）触发",
+            "result 只保存查询描述；show/count/write 等 Action 才请求结果",
             "数据为空的时候一定会出现这种一直卡住不动的现象",
             "显示器的刷新问题，和计算本身其实并没有任何关系"
           ],
           "correct_index": 1,
-          "explanation": "若只有 Transformation 没有 Action，就不会有任何 Job 执行，看起来像『卡住』。",
+          "explanation": "构建变换查询没有输出，不等于进程卡住。需要先区分尚未请求结果与已提交任务但执行缓慢，后者要结合 UI 和日志诊断。",
           "dimension": "debug"
         },
         {
@@ -5545,10 +5545,10 @@
             "把文件在磁盘上物理劈开",
             "数据先回 Driver 再中转分发",
             "一种本地磁盘排序算法",
-            "跨节点按 key 重新分布数据"
+            "按分区规则重新分布数据，可能读本地或远端交换数据"
           ],
           "correct_index": 3,
-          "explanation": "Shuffle 是宽依赖时跨节点按 key 重分布数据的物理过程。",
+          "explanation": "Shuffle 重分布数据到目标分区，可以在单机多分区中发生；跨机器网络不是每条记录必经的条件。",
           "dimension": "concept"
         },
         {
@@ -5556,25 +5556,25 @@
           "prompt": "为什么 groupBy / orderBy 通常会触发 Shuffle？（join 要分策略）",
           "options": [
             "因为这类操作必须把数据先全部拉回 Driver 端汇总，再重新下发给各工人",
-            "需要全局按 key 汇聚 / 全局有序，通常要跨节点重排（上游已按该 key 分区时可省）",
+            "需要满足分组或排序的分布要求，上游不满足时通常重分布",
             "因为 Spark 出于稳妥，会对每一个算子都强制插入一次重排",
             "因为要先把中间结果写进磁盘排序、读完才能交给下一步处理"
           ],
           "correct_index": 1,
-          "explanation": "这些操作需要「全局按 key 汇聚或全局有序」，通常要跨节点重排。例外：上游已按该 key 分区时不插 Exchange；join 走 Broadcast Join 时小表侧也不产生 ShuffleExchange。",
+          "explanation": "聚合需要同键汇合，全局排序通常需要范围分布。上游分布已满足要求时可能不新增交换，具体看执行计划。",
           "dimension": "why"
         },
         {
           "type": "single_choice",
           "prompt": "写下 df.groupBy('city').count() 触发 Action 后，Shuffle 阶段发生什么？",
           "options": [
-            "按 city 哈希、序列化、跨网络发到目标 Executor、反序列化归并",
+            "按 city 分区，目标端读取本地或远端交换数据并归并",
             "数据先回 Driver 汇总成一份再分发给各工人",
             "数据完全不移动，直接在本地就地计算",
             "只做本地排序，从不跨网络做传输"
           ],
           "correct_index": 0,
-          "explanation": "map 端按 key 分区/combine、序列化、网络传输到目标端、反序列化归并，完成跨节点重排。",
+          "explanation": "哈希聚合可先局部预聚合，再写出分区化中间数据；目标任务读取对应数据。本地读取不必跨机器网络，Driver 不承担全量中转。",
           "dimension": "mechanism"
         },
         {
@@ -5584,10 +5584,10 @@
             "Scan",
             "Project",
             "Filter",
-            "Exchange"
+            "ShuffleExchange，例如明确标注 hashpartitioning 的 Exchange"
           ],
           "correct_index": 3,
-          "explanation": "Exchange 节点就是 Shuffle 的物理信号，复用 L4 的读法。",
+          "explanation": "明确的 ShuffleExchange 是重分布线索；BroadcastExchange 不是同一种交换，不能把一切 Exchange 名称等同于 Shuffle。",
           "dimension": "apply"
         },
         {
@@ -5609,11 +5609,11 @@
           "options": [
             "先回 Driver 中转再发下去",
             "只在单个磁盘内部移动",
-            "Executor 之间直接互传",
+            "任务写出并读取 Shuffle 分区数据，可在本地或远端获取",
             "经网络发到客户端浏览器"
           ],
           "correct_index": 2,
-          "explanation": "Shuffle 是 Executor 之间跨节点互传，Driver 不抱数据。",
+          "explanation": "集群任务从对应的 Shuffle 数据块中读取，可能本地也可能远端；不要求先把所有业务数据送回 Driver。",
           "dimension": "concept"
         },
         {
@@ -5623,23 +5623,23 @@
             "它根本不改变任何代码的逻辑结构",
             "它只在内存里做一次轻量排序",
             "它其实非常快，性能可忽略不计",
-            "它涉及跨节点重分布（序列化+网络+反序列化+排序）"
+            "可能涉及序列化、磁盘读写、网络读取及排序或聚合"
           ],
           "correct_index": 3,
-          "explanation": "跨节点重分布带来多环节开销，是作业中最昂贵的操作之一。",
+          "explanation": "交换代价取决于实际字节数、读写、网络与处理开销；不代表每条记录都跨机器，也不意味着所有 Shuffle 都有同样成本。",
           "dimension": "why"
         },
         {
           "type": "single_choice",
-          "prompt": "df.groupBy('city').count().explain() 会显示几个 Stage？",
+          "prompt": "在简化教学 DAG 中，仅一处 Shuffle 边界、没有其他分支，边界前后可分为几段计算？",
           "options": [
             "1 个（不切 Stage）",
-            "2 个（1 次 Shuffle 切出）",
+            "2 段（单一 Shuffle 边界前后）",
             "0 个（没有 Stage）",
             "10 个（每算子一个）"
           ],
           "correct_index": 1,
-          "explanation": "1 次 Exchange（Shuffle）→ 2 个 Stage（本地预聚合 / 跨节点合并）。",
+          "explanation": "仅在本题明确限定的简化单边界 DAG 中按两段理解。真实 SQL/AQE 作业不能只用静态 explain 的 Exchange 数机械推断最终 Stage 数。",
           "dimension": "mechanism"
         },
         {
@@ -5648,24 +5648,24 @@
           "options": [
             "说明代码写错了，必须立刻改",
             "说明最终结果一定会算错",
-            "注意这是 Shuffle，是性能重点信号",
+            "先确认是否为 ShuffleExchange，再检查其目的与实际代价",
             "无需关心，这只是正常现象"
           ],
           "correct_index": 2,
-          "explanation": "Exchange = Shuffle，是性能重点信号，但未必是错误。",
+          "explanation": "Shuffle 信号值得检查，不代表结果错误；BroadcastExchange 等交换节点需与 ShuffleExchange 区分。",
           "dimension": "apply"
         },
         {
           "type": "single_choice",
           "prompt": "关于「Shuffle 能否避免」，正确的是？",
           "options": [
-            "通常需要；上游已按该 key 分区或走 Broadcast Join 时可省",
+            "可能减少；取决于上游分布是否满足需求以及所用算法",
             "永远可以靠配置一个参数就彻底避免 Shuffle 的发生",
             "Shuffle 在 Spark 里永远不可能发生，这只是谣言",
             "只有 join 这一种操作才会触发 Shuffle"
           ],
           "correct_index": 0,
-          "explanation": "宽依赖的通常代价：需要全局按 key 汇聚时才发生；上游已按该 key 分区、或 join 走 Broadcast Join，都可以省掉。",
+          "explanation": "重分布能否省去取决于所需分布与已有分布；广播连接可避免某些连接端的 Shuffle，但不能据此承诺整条查询没有任何交换。",
           "dimension": "comparison"
         }
       ]
@@ -7744,36 +7744,36 @@
             "会执行一遍并输出真实耗时",
             "能显示每个 key 有多少条数据",
             "能自动帮你优化代码",
-            "只打印执行计划、不触发执行，零成本"
+            "用于查看计划，不提供此次运行的完整实际耗时"
           ],
           "correct_index": 3,
-          "explanation": "explain 是静态窥视（复用 L4），不执行、零成本；key 分布这类运行时信息它看不到。",
+          "explanation": "explain 展示计划，通常不执行完整结果查询；分析、优化与元数据准备仍有成本，不能称为绝对零成本。运行后的 AQE 最终计划也要结合实际执行查看。",
           "dimension": "mechanism"
         },
         {
           "type": "single_choice",
-          "prompt": "在 Spark UI 里看到「Task 耗时最大值远大于中位数」，最可能的结论是？",
+          "prompt": "Spark UI 中 Task 最大耗时远大于中位数，仅凭这条信息，合理判断是？",
           "options": [
             "分区数太少",
-            "存在数据倾斜（个别 Task 数据量爆炸）",
+            "存在拖尾；把倾斜当待验证假设，再联查任务数据量等证据",
             "代码有语法错误",
             "网络带宽不足"
           ],
           "correct_index": 1,
-          "explanation": "耗时分布极不均是倾斜的典型信号；分区太少会表现为并行度不足而非长尾。",
+          "explanation": "耗时长尾可来自数据量差异、资源竞争、GC、重试或其他原因；需要结合每任务读取量、处理量和资源指标验证，不能仅凭耗时断言已证明倾斜。",
           "dimension": "apply"
         },
         {
           "type": "single_choice",
           "prompt": "explain 与 Spark UI 的分工，正确的是？",
           "options": [
-            "explain 看静态计划（零成本），Spark UI 看运行时（耗时分布/spill/Shuffle 量）",
+            "explain 看计划结构；Spark UI 联看实际耗时、数据量与资源",
             "两者完全等价，看一个就够",
             "explain 更准，UI 只是参考",
             "UI 只能在作业失败后查看"
           ],
           "correct_index": 0,
-          "explanation": "计划相同 ≠ 运行时相同（L4 埋下的伏笔）：explain 定方向，UI 定位置。",
+          "explanation": "计划和运行指标互补；相同计划在不同数据与资源下耗时可能不同。查看计划本身有分析准备成本，不称为零成本。",
           "dimension": "comparison"
         },
         {
@@ -7791,15 +7791,15 @@
         },
         {
           "type": "single_choice",
-          "prompt": "为什么改非瓶颈处等于白改？",
+          "prompt": "为什么调优通常先定位关键路径上的瓶颈？",
           "options": [
             "因为 Spark 会忽略你的改动",
-            "木桶效应：整体耗时由最慢的 Stage/Task 决定，其他处提速不改善总耗时",
+            "关键路径上的瓶颈通常应优先，其他改动收益也需实测",
             "因为参数有缓存",
             "因为改动会被 Catalyst 回滚"
           ],
           "correct_index": 1,
-          "explanation": "先找出最慢的那道工序；改完一处还要重新度量，因为瓶颈会转移。",
+          "explanation": "作业耗时还受串行、并行、资源竞争与调度影响；不能把整体耗时简化为某个最长任务的唯一函数，也不能断言非瓶颈处任何改动都零收益。",
           "dimension": "why"
         },
         {
@@ -7822,10 +7822,10 @@
             "把 shuffle 分区数翻倍",
             "给所有表加 cache",
             "重启集群",
-            "explain 看计划 + Spark UI 看运行时，先定位瓶颈类别"
+            "对照基线与输入资源条件，结合计划和运行指标定位"
           ],
           "correct_index": 3,
-          "explanation": "先量后动是第 1 课的核心：explain 零成本看方向，UI 看真实耗时与分布。",
+          "explanation": "先确认输入和运行条件，再结合计划与指标提出可检验假设。缺少条件时明确承认信息不足；不靠配置名称猜答案。",
           "dimension": "apply"
         },
         {
@@ -7833,12 +7833,12 @@
           "prompt": "关于「减量」与「调速」的关系，正确的是？",
           "options": [
             "两者收益相当，先做哪个都行",
-            "减量优先：能不读的数据就别读，这通常比任何参数都有效",
+            "先检查可保持语义的减量机会，再测量实际收益",
             "调速优先，减量只影响代码美观",
             "减量只对小数据集有效"
           ],
           "correct_index": 1,
-          "explanation": "少读少传省的是数量级的 I/O 与网络，远大于参数微调，这是第 8 课的主题。",
+          "explanation": "少读、少传可能减少负担，但效果取决于工作负载、已有优化与资源状况，不能保证总比任何参数调整有效。",
           "dimension": "comparison"
         }
       ]

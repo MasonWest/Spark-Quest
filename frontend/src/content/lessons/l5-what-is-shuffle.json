@@ -1,0 +1,302 @@
+{
+  "slug": "l5-what-is-shuffle",
+  "version": 3,
+  "title": "让分散的地区成绩汇合",
+  "mission": "两份分区都算完了，为什么还没得到最终答案？从数据放在哪里开始，亲手推演一次按键汇合。",
+  "correction": "Shuffle 是跨分区重分布，可能读取本地或远端 Shuffle 数据，不要求每条记录都经过跨机器网络；local 模式也可以有 Shuffle。计划中的 ShuffleExchange 是线索，BroadcastExchange 不是同一种交换；AQE 下最终 Stage 数要结合实际执行确认。",
+  "source": "https://spark.apache.org/docs/3.5.6/rdd-programming-guide.html#shuffle-operations",
+  "next": "现在你能解释为什么需要重分布。下一课再拆它的成本：序列化、磁盘、网络与等待。",
+  "tasks": [
+    {
+      "id": "local-is-not-global",
+      "title": "两位工人都算对了，答案怎么还是两份？",
+      "intro": "以下是两个输入分区；位置固定仅用于推演，不代表真实集群总是两台机器。目标是每个地区最终只交一条销售总额。",
+      "code": "目标：按 region 汇总 amount\n分区 A：north 120、south 200\n分区 B：north 80、east 60",
+      "prompt": "只做各分区内求和，north 会出现什么结果？",
+      "fields": [
+        {
+          "id": "north-partials",
+          "label": "局部结果",
+          "correctOptionId": "two",
+          "options": [
+            {
+              "id": "one",
+              "text": "一条 north 200",
+              "feedback": "200 是全局答案，但两份分区还没有合并彼此的贡献。"
+            },
+            {
+              "id": "two",
+              "text": "两条：A 中 north 120，B 中 north 80",
+              "feedback": "对，各自算对只能得到局部答案；同一个 key 仍在两处。"
+            },
+            {
+              "id": "lost",
+              "text": "north 会被去重，只保留 120",
+              "feedback": "求和不是按键随意丢掉一条记录，80 也必须贡献到最终金额。"
+            }
+          ]
+        }
+      ],
+      "insight": "局部完成与全局完成不是一回事。现在问题变成：同一地区的局部答案应在哪里碰头？",
+      "ability": "识别局部结果不足以完成全局聚合",
+      "knowledgeIds": [
+        "shuffle.local-global"
+      ],
+      "reading": {
+        "id": "why-local-is-not-global",
+        "title": "为什么各自算完还不够？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "你刚才得到 north 的两份局部答案，正好对应原文中的问题：数据分散在各处，但需求要的是每个地区的一份总结果。先认识这种“分散位置与计算目标不匹配”，再去理解为什么需要重分布。",
+        "boundary": "“同 key 凑到一起”指最终聚合需要汇合这个键的贡献，不要求把每条原始明细原封不动搬到一起。支持局部预聚合时，可以先把每个分区的明细缩成局部结果；也不能由这句话断定任何查询必然增加一次交换。"
+      }
+    },
+    {
+      "id": "route-partial-keys",
+      "title": "给每份局部结果选一个去处",
+      "intro": "本题明确指定教学路由：north 和 east 去目标分区 X，south 去目标分区 Y。真实 Spark 使用所选分区器计算目标，这里不模拟真实哈希值。",
+      "code": "局部预聚合后：\nA → (north,120)、(south,200)\nB → (north,80)、(east,60)",
+      "prompt": "把两份 north 发往哪个目标，才能在同一处继续合并？",
+      "fields": [
+        {
+          "id": "from-a",
+          "label": "A 的 north 120",
+          "correctOptionId": "x",
+          "options": [
+            {
+              "id": "x",
+              "text": "目标 X",
+              "feedback": "对，按已指定路由，north 进入 X。"
+            },
+            {
+              "id": "y",
+              "text": "目标 Y",
+              "feedback": "本题 north 指定去 X；同键必须遵守同一路由。"
+            },
+            {
+              "id": "driver",
+              "text": "先送 Driver 求总和",
+              "feedback": "Driver 负责调度，不是把所有业务数据收回来集中求和的中转站。"
+            }
+          ]
+        },
+        {
+          "id": "from-b",
+          "label": "B 的 north 80",
+          "correctOptionId": "x",
+          "options": [
+            {
+              "id": "y",
+              "text": "目标 Y",
+              "feedback": "这会把同键贡献分开，X 仍缺少 80。"
+            },
+            {
+              "id": "x",
+              "text": "目标 X",
+              "feedback": "对，两份 north 都到 X，之后可以合并成 200。"
+            },
+            {
+              "id": "stay",
+              "text": "留在 B，不参与后续",
+              "feedback": "80 不能被遗漏；它也应参与全局 north 合计。"
+            }
+          ]
+        }
+      ],
+      "insight": "按键路由可以把不同输入分区中同键的贡献送到同一个目标分区。并非不同 key 就一定进不同分区：本题 east 与 north 都在 X。",
+      "ability": "按指定分区规则推演同键汇合",
+      "knowledgeIds": [
+        "shuffle.key-routing"
+      ],
+      "table": {
+        "caption": "本题规定的目标路由",
+        "columns": [
+          "地区键",
+          "目标分区"
+        ],
+        "rows": [
+          [
+            "north",
+            "X"
+          ],
+          [
+            "south",
+            "Y"
+          ],
+          [
+            "east",
+            "X"
+          ]
+        ]
+      },
+      "reading": {
+        "id": "same-key-mental-model",
+        "title": "同 key 为什么要碰头？",
+        "startMarker": "【一个直观的心智模型】",
+        "endMarker": "⚠️ 比喻的边界",
+        "connection": "刚才 A 和 B 的 north 都被送到 X，是为了让同一个地区的贡献在同一处合并。原文里“货按 key 重新落到托盘”，说的正是这种分布调整；目标不满足所需分布时，这就可能需要 Shuffle。",
+        "boundary": "“把货抛到空中”只是帮你想象记录改变归属，不代表每条数据都要跨机器飞一遍；本地也能读取 Shuffle 数据。本题把 north 和 east 都分给 X，也说明不同 key 可以共用一个目标分区。若上游分布已经满足要求，可能不需要新增这次交换。",
+        "sectionTitle": "一个直观的心智模型"
+      }
+    },
+    {
+      "id": "combine-before-transfer",
+      "title": "需要搬的是所有原始明细吗？",
+      "intro": "假设 A 中还有两笔 north：30、50。目标仅是整数金额求和，不需要保留原始列表。",
+      "code": "A 的 north 明细：120、30、50\nB 的 north 明细：80\n目标：sum(amount)",
+      "prompt": "若使用支持局部预聚合的求和，A 可以先传什么？",
+      "fields": [
+        {
+          "id": "payload",
+          "label": "A 的 north 贡献",
+          "correctOptionId": "partial",
+          "options": [
+            {
+              "id": "partial",
+              "text": "(north, 200) 这一份局部和",
+              "feedback": "对，120+30+50=200，B 的 80 之后再合并，最终 280。"
+            },
+            {
+              "id": "first",
+              "text": "只传 (north,120)，其余忽略",
+              "feedback": "漏掉 30 与 50 会改变业务结果。"
+            },
+            {
+              "id": "all",
+              "text": "任何求和都必须原样发送三笔明细",
+              "feedback": "整数求和可以组合局部结果；支持预聚合时不一定要发送所有明细。"
+            }
+          ]
+        }
+      ],
+      "insight": "局部预聚合能减少需要交换的记录；并非所有聚合都能缩成一个简单数字，也不能据此假定每个查询都采用同一种策略。",
+      "ability": "理解局部预聚合如何减少交换内容",
+      "knowledgeIds": [
+        "shuffle.partial-aggregation"
+      ],
+      "reading": {
+        "id": "partial-aggregation-in-runtime",
+        "title": "原文里的“预聚合”到底提前做了什么？",
+        "sectionTitle": "Spark 内部发生了什么",
+        "startMarker": "【写下代码后，Spark 内部发生了什么】",
+        "endMarker": "这一「序列化",
+        "connection": "A 中的 120、30、50 先变成局部和 200，再与 B 的 80 合并成 280。这就是原文“在本地做预聚合”在本题整数求和中的具体含义：先在各自位置压缩贡献，再汇合局部结果。",
+        "boundary": "原文使用 count() 说明内部过程，本题用整数 sum 展示同类的局部组合思路，不是说所有聚合都只发送一个数字。Stage 0/1 是简化叙述，不是固定编号；“经网络”也不表示 local 模式必然跨机器。能否预聚合、交换多少数据，需要结合实际算子和计划。"
+      }
+    },
+    {
+      "id": "recognize-exchange",
+      "title": "给刚才的动作找到一个计划线索",
+      "intro": "下面是教学用的简化物理计划，按数据流从下往上读。省略了版本相关包装节点。",
+      "code": "最终聚合：按 region 合并局部和\n  Exchange hashpartitioning(region, 2)\n    局部聚合：每个输入分区先求和\n      数据扫描",
+      "prompt": "哪一层最直接对应刚才的“按 region 重新分发”？",
+      "fields": [
+        {
+          "id": "plan-node",
+          "label": "定位计划节点",
+          "correctOptionId": "exchange",
+          "options": [
+            {
+              "id": "scan",
+              "text": "数据扫描",
+              "feedback": "扫描负责读输入，不能单凭扫描说明数据已经按 region 汇合。"
+            },
+            {
+              "id": "exchange",
+              "text": "这里的哈希分区 Exchange",
+              "feedback": "对，这里的 Exchange 明确执行按 region 的分区交换。"
+            },
+            {
+              "id": "final",
+              "text": "最终聚合的输出列名",
+              "feedback": "最终结果列名不描述中间如何分发数据。"
+            }
+          ]
+        }
+      ],
+      "insight": "这里特指哈希分区交换。不能把所有名字带 Exchange 的节点都当成相同动作；例如广播交换与 ShuffleExchange 不同。",
+      "ability": "将分区推演对应到计划里的交换节点",
+      "knowledgeIds": [
+        "shuffle.plan-signal"
+      ],
+      "reading": {
+        "id": "definition-and-plan-signal",
+        "title": "这个 Exchange，和 Shuffle 的定义怎么对应？",
+        "sectionTitle": "正式的技术定义",
+        "startMarker": "【正式的技术定义】",
+        "endMarker": "【写下代码后，Spark 内部发生了什么】",
+        "connection": "你刚才找到的 Exchange 明确写着 hashpartitioning(region, 2)，说明这里要按 region 重分布给两个目标分区。它把前面“让同键贡献汇合”的要求，落实成了计划中的分布调整。",
+        "boundary": "原文为便于入门把 Exchange 概括成 Shuffle 信号；准确阅读时还要看交换类型，BroadcastExchange 不能直接等同于 ShuffleExchange。广播连接也不代表它的上下游一定没有别的 Shuffle。静态计划不等于 AQE 最终运行图，不能只按 Exchange 数机械计算真实 Stage 数。"
+      }
+    },
+    {
+      "id": "local-fetch-and-hot-key",
+      "title": "只有一台电脑，就不会有 Shuffle 吗？",
+      "intro": "现在把同一求和逻辑放到 local 模式，仍有多个输入和目标分区。另一份真实输入里，90% 的记录又恰好都是 north。",
+      "code": "情境 A：单机，多分区，按 key 重分布\n情境 B：很多原始记录属于 north",
+      "prompt": "分别判断执行行为和接下来值得检查的风险。",
+      "fields": [
+        {
+          "id": "local-shuffle",
+          "label": "情境 A",
+          "correctOptionId": "exists",
+          "options": [
+            {
+              "id": "none",
+              "text": "没有跨机器网络，所以一定没有 Shuffle",
+              "feedback": "Shuffle 不以跨机器传输为必要条件；也可以读取本地交换数据。"
+            },
+            {
+              "id": "exists",
+              "text": "仍可能有 Shuffle，数据在分区间重分布",
+              "feedback": "对，不能把网络跨机器与分区重分布画等号。"
+            },
+            {
+              "id": "driver",
+              "text": "自动变成 Driver 中央汇总",
+              "feedback": "local 模式并不意味着每个算子自动变成 Driver 集中汇总。"
+            }
+          ]
+        },
+        {
+          "id": "hot-key",
+          "label": "情境 B",
+          "correctOptionId": "check",
+          "options": [
+            {
+              "id": "check",
+              "text": "检查目标分区工作量与任务耗时是否失衡",
+              "feedback": "对，热点键提示风险，但局部预聚合和实际操作会改变最终工作量，要看执行证据。"
+            },
+            {
+              "id": "guaranteed",
+              "text": "看到 90% 就断定任何聚合必然同样慢",
+              "feedback": "整数求和可先局部合并，所以原始键频率不直接等于最终任务成本。"
+            },
+            {
+              "id": "more",
+              "text": "随意增加分区数就一定能拆开 north",
+              "feedback": "普通按键分区会把同一个 north 映射到同一目标；增加分区不保证把该键拆开。"
+            }
+          ]
+        }
+      ],
+      "insight": "你已区分三个层次：为什么要汇合、怎么按键汇合、汇合后是否失衡。最后一个问题要留给指标验证。",
+      "ability": "辨认 Shuffle 定义边界并提出倾斜检查假设",
+      "knowledgeIds": [
+        "shuffle.local-remote",
+        "shuffle.hot-key"
+      ],
+      "reading": {
+        "id": "necessary-shuffle-and-observed-cost",
+        "title": "看到 Shuffle，为什么不该先想着消灭它？",
+        "sectionTitle": "比喻的边界：通常需要与例外",
+        "startMarker": "① ",
+        "endMarker": "② ",
+        "connection": "你刚才分别做了两个判断：local 模式仍可有分区重分布；热点键只是检查任务失衡的线索。它们共同提醒你，先判断这次交换是否为需求所需，再用指标评估代价，不能把“有 Shuffle”当成错误判决。",
+        "boundary": "原文中的“可以省掉”取决于上游分布是否满足当前算子要求；不能只看曾经 repartition 过就保证之后不交换。热点键的原始频率也不直接等于最终任务耗时：预聚合可能显著减少数据量。反过来，单机执行也不等于没有 Shuffle，只是读取可能都在本地。"
+      }
+    }
+  ]
+}

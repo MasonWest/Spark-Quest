@@ -1,0 +1,23 @@
+.shell-layout { min-height: 100dvh; }
+.shell-sidebar { position: fixed; inset: 0 auto 0 0; width: 248px; background: var(--sq-card-bg); border-right: 2px solid var(--sq-border); padding: calc(32px + env(safe-area-inset-top)) 22px 24px; display: flex; flex-direction: column; z-index: 20; }
+.shell-brand { display: flex; align-items: center; gap: 7px; color: var(--sq-primary); font-size: 29px; font-weight: 900; letter-spacing: -1.5px; text-decoration: none; }
+.shell-brand img { width: 42px; height: 42px; border-radius: 12px; }
+.shell-brand span { color: var(--sq-text); }
+.shell-caption { font-size: 11px; color: var(--sq-text-muted); margin: 14px 0 38px; }
+.shell-nav { display: grid; gap: 12px; }
+.shell-nav-link { display: flex; align-items: center; gap: 15px; min-height: 56px; padding: 10px 15px; border: 2px solid transparent; border-radius: 16px; color: var(--sq-text-muted); text-decoration: none; }
+.shell-nav-link > span { font-size: 28px; line-height: 1; width: 30px; text-align: center; }
+.shell-nav-link:hover { background: var(--sq-bg); }
+.shell-nav-link.shell-active { color: var(--sq-primary); background: var(--sq-primary-light); border-color: var(--sq-primary-border); }
+.shell-note { margin-top: auto; padding: 18px 10px; font-size: 13px; color: var(--sq-text-muted); line-height: 1.8; }
+.shell-note span { font-weight: 800; color: var(--sq-text); }
+.shell-note p { margin-bottom: 0; }
+.shell-content { margin-left: 248px; padding-top: env(safe-area-inset-top); }
+@media(max-width: 760px) {
+  .shell-sidebar { inset: auto 0 0; width: auto; padding: 7px max(8px, env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); border-right: 0; border-top: 2px solid var(--sq-border); }
+  .shell-brand, .shell-caption, .shell-note { display: none; }
+  .shell-nav { grid-template-columns: repeat(4, 1fr); gap: 4px; }
+  .shell-nav-link { flex-direction: column; gap: 3px; padding: 5px 2px; min-height: 56px; border-radius: 12px; font-size: 10px; }
+  .shell-nav-link > span { font-size: 24px; }
+  .shell-content { margin-left: 0; padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+}

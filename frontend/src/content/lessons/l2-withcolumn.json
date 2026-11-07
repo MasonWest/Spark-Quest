@@ -1,0 +1,183 @@
+{
+  "slug": "l2-withcolumn",
+  "version": 1,
+  "title": "给每笔订单贴上标签",
+  "mission": "运营要在原始订单旁加上千元金额和大额标签。今天只加工列，不丢掉订单。",
+  "correction": "withColumn 返回新 DataFrame；同名替换只发生在返回的查询中。NULL 条件不会自动进入 when 的 true 分支；未命中时走 otherwise，省略 otherwise 则返回 NULL。",
+  "source": "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.withColumn.html",
+  "next": "订单有了新字段。下一课决定怎么排、怎么判重，以及哪些操作不能保证保留最大的一条。",
+  "tasks": [
+    {
+      "id": "step-eee3d903be",
+      "knowledgeIds": [
+        "withcolumn"
+      ],
+      "title": "把元换成千元，别动原金额",
+      "intro": "amount=120，要新增 amount_k=0.12；保留原来的 amount，方便核对。",
+      "code": "from pyspark.sql import functions as F\nenriched = orders.withColumn(__A__, __B__)",
+      "prompt": "补齐新列名和逐行表达式。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：新列名",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "\"amount\"",
+              "feedback": "同名会在返回结果中替换 amount，不符合保留原金额的要求。"
+            },
+            {
+              "id": "option-2",
+              "text": "\"amount_k\"",
+              "feedback": "对，使用新名字，原始 amount 继续保留。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"region\"",
+              "feedback": "region 是已有地区列，这会替换地区，破坏原来的字段含义。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "B：千元表达式",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.col(\"amount\") / 1000.0",
+              "feedback": "对，120 / 1000 = 0.12；不同订单按各自金额计算。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.lit(1000)",
+              "feedback": "这是每行放同一个常量 1000，不是换算金额。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.col(\"amount\") * 1000.0",
+              "feedback": "这是放大金额，与元换千元的方向相反。"
+            }
+          ]
+        }
+      ],
+      "insight": "withColumn 的第二个参数描述每一行如何生成新值，不是先在 Python 里算好一个整列表。",
+      "ability": "新增计算列并保留原值"
+    },
+    {
+      "id": "step-2117be145c",
+      "knowledgeIds": [
+        "withcolumn"
+      ],
+      "title": "给整批订单盖一个来源章",
+      "intro": "这批数据来自 web 渠道，需要每行都增加 source='web'，而不是从名为 web 的列取值。",
+      "code": "tagged = orders.withColumn(\"source\", __A__)",
+      "prompt": "哪种表达式能生成固定文本常量？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：常量列",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.col(\"web\")",
+              "feedback": "col('web') 引用名为 web 的列；本题没有这列。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.lit(\"web\")",
+              "feedback": "对，lit 把固定值包装成 Column 表达式。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"web\"",
+              "feedback": "withColumn 的第二个参数需要 Column；裸字符串不能充当这里的常量列。"
+            }
+          ]
+        }
+      ],
+      "insight": "列引用用 col，固定值用 lit。先弄清你要的是“取已有字段”还是“给定一个值”。",
+      "ability": "区分列引用与常量表达式"
+    },
+    {
+      "id": "step-b387e09c4f",
+      "knowledgeIds": [
+        "withcolumn"
+      ],
+      "title": "空金额也被贴成普通单，哪里漏了？",
+      "intro": "业务约定 amount>=100 为大额，已知且小于 100 为普通，空金额应标为待核对。先检查当前写法。",
+      "code": "tagged = orders.withColumn(\n  \"tag\", F.when(F.col(\"amount\") >= 100, \"大额\")\n          .otherwise(\"普通\")\n)\n# 输入 amount: 120, 80, null",
+      "prompt": "当前代码给 null 金额贴了什么标签？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "推演分支",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "大额",
+              "feedback": "null >= 100 不为 true，不能命中大额分支。"
+            },
+            {
+              "id": "option-2",
+              "text": "普通",
+              "feedback": "对，未知条件没有命中 when，进入 otherwise。这不满足业务要求，需要单独处理空值。"
+            },
+            {
+              "id": "option-3",
+              "text": "待核对",
+              "feedback": "代码没有写待核对分支，业务希望如此不等于程序已经如此。"
+            }
+          ]
+        }
+      ],
+      "insight": "修复方式：F.when(F.col('amount').isNull(), '待核对').when(F.col('amount') >= 100, '大额').otherwise('普通')。先明确未知状态，再判断数值。",
+      "ability": "识别条件列中的空值分支遗漏"
+    },
+    {
+      "id": "step-c872654bbc",
+      "knowledgeIds": [
+        "withcolumn"
+      ],
+      "title": "同名替换，会改掉原查询吗？",
+      "intro": "这次有意把返回结果里的金额换成千元，但原 orders 仍要保留元。",
+      "code": "converted = orders.withColumn(\"amount\", F.col(\"amount\") / 1000.0)\n# 原 orders 中某行 amount = 120",
+      "prompt": "对该行，orders 与 converted 的 amount 分别是什么？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "判断两个查询",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "orders=0.12，converted=0.12",
+              "feedback": "返回新查询，不会因为列同名就原地更改 orders。"
+            },
+            {
+              "id": "option-2",
+              "text": "orders=120，converted=120",
+              "feedback": "converted 的表达式确实做了除以 1000 的换算。"
+            },
+            {
+              "id": "option-3",
+              "text": "orders=120，converted=0.12",
+              "feedback": "对，同名覆盖作用于返回的 DataFrame，原始查询不变。"
+            }
+          ]
+        }
+      ],
+      "insight": "生成、命名和保存三件事都要明确。它们决定下游拿到的是原金额、新金额，还是一列没有被接住的结果。",
+      "ability": "推演同名列替换与 DataFrame 不可变性"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-eee3d903be",
+    "step-2117be145c",
+    "step-b387e09c4f",
+    "step-c872654bbc"
+  ]
+}

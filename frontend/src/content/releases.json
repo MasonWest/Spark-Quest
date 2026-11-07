@@ -1,0 +1,50 @@
+{
+  "l2-comprehensive": {
+    "version": 1,
+    "hash": "f4aad4beac00bd7d29219238ab369f491eafde9623ff89f69d7ca79799778a76"
+  },
+  "l2-create-dataframe": {
+    "version": 1,
+    "hash": "4eb6e09f330e30aee79b84071e7a8f959d8ca5a118839ba79e2001be0a86db7c"
+  },
+  "l2-groupby-agg": {
+    "version": 1,
+    "hash": "6587f017783e57169ed69f48bd28f11efc722fa75486e061029727d0065cc6f5"
+  },
+  "l2-inspect": {
+    "version": 1,
+    "hash": "16680a3bfb1c274f7932746bdb071900135d2b6e17f0bd03557c5abee8be55ec"
+  },
+  "l2-schema-types": {
+    "version": 1,
+    "hash": "4a2b24b245a647f7be5746cc454a41829b3b2b62bc09f083dea4109dfe379a07"
+  },
+  "l2-select-filter": {
+    "version": 1,
+    "hash": "bb8c0eb5bb2646dfcf4bf5d948e4898683340fbad3f138ee01abc7742be3fc66"
+  },
+  "l2-sort-dedup": {
+    "version": 1,
+    "hash": "6e2639dd48f560dcc4da351f531262e18b65759856a1c7e1bf4b45be9bbe2a3b"
+  },
+  "l2-what-is-dataframe": {
+    "version": 1,
+    "hash": "0567584cf6b673d66e3a5e3a9700ed71870f2f066187d850bfc5b9a3e706ff4a"
+  },
+  "l2-withcolumn": {
+    "version": 1,
+    "hash": "7cef3e05a04d33222d92f805376997f851c6995dd93e6b5710a4f2a197437cc7"
+  },
+  "l2-write-data": {
+    "version": 1,
+    "hash": "a706082f1f57f4f9c48a14873220834b57ea9febe9311e342cd3b758a991df72"
+  },
+  "l5-what-is-shuffle": {
+    "version": 3,
+    "hash": "1f97f2492c00b720c0af57b55e14496772ea0aaddfdd55d45b62866d7507f80b"
+  },
+  "l7-what-is-tuning": {
+    "version": 1,
+    "hash": "53938e41562f72a6269e99106ef74523506a402800f23c9f18322bbcc265ce77"
+  }
+}

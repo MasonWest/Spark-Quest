@@ -16,13 +16,13 @@
 
 :root {
   /* === Color System (继承 Course Map 色标) === */
-  --sq-bg: #f9fafb;
+  --sq-bg: #fcfdf9;
   --sq-bg-atmosphere: linear-gradient(180deg, #eaf3fb 0%, #f1f0fb 52%, #fbf1ec 100%);
 
-  --sq-primary: #2563eb;
-  --sq-primary-hover: #1d4ed8;
-  --sq-primary-light: #eff6ff;
-  --sq-primary-border: #93b4dc;
+  --sq-primary: #388516;
+  --sq-primary-hover: #2d7110;
+  --sq-primary-light: #eff8e7;
+  --sq-primary-border: #c4e3ab;
 
   --sq-success: #639922;
   --sq-success-light: #eaf3de;
@@ -46,7 +46,7 @@
 
   /* === Radius === */
   --sq-radius-card: 16px;
-  --sq-radius-button: 10px;
+  --sq-radius-button: 14px;
   --sq-radius-badge: 999px;
 
   /* === Shadow === */
@@ -296,3 +296,12 @@ h1 { margin: 0 0 4px; font-size: 32px; }
     50% { transform: scale(1.05); opacity: 0.08; }
   }
 }
+/* Shared tactile controls and iOS viewport support. */
+html { min-height:100%; -webkit-text-size-adjust:100%; }
+body { min-height:100dvh; padding-left:env(safe-area-inset-left); padding-right:env(safe-area-inset-right); }
+button, input, textarea { font:inherit; }
+.btn-primary { border-bottom:4px solid #28630f; min-height:44px; font-weight:800; }
+.btn-primary:active { transform:translateY(3px); border-bottom-width:1px; }
+.btn-ghost { background:var(--sq-card-bg); min-height:44px; border-width:2px; border-bottom-width:4px; }
+@media(prefers-color-scheme:dark) { :root { --sq-primary:#91d85c; --sq-primary-hover:#a6e777; --sq-primary-border:#456534; --sq-primary-light:#253c1c; } .btn-primary { color:#13250b; } }
+@media(prefers-reduced-motion:reduce) { *, *::before, *::after { animation:none !important; scroll-behavior:auto !important; transition:none !important; } }

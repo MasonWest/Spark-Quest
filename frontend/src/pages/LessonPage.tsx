@@ -1,9 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import type { LessonDetail, LessonNote } from "../types";
 import { statusLabel } from "../types";
+import LessonJourney from "../components/LessonJourney";
+import { journeys } from "../content/journeys";
 import RichText from "../components/RichText";
 import "./LessonPage.css";
+
+function Reference({ compact, children, id, title = "展开完整讲解、示例与易错点" }: { compact: boolean; children: ReactNode; id?: string; title?: string }) {
+  return compact ? <details className="dfj-reference" id={id}><summary>{title}</summary>{children}</details> : <>{children}</>;
+}
 
 export default function LessonPage() {
   const { id } = useParams<{ id: string }>();
@@ -130,6 +136,7 @@ export default function LessonPage() {
   }
 
   const c = data.content;
+  const journey = journeys[data.slug];
 
   return (
     <div className="container lesson-container">
@@ -161,6 +168,9 @@ export default function LessonPage() {
         </section>
       )}
 
+      {journey && <LessonJourney key={`${data.slug}:${journey.version}`} lesson={journey} detail={data} />}
+      {journey && <aside className="lj-correction"><strong>原文勘误 · 阅读时以此为准</strong><p>{journey.correction}</p><a href={journey.source} target="_blank" rel="noreferrer">核对 Spark 3.5 官方说明 ↗</a></aside>}
+      <Reference id="lesson-reference" compact={data.slug === "l2-what-is-dataframe" || !!journey}>
       {/* 上一课回顾 */}
       {c.review ? (
         <section className="card review-card">
@@ -249,6 +259,9 @@ export default function LessonPage() {
         <p className="objective-text">{data.objective}</p>
       </section>
 
+      </Reference>
+
+      <Reference compact={!!journey} title="我的学习笔记（展开查看或记录）">
       {/* 我的学习笔记 */}
       <section className="card note-card">
         <h2>📝 我的学习笔记</h2>
@@ -295,8 +308,9 @@ export default function LessonPage() {
         </div>
       </section>
 
+      </Reference>
       {/* 下一课伏笔 */}
-      {c.preview ? (
+      {!journey && c.preview ? (
         <section className="card preview-card">
           <h2>🔭 下一课伏笔</h2>
           <RichText text={c.preview} />
@@ -304,7 +318,7 @@ export default function LessonPage() {
       ) : null}
 
       {/* 下一步 / 测验入口 */}
-      <section className="card next-card">
+      {!journey && <section className="card next-card">
         <h2>🚀 下一步</h2>
 
         {data.status === "locked" && (
@@ -341,7 +355,8 @@ export default function LessonPage() {
         )}
       </section>
 
-      <p className="phase">Phase 4 · 学习页面</p>
+      }
+
     </div>
   );
 }

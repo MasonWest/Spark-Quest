@@ -1,0 +1,251 @@
+{
+  "slug": "l7-what-is-tuning",
+  "version": 1,
+  "title": "慢作业诊室：先证据，后处方",
+  "mission": "同事说作业用了六分钟，要你立刻给一个提速参数。你将逐轮拿到证据，决定下一步查什么、试什么，以及何时该拒绝一个更快的结果。",
+  "correction": "本课所有耗时和指标都是人为构造的教学案例，并非当前用户作业的实测。诊断线索不是单一原因的证明；涉及的 groupByKey/reduceByKey 是 RDD API，SQL AQE 的开关不能直接当作这段 RDD 代码的修复。",
+  "source": "https://spark.apache.org/docs/3.5.6/web-ui.html",
+  "next": "你已经走过提出假设、验证、单项试验和结果验收。后续再学具体旋钮时，先问它要解决哪条已证实的问题。",
+  "tasks": [
+    {
+      "id": "insufficient-evidence",
+      "title": "六分钟，够开处方吗？",
+      "intro": "目前只知道“这次运行 360 秒”。没有历史基线、输入规模、资源情况，也不知道哪一段耗时最多。",
+      "code": "同事：作业六分钟，能不能把分区数翻倍？",
+      "prompt": "下一步最合理的行动是什么？",
+      "fields": [
+        {
+          "id": "next-action",
+          "label": "先做什么",
+          "correctOptionId": "measure",
+          "options": [
+            {
+              "id": "double",
+              "text": "马上将分区数翻倍",
+              "feedback": "分区数可能过少，也可能已经过多；六分钟本身不能区分。"
+            },
+            {
+              "id": "memory",
+              "text": "马上把所有 Executor 内存翻倍",
+              "feedback": "只有耗时不能证明内存瓶颈，增加内存也不保证改变关键路径。"
+            },
+            {
+              "id": "measure",
+              "text": "先拿基线、输入与资源信息，并定位耗时阶段",
+              "feedback": "对，现有信息不足以选参数，先获取能区分原因的证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "调优的第一项能力，是承认信息还不够，而不是每次都必须交出一个参数值。",
+      "ability": "在证据不足时选择测量而非盲调",
+      "knowledgeIds": [
+        "tuning.evidence-first"
+      ]
+    },
+    {
+      "id": "locate-critical-stage",
+      "title": "补充证据：时间花在了哪里？",
+      "intro": "已确认同一固定输入、同样的四个 Executor、各四核，无其他作业并发。以下是本案例的教学指标，不是真实 Spark UI 截图。",
+      "code": "最近三次总耗时：355、360、365 秒\n阶段 A：读取与映射，约 40 秒\n阶段 B：按键汇合与求和，约 300 秒\n阶段 C：小结果输出，约 20 秒",
+      "prompt": "为区分 B 是普遍慢还是少数任务拖尾，下一步先看什么？",
+      "fields": [
+        {
+          "id": "inspect",
+          "label": "选择诊断证据",
+          "correctOptionId": "tasks",
+          "options": [
+            {
+              "id": "tasks",
+              "text": "B 的任务耗时分布及各任务 Shuffle 读取量",
+              "feedback": "对，分布能帮助区分整体负担与少数任务失衡。"
+            },
+            {
+              "id": "cache",
+              "text": "先把所有输入 cache，暂不看 B",
+              "feedback": "缓存可能适合复用场景，但这里还没有证据表明重复读取是主要原因。"
+            },
+            {
+              "id": "output",
+              "text": "只看最终结果打印是否整齐",
+              "feedback": "打印格式不能解释 300 秒阶段内的任务差异。"
+            }
+          ]
+        }
+      ],
+      "insight": "先定位关键路径，再选能区分假设的指标。阶段总耗时不能替代任务分布。",
+      "ability": "用阶段和任务指标缩小诊断范围",
+      "knowledgeIds": [
+        "tuning.stage-task-evidence"
+      ]
+    },
+    {
+      "id": "hypothesis-not-proof",
+      "title": "一个任务慢，先别把怀疑当结论",
+      "intro": "B 有 16 个任务；15 个约 8–12 秒，1 个约 280 秒。该任务 Shuffle 读取约 9 GB，其余各约 60–100 MB；无重试，GC 时间占比均低于 2%。",
+      "code": "任务 7：280 秒；Shuffle read 9 GB\n其他任务：8–12 秒；60–100 MB\n还未检查输入键分布或具体聚合代码",
+      "prompt": "哪些判断现在成立？",
+      "fields": [
+        {
+          "id": "hypothesis",
+          "label": "当前能支持的假设",
+          "correctOptionId": "skew",
+          "options": [
+            {
+              "id": "certain",
+              "text": "已证明 Executor 内存不足",
+              "feedback": "低 GC 与无重试不能排除一切内存问题，但这些证据不足以证明内存不足。"
+            },
+            {
+              "id": "skew",
+              "text": "工作量不均衡值得优先查，但根因尚未完全确定",
+              "feedback": "对，读取量与耗时都明显失衡；下一步检查该任务关联的键和操作。"
+            },
+            {
+              "id": "cpu",
+              "text": "已证明所有任务都缺 CPU",
+              "feedback": "不是所有任务都慢，当前指标更支持先查少数任务的工作量。"
+            }
+          ]
+        },
+        {
+          "id": "next-proof",
+          "label": "下一项检查",
+          "correctOptionId": "keys",
+          "options": [
+            {
+              "id": "keys",
+              "text": "检查热点键及其聚合逻辑是否真的需要全部值",
+              "feedback": "对，找到分区为何这么重，并看语义是否允许减量。"
+            },
+            {
+              "id": "aqe",
+              "text": "直接打开 SQL AQE，认为问题已解决",
+              "feedback": "还不知道执行的是 SQL 还是 RDD，不能把 AQE 当万能修复。"
+            },
+            {
+              "id": "delete",
+              "text": "丢弃最热键后重新计时",
+              "feedback": "丢掉数据可能变快，但会改变计算目标。"
+            }
+          ]
+        }
+      ],
+      "insight": "指标帮助你选择下一项调查，不给你跳过验证的许可证。",
+      "ability": "把拖尾现象转换为可验证的假设",
+      "knowledgeIds": [
+        "tuning.skew-hypothesis"
+      ]
+    },
+    {
+      "id": "choose-equivalent-trial",
+      "title": "终于看到代码：目标只是整数求和",
+      "intro": "键分布显示 north 占原始记录 90%。代码为 RDD 的 groupByKey 后在 Python 对每键列表求和，金额是整数；业务不需要这些原始值列表。",
+      "code": "result = pairs.groupByKey().mapValues(sum)\n# pairs: RDD[(region, integer_amount)]",
+      "prompt": "哪项最值得做一个“保持结果语义”的单项试验？",
+      "fields": [
+        {
+          "id": "trial",
+          "label": "试验候选",
+          "correctOptionId": "reduce",
+          "options": [
+            {
+              "id": "reduce",
+              "text": "改为 pairs.reduceByKey(lambda a, b: a + b)，其他条件不变",
+              "feedback": "对，整数加法允许局部组合，先减少需要交换和保留的值。仍需验证输出、成本与收益。"
+            },
+            {
+              "id": "discard",
+              "text": "过滤掉 north，其他代码不变",
+              "feedback": "这改变了业务结果，不能拿来证明原任务被优化。"
+            },
+            {
+              "id": "average",
+              "text": "每个分区先算平均值，再把平均值相加",
+              "feedback": "平均值不能这样相加得到全局和，改变了指标定义。"
+            }
+          ]
+        }
+      ],
+      "insight": "reduceByKey 仍可能产生 Shuffle，同一个热点键也仍归同一目标；它减少中间负担，不承诺消除所有倾斜。这里没有要求背某个分区参数。",
+      "ability": "基于操作语义提出可检验的减量方案",
+      "knowledgeIds": [
+        "tuning.equivalent-trial",
+        "tuning.partial-combine"
+      ]
+    },
+    {
+      "id": "reject-fast-wrong",
+      "title": "更快的结果，哪个可以交付？",
+      "intro": "以下为教学试验表：固定输入与资源，预热条件一致，各运行三次。A 只替换为 reduceByKey；B 为了快丢弃了 north。完整键集合与每键总额均已和基线比较。",
+      "code": "基线：355 / 360 / 365 秒，结果正确\n方案 A：220 / 225 / 215 秒，键集合与每键总额一致\n方案 B：80 / 82 / 79 秒，缺少 north\n# 所有数字为教学构造，不是性能承诺",
+      "prompt": "这组证据支持怎样的决定？",
+      "fields": [
+        {
+          "id": "decision",
+          "label": "选择结论",
+          "correctOptionId": "a",
+          "options": [
+            {
+              "id": "b",
+              "text": "选 B，它的总耗时最少",
+              "feedback": "B 没有完成原业务任务，不能只按耗时排名。"
+            },
+            {
+              "id": "a",
+              "text": "在本次条件下支持 A；拒绝 B，保留记录并继续验证适用范围",
+              "feedback": "对，A 在本次同条件试验中同时满足正确性与更低耗时，不能外推到所有输入。"
+            },
+            {
+              "id": "always",
+              "text": "A 对所有作业必然同样有效",
+              "feedback": "本次实验只支持本次条件，数据分布、算子和资源改变后需重测。"
+            }
+          ]
+        }
+      ],
+      "insight": "改动收益先以语义正确为前提；固定输入、资源和测量条件，才更有机会判断单项修改的效果。",
+      "ability": "用正确性和多次测量共同验收优化",
+      "knowledgeIds": [
+        "tuning.correctness",
+        "tuning.controlled-measurement"
+      ]
+    },
+    {
+      "id": "transfer-to-new-symptoms",
+      "title": "换一份病例，不要沿用同一张处方",
+      "intro": "新作业并不是刚才的 RDD 求和。现在所有任务都耗时接近，并且磁盘 spill 很高；没有少数任务特别重的证据。",
+      "code": "新病例：各任务 70–85 秒\n各任务 spill 明显\n尚未检查分区规模、内存占用和算子\n目标结果也不同",
+      "prompt": "是否直接照搬“热点键 + reduceByKey”的结论？",
+      "fields": [
+        {
+          "id": "transfer",
+          "label": "迁移诊断方法",
+          "correctOptionId": "inspect",
+          "options": [
+            {
+              "id": "reuse",
+              "text": "是，所有慢作业都是同一个热点键问题",
+              "feedback": "这次任务分布不同，且还不知道能否按整数加法局部合并。"
+            },
+            {
+              "id": "inspect",
+              "text": "否，先查 spill、分区规模、内存与算子，再建立新假设",
+              "feedback": "对，迁移的是查证、试验和验收方法，不是把上一例的处方复制过去。"
+            },
+            {
+              "id": "ignore",
+              "text": "不看指标，只对照上次参数抄一遍",
+              "feedback": "参数需要服务于已知问题，复制参数不能替代诊断。"
+            }
+          ]
+        }
+      ],
+      "insight": "你完成的是一轮诊断训练，不是获得“看到慢就加分区”的固定口令。真实作业仍需实际 UI、日志和等价性检查。",
+      "ability": "将诊断流程迁移到不同症状",
+      "knowledgeIds": [
+        "tuning.transfer"
+      ]
+    }
+  ]
+}

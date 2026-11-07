@@ -1,0 +1,38 @@
+{
+  "id": "/",
+  "name": "Spark Quest · Spark 学习之旅",
+  "short_name": "Spark Quest",
+  "description": "每天一点，点亮大数据世界。学习 Apache Spark、强化练习、收集成就。",
+  "lang": "zh-CN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fcfdf9",
+  "theme_color": "#fcfdf9",
+  "icons": [
+    {
+      "src": "/icons/spark.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

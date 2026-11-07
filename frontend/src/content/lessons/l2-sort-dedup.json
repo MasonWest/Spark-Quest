@@ -1,0 +1,205 @@
+{
+  "slug": "l2-sort-dedup",
+  "version": 1,
+  "title": "排好名次，再说什么叫重复",
+  "mission": "运营要找大额订单，还要清理重复数据。排序与去重各有规则，不能靠写在一起就猜它会保留谁。",
+  "correction": "dropDuplicates(subset) 不保证保留输入中首次出现、最新或最大的行；先 orderBy 再 dropDuplicates 也不能保证这个规则。要每个用户的最大金额可先 groupBy 聚合；要整行按规则取一条，后续用带明确排序的窗口函数。",
+  "source": "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.dropDuplicates.html",
+  "next": "你已分清排序与判重。下一课把多笔订单汇总成各地区的销售成绩。",
+  "tasks": [
+    {
+      "id": "step-936a1f3bda",
+      "knowledgeIds": [
+        "sort-dedup"
+      ],
+      "title": "金额最高的两单是哪两单？",
+      "intro": "四条订单金额是 120、80、200、60。先从一个结果明确的 Top N 开始。",
+      "code": "top2 = orders.orderBy(F.desc(\"amount\")).limit(2)\n# 本课各段代码都已导入 functions as F",
+      "prompt": "不含并列金额，top2 的金额依次是什么？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "预测 Top 2",
+          "correctOptionId": "option-3",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "60、80",
+              "feedback": "这是金额最小的两条，desc 指定降序。"
+            },
+            {
+              "id": "option-2",
+              "text": "120、80",
+              "feedback": "这只是输入前两条，不是按金额排序后的前两条。"
+            },
+            {
+              "id": "option-3",
+              "text": "200、120",
+              "feedback": "对，先按金额降序，再限制两行。"
+            }
+          ]
+        }
+      ],
+      "insight": "limit 本身不定义业务顺序。存在并列时，要稳定决定哪条排前面，还需要补充唯一的排序依据。",
+      "ability": "用降序与 limit 表达 Top N"
+    },
+    {
+      "id": "step-4d7d78c62c",
+      "knowledgeIds": [
+        "sort-dedup"
+      ],
+      "title": "四行数据，究竟重复了几行？",
+      "intro": "下面只包含 user、amount 两列。重复的定义要先于去重工具。",
+      "code": "# user | amount\n# u1   | 120\n# u1   | 120\n# u1   | 80\n# u2   | 200",
+      "prompt": "比较整行去重与按用户去重，各会剩多少行？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "distinct() 后行数",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "2",
+              "feedback": "同一个用户的两种金额是不同整行，不能都合并为一条。"
+            },
+            {
+              "id": "option-2",
+              "text": "3",
+              "feedback": "对，只有完全相同的 u1/120 合并，剩三种整行。"
+            },
+            {
+              "id": "option-3",
+              "text": "4",
+              "feedback": "两条 u1/120 完全相同，应合并。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "dropDuplicates([\"user\"]) 后行数",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "2",
+              "feedback": "对，本批数据只有 u1、u2 两个用户，每个保留一条。"
+            },
+            {
+              "id": "option-2",
+              "text": "3",
+              "feedback": "按 user 判重不区分金额，u1 的多行会合并为一条。"
+            },
+            {
+              "id": "option-3",
+              "text": "4",
+              "feedback": "指定 user 后，该用户的重复记录不会全部保留。"
+            }
+          ]
+        }
+      ],
+      "insight": "按 user 去重只定义谁算同一组，没有定义 u1 的金额应该保留 120 还是 80。",
+      "ability": "按业务键区分整行重复与部分字段重复"
+    },
+    {
+      "id": "step-3538b5a3ab",
+      "knowledgeIds": [
+        "sort-dedup"
+      ],
+      "title": "先排序再去重，真的会保留最大值吗？",
+      "intro": "同事想每个用户保留最大金额的一条订单，写出如下代码。输入中 u1 有 120 与 80。",
+      "code": "orders.orderBy(F.desc(\"amount\"))\n# 同事继续链式调用：\n# .dropDuplicates([\"user\"])",
+      "prompt": "应当怎样评价这项保证？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "判断保留规则",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "可靠，排序后去重一定保留每组最大值",
+              "feedback": "输入排序不能变成 dropDuplicates 的保留规则契约。"
+            },
+            {
+              "id": "option-2",
+              "text": "不可靠，dropDuplicates 没有承诺这种保留规则",
+              "feedback": "对，不能依赖碰巧观察到的保留结果。要用明确表达最大值或组内排序的算法。"
+            },
+            {
+              "id": "option-3",
+              "text": "可靠，但必须先 collect 再创建 DataFrame",
+              "feedback": "搬到 Driver 再建表既有规模风险，也没有给 dropDuplicates 新的规则保证。"
+            }
+          ]
+        }
+      ],
+      "insight": "只要每个用户的最大金额，用 groupBy('user').agg(F.max('amount').alias('max_amount'))。若还需要那笔订单的其他列，后续用窗口按金额与唯一订单号排序选择。",
+      "ability": "识别排序后按键去重的不可靠假设"
+    },
+    {
+      "id": "step-a8cd2aa0f2",
+      "knowledgeIds": [
+        "sort-dedup"
+      ],
+      "title": "平手时，第一名怎么定？",
+      "intro": "现在 o1 和 o2 的金额都是 200。运营规定金额降序；金额相同时，订单号升序。",
+      "code": "# order_id | amount\n# o2       | 200\n# o1       | 200\n# o3       | 120\nranked = orders.orderBy(__A__, __B__)",
+      "prompt": "补齐两级排序。这里订单号唯一且非空。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：首要排序",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.asc(\"amount\")",
+              "feedback": "升序会让 120 排在前面，不符合大额优先。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.desc(\"amount\")",
+              "feedback": "对，第一排序键是金额降序。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.desc(\"order_id\")",
+              "feedback": "订单号只在金额平手时作为次要依据。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "B：平手排序",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "F.asc(\"order_id\")",
+              "feedback": "对，o1 排在 o2 前面，符合订单号升序。"
+            },
+            {
+              "id": "option-2",
+              "text": "F.desc(\"amount\")",
+              "feedback": "重复金额排序键并没有解决同金额订单之间的顺序。"
+            },
+            {
+              "id": "option-3",
+              "text": "F.desc(\"order_id\")",
+              "feedback": "这会让 o2 在 o1 前面，与要求相反。"
+            }
+          ]
+        }
+      ],
+      "insight": "排序规则来自业务。明确次要排序键，比观察某次输出后认定“Spark 总会这样排”更可靠。",
+      "ability": "用次要排序键解决并列顺序"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-936a1f3bda",
+    "step-4d7d78c62c",
+    "step-3538b5a3ab",
+    "step-a8cd2aa0f2"
+  ]
+}

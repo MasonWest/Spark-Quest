@@ -59,3 +59,6 @@ Thumbs.db
 # ===== Local verification scratch (dev-only, not product) =====
 # backend 根目录下任何 `_` 前缀的临时脚本/产物一律不入库（原先逐个列文件名，防不住新增）
 backend/_*
+
+# App icons are product assets, not verification screenshots
+!frontend/public/icons/*.png

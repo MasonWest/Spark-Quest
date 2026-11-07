@@ -1,0 +1,183 @@
+{
+  "slug": "l2-inspect",
+  "version": 1,
+  "title": "给订单做一次体检",
+  "mission": "同事问“数据没问题吧？”今天用结构、样本和统计回答，而不是凭第一眼放心。",
+  "correction": "printSchema() 展示 Schema，不应被教成会执行整条数据查询的 Action。show(n) 限制展示行数，但聚合、排序等上游仍可能处理大量数据。df[0] 在 PySpark 中可以引用第一列，不是获取第一行。",
+  "source": "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.__getitem__.html",
+  "next": "你已经能接收、约定和检视订单。下一课开始按业务要求挑列、筛行。",
+  "tasks": [
+    {
+      "id": "step-575eab8f9e",
+      "knowledgeIds": [
+        "inspect"
+      ],
+      "title": "先配工具，再开工",
+      "intro": "同事给出两个不同的问题：amount 究竟是什么类型？长订单备注究竟写了什么？",
+      "code": "# orders 已经创建\n# 任务 A：打印列类型\n# 任务 B：显示 5 行，保留完整文本",
+      "prompt": "为两个问题分别选工具。看类型与看内容，是两件事。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：打印类型",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "orders.count()",
+              "feedback": "count 统计行数，不显示列类型。"
+            },
+            {
+              "id": "option-2",
+              "text": "orders.printSchema()",
+              "feedback": "对，printSchema 打印列名、类型和可空性。"
+            },
+            {
+              "id": "option-3",
+              "text": "orders.show(5)",
+              "feedback": "show 显示值，不能直接区分数字文本和数值类型。"
+            }
+          ]
+        },
+        {
+          "id": "field-2",
+          "label": "B：完整展示 5 行文本",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "orders.show(5, truncate=False)",
+              "feedback": "对，限制展示 5 行，同时关闭文本截断。"
+            },
+            {
+              "id": "option-2",
+              "text": "orders.show()",
+              "feedback": "默认展示 20 行，还可能截断长文本，没有满足两个要求。"
+            },
+            {
+              "id": "option-3",
+              "text": "orders.collect()",
+              "feedback": "collect 会把所有结果行拉回 Driver，不是本题需要的小范围检视。"
+            }
+          ]
+        }
+      ],
+      "insight": "先明确你想知道什么，再选工具，避免为一个小问题启动不必要的全量操作。",
+      "ability": "按结构或内容选择检视工具"
+    },
+    {
+      "id": "step-b8c533c9f4",
+      "knowledgeIds": [
+        "inspect"
+      ],
+      "title": "屏幕上只有 20 行，数据丢了吗？",
+      "intro": "来源系统确认这张表有 10 万行。你运行 orders.show()，屏幕只展示了 20 行。",
+      "code": "orders.show()\n# ... only showing top 20 rows",
+      "prompt": "现在能得出什么结论？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "解读输出",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "创建 DataFrame 时只保留了前 20 行",
+              "feedback": "show 的展示上限不改变原 DataFrame 的内容。"
+            },
+            {
+              "id": "option-2",
+              "text": "show 限制了展示数量，不能据此判断总行数",
+              "feedback": "对，需要总行数时可以 count；那是另一次有执行成本的统计，不必每次展示前都做。"
+            },
+            {
+              "id": "option-3",
+              "text": "这 20 行没空值，所以所有订单都没空值",
+              "feedback": "局部样本不能证明全量没有空值，需要针对该规则检查实际数据。"
+            }
+          ]
+        }
+      ],
+      "insight": "show 是观察窗口，不是全表质量证明。需要多少证据，取决于你要回答的问题。",
+      "ability": "区分展示上限、总行数与质量验证"
+    },
+    {
+      "id": "step-80c09d882d",
+      "knowledgeIds": [
+        "inspect"
+      ],
+      "title": "只看 5 行，为什么还是慢？",
+      "intro": "你想看金额最高的订单。虽然只展示五行，但 Spark 必须先找出全局的高金额记录。",
+      "code": "orders.orderBy(orders[\"amount\"].desc()).show(5)",
+      "prompt": "同事说“show(5) 最多只处理五行”，你怎么判断？",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "判断执行成本",
+          "correctOptionId": "option-2",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "正确，show 会让上游也只处理五行",
+              "feedback": "只看前五条输入，无法保证找到全局金额最高的五条。"
+            },
+            {
+              "id": "option-2",
+              "text": "错误，展示有限，但上游可能扫描大量数据",
+              "feedback": "对，展示量与上游计算量要分开。具体计划可能采用 Top K 优化，但仍可能需要扫描大量输入。"
+            },
+            {
+              "id": "option-3",
+              "text": "正确，orderBy 只是打印格式，不参与计算",
+              "feedback": "orderBy 要求结果满足排序，不是单纯调整终端打印样式。"
+            }
+          ]
+        }
+      ],
+      "insight": "小输出不保证小开销。先看查询做了什么，再判断检视是否便宜。",
+      "ability": "识别小结果背后的上游计算成本"
+    },
+    {
+      "id": "step-240e830909",
+      "knowledgeIds": [
+        "inspect"
+      ],
+      "title": "备注列有空格，怎么引用？",
+      "intro": "新文件把备注列命名为 order note。你准备只展示这列，不把整张表拉回本地。",
+      "code": "orders.select(__A__).show(5, truncate=False)",
+      "prompt": "选择列引用。中括号中的字符串在这里表示列名，不是本地数据下标。",
+      "fields": [
+        {
+          "id": "field-1",
+          "label": "A：引用备注列",
+          "correctOptionId": "option-1",
+          "options": [
+            {
+              "id": "option-1",
+              "text": "orders[\"order note\"]",
+              "feedback": "对，用字符串列名引用可以处理空格。若列名还包含点号等特殊含义字符，需要进一步使用适当转义。"
+            },
+            {
+              "id": "option-2",
+              "text": "orders.order note",
+              "feedback": "Python 属性表达式不能这样包含空格，这段代码本身不能通过语法解析。"
+            },
+            {
+              "id": "option-3",
+              "text": "\"所有订单的备注内容\"",
+              "feedback": "这是另一个列名字符串，并不指向实际的 order note 列。"
+            }
+          ]
+        }
+      ],
+      "insight": "注意 df[0] 在 PySpark 中也可以引用第一列；它不是取第一行。需要前几行本地样本时可以 take(n)，同时控制返回规模。",
+      "ability": "正确引用带空格的列，并区分列与行"
+    }
+  ],
+  "legacyTaskIds": [
+    "step-575eab8f9e",
+    "step-b8c533c9f4",
+    "step-80c09d882d",
+    "step-240e830909"
+  ]
+}
