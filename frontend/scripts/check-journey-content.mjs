@@ -102,5 +102,26 @@ const guidesHash = crypto.createHash('sha256').update(JSON.stringify(guides)).di
 const oldGuides = releases['standard-guides'];
 if (oldGuides) requireThat(guides.version > oldGuides.version || (guides.version === oldGuides.version && guidesHash === oldGuides.hash), 'published standard guides changed; increment guide version');
 next['standard-guides'] = {version: guides.version, hash: guidesHash};
+const capstones = JSON.parse(fs.readFileSync(path.join(root, 'src/content/capstones.json'), 'utf8'));
+requireThat(Number.isInteger(capstones.version) && capstones.version > 0, 'invalid capstone version');
+unique(Object.values(capstones.lessons).map(c => c.id), 'capstone IDs');
+const capstoneAssets = {};
+for (const [slug, c] of Object.entries(capstones.lessons)) {
+  requireThat(next[slug] && ['id','title','brief','command'].every(k => text(c[k])) && Number.isInteger(c.estimatedMinutes) && c.estimatedMinutes > 0, `${slug}: invalid capstone`);
+  requireThat(Array.isArray(c.contract) && c.contract.length >= 3 && c.contract.every(text), `${slug}: missing contract`);
+  for (const key of ['hints','checks']) requireThat(Array.isArray(c[key]) && c[key].length >= 3 && c[key].every(h => text(h.title) && text(h.body)), `${slug}: missing ${key}`);
+  requireThat(Array.isArray(c.downloads) && c.downloads.length >= 4 && c.solution, `${slug}: incomplete download kit`);
+  unique([...c.downloads, c.solution].map(a => a.href), `${slug}: duplicate assets`);
+  for (const asset of [...c.downloads, c.solution]) {
+    requireThat(text(asset.label) && typeof asset.href === 'string' && asset.href.startsWith('/practice/'), `${slug}: invalid asset`);
+    const dest = path.resolve(root, 'public', asset.href.slice(1));
+    requireThat(dest.startsWith(path.join(root, 'public') + path.sep) && fs.existsSync(dest), `${slug}: unsafe/missing asset`);
+    capstoneAssets[asset.href] = crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex');
+  }
+}
+const capstoneHash = crypto.createHash('sha256').update(JSON.stringify({capstones, capstoneAssets})).digest('hex');
+const oldCapstones = releases['capstones'];
+if (oldCapstones) requireThat(capstones.version > oldCapstones.version || (capstones.version === oldCapstones.version && capstoneHash === oldCapstones.hash), 'published capstone/kit changed; increment capstone version');
+next['capstones'] = {version: capstones.version, hash: capstoneHash};
 if (process.argv.includes('--record-release')) fs.writeFileSync(releasePath, JSON.stringify(next, null, 2) + '\n');
-console.log(`PASS content: ${Object.keys(next).length - 2} lessons / ${tasks} tasks / ${delayed.items.length} delayed checks, IDs, feedback, assets and release versions`);
+console.log(`PASS content: ${Object.keys(next).length - 3} lessons / ${tasks} tasks / ${delayed.items.length} delayed checks, IDs, feedback, assets and release versions`);

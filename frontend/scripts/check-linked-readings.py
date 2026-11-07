@@ -18,6 +18,7 @@ with sync_playwright() as p:
  for slug in slugs:
   d=lessons[slug];lesson=json.loads((root/'frontend/src/content/lessons'/f'{slug}.json').read_text(encoding='utf-8'))
   page.goto(f"http://127.0.0.1:4173/lesson/{d['id']}")
+  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
   key=f"spark-quest:learning:{slug}:v{lesson['version']}"
   for i,t in enumerate(lesson['tasks']):
    standard=next((s for s in guides.get(slug,{}).get('sections',[]) if s['id']==t['id']),None)
@@ -64,7 +65,9 @@ with sync_playwright() as p:
    page.get_by_role('button',name='看看我的收获' if i==len(lesson['tasks'])-1 else '继续下一步 →').click()
   page.get_by_role('heading',name='这次练会了什么？').wait_for()
   assert page.get_by_role('link',name='开始测验').get_attribute('href')==f"/lesson/{d['id']}/quiz"
-  page.reload();page.get_by_role('heading',name='这次练会了什么？').wait_for()
+  page.reload()
+  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  page.get_by_role('heading',name='这次练会了什么？').wait_for()
   print('PASS',slug,'original links, concept bridges, source jump, responsive and completion')
  assert not errors,errors
  b.close()

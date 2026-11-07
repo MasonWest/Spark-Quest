@@ -1,0 +1,24 @@
+.cp-root { border:2px solid var(--sq-primary-border); border-radius:24px; background:var(--sq-card-bg); overflow:hidden; margin:24px 0; }
+.cp-header { background:var(--sq-primary-light); padding:24px; border-bottom:2px solid var(--sq-primary-border); }
+.cp-header > p:first-child { color:var(--sq-primary); font-size:13px; font-weight:700; }
+.cp-header h2 { font-size:26px; line-height:1.4; margin:12px 0; }
+.cp-header p, .cp-body p, .cp-contract { line-height:1.9; font-size:14px; }
+.cp-body { padding:0 24px 24px; }
+.cp-body > section { padding:24px 0; border-bottom:1px solid var(--sq-border); }
+.cp-body h3 { font-size:19px; margin:0 0 18px; }
+.cp-contract { padding-left:22px; }
+.cp-contract li { padding-left:4px; margin-bottom:12px; }
+.cp-downloads { display:flex; flex-wrap:wrap; gap:12px; }
+.cp-downloads a { color:var(--sq-primary); border:1px solid var(--sq-primary-border); border-radius:12px; padding:12px; font-size:13px; min-height:44px; overflow-wrap:anywhere; }
+.cp-field { display:grid; gap:10px; margin:18px 0; font-size:14px; font-weight:700; line-height:1.7; }
+.cp-field textarea { resize:vertical; width:100%; min-width:0; box-sizing:border-box; border:2px solid var(--sq-border); border-radius:12px; padding:12px; font:inherit; font-weight:400; background:var(--sq-bg); color:var(--sq-text); }
+.cp-body details { margin:18px 0 0; padding:16px; border:1px solid var(--sq-border); border-radius:14px; }
+.cp-body summary { cursor:pointer; font-weight:700; font-size:14px; line-height:1.8; }
+.cp-hint { margin:16px 0; padding-left:12px; border-left:3px solid var(--sq-primary-border); font-size:14px; }
+.cp-command { white-space:pre-wrap; overflow-wrap:anywhere; background:#182e26; color:#f7fff9; padding:16px; border-radius:12px; font-size:13px; line-height:1.8; }
+.cp-checks { padding-left:20px; font-size:14px; line-height:1.7; }
+.cp-checks p { margin:6px 0 14px; }
+.cp-note { background:var(--sq-bg); padding:14px; border-radius:12px; color:var(--sq-text-muted); font-size:12px !important; }
+.cp-footer { padding-top:12px; }
+.cp-actions { display:flex; flex-wrap:wrap; gap:12px; }
+@media (max-width:400px) { .cp-header { padding:20px 18px; } .cp-header h2 { font-size:23px; } .cp-body { padding:0 18px 18px; } }

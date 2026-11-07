@@ -82,3 +82,16 @@ L2 使用 `standardGuides.json`（独立版本与发布摘要）提供当前标�
 `JourneyReading` 收到标准章节时默认展示标准说明与边界，答对后的概念联系仍保留。旧 reading 标记保留，用于展开“对照历史原文”；片段仍从 API explanation 提取，定位漂移明确提示。`#lesson-reference` 打开完整标准讲解；`#lesson-original` 打开完整历史原文与旧示例、要点和勘误。标准讲解没有替换数据库原内容，也没有更改笔记 API；笔记仍在独立入口。没有标准讲解的 Shuffle/L7 继续沿用原阅读流程。
 
 原文勘误只在历史内容附近展示，避免默认学习时把正确讲解与错误旧口径并排。历史档案并不代表旧内容重新获得技术认证；标准讲解也仍需实作和学习效果验证。`check-linked-readings.py` 覆盖标准节、历史引用、两类全文跳转、阅读不改变进度、答错/答对分支及手机显示。
+
+
+## 独立毕业任务
+
+`capstones.json` 为独立任务协议，目前用于 L2 综合课：任务摘要、交付约定、下载包、验收命令、检查维度和逐级提示。`CapstoneProject` 是默认入口；旧 LessonJourney 保留在可选准备练习里，旧任务/选项 ID、题目版本与作答事实不变。新任务使用另一份数据，不能把准备练习中已经展示的数值当成毕业任务答案。
+
+当前四步为接任务、预测/计划、运行验收、复盘对照。提示按需逐级展开，参考下载另外确认展开；不在默认 README/starter 中给出完整数值答案。草稿为独立 `spark-quest:capstone:<id>:draft` 本机记录，明确手动保存且不代表验收通过；未实现代码编辑器、浏览器执行、本地结果上传认证或新的正式成绩门槛。
+
+`public/practice/l2-graduation` 包含新 CSV、三个函数的 starter、独立 verify、README 和 reference。验收器用 Python 标准库推导期望值，检查真实 Spark 输出，不调用 reference 生成答案。查询与文件阶段分开，--query-only 输出 PARTIAL；默认模式必须实际 CSV 读取、Parquet 写出/读回与同批重跑全部通过才输出 PASS。输出只在临时目录，JSON 结果写到用户当前目录或 --result 指定路径，不连接学习数据库。
+
+构建检查将 capstones 配置和所有下载文件的摘要一起锁定到 releases；修改工具包也需增加独立 capstones 版本，改变任务约定时另换 id 保留旧草稿。浏览器检查 `python scripts/check-capstone-ui.py`；Spark 反向校验 `python scripts/check-capstone-verifier.py`，拒绝总额正确但地区错误、漏去重、错误单位/类型、重复结果、硬编码旧答案与提前清洗原始输入等错误。
+
+开发机 PySpark 4.2.0 五组查询已实跑，七项错误结果拒绝检查通过，CSV 读取也已验证；Parquet 提交仍因 Windows NativeIO$Windows.access0 缺失失败。不能把它写成完整实作验收通过，仍需在文件系统支持完整的 Spark 环境补验。版本兼容性没有据此扩展到所有 Spark 发行版。

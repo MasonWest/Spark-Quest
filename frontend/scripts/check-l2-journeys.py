@@ -22,8 +22,10 @@ with sync_playwright() as p:
  page.route('**/api/lessons/**',api)
  for slug,steps in answers.items():
   l=lessons[slug];url=f"http://127.0.0.1:4173/lesson/{l['id']}"
-  page.goto(url);page.locator('.lj-mission').wait_for()
-  assert page.locator('.dfj-reference').first.get_attribute('open') is None
+  page.goto(url)
+  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  page.locator('.lj-mission').wait_for()
+  if slug!='l2-comprehensive':assert page.locator('.dfj-reference').first.get_attribute('open') is None
   if slug.startswith('l2-'):
    assert page.locator('#lesson-reference').get_attribute('open') is None
    assert page.locator('#lesson-original').get_attribute('open') is None
@@ -48,15 +50,19 @@ with sync_playwright() as p:
    page.get_by_role('button',name='检查判断').click()
    page.get_by_role('button',name='看看我的收获' if n==len(steps)-1 else '继续下一步 →').click()
    if n==0:
-    page.reload();page.get_by_text(f'第 2 步 / 共 {len(steps)} 步',exact=False).wait_for()
+    page.reload()
+    if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+    page.get_by_text(f'第 2 步 / 共 {len(steps)} 步',exact=False).wait_for()
   page.get_by_role('heading',name='这次练会了什么？').wait_for()
   assert page.locator('.lj-evidence').count()==len(steps)
   if slug=='l2-comprehensive':
-   page.get_by_text('展开参考实现下载',exact=True).click()
+   page.locator('#capstone-guided').get_by_text('展开参考实现下载',exact=True).click()
    for asset in ['orders.csv','starter.py','README.txt','solution.py']:
     response=page.request.get('http://127.0.0.1:4173/practice/l2/'+asset)
     assert response.ok and len(response.body())>50,asset
-  page.reload();page.get_by_role('heading',name='这次练会了什么？').wait_for()
+  page.reload()
+  if slug=='l2-comprehensive':page.locator('#capstone-guided > summary').click()
+  page.get_by_role('heading',name='这次练会了什么？').wait_for()
   assert page.get_by_role('link',name='开始测验').get_attribute('href')==f"/lesson/{l['id']}/quiz"
   page.get_by_role('button',name='重新练一遍').click();page.locator('.lj-mission').wait_for()
   print('PASS',slug,l['id'],'all tasks, feedback, persistence, reset, quiz link, responsive')

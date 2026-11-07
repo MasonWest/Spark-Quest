@@ -5,6 +5,8 @@ import { statusLabel } from "../types";
 import LessonJourney from "../components/LessonJourney";
 import { journeys } from "../content/journeys";
 import { standardGuides } from "../content/standardGuides";
+import capstoneBank from "../content/capstones.json";
+import CapstoneProject, { type Capstone } from "../components/CapstoneProject";
 import StandardGuide from "../components/StandardGuide";
 import RichText from "../components/RichText";
 import "./LessonPage.css";
@@ -140,6 +142,7 @@ export default function LessonPage() {
   const c = data.content;
   const journey = journeys[data.slug];
   const standard = standardGuides[data.slug];
+  const capstone = (capstoneBank.lessons as Record<string, Capstone>)[data.slug];
 
   return (
     <div className="container lesson-container">
@@ -153,7 +156,7 @@ export default function LessonPage() {
       {/* 标题 + 元信息 */}
       <h1 className="lesson-title">{data.title}</h1>
       <div className="lesson-meta">
-        <span className="meta-chip time">⏱️ 约 {data.estimated_minutes} 分钟</span>
+        <span className="meta-chip time">⏱️ 约 {capstone?.estimatedMinutes ?? data.estimated_minutes} 分钟</span>
         <span className="meta-chip status-chip">{statusLabel[data.status]}</span>
       </div>
 
@@ -171,7 +174,8 @@ export default function LessonPage() {
         </section>
       )}
 
-      {journey && <LessonJourney key={`${data.slug}:${journey.version}`} lesson={journey} detail={data} />}
+      {capstone && <CapstoneProject key={capstone.id} project={capstone} detail={data} />}
+      {journey && (capstone ? <details className="dfj-reference" id="capstone-guided"><summary>六步准备练习：先练组合操作（可选）</summary><LessonJourney key={`${data.slug}:${journey.version}`} lesson={journey} detail={data} /></details> : <LessonJourney key={`${data.slug}:${journey.version}`} lesson={journey} detail={data} />)}
       {journey && !standard && <aside className="lj-correction"><strong>原文勘误 · 阅读时以此为准</strong><p>{journey.correction}</p><a href={journey.source} target="_blank" rel="noreferrer">核对 Spark 3.5 官方说明 ↗</a></aside>}
       {standard && <StandardGuide guide={standard} />}
       <Reference id={standard ? "lesson-original" : "lesson-reference"} title={standard ? "历史原文、示例与旧版要点（保留查阅）" : undefined} compact={data.slug === "l2-what-is-dataframe" || !!journey}>

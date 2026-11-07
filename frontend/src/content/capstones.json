@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "lessons": {
+    "l2-comprehensive": {
+      "id": "l2-graduation-v1",
+      "title": "独立实作：交付一份可重跑的地区日报",
+      "estimatedMinutes": 45,
+      "brief": "你接手了一批重复导入过的订单。运营需要按地区统计有效订单，并把日报交给下游。先自己定义预期，再写代码，最后用验收脚本检查。",
+      "contract": [
+        "输入字段为 order_id、region、amount，前两列是文本，金额为整数元；空金额必须保留为 NULL。读取函数先保留全部原始行。",
+        "完全相同的重复行只计一次。本任务不存在同一订单号内容冲突，不需要设计“保留最新版”。",
+        "仅统计金额严格大于零的订单。只有无效订单的地区不输出日报行。",
+        "每个有效地区一行，输出 region（string）、cnt（long，有效订单数）、total（long，元）、total_k（double，千元）。不要求文件保存排序。",
+        "交付 Parquet 目录。同一批输入重复运行到同一练习目标后，读回结果不能翻倍。",
+        "实现不得写死地区名、预期总额或结果行数；验收会更换数值、加入重复和新地区，并检查空结果。"
+      ],
+      "downloads": [
+        {
+          "label": "新订单数据 orders.csv",
+          "href": "/practice/l2-graduation/orders.csv"
+        },
+        {
+          "label": "代码骨架 starter.py",
+          "href": "/practice/l2-graduation/starter.py"
+        },
+        {
+          "label": "验收脚本 verify.py",
+          "href": "/practice/l2-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l2-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载参考实现 reference.py",
+        "href": "/practice/l2-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "查询规则",
+          "body": "检查输入原样保留、字段和类型、重复处理、逐地区笔数与金额，以及千元单位。"
+        },
+        {
+          "title": "换数据也成立",
+          "body": "另用不同金额、新地区、额外重复、空输入和全无效输入检查，不只比对一个固定总额。"
+        },
+        {
+          "title": "文件真的可交付",
+          "body": "实际读取 CSV、保存 Parquet 后读回，再写同一批输入并读回，检查结果没有翻倍。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先按职责拆开",
+          "body": "把任务拆成读取原始输入、生成日报、保存结果三个函数。先在纸上划掉无效金额、圈出完全重复的行，再按地区计算预期；先别急着拼完整链。"
+        },
+        {
+          "title": "回到对应工具",
+          "body": "读取约定见“创建 DataFrame / Schema”；重复判定见“排序与去重”；有效金额见“select/filter”；指标与单位见“groupBy/agg / withColumn”；重跑见“数据写出”。先检查错误来自哪一层。"
+        },
+        {
+          "title": "处理顺序骨架",
+          "body": "读取时声明结构 → 对完全重复的行去重 → 保留正金额 → 按地区计算笔数和金额 → 从总额派生千元值 → 写入指定练习目标 → 读回验收。先用 --query-only 排查查询，也要保留最后的文件验收。"
+        }
+      ]
+    }
+  }
+}

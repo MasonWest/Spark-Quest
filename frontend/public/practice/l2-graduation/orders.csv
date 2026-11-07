@@ -1,0 +1,11 @@
+order_id,region,amount
+n301,north,120
+n302,south,300
+n303,north,80
+n304,east,0
+n305,east,
+n306,west,-30
+n307,south,50
+n308,west,150
+n308,west,150
+n309,island,200

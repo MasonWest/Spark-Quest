@@ -54,5 +54,9 @@
   "standard-guides": {
     "version": 1,
     "hash": "471645ed67c60f6b09af65e8157330f39076e603311277523c7948bb5245f694"
+  },
+  "capstones": {
+    "version": 1,
+    "hash": "466ae8e46785bb754e1d3245308b5fe10fe53e996419811c76ec0ade6396ede9"
   }
 }
