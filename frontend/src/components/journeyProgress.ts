@@ -3,6 +3,7 @@ import type { JourneyLesson } from "../content/journeys";
 export interface Attempt {
   runId: string; taskId: string; answers: Record<string, string>;
   correctOptions: Record<string, string>; correct: boolean; at: string;
+  activity?: "remediation"; remediationId?: string; knowledgeId?: string;
 }
 export interface JourneyProgress {
   version: number; runId: string; cursorId: string | null;
@@ -47,8 +48,15 @@ export function recordAttempt(lesson: JourneyLesson, p: JourneyProgress, taskId:
   return { ...p, attempts: [...p.attempts, { runId: p.runId, taskId, answers: { ...answers }, correctOptions, correct, at: new Date().toISOString() }] };
 }
 export function evidence(p: JourneyProgress, taskId: string): string {
-  const attempts = p.attempts.filter(a => a.runId === p.runId && a.taskId === taskId);
+  const attempts = p.attempts.filter(a => a.runId === p.runId && a.taskId === taskId && a.activity !== "remediation");
+  const verified = p.attempts.some(a => a.runId === p.runId && a.taskId === taskId && a.activity === "remediation" && a.correct) ? " · 已通过一道变式" : "";
   if (p.migratedIds.includes(taskId)) return attempts.length ? `旧版迁入后作答 ${attempts.length} 次 · 首次记录不完整` : "旧版进度已保留 · 没有首次作答记录";
   if (!attempts.length) return "尚无作答记录";
-  return attempts[0].correct ? "本轮首次答对 · 仍需隔天验证" : `本轮作答 ${attempts.length} 次 · 借助反馈后完成`;
+  return (attempts[0].correct ? "本轮首次答对 · 仍需隔天验证" : `本轮原题作答 ${attempts.length} 次 · 借助反馈后完成`) + verified;
+}
+
+export function recordRemediation(lesson: JourneyLesson, p: JourneyProgress, taskId: string, answer: string): JourneyProgress {
+  const remedy = lesson.tasks.find(t => t.id === taskId)?.remediation;
+  if (!remedy || !remedy.field.options.some(o => o.id === answer)) throw new Error("Invalid remediation answer");
+  return { ...p, attempts: [...p.attempts, { runId: p.runId, taskId, activity: "remediation", remediationId: remedy.id, knowledgeId: remedy.knowledgeId, answers: { [remedy.field.id]: answer }, correctOptions: { [remedy.field.id]: remedy.field.correctOptionId }, correct: answer === remedy.field.correctOptionId, at: new Date().toISOString() }] };
 }

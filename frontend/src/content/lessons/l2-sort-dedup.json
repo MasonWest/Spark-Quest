@@ -1,6 +1,6 @@
 {
   "slug": "l2-sort-dedup",
-  "version": 2,
+  "version": 3,
   "title": "排好名次，再说什么叫重复",
   "mission": "运营要找大额订单，还要清理重复数据。排序与去重各有规则，不能靠写在一起就猜它会保留谁。",
   "correction": "dropDuplicates(subset) 不保证保留输入中首次出现、最新或最大的行；先 orderBy 再 dropDuplicates 也不能保证这个规则。要每个用户的最大金额可先 groupBy 聚合；要整行按规则取一条，后续用带明确排序的窗口函数。",
@@ -164,6 +164,37 @@
         "connection": "你刚才拒绝了 orderBy 后 dropDuplicates 就一定保留最大金额的假设。去重 API 的契约没有因此改变；可靠逻辑要明确表达每用户最大值或组内排序选择。",
         "boundary": "仅要每用户最大金额可用 groupBy + max；若需要那一笔订单的其他列，后续要用有明确并列规则的窗口等方案。不能把偶然观察到的输出当作保证。",
         "caution": "原文把去重描述成保留首次，这一说法不可靠；排序后去重也不能据此保证取最大值。"
+      },
+      "remediation": {
+        "id": "dedup-time-transfer",
+        "knowledgeId": "dedup.retention",
+        "title": "换成更新时间，还能依赖排序吗？",
+        "intro": "同一设备有两条更新时间。目标要保留最新整行，同事仍想先排序再按设备去重。",
+        "code": "device | updated_at\nD1     | 2026-11-01\nD1     | 2026-11-03\n\ndf.orderBy(F.desc(\"updated_at\")).dropDuplicates([\"device\"])",
+        "prompt": "dropDuplicates 在这里承诺了什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "answer-3",
+          "options": [
+            {
+              "id": "answer-1",
+              "text": "一定保留 11 月 3 日的记录",
+              "feedback": "排序输入不能为 dropDuplicates 增加最新行的保留保证。"
+            },
+            {
+              "id": "answer-2",
+              "text": "一定保留 11 月 1 日的记录",
+              "feedback": "它也没有承诺保留最早行，不能把另一个方向当成保证。"
+            },
+            {
+              "id": "answer-3",
+              "text": "每个 device 留一行，但没有承诺留哪行",
+              "feedback": "对，要最新整行需要显式的组内排序与选择规则，例如后续会学的窗口写法。"
+            }
+          ]
+        },
+        "insight": "换成时间字段，保留规则仍必须明确。回原题也不能把“先排金额”当成按用户保留最大金额的保证。"
       }
     },
     {

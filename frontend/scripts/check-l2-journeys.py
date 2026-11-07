@@ -24,7 +24,10 @@ with sync_playwright() as p:
   l=lessons[slug];url=f"http://127.0.0.1:4173/lesson/{l['id']}"
   page.goto(url);page.locator('.lj-mission').wait_for()
   assert page.locator('.dfj-reference').first.get_attribute('open') is None
-  if content[slug]['correction']:assert page.get_by_text('原文勘误 · 阅读时以此为准').is_visible()
+  if slug.startswith('l2-'):
+   assert page.locator('#lesson-reference').get_attribute('open') is None
+   assert page.locator('#lesson-original').get_attribute('open') is None
+  elif content[slug]['correction']:assert page.get_by_text('原文勘误 · 阅读时以此为准').is_visible()
   for width in [320,390,768,1440]:
    page.set_viewport_size({'width':width,'height':844});assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'),(slug,width)
   page.set_viewport_size({'width':390,'height':844})
@@ -38,7 +41,7 @@ with sync_playwright() as p:
    page.get_by_role('button',name='检查判断').click()
    assert page.get_by_role('status').is_visible()
    assert page.get_by_role('button',name='继续下一步 →').count()==0
-   page.get_by_role('button',name='调整后再试').click()
+   page.get_by_role('button',name='先重试原题' if content[slug]['tasks'][n].get('remediation') else '调整后再试').click()
    if page.locator('.lj-field select').count():
     for i,index in enumerate(expected):page.locator('.lj-field select').nth(i).select_option(content[slug]['tasks'][n]['fields'][i]['options'][index]['id'])
    else:page.get_by_role('radio').nth(expected[0]).check()

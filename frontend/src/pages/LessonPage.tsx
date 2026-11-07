@@ -4,6 +4,8 @@ import type { LessonDetail, LessonNote } from "../types";
 import { statusLabel } from "../types";
 import LessonJourney from "../components/LessonJourney";
 import { journeys } from "../content/journeys";
+import { standardGuides } from "../content/standardGuides";
+import StandardGuide from "../components/StandardGuide";
 import RichText from "../components/RichText";
 import "./LessonPage.css";
 
@@ -137,6 +139,7 @@ export default function LessonPage() {
 
   const c = data.content;
   const journey = journeys[data.slug];
+  const standard = standardGuides[data.slug];
 
   return (
     <div className="container lesson-container">
@@ -169,8 +172,10 @@ export default function LessonPage() {
       )}
 
       {journey && <LessonJourney key={`${data.slug}:${journey.version}`} lesson={journey} detail={data} />}
-      {journey && <aside className="lj-correction"><strong>原文勘误 · 阅读时以此为准</strong><p>{journey.correction}</p><a href={journey.source} target="_blank" rel="noreferrer">核对 Spark 3.5 官方说明 ↗</a></aside>}
-      <Reference id="lesson-reference" compact={data.slug === "l2-what-is-dataframe" || !!journey}>
+      {journey && !standard && <aside className="lj-correction"><strong>原文勘误 · 阅读时以此为准</strong><p>{journey.correction}</p><a href={journey.source} target="_blank" rel="noreferrer">核对 Spark 3.5 官方说明 ↗</a></aside>}
+      {standard && <StandardGuide guide={standard} />}
+      <Reference id={standard ? "lesson-original" : "lesson-reference"} title={standard ? "历史原文、示例与旧版要点（保留查阅）" : undefined} compact={data.slug === "l2-what-is-dataframe" || !!journey}>
+      {standard && journey && <aside className="lj-correction"><strong>历史原文 · 请结合标准讲解阅读</strong><p>{journey.correction}</p><p>此处保留之前的完整讲义，包含旧示例和旧表述。当前学习请优先参考标准讲解；原有笔记在独立入口中保留。</p></aside>}
       {/* 上一课回顾 */}
       {c.review ? (
         <section className="card review-card">

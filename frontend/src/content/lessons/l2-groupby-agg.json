@@ -1,6 +1,6 @@
 {
   "slug": "l2-groupby-agg",
-  "version": 2,
+  "version": 3,
   "title": "给每个地区交一张成绩单",
   "mission": "把订单明细汇总成地区报表：有多少单、卖了多少、平均是多少。先算对，再考虑执行成本。",
   "correction": "count('*') 统计行，count('amount') 只数非空金额；avg 忽略 NULL，不能擅自把它当成零。分组后只有分组键与聚合结果可用于后续引用；是否需要 Shuffle 要看数据分布和执行计划。",
@@ -117,6 +117,37 @@
         "endMarker": "【关键约束】",
         "connection": "count(\"*\") 数三条订单行；count(\"amount\") 只数两个非空金额。这是指标定义的区别，报表中要把两个名字说清楚。",
         "boundary": "count 列值忽略 NULL，不等于忽略所有“业务无效值”；零、负数或重复是否有效，仍由你的规则决定。"
+      },
+      "remediation": {
+        "id": "count-null-transfer",
+        "knowledgeId": "aggregate.count-null",
+        "title": "三条记录，几条有读数？",
+        "intro": "传感器发来三条记录，只有第一条的 reading 非空。这次不涉及金额。",
+        "code": "reading\n8\nnull\nnull\n\n# 对整个小表分别 count(\"*\") 和 count(\"reading\")",
+        "prompt": "这份传感器表会给出哪一对计数？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "answer-1",
+          "options": [
+            {
+              "id": "answer-1",
+              "text": "3 与 1",
+              "feedback": "对，三行都计入行数；只有 8 计入非空值数。"
+            },
+            {
+              "id": "answer-2",
+              "text": "1 与 1",
+              "feedback": "两个空值行仍是记录，不能从 count(*) 中排除。"
+            },
+            {
+              "id": "answer-3",
+              "text": "3 与 3",
+              "feedback": "count(列) 不把该列的 NULL 算作有效值。"
+            }
+          ]
+        },
+        "insight": "先确定指标在数“记录”还是“已知值”，再回到订单中选择相应的 count。"
       }
     },
     {
@@ -162,6 +193,37 @@
         "endMarker": "【关键约束】",
         "connection": "本题 avg 计算两个已知金额的平均值：(120+80)/2=100。你没有把未知金额擅自当零，也没有让一个空值使整组都失效。",
         "boundary": "全空组的 avg 返回 NULL，count(\"amount\") 为 0；如果业务另有补零或按总订单数均摊的定义，必须明确实现，不能直接套 avg 的默认行为。"
+      },
+      "remediation": {
+        "id": "avg-null-transfer",
+        "knowledgeId": "aggregate.avg-null",
+        "title": "四次记录，平均值的分母是多少？",
+        "intro": "一组时长读数中有两次未知，业务尚未要求补零。只判断 Spark avg 的默认结果。",
+        "code": "duration\n20\nnull\n40\nnull\n\nF.avg(\"duration\")",
+        "prompt": "这组 avg 返回什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "answer-2",
+          "options": [
+            {
+              "id": "answer-1",
+              "text": "15，因为有四行",
+              "feedback": "15 是先将未知补成零后除以四的结果，avg 不会自动做这种业务填补。"
+            },
+            {
+              "id": "answer-2",
+              "text": "30，因为有两个非空值",
+              "feedback": "对，默认忽略 NULL，按 (20+40)/2 得到 30。"
+            },
+            {
+              "id": "answer-3",
+              "text": "NULL，因为存在未知值",
+              "feedback": "有部分 NULL 不会使整组 avg 都变 NULL；全空组才返回 NULL。"
+            }
+          ]
+        },
+        "insight": "回到订单，平均值也只使用已知金额。若业务另要补零或按全部订单摊分，需要明确实现。"
       }
     },
     {

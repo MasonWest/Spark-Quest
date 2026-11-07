@@ -43,6 +43,16 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
       const end = original.indexOf(t.reading.endMarker, from);
       requireThat(start >= 0 && original.indexOf(t.reading.startMarker, from) < 0 && end > from && text(original.slice(from, end)), `${file}/${t.id}: missing/ambiguous original reading segment`);
     }
+    if (t.remediation) {
+      const r = t.remediation;
+      for (const k of ['id', 'knowledgeId', 'title', 'intro', 'code', 'prompt', 'insight']) requireThat(text(r[k]), `${file}/${t.id}: missing remediation ${k}`);
+      const f = r.field;
+      requireThat(f && text(f.id) && text(f.label) && Array.isArray(f.options) && f.options.length >= 2, `${file}/${t.id}: invalid remediation field`);
+      unique(f.options.map(o => o.id), `${file}/${r.id}`);
+      unique(f.options.map(o => o.text), `${file}/${r.id}`);
+      requireThat(f.options.every(o => text(o.id) && text(o.text) && text(o.feedback)) && f.options.some(o => o.id === f.correctOptionId), `${file}/${r.id}: invalid remediation options`);
+      requireThat(r.prompt !== t.prompt && r.code !== t.code, `${file}/${r.id}: remediation must use different material`);
+    }
     if (t.table) requireThat(t.table.columns.length && t.table.rows.every(r => r.length === t.table.columns.length), `${file}: invalid table`);
   }
   if (l.legacyTaskIds) {
@@ -59,5 +69,38 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
   if (previous) requireThat(l.version > previous.version || (l.version === previous.version && hash === previous.hash), `${file}: published content changed; increment version, preserve IDs, then record release`);
   next[l.slug] = { version: l.version, hash };
 }
+const delayed = JSON.parse(fs.readFileSync(path.join(root, 'src/content/delayedChecks.json'), 'utf8'));
+requireThat(Number.isInteger(delayed.version) && delayed.version > 0 && Array.isArray(delayed.items), 'invalid delayed bank');
+unique(delayed.items.map(i => i.id), 'delayed items');
+for (const item of delayed.items) {
+  for (const k of ['id', 'slug', 'taskId', 'knowledgeId', 'title', 'prompt', 'code', 'explanation']) requireThat(text(item[k]), `delayed: missing ${k}`);
+  const lesson = JSON.parse(fs.readFileSync(path.join(dir, `${item.slug}.json`), 'utf8'));
+  const task = lesson.tasks.find(t => t.id === item.taskId);
+  requireThat(task?.remediation?.knowledgeId === item.knowledgeId, `delayed ${item.id}: unknown concept`);
+  requireThat(item.code !== task.code && item.code !== task.remediation.code, `delayed ${item.id}: reused material`);
+  requireThat(Array.isArray(item.options) && item.options.length >= 2 && item.options.every(o => text(o.id) && text(o.text)), `delayed ${item.id}: invalid choices`);
+  unique(item.options.map(o => o.id), item.id); unique(item.options.map(o => o.text), item.id);
+  requireThat(item.options.some(o => o.id === item.correctOptionId), `delayed ${item.id}: missing answer`);
+}
+const delayedHash = crypto.createHash('sha256').update(JSON.stringify(delayed)).digest('hex');
+const oldDelayed = releases['delayed-checks'];
+if (oldDelayed) requireThat(delayed.version > oldDelayed.version || (delayed.version === oldDelayed.version && delayedHash === oldDelayed.hash), 'published delayed bank changed; increment version and use new IDs for revised material');
+next['delayed-checks'] = { version: delayed.version, hash: delayedHash };
+const guides = JSON.parse(fs.readFileSync(path.join(root, 'src/content/standardGuides.json'), 'utf8'));
+requireThat(Number.isInteger(guides.version) && guides.version > 0, 'invalid standard guide version');
+const l2Slugs = Object.keys(next).filter(slug => slug.startsWith('l2-'));
+requireThat(Object.keys(guides.lessons).length === l2Slugs.length && l2Slugs.every(slug => guides.lessons[slug]), 'standard guides must cover L2');
+for (const [slug, guide] of Object.entries(guides.lessons)) {
+  const lesson = JSON.parse(fs.readFileSync(path.join(dir, `${slug}.json`), 'utf8'));
+  requireThat(text(guide.title) && Array.isArray(guide.sections), `${slug}: invalid guide`);
+  unique(guide.sections.map(s => s.id), `${slug}: guide IDs`);
+  requireThat(guide.sections.length === lesson.tasks.length && lesson.tasks.every(t => guide.sections.some(s => s.id === t.id)), `${slug}: guide coverage`);
+  requireThat(guide.sections.every(s => ['title','body','boundary'].every(k => text(s[k]))), `${slug}: empty standard section`);
+  requireThat(Array.isArray(guide.sources) && guide.sources.length && guide.sources.every(s => text(s.title) && new URL(s.url).origin === 'https://spark.apache.org'), `${slug}: missing official sources`);
+}
+const guidesHash = crypto.createHash('sha256').update(JSON.stringify(guides)).digest('hex');
+const oldGuides = releases['standard-guides'];
+if (oldGuides) requireThat(guides.version > oldGuides.version || (guides.version === oldGuides.version && guidesHash === oldGuides.hash), 'published standard guides changed; increment guide version');
+next['standard-guides'] = {version: guides.version, hash: guidesHash};
 if (process.argv.includes('--record-release')) fs.writeFileSync(releasePath, JSON.stringify(next, null, 2) + '\n');
-console.log(`PASS content: ${Object.keys(next).length} lessons / ${tasks} tasks, IDs, feedback, assets and release versions`);
+console.log(`PASS content: ${Object.keys(next).length - 2} lessons / ${tasks} tasks / ${delayed.items.length} delayed checks, IDs, feedback, assets and release versions`);

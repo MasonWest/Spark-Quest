@@ -52,3 +52,59 @@ test('reading excerpts resolve the original segment and reject missing/ambiguous
   assert.equal(extractReading('[start] one [start] two [end]','[start]','[end]'),null);
   assert.equal(extractReading('[start] unfinished','[start]','[end]'),null);
 });
+
+test('remediation events never complete the original step or inflate its attempt count',()=>{
+ const l=JSON.parse(fs.readFileSync(new URL('../src/content/lessons/l2-groupby-agg.json',import.meta.url),'utf8'));
+ const t=l.tasks.find(t=>t.remediation);let p=freshProgress(l);p.cursorId=t.id;
+ const wrong=Object.fromEntries(t.fields.map(f=>[f.id,f.options.find(o=>o.id!==f.correctOptionId).id]));
+ p=recordAttempt(l,p,t.id,wrong);
+ const {recordRemediation}=module.exports;
+ p=recordRemediation(l,p,t.id,t.remediation.field.correctOptionId);
+ assert.equal(p.cursorId,t.id);assert.equal(p.completedIds.length,0);
+ assert.equal(p.attempts[1].activity,'remediation');assert.ok(p.attempts[1].knowledgeId);
+ assert.match(evidence(p,t.id),/原题作答 1 次/);assert.match(evidence(p,t.id),/已通过一道变式/);
+ assert.equal(p.attempts[1].correctOptions[t.remediation.field.id],t.remediation.field.correctOptionId);
+ assert.throws(()=>recordRemediation(l,p,t.id,'not-a-real-option'));
+ const s=storage();s.setItem(progressKey(l),JSON.stringify(p));assert.equal(loadProgress(l,s).attempts.length,2);
+});
+
+
+const delayedModule = { exports: {} };
+const delayedSrc = fs.readFileSync(new URL('../src/components/delayedProgress.ts', import.meta.url), 'utf8');
+new Function('exports', 'module', 'require', ts.transpileModule(delayedSrc, {compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText)(delayedModule.exports, delayedModule, () => module.exports);
+const { delayedQueue, submitDelayed, delayedKey, day } = delayedModule.exports;
+const bank = JSON.parse(fs.readFileSync(new URL('../src/content/delayedChecks.json', import.meta.url), 'utf8'));
+function delayedFixture() {
+  const item=bank.items[0]; const l=JSON.parse(fs.readFileSync(new URL(`../src/content/lessons/${item.slug}.json`,import.meta.url),'utf8'));
+  const s=storage(); const at=Date.parse('2026-11-01T10:00:00Z'); const t=l.tasks.find(t=>t.id===item.taskId);
+  let p=recordAttempt(l,freshProgress(l),t.id,Object.fromEntries(t.fields.map(f=>[f.id,f.correctOptionId])));
+  p.attempts[0].at=new Date(at).toISOString();p.completedIds=[t.id];s.setItem(progressKey(l),JSON.stringify(p));
+  return {item,l,s,at,p,lessons:{[l.slug]:l}};
+}
+test('delayed checks require completed original evidence and a full 24 hours, with later exposure restarting the wait',()=>{
+  const {item,l,s,at,p,lessons}=delayedFixture();
+  assert.equal(delayedQueue([item],lessons,s,at+day-1).length,0);
+  assert.equal(delayedQueue([item],lessons,s,at+day).length,1);
+  const snapshot=s.getItem(progressKey(l));
+  assert.equal(delayedQueue([item],lessons,s,at+2*day).length,1);assert.equal(s.getItem(progressKey(l)),snapshot);
+  p.attempts.push({...p.attempts[0],activity:'remediation',at:new Date(at+day).toISOString()});s.setItem(progressKey(l),JSON.stringify(p));
+  assert.equal(delayedQueue([item],lessons,s,at+day+1).length,0);
+  p.completedIds=[];s.setItem(progressKey(l),JSON.stringify(p));assert.equal(delayedQueue([item],lessons,s,at+4*day).length,0);
+});
+test('delayed failure waits another day; success retires material; duplicates and stale submissions are rejected',()=>{
+  const {item,l,s,at,lessons}=delayedFixture();const original=s.getItem(progressKey(l));
+  const c=delayedQueue([item],lessons,s,at+day)[0];const wrong=item.options.find(o=>o.id!==item.correctOptionId).id;
+  assert.throws(()=>submitDelayed(c,'invalid',[item],lessons,s,at+day));
+  const e=submitDelayed(c,wrong,[item],lessons,s,at+day);assert.equal(e.correct,false);
+  assert.throws(()=>submitDelayed(c,item.correctOptionId,[item],lessons,s,at+day));
+  assert.equal(delayedQueue([item],lessons,s,at+2*day-1).length,0);
+  const again=delayedQueue([item],lessons,s,at+2*day)[0];submitDelayed(again,item.correctOptionId,[item],lessons,s,at+2*day);
+  assert.equal(delayedQueue([item],lessons,s,at+20*day).length,0);
+  assert.equal(JSON.parse(s.getItem(delayedKey)).length,2);assert.equal(s.getItem(progressKey(l)),original);
+});
+test('corrupt or denied delayed storage cannot produce a recorded success',()=>{
+  const {item,s,at,lessons}=delayedFixture();s.setItem(delayedKey,'{bad');assert.throws(()=>delayedQueue([item],lessons,s,at+day));
+  s.setItem(delayedKey,'[]');const c=delayedQueue([item],lessons,s,at+day)[0];
+  assert.throws(()=>submitDelayed(c,item.correctOptionId,[item],lessons,{getItem:s.getItem,setItem(){throw Error('denied')}},at+day));
+  assert.equal(s.getItem(delayedKey),'[]');
+});

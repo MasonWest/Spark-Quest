@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./index.css";
 import AppShell from "./components/AppShell";
+import DelayedCheckPage from "./pages/DelayedCheckPage";
 import Home from "./pages/Home";
 import LessonPage from "./pages/LessonPage";
 import MapPage from "./pages/MapPage";
@@ -26,6 +27,7 @@ createRoot(document.getElementById("root")!).render(
         </Route>
         <Route path="/lesson/:id" element={<LessonPage />} />
         <Route path="/lesson/:id/quiz" element={<QuizPage />} />
+        <Route path="/delayed-check" element={<DelayedCheckPage />} />
         <Route path="/review/:id" element={<ReviewPage />} />
       </Routes>
     </BrowserRouter>

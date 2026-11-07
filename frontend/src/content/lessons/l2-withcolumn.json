@@ -1,6 +1,6 @@
 {
   "slug": "l2-withcolumn",
-  "version": 2,
+  "version": 3,
   "title": "给每笔订单贴上标签",
   "mission": "运营要在原始订单旁加上千元金额和大额标签。今天只加工列，不丢掉订单。",
   "correction": "withColumn 返回新 DataFrame；同名替换只发生在返回的查询中。NULL 条件不会自动进入 when 的 true 分支；未命中时走 otherwise，省略 otherwise 则返回 NULL。",
@@ -162,6 +162,37 @@
         "endMarker": "【一个容易混淆的点】",
         "connection": "null >= 100 没有得到 true，因此当前写法进入 otherwise(\"普通\")。要得到“待核对”，必须先增加明确的 isNull 分支，业务意图不能靠标签名字自动实现。",
         "boundary": "when 选择条件为 true 的分支；未知不等于 true。省略 otherwise 时，未命中会得到 NULL；有默认值时要确认它是否误接了未知状态。"
+      },
+      "remediation": {
+        "id": "when-null-transfer",
+        "knowledgeId": "column.when-null",
+        "title": "把“未知”单独接住",
+        "intro": "新表有分数 10 和 NULL。要求 NULL 显示待核对，其他行显示已录入。",
+        "code": "F.when(__A__, \"待核对\").otherwise(\"已录入\")",
+        "prompt": "哪种条件准确表达“分数未知”？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "answer-2",
+          "options": [
+            {
+              "id": "answer-1",
+              "text": "F.col(\"score\") == None",
+              "feedback": "和 NULL 作普通相等比较不会得到所需的 true；请用明确的空值检查。"
+            },
+            {
+              "id": "answer-2",
+              "text": "F.col(\"score\").isNull()",
+              "feedback": "对，isNull() 明确识别空值，不会把正常的零分混在未知值中。"
+            },
+            {
+              "id": "answer-3",
+              "text": "F.col(\"score\") == 0",
+              "feedback": "零是一个具体值，不等于未知。"
+            }
+          ]
+        },
+        "insight": "业务上的未知需要单独表达。回到原题，先接住空金额，再区分大额和普通单。"
       }
     },
     {

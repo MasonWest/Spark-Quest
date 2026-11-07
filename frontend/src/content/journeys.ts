@@ -1,9 +1,14 @@
 export interface JourneyOption { id: string; text: string; feedback: string }
 export interface AnswerField { id: string; label: string; options: JourneyOption[]; correctOptionId: string }
+export interface JourneyRemedy {
+  id: string; knowledgeId: string; title: string; intro: string; code: string;
+  prompt: string; field: AnswerField; insight: string;
+}
 export interface JourneyTask {
   id: string; knowledgeIds: string[]; title: string; intro: string; code: string;
   prompt: string; fields: AnswerField[]; insight: string; ability: string;
   table?: { caption?: string; columns: string[]; rows: (string | number)[][] };
+  remediation?: JourneyRemedy;
   reading?: {
     id: string; title: string; sectionTitle?: string; startMarker: string; endMarker: string;
     connection: string; boundary: string; caution?: string;

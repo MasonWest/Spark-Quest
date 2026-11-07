@@ -1,0 +1,377 @@
+{
+  "version": 1,
+  "lessons": {
+    "l2-what-is-dataframe": {
+      "title": "动手理解 · DataFrame",
+      "sections": [
+        {
+          "id": "step-53733597a3",
+          "title": "先描述数据，再描述计算",
+          "body": "DataFrame 是带字段名与类型的分布式数据集合。把订单看作一张逻辑表，就能用列选择、筛选和聚合表达问题；执行时的数据可以分布在多个分区，不必先全部搬到 Python。",
+          "boundary": "本地小表也能使用 DataFrame；“分布式”不意味着每个操作都必然更快。"
+        },
+        {
+          "id": "step-7fe0cf2318",
+          "title": "Schema 让表达式有明确含义",
+          "body": "Schema 描述字段名、数据类型和可空性。同样显示为 120，字符串与数值允许的操作并不相同。先读结构，再判断是否需要转换，别只凭打印结果猜类型。",
+          "boundary": "Schema 描述结构，不能替代重复、缺失、金额范围等业务质量检查。"
+        },
+        {
+          "id": "step-87ed0e81b0",
+          "title": "查询步骤与取结果分开",
+          "body": "select、filter 等转换生成新的查询描述。show、count 或实际保存等操作会要求 Spark 计算结果。可以先组合筛选与聚合，再让执行引擎安排计算。",
+          "boundary": "创建 DataFrame 仍可能做本地转换、文件发现或类型推断；惰性计算不表示调用 action 前绝对没有工作。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    },
+    "l2-create-dataframe": {
+      "title": "把订单接进来",
+      "sections": [
+        {
+          "id": "step-1316abdccc",
+          "title": "小样本先把字段约定写清",
+          "body": "用本地元组创建练习 DataFrame 时，字段名与每行的位置必须对应。需要明确类型时提供 Schema，让每列代表什么一目了然；不要把大型生产数据整体收集到本地再创建。",
+          "boundary": "本地 Python 数据的验证方式与文件读取不同，不能将一种入口的行为推广到所有数据源。"
+        },
+        {
+          "id": "step-db3471f92c",
+          "title": "CSV 的表头与类型是两件事",
+          "body": "header=true 将首行解释为列名，不负责把金额自动变成数值。未提供 Schema 且未开启 inferSchema 时，CSV 列通常读为字符串。业务字段稳定时优先提供约定好的 Schema。",
+          "boundary": "分隔符、引号和空值表示也要与文件一致；表头正确不等于内容解析正确。"
+        },
+        {
+          "id": "step-042153aa70",
+          "title": "类型推断有额外代价",
+          "body": "inferSchema 需要检查文件内容来推断类型，可能增加读取工作。显式 Schema 避免依赖样本猜测，也把接口约定写在代码里。读完仍应核对结构、坏值和关键指标。",
+          "boundary": "显式 Schema 不等于自动拒绝所有坏行；严格失败需结合解析模式和业务校验。"
+        },
+        {
+          "id": "step-1e20169b95",
+          "title": "Parquet 保留结构信息",
+          "body": "Parquet 在文件中保存 Schema，常用于后续分析数据的落地。读取后仍要核对字段类型与业务期望，再组合筛选、列加工和聚合。",
+          "boundary": "文件里的 Schema 不证明所有数据都符合业务约束，也不自动解决跨批次结构演变。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-data-sources-csv.html"
+        }
+      ]
+    },
+    "l2-schema-types": {
+      "title": "给订单写一份说明书",
+      "sections": [
+        {
+          "id": "step-92c4ee417f",
+          "title": "先区分文本、数值与精度",
+          "body": "字符串金额适合保存原始文本；需要计算时应明确数值类型。DecimalType 的精度是总位数，标度是小数位数，选型要覆盖业务金额范围及后续计算。",
+          "boundary": "不要把打印出来的小数位数当成真实类型；转换溢出或坏文本的行为还受设置和入口影响。"
+        },
+        {
+          "id": "step-61ba507e24",
+          "title": "StructField 组成 StructType",
+          "body": "StructType 是整行结构，其中每个 StructField 指定字段名、类型和 nullable。例如金额可以声明为 DecimalType(10,2)，订单号可以使用 StringType。",
+          "boundary": "字段顺序与输入对应关系仍需核对，单写对类型名称不能修复错位数据。"
+        },
+        {
+          "id": "step-17de387626",
+          "title": "解析策略需要显式选择",
+          "body": "为 CSV 指定类型后，仍要决定如何处理无法解析的值。默认 PERMISSIVE 下可能出现 NULL；需要遇到解析错误就停止时，可以选择 FAILFAST，再单独校验业务规则。",
+          "boundary": "nullable=False 不能当作所有文件读取路径都会执行的非空保证。解析成功也不表示金额合理。"
+        },
+        {
+          "id": "step-82726972ef",
+          "title": "结构检查之后还有质量检查",
+          "body": "printSchema 用于看结构；isNull、范围条件、重复键检查用于验证业务。对比输入行数、异常行数和可用行数，才能解释哪些数据被拒绝或修正。",
+          "boundary": "不能仅凭 show 的几行样本判断整批数据有效；校验规则应与业务约定一致。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-data-sources-csv.html"
+        },
+        {
+          "title": "NULL 语义",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html"
+        }
+      ]
+    },
+    "l2-inspect": {
+      "title": "给订单做一次体检",
+      "sections": [
+        {
+          "id": "step-575eab8f9e",
+          "title": "工具回答不同的问题",
+          "body": "columns 看列名，schema 或 printSchema 看结构，show 看一部分行，count 计算行数。先明确问题，再选工具，避免为了看结构收集所有数据。",
+          "boundary": "看结构不等于对所有数据求值；行数与样本分别回答不同问题。"
+        },
+        {
+          "id": "step-b8c533c9f4",
+          "title": "展示不会删除数据",
+          "body": "show 默认只打印有限行，返回的是展示效果；它不把原 DataFrame 裁成这些行。需要组成只取部分数据的新查询时用 limit。",
+          "boundary": "没有完整排序规则时，展示出来的先后与子集不应当作稳定业务顺序。"
+        },
+        {
+          "id": "step-80c09d882d",
+          "title": "少显示几行不保证上游便宜",
+          "body": "show(5) 限制输出量；如果上游需要全局聚合、排序或交换，仍可能先处理大量数据。判断成本要结合执行计划与实际指标。",
+          "boundary": "不能把屏幕上行数直接换算成读取行数，也不应断言所有 show 都扫描全表。"
+        },
+        {
+          "id": "step-240e830909",
+          "title": "引用列要分清名字与值",
+          "body": "F.col(\"order amount\") 或 df[\"order amount\"] 可以引用含空格的列名；F.lit(\"order amount\") 表示固定字符串。字段名若包含点号等特殊符号，还需按标识符规则转义。",
+          "boundary": "点号常被解释为嵌套字段访问；带空格的名称与带点号的名称不是同一种情况。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.__getitem__.html"
+        }
+      ]
+    },
+    "l2-select-filter": {
+      "title": "给运营一份刚刚好的订单",
+      "sections": [
+        {
+          "id": "step-65f91c5681",
+          "title": "select 选列，filter 选行",
+          "body": "select 决定结果中有哪些字段或表达式，filter 决定哪些行满足条件。可以先选需要的字段，再用 Column 表达式表达业务条件，最后触发结果计算。",
+          "boundary": "步骤顺序必须保留后续需要的列；过早 select 掉条件列会使查询无法解析。"
+        },
+        {
+          "id": "step-a4e9ad8ec5",
+          "title": "组合列条件用逐列表达式",
+          "body": "多条件筛选使用 &、| 和 ~，并为每个比较加括号，例如 (F.col(\"amount\") > 100) & (F.col(\"region\") == \"北区\")。Python 的 and/or 不能代替列条件组合。",
+          "boundary": "字符串表达式 filter(\"amount > 100\") 是另一种 SQL 写法，不能与 Python Column 语法混写。"
+        },
+        {
+          "id": "step-444ef9a2c7",
+          "title": "未知值不会自动通过条件",
+          "body": "NULL 表示未知。普通比较包含 NULL 时通常得到未知；filter 只保留结果为 true 的行。若要保留未知金额，应显式把 isNull 条件纳入规则。",
+          "boundary": "isNull 判断缺失，不把零或空字符串当成 NULL；是否视为缺失由清洗规则决定。"
+        },
+        {
+          "id": "step-429109750e",
+          "title": "转换返回新的查询",
+          "body": "filtered = orders.filter(...) 得到新的 DataFrame，orders 仍代表原查询。要让后续使用筛选结果，应传递 filtered 或把变量重新绑定到新查询。",
+          "boundary": "逻辑上返回新查询不意味着立即复制所有数据，筛选也不保证分区数量随行数同比变化。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.filter.html"
+        },
+        {
+          "title": "NULL 语义",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html"
+        }
+      ]
+    },
+    "l2-withcolumn": {
+      "title": "给每笔订单贴上标签",
+      "sections": [
+        {
+          "id": "step-eee3d903be",
+          "title": "用表达式定义新列",
+          "body": "withColumn(\"amount_k\", F.col(\"amount\") / 1000) 表示从金额列计算千元值。新列名不同就保留原列，适合同时核对原始值与派生值。",
+          "boundary": "算术类型和精度取决于输入类型及表达式，财务计算应检查最终 Schema 与舍入要求。"
+        },
+        {
+          "id": "step-2117be145c",
+          "title": "col 引用字段，lit 生成常量",
+          "body": "F.col(\"region\") 读取每行的 region；F.lit(\"region\") 为每行生成同一个字符串。表达式需要固定数值或文字时使用 lit，不把列名和固定标签混淆。",
+          "boundary": "字符串参数在不同 API 中的解释不完全相同；学习时明确使用 col/lit 能减少歧义。"
+        },
+        {
+          "id": "step-b387e09c4f",
+          "title": "条件分支要覆盖未知",
+          "body": "F.when(F.col(\"amount\").isNull(), \"待核对\").otherwise(\"已录入\") 将未知金额单列出来。普通大小比较不能可靠地接住 NULL；未写 otherwise 时，未匹配的行得到 NULL。",
+          "boundary": "不要为了消除 NULL 就默认补零，缺失与真实零值表达不同业务事实。"
+        },
+        {
+          "id": "step-c872654bbc",
+          "title": "同名列替换与变量绑定",
+          "body": "withColumn 使用已有列名时，新查询中的该列被替换。原 DataFrame 仍代表之前的查询；df = df.withColumn(...) 是 Python 变量改指向新查询。",
+          "boundary": "替换列可能改变类型；后续代码应按结果 Schema 使用，不能把变量重新绑定误认为原数据被就地修改。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.withColumn.html"
+        },
+        {
+          "title": "NULL 语义",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html"
+        }
+      ]
+    },
+    "l2-sort-dedup": {
+      "title": "排好名次，再说什么叫重复",
+      "sections": [
+        {
+          "id": "step-936a1f3bda",
+          "title": "排序方向由业务确定",
+          "body": "orderBy(F.col(\"amount\").desc()) 表示按金额降序。要取最高若干条，先定义排序再 limit；未排序的 limit 只限制数量，不表达最大或最早。",
+          "boundary": "相同金额之间仍可能有多个合法顺序，需要更多排序键才能稳定选取。"
+        },
+        {
+          "id": "step-4d7d78c62c",
+          "title": "先确定重复的定义",
+          "body": "distinct 按全部列去重，dropDuplicates([\"order_id\"]) 按指定键判断重复。若同一键的其他字段不同，应先决定哪条业务记录才应保留。",
+          "boundary": "键唯一与记录正确不是同一个要求，不能用去重掩盖冲突数据。"
+        },
+        {
+          "id": "step-3538b5a3ab",
+          "title": "排序后去重不保证保留最大值",
+          "body": "dropDuplicates 的接口承诺按指定字段消除重复，没有承诺保留先出现、最新或最大记录。需要每键最大金额可用 groupBy 聚合；需要对应整行时用有完整排序规则的窗口。",
+          "boundary": "前面调用 orderBy 也不能把去重变成有保证的“取第一条”；不要把一次运行的结果当成接口承诺。"
+        },
+        {
+          "id": "step-a8cd2aa0f2",
+          "title": "Top N 还要定义并列规则",
+          "body": "金额相同后，可以再按订单号等稳定键排序，例如 amount 降序、order_id 升序。规则完整时，边界上的同分记录才有明确取舍。",
+          "boundary": "若业务要求所有并列记录都入选，固定 limit(N) 未必符合需求；应先澄清排名规则。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.dropDuplicates.html"
+        }
+      ]
+    },
+    "l2-groupby-agg": {
+      "title": "给每个地区交一张成绩单",
+      "sections": [
+        {
+          "id": "step-87efcc5bd0",
+          "title": "分组键确定一行代表什么",
+          "body": "groupBy(\"region\").agg(...) 把每个地区压缩成一行指标。聚合前先写清分组键、指标定义和结果粒度，避免生成无法解释的报表。",
+          "boundary": "groupBy 之后要选择聚合表达式才得到汇总 DataFrame；是否交换数据由分布与计划共同决定。"
+        },
+        {
+          "id": "step-6f1f372e24",
+          "title": "count 的对象决定口径",
+          "body": "count(\"*\") 统计组内行数；count(\"amount\") 只统计非空金额数量。订单总数与已知金额笔数是两个指标，即使在没有缺失值时数值相同也不能混用。",
+          "boundary": "缺失值增加时两者会分开；统计订单还要先确认一行是否确实代表一张订单。"
+        },
+        {
+          "id": "step-c7978bddd1",
+          "title": "avg 使用非空值作分母",
+          "body": "avg 默认忽略 NULL。金额为 120、80、NULL 时，平均值是 100，不是 200/3；全空组的 avg 与 sum 返回 NULL，而 count(列) 返回 0。",
+          "boundary": "业务若要求缺失补零或按全部订单摊分，需明确实现；不能把默认 avg 的结果直接解释成另一种指标。"
+        },
+        {
+          "id": "step-09661e764f",
+          "title": "为聚合结果命名",
+          "body": "使用 alias 为 count、sum 等表达式生成 cnt、total 之类的稳定列名。聚合结果保留分组键和聚合列，原始明细字段不再能作为普通结果列随意引用。",
+          "boundary": "默认聚合列名并非绝对不能引用，但别名更清晰；不要用任意 first 来隐藏未定义的字段选择规则。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html"
+        },
+        {
+          "title": "NULL 语义",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-null-semantics.html"
+        }
+      ]
+    },
+    "l2-write-data": {
+      "title": "把成绩单交到下一站",
+      "sections": [
+        {
+          "id": "step-fa4b4ab105",
+          "title": "输出路径通常是数据目录",
+          "body": "分布式文件写出通常在目标目录中生成多个 part 文件，还可能有提交元数据。Parquet 和 CSV 的结果都应按目录或数据集理解，不把路径名字当作单文件承诺。",
+          "boundary": "文件数量与分区和写入过程有关；不能仅凭输入行数预测输出文件数量。"
+        },
+        {
+          "id": "step-89f9993c8e",
+          "title": "重跑前选择写入语义",
+          "body": "append 追加，overwrite 覆盖，ignore 在目标存在时跳过，默认 errorifexists 遇到已有目标报错。相同批次反复 append 可能重复数据，重跑策略必须结合业务批次与路径约定。",
+          "boundary": "这些文件保存模式本身不提供完整事务或并发写入保护；不要把 overwrite 当作任何环境都安全的原子更新。"
+        },
+        {
+          "id": "step-f84125a6f2",
+          "title": "目录分区与计算分区不同",
+          "body": "partitionBy(\"region\") 按字段值组织输出目录，便于下游按条件读取；它不承诺每个地区只有一个文件。计算分区、目录分区和文件数量是相关但不同的概念。",
+          "boundary": "小文件治理要结合实际输出，盲目 coalesce(1) 可能把写入集中到一个任务。"
+        },
+        {
+          "id": "step-fde7ea2a2e",
+          "title": "写完要读回验收",
+          "body": "实际调用 parquet(path)、csv(path) 或 save(path) 才要求执行保存；只取 df.write 属性不会完成写入。写完读回检查 Schema、行数、分组指标以及输出路径，确认可被下游消费。",
+          "boundary": "当前练习环境尚未通过 Windows Parquet 文件写出验证；页面的推演不能代替真实文件读写验收。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrameWriter.mode.html"
+        }
+      ]
+    },
+    "l2-comprehensive": {
+      "title": "章末挑战：交付一份地区日报",
+      "sections": [
+        {
+          "id": "step-b3ddc568a0",
+          "title": "先写交付约定",
+          "body": "综合练习先明确输入字段、单位、有效行规则、分组粒度、输出名称和验收指标。当前任务使用自己的练习数据，结果必须从本题推导，不能照搬历史案例数值。",
+          "boundary": "约定应能被代码与断言检查；“看起来对”不是验收条件。"
+        },
+        {
+          "id": "step-c880c1a1e8",
+          "title": "把异常处理变成可解释的规则",
+          "body": "先区分空值、无效数值和业务异常，再用明确条件筛选。保留原始行数与异常行数，解释每一种记录为什么进入或离开可用集合。",
+          "boundary": "筛选会改变指标分母，不能只看到结果更干净却不说明丢弃了哪些业务事实。"
+        },
+        {
+          "id": "step-564e6a62de",
+          "title": "按指标定义选择聚合",
+          "body": "订单数、已知金额笔数、销售总额和平均值需要不同表达式。先判断每行的含义，再选 count、sum 或 avg，并给结果列命名。",
+          "boundary": "同一组中缺失金额会使 count(*) 与 count(amount) 不同，不能互相代替。"
+        },
+        {
+          "id": "step-ecf0b207ad",
+          "title": "金额单位贯穿全过程",
+          "body": "字段从元换算成千元后，阈值、报表列名和断言都要使用一致单位。对照原始金额与派生字段，逐步验证计算，没有单位的数字难以正确解释。",
+          "boundary": "不要仅为了让总数对上就重复换算；精度和舍入要求应在计算前确定。"
+        },
+        {
+          "id": "step-6a1a6061aa",
+          "title": "总计正确仍可能分组错误",
+          "body": "全表总额相同，不代表每个地区的报表正确。逐地区核对行数、笔数、金额和空值行为，再核对结果字段及是否有遗漏或多余分组。",
+          "boundary": "两个地区的错误可能互相抵消；总额只是多个验收条件之一。"
+        },
+        {
+          "id": "step-1fb694f68d",
+          "title": "用扰动检查规则是否稳固",
+          "body": "复制一条记录、加入 NULL 或补入一个新地区，再预先推断哪些指标应改变。运行实现后与推断比较，检查清洗、分组和验收是否真正表达了需求。",
+          "boundary": "扰动测试不是随意修改正式数据；在隔离练习输入上进行，写到新的目标目录并读回验收。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    }
+  }
+}

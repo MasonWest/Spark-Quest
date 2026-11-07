@@ -1,6 +1,6 @@
 {
   "slug": "l2-select-filter",
-  "version": 2,
+  "version": 3,
   "title": "给运营一份刚刚好的订单",
   "mission": "运营只要 north 地区、金额大于 100 的订单，并且只需要地区和金额。把要求翻译成查询。",
   "correction": "Column 的 == 是正确的相等比较，不能和 Python 的 and/or 一起列为禁用。filter 会减少输出行数，但通常不会自动缩减分区数；谓词下推是否减少实际文件读取，取决于数据源、条件与执行计划。",
@@ -162,6 +162,37 @@
         "endMarker": "【Column 表达式的陷阱（重点）】",
         "connection": "本题 null > 100 的结果未知，filter 只保留条件为 true 的行。原文“只保留符合条件的记录”落到空值时，就需要明确这种三值语义。",
         "boundary": "未知并不自动当作零，也不自动保留。业务若要留下未知金额，应把 isNull() 分支明确写入条件；非空校验与金额范围是不同规则。"
+      },
+      "remediation": {
+        "id": "null-filter-transfer",
+        "knowledgeId": "filter.null-condition",
+        "title": "未知温度，会被留下吗？",
+        "intro": "换成温度数据，只保留明确高于 10 的读数。先判断未知值是否能通过条件。",
+        "code": "temp\n0\nnull\n15\n\nreadings.filter(F.col(\"temp\") > 10)",
+        "prompt": "输出包含哪些值？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "answer-1",
+          "options": [
+            {
+              "id": "answer-1",
+              "text": "只有 15",
+              "feedback": "对，只有 15 的比较结果为 true；NULL 比较未知，不会自动通过。"
+            },
+            {
+              "id": "answer-2",
+              "text": "null 与 15",
+              "feedback": "未知并不等于满足，null > 10 不为 true。"
+            },
+            {
+              "id": "answer-3",
+              "text": "0、null、15",
+              "feedback": "过滤条件会排除 0，也不会把未知值默认当合格。"
+            }
+          ]
+        },
+        "insight": "回原题时也只保留条件明确为 true 的订单；业务需要保留未知值时，应明确增加 isNull 分支。"
       }
     },
     {

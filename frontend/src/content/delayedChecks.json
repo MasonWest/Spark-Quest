@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "filter.null-condition-delayed-v1",
+      "slug": "l2-select-filter",
+      "taskId": "step-444ef9a2c7",
+      "knowledgeId": "filter.null-condition",
+      "title": "NULL 筛选",
+      "prompt": "库存记录中，哪些行会留下？",
+      "code": "stock\nnull\n-2\n0\n7\n\nitems.filter(F.col(\"stock\") <= 0)",
+      "options": [
+        {
+          "id": "o0",
+          "text": "仅 -2 和 0"
+        },
+        {
+          "id": "o1",
+          "text": "null、-2 和 0"
+        },
+        {
+          "id": "o2",
+          "text": "仅 0"
+        }
+      ],
+      "correctOptionId": "o0",
+      "explanation": "比较 NULL 得到未知，filter 只留下条件为 true 的行，所以保留 -2 和 0。未知库存不能当作零。"
+    },
+    {
+      "id": "column.when-null-delayed-v1",
+      "slug": "l2-withcolumn",
+      "taskId": "step-b387e09c4f",
+      "knowledgeId": "column.when-null",
+      "title": "空值分支",
+      "prompt": "下面三行依次得到什么标签？",
+      "code": "reading\nnull\n0\n6\n\nF.when(F.col(\"reading\").isNull(), \"缺失\")\\\n .otherwise(\"已记录\")",
+      "options": [
+        {
+          "id": "o0",
+          "text": "缺失、缺失、已记录"
+        },
+        {
+          "id": "o1",
+          "text": "已记录、已记录、已记录"
+        },
+        {
+          "id": "o2",
+          "text": "缺失、已记录、已记录"
+        }
+      ],
+      "correctOptionId": "o2",
+      "explanation": "isNull 只判断未知；0 是已记录的数值，因此三行依次为缺失、已记录、已记录。"
+    },
+    {
+      "id": "dedup.retention-delayed-v1",
+      "slug": "l2-sort-dedup",
+      "taskId": "step-3538b5a3ab",
+      "knowledgeId": "dedup.retention",
+      "title": "去重保留规则",
+      "prompt": "需求是每个账号保留最高版本。这段代码保证了什么？",
+      "code": "account | revision\nA       | 2\nA       | 5\nB       | 1\n\ndf.orderBy(F.col(\"revision\").desc())\\\n  .dropDuplicates([\"account\"])",
+      "options": [
+        {
+          "id": "o0",
+          "text": "一定留下 A 的版本 5 和 B 的版本 1"
+        },
+        {
+          "id": "o1",
+          "text": "每个账号一行，但不保证 A 保留版本 5"
+        },
+        {
+          "id": "o2",
+          "text": "每个账号的全部版本都会保留"
+        }
+      ],
+      "correctOptionId": "o1",
+      "explanation": "按 account 去重保证键唯一，不保证保留排序后的最高版本。要表达最高版本，可按账号取 max；需要整行时使用有完整排序规则的窗口。"
+    },
+    {
+      "id": "aggregate.count-null-delayed-v1",
+      "slug": "l2-groupby-agg",
+      "taskId": "step-6f1f372e24",
+      "knowledgeId": "aggregate.count-null",
+      "title": "数行还是数值",
+      "prompt": "同一组内，rows 和 known 分别是多少？",
+      "code": "weight\nnull\n4\n9\nnull\n\nF.count(\"*\").alias(\"rows\")\nF.count(\"weight\").alias(\"known\")",
+      "options": [
+        {
+          "id": "o0",
+          "text": "2 和 2"
+        },
+        {
+          "id": "o1",
+          "text": "4 和 4"
+        },
+        {
+          "id": "o2",
+          "text": "4 和 2"
+        }
+      ],
+      "correctOptionId": "o2",
+      "explanation": "count(*) 统计全部四行；count(weight) 只统计两个非空值。两者对应不同的业务指标。"
+    },
+    {
+      "id": "aggregate.avg-null-delayed-v1",
+      "slug": "l2-groupby-agg",
+      "taskId": "step-c7978bddd1",
+      "knowledgeId": "aggregate.avg-null",
+      "title": "平均值分母",
+      "prompt": "不做任何填补，结果是多少？",
+      "code": "distance\nnull\n12\n18\n30\n\nF.avg(\"distance\")",
+      "options": [
+        {
+          "id": "o0",
+          "text": "15"
+        },
+        {
+          "id": "o1",
+          "text": "20"
+        },
+        {
+          "id": "o2",
+          "text": "NULL"
+        }
+      ],
+      "correctOptionId": "o1",
+      "explanation": "avg 忽略 NULL，三个已知距离的平均值为 (12+18+30)/3=20。若要按四次记录摊分，需要明确另写计算。"
+    }
+  ]
+}

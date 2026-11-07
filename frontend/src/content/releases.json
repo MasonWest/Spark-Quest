@@ -8,8 +8,8 @@
     "hash": "973b128c22ec87904ff196e6c3381630907b9810768ca499acdb2be49a5627f2"
   },
   "l2-groupby-agg": {
-    "version": 2,
-    "hash": "d5cba97c5c58ee7ee4f2f80bb8cc12298ffe04d1216b595f1687d25dd9ef86b7"
+    "version": 3,
+    "hash": "7f48558678fb8373b527415b22882b55ae6f8616a4acae22d482c95d3987547e"
   },
   "l2-inspect": {
     "version": 2,
@@ -20,20 +20,20 @@
     "hash": "13381a02bcffd38bcaa02fd40b41e0fa990098671618b5dcaaf16b05bc2b9292"
   },
   "l2-select-filter": {
-    "version": 2,
-    "hash": "f6bee426a2702fe0c4073e343b0a1cef5725dcca6b0f0703896e946af117d49f"
+    "version": 3,
+    "hash": "d499b7e5bc4ae21b6b889db3ac711e7a379dc0bdeca2fe35625a9f0069427882"
   },
   "l2-sort-dedup": {
-    "version": 2,
-    "hash": "727138329955256ba96e0ca5bb969814fd2102e3a83cfd7c3d5e3faea4d33628"
+    "version": 3,
+    "hash": "31936102d963c2b0c9696df08913f4e909e4f64053bbe06622e33b51edbc0c27"
   },
   "l2-what-is-dataframe": {
     "version": 2,
     "hash": "49d8f2442d1203ddd81e492f6185e8b5898db717f088dc9cba862368c2f00ba7"
   },
   "l2-withcolumn": {
-    "version": 2,
-    "hash": "bfc77b0733bc75ab6e1da5ba870f47d0c6a38bdae53f81ba835f2fe7a534bc44"
+    "version": 3,
+    "hash": "92261c6236b5858ffbede3f314e87264dbc64c87f137ee211b15190dbdb72d31"
   },
   "l2-write-data": {
     "version": 2,
@@ -46,5 +46,13 @@
   "l7-what-is-tuning": {
     "version": 1,
     "hash": "53938e41562f72a6269e99106ef74523506a402800f23c9f18322bbcc265ce77"
+  },
+  "delayed-checks": {
+    "version": 1,
+    "hash": "c0863c6c2902b40fef9e7d1af9cccc8d58396e0ffaa30ca34a2f7ba09e2f78be"
+  },
+  "standard-guides": {
+    "version": 1,
+    "hash": "471645ed67c60f6b09af65e8157330f39076e603311277523c7948bb5245f694"
   }
 }
