@@ -9,6 +9,7 @@ const releases = fs.existsSync(releasePath) ? JSON.parse(fs.readFileSync(release
 const courseSeed = JSON.parse(fs.readFileSync(path.join(root, '../backend/app/course_seed.json'), 'utf8'));
 const originals = new Map(courseSeed.levels.flatMap(level => level.lessons.map(lesson => [lesson.slug, lesson.content.explanation])));
 const next = {};
+const metadata = {};
 let tasks = 0;
 function requireThat(ok, message) { if (!ok) throw new Error(message); }
 function text(s) { return typeof s === 'string' && s.trim().length > 0; }
@@ -64,6 +65,7 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
     const dest = path.resolve(root, 'public', d.href.slice(1));
     requireThat(dest.startsWith(path.join(root, 'public') + path.sep) && fs.existsSync(dest), `${file}: missing/unsafe asset ${d.href}`);
   }
+  metadata[l.slug] = { slug:l.slug, version:l.version, title:l.title, tasks:l.tasks.map(t=>({id:t.id})), ...(l.legacyTaskIds ? {legacyTaskIds:l.legacyTaskIds} : {}) };
   const hash = crypto.createHash('sha256').update(JSON.stringify(l)).digest('hex');
   const previous = releases[l.slug];
   if (previous) requireThat(l.version > previous.version || (l.version === previous.version && hash === previous.hash), `${file}: published content changed; increment version, preserve IDs, then record release`);
@@ -88,8 +90,8 @@ if (oldDelayed) requireThat(delayed.version > oldDelayed.version || (delayed.ver
 next['delayed-checks'] = { version: delayed.version, hash: delayedHash };
 const guides = JSON.parse(fs.readFileSync(path.join(root, 'src/content/standardGuides.json'), 'utf8'));
 requireThat(Number.isInteger(guides.version) && guides.version > 0, 'invalid standard guide version');
-const guidedSlugs = Object.keys(next).filter(slug => /^l[23]-/.test(slug));
-requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover L2 and L3');
+const guidedSlugs = Object.keys(next).filter(slug => /^l[2-6]-/.test(slug));
+requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover L2 through L6');
 for (const [slug, guide] of Object.entries(guides.lessons)) {
   const lesson = JSON.parse(fs.readFileSync(path.join(dir, `${slug}.json`), 'utf8'));
   requireThat(text(guide.title) && Array.isArray(guide.sections), `${slug}: invalid guide`);
@@ -123,5 +125,10 @@ const capstoneHash = crypto.createHash('sha256').update(JSON.stringify({capstone
 const oldCapstones = releases['capstones'];
 if (oldCapstones) requireThat(capstones.version > oldCapstones.version || (capstones.version === oldCapstones.version && capstoneHash === oldCapstones.hash), 'published capstone/kit changed; increment capstone version');
 next['capstones'] = {version: capstones.version, hash: capstoneHash};
-if (process.argv.includes('--record-release')) fs.writeFileSync(releasePath, JSON.stringify(next, null, 2) + '\n');
+const indexPath = path.join(root, 'src/content/journeyIndex.json');
+if (process.argv.includes('--record-release')) {
+  fs.writeFileSync(releasePath, JSON.stringify(next, null, 2) + '\n');
+  fs.writeFileSync(indexPath, JSON.stringify(metadata, null, 2) + '\n');
+}
+requireThat(fs.existsSync(indexPath) && JSON.stringify(JSON.parse(fs.readFileSync(indexPath, 'utf8'))) === JSON.stringify(metadata), 'journey metadata drift: record release/index after reviewing content');
 console.log(`PASS content: ${Object.keys(next).length - 3} lessons / ${tasks} tasks / ${delayed.items.length} delayed checks, IDs, feedback, assets and release versions`);

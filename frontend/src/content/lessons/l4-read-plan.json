@@ -1,0 +1,226 @@
+{
+  "slug": "l4-read-plan",
+  "version": 1,
+  "title": "沿数据流读一棵执行树",
+  "mission": "先从叶子找来源，再识别过滤、交换、聚合与 AQE 边界。",
+  "correction": "树的显示上下位置不等于 wall-clock 时间顺序；Exchange 类型不同，星号/编号不是 Spark UI Stage 编号。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-read-plan/leaves",
+      "knowledgeIds": [
+        "l4-read-plan/leaves"
+      ],
+      "title": "数据从哪一个节点来",
+      "intro": "先读简化计划，不推断具体执行耗时。",
+      "code": "# 教学计划\nHashAggregate\n+- Exchange\n   +- Filter\n      +- Scan orders",
+      "prompt": "来源节点是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "最下面的 Scan orders",
+              "feedback": "对，先从扫描叶子追数据流。"
+            },
+            {
+              "id": "o0",
+              "text": "最上面的 HashAggregate",
+              "feedback": "那是聚合结果一侧。"
+            },
+            {
+              "id": "o2",
+              "text": "每个节点都重新读一份完整源文件",
+              "feedback": "不是每个节点都重新读源文件。"
+            }
+          ]
+        }
+      ],
+      "insight": "通常从叶子识别来源，再沿父节点理解变换。",
+      "ability": "数据从哪一个节点来",
+      "reading": {
+        "id": "l4-read-plan/leaves/reading",
+        "title": "数据从哪一个节点来",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "通常从叶子识别来源，再沿父节点理解变换。",
+        "boundary": "管线与并行执行使实际时间不能只按树从下往上排成串行秒表。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-read-plan/exchange",
+      "knowledgeIds": [
+        "l4-read-plan/exchange"
+      ],
+      "title": "看到交换，先分清哪一种",
+      "intro": "计划中有 BroadcastExchange。",
+      "code": "# 教学片段\nBroadcastHashJoin\n+- Scan fact\n+- BroadcastExchange\n   +- Scan dim",
+      "prompt": "它必定是两侧按键 Shuffle 吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "是，所有 Exchange 都是同一种",
+              "feedback": "交换类型必须区分。"
+            },
+            {
+              "id": "o1",
+              "text": "不是，这是广播交换线索",
+              "feedback": "对，广播与按键重分布不同。"
+            },
+            {
+              "id": "o2",
+              "text": "说明没有任何通信",
+              "feedback": "广播同样可能有传输与构建开销。"
+            }
+          ]
+        }
+      ],
+      "insight": "BroadcastExchange 与 ShuffleExchange 解决不同数据分布要求，不能只数 Exchange 字样。",
+      "ability": "看到交换，先分清哪一种",
+      "reading": {
+        "id": "l4-read-plan/exchange/reading",
+        "title": "看到交换，先分清哪一种",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "BroadcastExchange 与 ShuffleExchange 解决不同数据分布要求，不能只数 Exchange 字样。",
+        "boundary": "存在广播也不代表整个查询完全没有其他交换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-read-plan/markers",
+      "knowledgeIds": [
+        "l4-read-plan/markers"
+      ],
+      "title": "星号编号不是 Stage 编号",
+      "intro": "教学片段显示 *(2) HashAggregate。",
+      "code": "# 教学片段\n*(2) HashAggregate\n+- Exchange\n   +- *(1) HashAggregate",
+      "prompt": "这里的 *(2) 能直接当作什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "第二个 Spark UI Stage 的 ID",
+              "feedback": "这两套编号不是同一个概念。"
+            },
+            {
+              "id": "o2",
+              "text": "第二台 Executor",
+              "feedback": "不是机器编号。"
+            },
+            {
+              "id": "o1",
+              "text": "代码生成区域等实现标记，不能直接当 UI Stage ID",
+              "feedback": "对，运行阶段需在 UI/运行证据中确认。"
+            }
+          ]
+        }
+      ],
+      "insight": "计划中的代码生成标记与运行时 Job/Stage/Task 标识要分开。",
+      "ability": "星号编号不是 Stage 编号",
+      "reading": {
+        "id": "l4-read-plan/markers/reading",
+        "title": "星号编号不是 Stage 编号",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计划中的代码生成标记与运行时 Job/Stage/Task 标识要分开。",
+        "boundary": "输出标记因版本与模式而异，不能写成固定映射。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-read-plan/marker-transfer",
+        "knowledgeId": "l4-read-plan/markers",
+        "title": "计划里的 3 是什么",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 教学片段：*(3) Project",
+        "prompt": "能直接断定 UI 有 Stage 3 吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "能，编号完全相同",
+              "feedback": "没有这样的保证。"
+            },
+            {
+              "id": "r0",
+              "text": "不能，需看运行证据",
+              "feedback": "对，两套标记不可直接等同。"
+            },
+            {
+              "id": "r2",
+              "text": "能，且只用三个 task",
+              "feedback": "标记也不表示 task 数。"
+            }
+          ]
+        },
+        "insight": "计划节点、代码生成区域与运行 Job/Stage/Task 的编号不能直接对应。"
+      }
+    },
+    {
+      "id": "l4-read-plan/adaptive",
+      "knowledgeIds": [
+        "l4-read-plan/adaptive"
+      ],
+      "title": "初始计划还不是最终证据",
+      "intro": "计划顶部显示 AdaptiveSparkPlan isFinalPlan=false。",
+      "code": "# 教学片段\nAdaptiveSparkPlan isFinalPlan=false",
+      "prompt": "下一步应该？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "执行代表性 action 后结合最终计划与指标",
+              "feedback": "对，运行后才能核对调整。"
+            },
+            {
+              "id": "o0",
+              "text": "把当前所有选型当最终事实",
+              "feedback": "false 表示还不能当最终计划。"
+            },
+            {
+              "id": "o2",
+              "text": "认定 AQE 已经失败",
+              "feedback": "不是失败状态声明。"
+            }
+          ]
+        }
+      ],
+      "insight": "启用 AQE 时，初始计划与最终运行计划可能不同。",
+      "ability": "初始计划还不是最终证据",
+      "reading": {
+        "id": "l4-read-plan/adaptive/reading",
+        "title": "初始计划还不是最终证据",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "启用 AQE 时，初始计划与最终运行计划可能不同。",
+        "boundary": "action 类型也可能改变实际执行查询，核对的是同一目标查询与条件。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

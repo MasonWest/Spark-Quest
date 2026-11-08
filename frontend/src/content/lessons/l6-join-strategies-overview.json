@@ -1,0 +1,226 @@
+{
+  "slug": "l6-join-strategies-overview",
+  "version": 1,
+  "title": "同一个连接，几条执行路线",
+  "mission": "把逻辑语义与物理策略分开，再看适用条件。",
+  "correction": "BHJ、SMJ、SHJ 等策略受连接条件、类型、统计、配置与 AQE 影响；不是所有 JOIN 都能使用同一算法。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-join-strategies-overview/layers",
+      "knowledgeIds": [
+        "l6-join-strategies-overview/layers"
+      ],
+      "title": "INNER 与 Broadcast 是同一层吗",
+      "intro": "需求规定 INNER，计划选择 BroadcastHashJoin。",
+      "code": "# 教学情境：逻辑类型 + 物理实现。",
+      "prompt": "哪个判断正确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "INNER 是语义，BroadcastHashJoin 是物理策略",
+              "feedback": "对，分开两层术语。"
+            },
+            {
+              "id": "o1",
+              "text": "两者互相排斥",
+              "feedback": "可以同时描述同一查询。"
+            },
+            {
+              "id": "o2",
+              "text": "Broadcast 一定变成 LEFT",
+              "feedback": "广播不自动改变保留行语义。"
+            }
+          ]
+        }
+      ],
+      "insight": "逻辑连接类型决定结果，物理连接策略决定如何计算匹配。",
+      "ability": "INNER 与 Broadcast 是同一层吗",
+      "reading": {
+        "id": "l6-join-strategies-overview/layers/reading",
+        "title": "INNER 与 Broadcast 是同一层吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "逻辑连接类型决定结果，物理连接策略决定如何计算匹配。",
+        "boundary": "更换策略仍需保持结果与连接条件。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-join-strategies-overview/equi",
+      "knowledgeIds": [
+        "l6-join-strategies-overview/equi"
+      ],
+      "title": "只有大小关系还能套 Hash Join 吗",
+      "intro": "连接条件是 a.value > b.threshold，没有等值键。",
+      "code": "ON a.value > b.threshold",
+      "prompt": "应怎样判断策略？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "所有 JOIN 都可以直接按等值键哈希",
+              "feedback": "这里没有这样的等值键。"
+            },
+            {
+              "id": "o1",
+              "text": "需要看非等值条件支持的路线，不能照搬等值 Hash Join",
+              "feedback": "对，算法适用性由条件决定。"
+            },
+            {
+              "id": "o2",
+              "text": "必须把 > 改成 = 才算优化",
+              "feedback": "那会改变业务需求。"
+            }
+          ]
+        }
+      ],
+      "insight": "等值与非等值条件会限制可选连接算法。",
+      "ability": "只有大小关系还能套 Hash Join 吗",
+      "reading": {
+        "id": "l6-join-strategies-overview/equi/reading",
+        "title": "只有大小关系还能套 Hash Join 吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "等值与非等值条件会限制可选连接算法。",
+        "boundary": "不强行把不支持的条件改成另一种语义来套算法。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-join-strategies-overview/equi-transfer",
+        "knowledgeId": "l6-join-strategies-overview/equi",
+        "title": "Hint 也要有适用条件",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 条件是价格落在区间，不是按键相等。",
+        "prompt": "能保证指定 Hash Join 一定采用吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能，hint 无条件强制",
+              "feedback": "提示不取消适用性约束。"
+            },
+            {
+              "id": "r2",
+              "text": "会自动改成相等",
+              "feedback": "不能为了选型改结果。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，需满足算法和连接语义支持",
+              "feedback": "对，先看条件是否支持。"
+            }
+          ]
+        },
+        "insight": "广播提示与具体哈希算法不同，连接条件仍决定可用实现。"
+      }
+    },
+    {
+      "id": "l6-join-strategies-overview/tradeoff",
+      "knowledgeIds": [
+        "l6-join-strategies-overview/tradeoff"
+      ],
+      "title": "三种路线都没有零成本",
+      "intro": "考虑广播、排序合并和分区哈希。",
+      "code": "# 教学对比：复制构建侧 / 排序合并 / 分区建哈希。",
+      "prompt": "应比较哪些证据？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只比较名字长度",
+              "feedback": "名字不是成本模型。"
+            },
+            {
+              "id": "o2",
+              "text": "只选听起来最新的",
+              "feedback": "新旧不是适用性证据。"
+            },
+            {
+              "id": "o0",
+              "text": "数据规模/分布、内存、条件、实际计划与指标",
+              "feedback": "对，按工作负载分析。"
+            }
+          ]
+        }
+      ],
+      "insight": "不同路线在交换、排序、构建状态和内存方面有不同权衡。",
+      "ability": "三种路线都没有零成本",
+      "reading": {
+        "id": "l6-join-strategies-overview/tradeoff/reading",
+        "title": "三种路线都没有零成本",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "不同路线在交换、排序、构建状态和内存方面有不同权衡。",
+        "boundary": "不能把某策略当作所有场景的固定最优。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-join-strategies-overview/aqe",
+      "knowledgeIds": [
+        "l6-join-strategies-overview/aqe"
+      ],
+      "title": "跑起来后路线可能调整",
+      "intro": "初始计划 SMJ，执行后可能满足自适应转换条件。",
+      "code": "# 初始 isFinalPlan=false。",
+      "prompt": "结论应来自哪里？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "最终计划与运行指标，同时核对结果",
+              "feedback": "对，记录实际选型及条件。"
+            },
+            {
+              "id": "o0",
+              "text": "只看初始策略名",
+              "feedback": "初始并不一定是最终。"
+            },
+            {
+              "id": "o2",
+              "text": "只看 SQL 是否有 JOIN",
+              "feedback": "逻辑关键词不足以说明物理路线。"
+            }
+          ]
+        }
+      ],
+      "insight": "AQE 可基于运行统计调整部分连接实现，比较时注明是否开启及最终状态。",
+      "ability": "跑起来后路线可能调整",
+      "reading": {
+        "id": "l6-join-strategies-overview/aqe/reading",
+        "title": "跑起来后路线可能调整",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "AQE 可基于运行统计调整部分连接实现，比较时注明是否开启及最终状态。",
+        "boundary": "不是所有查询都会转换，也不是转换必保证更快。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

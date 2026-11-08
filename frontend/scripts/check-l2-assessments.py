@@ -1,10 +1,11 @@
 """Render the two L2 pools using read-only DB fixture IDs; never submit grades."""
 from pathlib import Path
 from contextlib import closing
-import json,sqlite3
+import json,sqlite3,sys
 from playwright.sync_api import sync_playwright
 root=Path(__file__).resolve().parents[2]
 bank=json.loads((root/'backend/app/l2_reviewed_bank.json').read_text(encoding='utf-8'))
+if '--all' in sys.argv:bank['lessons'] += json.loads((root/'backend/app/l3_l6_reviewed_bank.json').read_text(encoding='utf-8'))['lessons']
 with closing(sqlite3.connect((root/'backend/spark_quest.db').as_uri()+'?mode=ro',uri=True)) as db:
  ids=dict(db.execute('SELECT slug,id FROM lessons'))
  qids={(slug,prompt):qid for slug,prompt,qid in db.execute('SELECT l.slug,q.prompt,q.id FROM quizzes q JOIN lessons l ON l.id=q.lesson_id')}

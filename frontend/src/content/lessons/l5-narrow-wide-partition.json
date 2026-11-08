@@ -1,0 +1,226 @@
+{
+  "slug": "l5-narrow-wide-partition",
+  "version": 1,
+  "title": "顺着每份数据的去向想依赖",
+  "mission": "用局部扩展、筛选和全局排序分清分布需求。",
+  "correction": "窄/宽依赖不能按记录增减分类，不能保证固定交换次数；SQL 物理优化可能改变用户写下的步骤。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-narrow-wide-partition/flatmap",
+      "knowledgeIds": [
+        "l5-narrow-wide-partition/flatmap"
+      ],
+      "title": "一行拆成多行要不要汇合",
+      "intro": "每行文本被拆成自己的若干词，不需要其他行内容。",
+      "code": "rdd.flatMap(lambda line: line.split())",
+      "prompt": "哪个判断正确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "输出变多所以必是宽依赖",
+              "feedback": "记录数增加不是宽依赖定义。"
+            },
+            {
+              "id": "o1",
+              "text": "可以局部展开，输出量与依赖类型不同",
+              "feedback": "对，仍可从本分区独立产生输出。"
+            },
+            {
+              "id": "o2",
+              "text": "每次展开都要全局排序",
+              "feedback": "分词本身不要求排序。"
+            }
+          ]
+        }
+      ],
+      "insight": "判断依赖先问是否需要其他分区贡献，而不是看输出行数。",
+      "ability": "一行拆成多行要不要汇合",
+      "reading": {
+        "id": "l5-narrow-wide-partition/flatmap/reading",
+        "title": "一行拆成多行要不要汇合",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "判断依赖先问是否需要其他分区贡献，而不是看输出行数。",
+        "boundary": "后续按词计数是另一项分布要求。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-narrow-wide-partition/sort",
+      "knowledgeIds": [
+        "l5-narrow-wide-partition/sort"
+      ],
+      "title": "全局有序不是各自排好",
+      "intro": "A 分区有 9、1，B 有 8、2，各自排好。",
+      "code": "# 局部结果：A=[1,9]；B=[2,8]。",
+      "prompt": "按 A 后 B 拼起来就是全局有序吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "是",
+              "feedback": "拼起来是 1,9,2,8。"
+            },
+            {
+              "id": "o2",
+              "text": "只要改变量名就有序",
+              "feedback": "名字不改变数值位置。"
+            },
+            {
+              "id": "o1",
+              "text": "不是，需要满足跨分区的顺序关系",
+              "feedback": "对，局部排序不保证全局范围关系。"
+            }
+          ]
+        }
+      ],
+      "insight": "局部排序与全局顺序是不同要求，全局排序还需处理跨分区范围。",
+      "ability": "全局有序不是各自排好",
+      "reading": {
+        "id": "l5-narrow-wide-partition/sort/reading",
+        "title": "全局有序不是各自排好",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "局部排序与全局顺序是不同要求，全局排序还需处理跨分区范围。",
+        "boundary": "已有合适分布时的物理动作应看计划，不能机械保证某次数交换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-narrow-wide-partition/sort-transfer",
+        "knowledgeId": "l5-narrow-wide-partition/sort",
+        "title": "各组有序不等于整体有序",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 分区 A=[3,10]，分区 B=[4,7]。",
+        "prompt": "串接后全局递增吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "是",
+              "feedback": "10 后面出现 4。"
+            },
+            {
+              "id": "r2",
+              "text": "只要总共有四行就是",
+              "feedback": "行数不决定顺序。"
+            },
+            {
+              "id": "r1",
+              "text": "否，分区间范围重叠",
+              "feedback": "对，局部有序不够。"
+            }
+          ]
+        },
+        "insight": "全局排序不仅要求分区内部有序，还要满足分区之间的范围顺序。"
+      }
+    },
+    {
+      "id": "l5-narrow-wide-partition/filter",
+      "knowledgeIds": [
+        "l5-narrow-wide-partition/filter"
+      ],
+      "title": "删行不表示删分区",
+      "intro": "只做 filter，许多行被排除。",
+      "code": "filtered = df.filter(F.col(\"amount\") > 0)",
+      "prompt": "能保证分区数自动按比例缩减吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "不能，行数与计算分区数不同",
+              "feedback": "对，必要时另评估分区调整。"
+            },
+            {
+              "id": "o0",
+              "text": "能，删一半就减半",
+              "feedback": "没有这样的比例承诺。"
+            },
+            {
+              "id": "o2",
+              "text": "必变成单分区",
+              "feedback": "过滤不保证单分区。"
+            }
+          ]
+        }
+      ],
+      "insight": "过滤改变保留记录，通常不自动按业务行数比例重规划所有分区。",
+      "ability": "删行不表示删分区",
+      "reading": {
+        "id": "l5-narrow-wide-partition/filter/reading",
+        "title": "删行不表示删分区",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "过滤改变保留记录，通常不自动按业务行数比例重规划所有分区。",
+        "boundary": "AQE 等后续机制需结合具体计划解释。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-narrow-wide-partition/distribute",
+      "knowledgeIds": [
+        "l5-narrow-wide-partition/distribute"
+      ],
+      "title": "已有按键分布还要看什么",
+      "intro": "上游已经按 k 分布，下游也按 k 聚合。",
+      "code": "# 教学情境：分布要求可能已满足。",
+      "prompt": "正确预期是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "任何 groupBy 都必须再加一次交换",
+              "feedback": "不能忽略已有分布。"
+            },
+            {
+              "id": "o1",
+              "text": "核对计划，可能复用已有分布",
+              "feedback": "对，计划决定是否补充交换。"
+            },
+            {
+              "id": "o2",
+              "text": "完全不需要聚合",
+              "feedback": "分布合适也不等于指标已经算完。"
+            }
+          ]
+        }
+      ],
+      "insight": "分布是否已满足要求，会影响下游是否需要额外交换。",
+      "ability": "已有按键分布还要看什么",
+      "reading": {
+        "id": "l5-narrow-wide-partition/distribute/reading",
+        "title": "已有按键分布还要看什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分布是否已满足要求，会影响下游是否需要额外交换。",
+        "boundary": "分区表达式、数量和算子要求需要实际核对。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

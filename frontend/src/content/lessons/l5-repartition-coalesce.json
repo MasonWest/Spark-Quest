@@ -1,0 +1,226 @@
+{
+  "slug": "l5-repartition-coalesce",
+  "version": 1,
+  "title": "什么时候重新分布，什么时候合并",
+  "mission": "把目标分清：增加并行、减少碎片，还是按键组织。",
+  "correction": "repartition 通常通过交换重分布；coalesce 默认用于减少分区且可能不均，不能笼统保证任何调用都无交换或都更快。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-repartition-coalesce/increase",
+      "knowledgeIds": [
+        "l5-repartition-coalesce/increase"
+      ],
+      "title": "从两份增加到八份",
+      "intro": "希望把数据重新分成更多计算份。",
+      "code": "df.repartition(8)",
+      "prompt": "主要应预期什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只改元数据，不处理数据位置",
+              "feedback": "通常存在实际重分布工作。"
+            },
+            {
+              "id": "o1",
+              "text": "通常通过重分布形成目标分区",
+              "feedback": "对，但并行仍受资源限制。"
+            },
+            {
+              "id": "o2",
+              "text": "保证八台机器同时运行",
+              "feedback": "分区数不是机器或槽位保证。"
+            }
+          ]
+        }
+      ],
+      "insight": "repartition 用于重新组织计算分区，可以增加或减少数量。",
+      "ability": "从两份增加到八份",
+      "reading": {
+        "id": "l5-repartition-coalesce/increase/reading",
+        "title": "从两份增加到八份",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "repartition 用于重新组织计算分区，可以增加或减少数量。",
+        "boundary": "交换成本与后续收益需一起评估。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-repartition-coalesce/merge",
+      "knowledgeIds": [
+        "l5-repartition-coalesce/merge"
+      ],
+      "title": "从很多份合并到少数份",
+      "intro": "过滤后数据很少，考虑 coalesce(2)。",
+      "code": "df.coalesce(2)",
+      "prompt": "哪个判断更稳妥？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "合并后必然负载完全均匀",
+              "feedback": "合并不保证完美均衡。"
+            },
+            {
+              "id": "o2",
+              "text": "自动去重所有行",
+              "feedback": "分区合并不是业务去重。"
+            },
+            {
+              "id": "o1",
+              "text": "默认合并可能较少重分布，但可能留下不均",
+              "feedback": "对，检查实际分布和下游任务。"
+            }
+          ]
+        }
+      ],
+      "insight": "coalesce 默认减少分区时可避免某些完整重分布，但可能继承上游不均衡。",
+      "ability": "从很多份合并到少数份",
+      "reading": {
+        "id": "l5-repartition-coalesce/merge/reading",
+        "title": "从很多份合并到少数份",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "coalesce 默认减少分区时可避免某些完整重分布，但可能继承上游不均衡。",
+        "boundary": "是否有效还取决于上游、参数与物理优化。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-repartition-coalesce/coalesce-transfer",
+        "knowledgeId": "l5-repartition-coalesce/merge",
+        "title": "合成一份真的总更快吗",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 大数据最后 coalesce(1) 再执行昂贵工作。",
+        "prompt": "主要风险是什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "自动变成一台无限内存机器",
+              "feedback": "机器资源没有无限化。"
+            },
+            {
+              "id": "r2",
+              "text": "保证消除所有成本",
+              "feedback": "还有计算与 IO 工作。"
+            },
+            {
+              "id": "r0",
+              "text": "一个任务可能成为瓶颈",
+              "feedback": "对，过度集中会限制并行与容量。"
+            }
+          ]
+        },
+        "insight": "分区合并不保证均衡，过度集中还可能制造单任务瓶颈。"
+      }
+    },
+    {
+      "id": "l5-repartition-coalesce/keyed",
+      "knowledgeIds": [
+        "l5-repartition-coalesce/keyed"
+      ],
+      "title": "按键组织不保证每键只一个文件",
+      "intro": "为了下游按 region 聚合使用 repartition(4,\"region\")。",
+      "code": "df.repartition(4, \"region\")",
+      "prompt": "哪句准确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "分区表达式影响数据分布，但文件数是另一层",
+              "feedback": "对，计算分布与落盘布局分别核对。"
+            },
+            {
+              "id": "o1",
+              "text": "每地区永远一个文件",
+              "feedback": "文件数没有这种承诺。"
+            },
+            {
+              "id": "o2",
+              "text": "自动聚合成四行",
+              "feedback": "重分区不等于聚合。"
+            }
+          ]
+        }
+      ],
+      "insight": "按表达式重分布可满足某些后续分布需求，但不会自动生成业务汇总。",
+      "ability": "按键组织不保证每键只一个文件",
+      "reading": {
+        "id": "l5-repartition-coalesce/keyed/reading",
+        "title": "按键组织不保证每键只一个文件",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "按表达式重分布可满足某些后续分布需求，但不会自动生成业务汇总。",
+        "boundary": "AQE、分区数量与后续算子还会影响最终执行。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-repartition-coalesce/choose",
+      "knowledgeIds": [
+        "l5-repartition-coalesce/choose"
+      ],
+      "title": "小文件问题先量什么",
+      "intro": "输出文件很多，但尚不清楚实际尺寸和目录分布。",
+      "code": "# 目标：减少无意义碎片，同时保留吞吐。",
+      "prompt": "应该先做什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "无条件 coalesce(1)",
+              "feedback": "单文件可能成为瓶颈。"
+            },
+            {
+              "id": "o1",
+              "text": "测量文件大小/数量、数据量与写入并发再实验",
+              "feedback": "对，按规模与需求调节。"
+            },
+            {
+              "id": "o2",
+              "text": "把所有文件重命名成一个名字",
+              "feedback": "重命名不会完成合法数据集整理。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区调节需服务于计算与交付目标，不能把“一个文件”当普遍最优。",
+      "ability": "小文件问题先量什么",
+      "reading": {
+        "id": "l5-repartition-coalesce/choose/reading",
+        "title": "小文件问题先量什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区调节需服务于计算与交付目标，不能把“一个文件”当普遍最优。",
+        "boundary": "格式、目录分区和写入过程都会影响文件布局。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

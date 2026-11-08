@@ -1,0 +1,226 @@
+{
+  "slug": "l4-wholestage-codegen",
+  "version": 1,
+  "title": "融合算子，别把星号当奖章",
+  "mission": "知道代码生成解决什么，遇到边界时再验证。",
+  "correction": "WholeStageCodegen 不是将所有算子或 Python 逻辑融合；星号编号不是调度 Stage ID，也不是性能等级。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-wholestage-codegen/fusion",
+      "knowledgeIds": [
+        "l4-wholestage-codegen/fusion"
+      ],
+      "title": "相邻步骤为何可以少些交接",
+      "intro": "可兼容的扫描、过滤和投影进入代码生成区域。",
+      "code": "# 教学情境：兼容算子采用生成代码执行。",
+      "prompt": "主要想减少哪类开销？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "把业务结果行数直接变零",
+              "feedback": "不能为了融合改变结果。"
+            },
+            {
+              "id": "o2",
+              "text": "消除任何网络和磁盘工作",
+              "feedback": "融合不自动消除所有通信与 IO。"
+            },
+            {
+              "id": "o0",
+              "text": "相邻执行步骤的部分调用与中间交接",
+              "feedback": "对，是执行实现的优化。"
+            }
+          ]
+        }
+      ],
+      "insight": "代码生成可把兼容的算子执行片段组合，减少部分解释和调用开销。",
+      "ability": "相邻步骤为何可以少些交接",
+      "reading": {
+        "id": "l4-wholestage-codegen/fusion/reading",
+        "title": "相邻步骤为何可以少些交接",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "代码生成可把兼容的算子执行片段组合，减少部分解释和调用开销。",
+        "boundary": "能否融合及收益取决于算子、类型、配置与数据。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-wholestage-codegen/boundary",
+      "knowledgeIds": [
+        "l4-wholestage-codegen/boundary"
+      ],
+      "title": "Python UDF 出现在哪里",
+      "intro": "计划中出现 BatchEvalPython 等 Python 执行线索。",
+      "code": "# 教学片段：Project -> BatchEvalPython -> Scan",
+      "prompt": "应怎样判断？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "这是执行边界线索，应检查必要性与实际开销",
+              "feedback": "对，先看是否有等价内置表达式。"
+            },
+            {
+              "id": "o0",
+              "text": "整个 Python 函数体必被 Catalyst 等价重写",
+              "feedback": "不能如此理解 Python 函数体优化。"
+            },
+            {
+              "id": "o2",
+              "text": "每个 UDF 都必定比原生慢一万倍",
+              "feedback": "没有固定倍数结论。"
+            }
+          ]
+        }
+      ],
+      "insight": "Python 执行边界可能增加数据转换和执行开销，优先比较等价内置表达式。",
+      "ability": "Python UDF 出现在哪里",
+      "reading": {
+        "id": "l4-wholestage-codegen/boundary/reading",
+        "title": "Python UDF 出现在哪里",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "Python 执行边界可能增加数据转换和执行开销，优先比较等价内置表达式。",
+        "boundary": "不同 UDF 类型与执行路径有差异，必须按实际场景测量。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-wholestage-codegen/fusion-transfer",
+        "knowledgeId": "l4-wholestage-codegen/boundary",
+        "title": "代码生成不是万能消除器",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 执行树同时含 Exchange 和可生成代码的 Project。",
+        "prompt": "Project 融合后 Exchange 成本必消失吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "不会自动消失，分布要求仍需满足",
+              "feedback": "对，两类优化解决不同问题。"
+            },
+            {
+              "id": "r0",
+              "text": "必消失",
+              "feedback": "融合不替代跨分区分布要求。"
+            },
+            {
+              "id": "r2",
+              "text": "输出自动少一半",
+              "feedback": "融合应保持结果。"
+            }
+          ]
+        },
+        "insight": "代码生成解决执行实现问题，不自动消除交换或保证单一区域。"
+      }
+    },
+    {
+      "id": "l4-wholestage-codegen/tungsten",
+      "knowledgeIds": [
+        "l4-wholestage-codegen/tungsten"
+      ],
+      "title": "紧凑布局不是内存无限",
+      "intro": "运行时采用更紧凑的内部表示。",
+      "code": "# 教学情境：内部表示改进；大连接仍发生 spill。",
+      "prompt": "哪个判断正确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "用了 Tungsten 就不能 spill",
+              "feedback": "表示优化不能消除容量限制。"
+            },
+            {
+              "id": "o1",
+              "text": "表示优化与工作集容量是不同问题",
+              "feedback": "对，还需看工作集、并发与算子状态。"
+            },
+            {
+              "id": "o2",
+              "text": "只要生成代码就不会 OOM",
+              "feedback": "代码生成不提供无限内存。"
+            }
+          ]
+        }
+      ],
+      "insight": "紧凑内部表示和执行优化可以降低部分开销，但不消除算子状态与资源容量约束。",
+      "ability": "紧凑布局不是内存无限",
+      "reading": {
+        "id": "l4-wholestage-codegen/tungsten/reading",
+        "title": "紧凑布局不是内存无限",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "紧凑内部表示和执行优化可以降低部分开销，但不消除算子状态与资源容量约束。",
+        "boundary": "调优仍需关注实际内存、spill、GC 与任务分布。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-wholestage-codegen/measure",
+      "knowledgeIds": [
+        "l4-wholestage-codegen/measure"
+      ],
+      "title": "去掉 UDF 后如何判断成功",
+      "intro": "结果一致，计划也更简单，但尚无代表数据测量。",
+      "code": "# 对照：原 UDF 与新内置表达式。",
+      "prompt": "还缺什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "不缺，必须宣称提升十倍",
+              "feedback": "不能从写法直接许诺固定收益。"
+            },
+            {
+              "id": "o2",
+              "text": "删除原始验收断言",
+              "feedback": "正确性检查应继续保留。"
+            },
+            {
+              "id": "o1",
+              "text": "同条件多次测量与资源指标",
+              "feedback": "对，用证据决定是否保留改动。"
+            }
+          ]
+        }
+      ],
+      "insight": "先确认结果等价，再以可复现实验评价实现变化。",
+      "ability": "去掉 UDF 后如何判断成功",
+      "reading": {
+        "id": "l4-wholestage-codegen/measure/reading",
+        "title": "去掉 UDF 后如何判断成功",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先确认结果等价，再以可复现实验评价实现变化。",
+        "boundary": "小数据时间可能主要由启动或调度开销决定。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

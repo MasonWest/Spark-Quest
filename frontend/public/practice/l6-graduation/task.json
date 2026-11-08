@@ -1,0 +1,57 @@
+{
+  "task": "join",
+  "title": "L6 不丢不重的补维汇总",
+  "orders": [
+    [
+      "o1",
+      "u1",
+      30
+    ],
+    [
+      "o2",
+      "u2",
+      70
+    ],
+    [
+      "o3",
+      "u9",
+      40
+    ],
+    [
+      "o4",
+      null,
+      20
+    ],
+    [
+      "o5",
+      "u1",
+      0
+    ],
+    [
+      "o6",
+      "u2",
+      -5
+    ],
+    [
+      "o7",
+      "u2",
+      null
+    ]
+  ],
+  "dimension": [
+    [
+      "u1",
+      "east"
+    ],
+    [
+      "u2",
+      "west"
+    ],
+    [
+      null,
+      "must-not-match"
+    ]
+  ],
+  "order_schema": "id string, user_id string, amount long",
+  "dimension_schema": "user_id string, region string"
+}

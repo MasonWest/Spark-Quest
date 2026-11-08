@@ -1,0 +1,226 @@
+{
+  "slug": "l6-how-spark-chooses",
+  "version": 1,
+  "title": "统计、配置、适用条件一起决定路线",
+  "mission": "用可审查证据解释选择，避免按一个阈值背答案。",
+  "correction": "广播阈值不是独立的算法开关；统计、连接类型、键、hint 与 AQE 共同影响选型。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-how-spark-chooses/stats",
+      "knowledgeIds": [
+        "l6-how-spark-chooses/stats"
+      ],
+      "title": "文件小，不代表统计准确",
+      "intro": "小维表文件与 catalog 统计差别很大。",
+      "code": "# 合成情境：计划估计与新数据不一致。",
+      "prompt": "选型排查应？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只看文件扩展名",
+              "feedback": "扩展名不是统计。"
+            },
+            {
+              "id": "o1",
+              "text": "核对统计来源、时效和实际规模",
+              "feedback": "对，错误估计可能影响选型。"
+            },
+            {
+              "id": "o2",
+              "text": "认定优化器一定知道真实大小",
+              "feedback": "并非所有来源都有精确统计。"
+            }
+          ]
+        }
+      ],
+      "insight": "选择依赖可用统计与配置，统计缺失或陈旧会影响候选成本判断。",
+      "ability": "文件小，不代表统计准确",
+      "reading": {
+        "id": "l6-how-spark-chooses/stats/reading",
+        "title": "文件小，不代表统计准确",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "选择依赖可用统计与配置，统计缺失或陈旧会影响候选成本判断。",
+        "boundary": "实测内存与统计体积仍不是同一个量。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-how-spark-chooses/threshold",
+      "knowledgeIds": [
+        "l6-how-spark-chooses/threshold"
+      ],
+      "title": "低于阈值就保证某节点吗",
+      "intro": "关系估计低于自动广播阈值，但条件与连接类型还未检查。",
+      "code": "# 教学情境：只知道 sizeInBytes 与一个阈值。",
+      "prompt": "能直接保证 BHJ 吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，无需看其他条件",
+              "feedback": "阈值不是全部条件。"
+            },
+            {
+              "id": "o2",
+              "text": "低于阈值意味着结果一定为空",
+              "feedback": "体积阈值不决定结果语义。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，还需检查适用性、hint、配置与最终计划",
+              "feedback": "对，计划才说明实际选择。"
+            }
+          ]
+        }
+      ],
+      "insight": "阈值只是策略选择因素之一，算法还需满足连接条件与支持范围。",
+      "ability": "低于阈值就保证某节点吗",
+      "reading": {
+        "id": "l6-how-spark-chooses/threshold/reading",
+        "title": "低于阈值就保证某节点吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "阈值只是策略选择因素之一，算法还需满足连接条件与支持范围。",
+        "boundary": "AQE 的运行统计与最终计划可能进一步改变路线。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-how-spark-chooses/threshold-transfer",
+        "knowledgeId": "l6-how-spark-chooses/threshold",
+        "title": "单个参数不是全套证据",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 估计“小”，但连接没有等值键。",
+        "prompt": "可无条件宣称 BHJ 吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "不可以，算法适用条件仍需满足",
+              "feedback": "对，先检查支持路线。"
+            },
+            {
+              "id": "r0",
+              "text": "可以",
+              "feedback": "不能忽略连接条件。"
+            },
+            {
+              "id": "r2",
+              "text": "修改业务条件即可算优化",
+              "feedback": "不能牺牲语义来满足算法。"
+            }
+          ]
+        },
+        "insight": "选型需综合条件、统计、配置与实际计划，不能只看阈值。"
+      }
+    },
+    {
+      "id": "l6-how-spark-chooses/adaptive",
+      "knowledgeIds": [
+        "l6-how-spark-chooses/adaptive"
+      ],
+      "title": "运行统计让初始假设变化",
+      "intro": "初始 SMJ，执行统计后满足自适应转换条件。",
+      "code": "# 教学场景：AQE 已开启。",
+      "prompt": "应如何记录？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "记录初始与最终路线、条件与实测结果",
+              "feedback": "对，把过程变成证据。"
+            },
+            {
+              "id": "o0",
+              "text": "隐藏初始计划",
+              "feedback": "前后对照有助于解释变化。"
+            },
+            {
+              "id": "o2",
+              "text": "宣称所有查询都必转换",
+              "feedback": "转换有适用条件。"
+            }
+          ]
+        }
+      ],
+      "insight": "AQE 能根据运行信息调整部分策略，应把是否转换和收益分别验证。",
+      "ability": "运行统计让初始假设变化",
+      "reading": {
+        "id": "l6-how-spark-chooses/adaptive/reading",
+        "title": "运行统计让初始假设变化",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "AQE 能根据运行信息调整部分策略，应把是否转换和收益分别验证。",
+        "boundary": "并非所有计划变化都改善最终端到端耗时。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-how-spark-chooses/controls",
+      "knowledgeIds": [
+        "l6-how-spark-chooses/controls"
+      ],
+      "title": "保持可比条件",
+      "intro": "同一查询两次测试使用不同缓存和输入。",
+      "code": "# 方案 A 冷缓存，方案 B 热缓存。",
+      "prompt": "可直接归因于 JOIN 策略吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，只看总秒数",
+              "feedback": "缓存是混杂因素。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，需控制/记录实验条件",
+              "feedback": "对，保持正确结果与可比条件。"
+            },
+            {
+              "id": "o2",
+              "text": "一定是 hint 生效",
+              "feedback": "还未核对实际采用的策略。"
+            }
+          ]
+        }
+      ],
+      "insight": "计划比较与性能归因需要控制输入、缓存、资源和配置。",
+      "ability": "保持可比条件",
+      "reading": {
+        "id": "l6-how-spark-chooses/controls/reading",
+        "title": "保持可比条件",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计划比较与性能归因需要控制输入、缓存、资源和配置。",
+        "boundary": "记录限制比承诺固定加速倍数更可靠。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

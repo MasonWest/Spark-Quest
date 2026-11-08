@@ -1,0 +1,226 @@
+{
+  "slug": "l6-join-data-skew",
+  "version": 1,
+  "title": "一个键拖住了整条连接",
+  "mission": "从数据热点和匹配基数分辨长尾，再选择保语义的办法。",
+  "correction": "增加分区不保证拆开热点键；salting 需要正确扩展/匹配与还原，维表重复导致的基数放大不应当成纯性能问题。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-join-data-skew/tail",
+      "knowledgeIds": [
+        "l6-join-data-skew/tail"
+      ],
+      "title": "平均很快，最后一个很慢",
+      "intro": "多数 task 2 秒，一个 task 90 秒，热点键占大部分行。",
+      "code": "# 合成分布与运行指标。",
+      "prompt": "优先核对什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "慢任务键分布、匹配基数、字节和 spill",
+              "feedback": "对，定位长尾原因。"
+            },
+            {
+              "id": "o1",
+              "text": "只看平均时间就足够",
+              "feedback": "平均可能掩盖热点。"
+            },
+            {
+              "id": "o2",
+              "text": "直接删除热点行",
+              "feedback": "不能为速度丢业务数据。"
+            }
+          ]
+        }
+      ],
+      "insight": "倾斜诊断要看任务分布与键/字节/匹配对，而不是只看全局平均。",
+      "ability": "平均很快，最后一个很慢",
+      "reading": {
+        "id": "l6-join-data-skew/tail/reading",
+        "title": "平均很快，最后一个很慢",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "倾斜诊断要看任务分布与键/字节/匹配对，而不是只看全局平均。",
+        "boundary": "长尾也可能来自硬件、GC 或其他因素，应结合证据。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-join-data-skew/more-partitions",
+      "knowledgeIds": [
+        "l6-join-data-skew/more-partitions"
+      ],
+      "title": "分区翻倍，热键会自动均分吗",
+      "intro": "同一键在哈希分区后仍需相遇。",
+      "code": "# 热点键 H 占 80%。",
+      "prompt": "只增加分区数，能保证拆开 H 吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，必均匀",
+              "feedback": "同键路由仍可能集中。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，同键仍可能集中",
+              "feedback": "对，需针对热点与语义设计方案。"
+            },
+            {
+              "id": "o2",
+              "text": "H 会自动删除",
+              "feedback": "分区不会自动删除业务键。"
+            }
+          ]
+        }
+      ],
+      "insight": "增加分区常能分散不同键，但不保证拆开一个热点键的全部工作。",
+      "ability": "分区翻倍，热键会自动均分吗",
+      "reading": {
+        "id": "l6-join-data-skew/more-partitions/reading",
+        "title": "分区翻倍，热键会自动均分吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "增加分区常能分散不同键，但不保证拆开一个热点键的全部工作。",
+        "boundary": "AQE 等机制可处理部分倾斜，仍需看适用性与最终执行。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-join-data-skew/skew-transfer",
+        "knowledgeId": "l6-join-data-skew/more-partitions",
+        "title": "同键依旧同路由",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 热点商品占多数，repartition(100,k)。",
+        "prompt": "能保证该键平均进 100 份吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能",
+              "feedback": "不是随机把同键拆开。"
+            },
+            {
+              "id": "r2",
+              "text": "会把金额自动除以 100",
+              "feedback": "重分区不能改变金额。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，按键路由仍可能集中",
+              "feedback": "对，数量与键分布不同。"
+            }
+          ]
+        },
+        "insight": "热点键不能靠盲目增加分区解决，应核对实际负载和匹配规模。"
+      }
+    },
+    {
+      "id": "l6-join-data-skew/salting",
+      "knowledgeIds": [
+        "l6-join-data-skew/salting"
+      ],
+      "title": "加盐不是随便改键",
+      "intro": "准备把热点键拆成多份再连接。",
+      "code": "# 教学设想：fact 加盐，dim 仍只有未加盐的键。",
+      "prompt": "主要缺什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "更短的字段名",
+              "feedback": "名字不解决匹配关系。"
+            },
+            {
+              "id": "o2",
+              "text": "删除所有重复检查",
+              "feedback": "基数验收尤其重要。"
+            },
+            {
+              "id": "o0",
+              "text": "正确的匹配扩展与结果还原规则",
+              "feedback": "对，单边乱加盐可能丢匹配。"
+            }
+          ]
+        }
+      ],
+      "insight": "salting 必须保证原匹配语义，正确扩展需要的另一侧并避免多算或漏算。",
+      "ability": "加盐不是随便改键",
+      "reading": {
+        "id": "l6-join-data-skew/salting/reading",
+        "title": "加盐不是随便改键",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "salting 必须保证原匹配语义，正确扩展需要的另一侧并避免多算或漏算。",
+        "boundary": "复杂连接类型和聚合还原有额外约束，不应盲目套模板。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-join-data-skew/cardinality",
+      "knowledgeIds": [
+        "l6-join-data-skew/cardinality"
+      ],
+      "title": "慢是因为数据坏了吗",
+      "intro": "维表同一用户重复千次，订单连接后膨胀。",
+      "code": "# 期望一对一补维，实际一对多放大。",
+      "prompt": "应先处理什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "确认唯一性与冲突保留规则，再谈执行优化",
+              "feedback": "对，先保证正确关系。"
+            },
+            {
+              "id": "o0",
+              "text": "只调分区掩盖放大",
+              "feedback": "不修语义会得到错误金额。"
+            },
+            {
+              "id": "o2",
+              "text": "认定这是正常广播现象",
+              "feedback": "广播不替代键约束。"
+            }
+          ]
+        }
+      ],
+      "insight": "基数异常可能同时造成错误结果和性能问题，先验证数据约定。",
+      "ability": "慢是因为数据坏了吗",
+      "reading": {
+        "id": "l6-join-data-skew/cardinality/reading",
+        "title": "慢是因为数据坏了吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "基数异常可能同时造成错误结果和性能问题，先验证数据约定。",
+        "boundary": "不要随意 dropDuplicates 来隐藏冲突。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

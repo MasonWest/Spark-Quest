@@ -1,4 +1,4 @@
-import type { JourneyLesson } from "../content/journeys";
+import type { JourneyLesson, JourneyMetadata } from "../content/journeys";
 
 export interface Attempt {
   runId: string; taskId: string; answers: Record<string, string>;
@@ -9,12 +9,14 @@ export interface JourneyProgress {
   version: number; runId: string; cursorId: string | null;
   completedIds: string[]; migratedIds: string[]; attempts: Attempt[];
 }
+export type ProgressLesson = Pick<JourneyMetadata, "slug" | "version" | "tasks" | "legacyTaskIds">;
+
 type Storage = Pick<globalThis.Storage, "getItem" | "setItem">;
-export const progressKey = (lesson: JourneyLesson) => `spark-quest:learning:${lesson.slug}:v${lesson.version}`;
-export function freshProgress(lesson: JourneyLesson): JourneyProgress {
+export const progressKey = (lesson: ProgressLesson) => `spark-quest:learning:${lesson.slug}:v${lesson.version}`;
+export function freshProgress(lesson: ProgressLesson): JourneyProgress {
   return { version: lesson.version, runId: globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`, cursorId: lesson.tasks[0].id, completedIds: [], migratedIds: [], attempts: [] };
 }
-export function loadProgress(lesson: JourneyLesson, storage: Storage): JourneyProgress {
+export function loadProgress(lesson: ProgressLesson, storage: Storage): JourneyProgress {
   const fresh = freshProgress(lesson);
   const ids = new Set(lesson.tasks.map(t => t.id));
   try {

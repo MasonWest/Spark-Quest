@@ -1,0 +1,37 @@
+{
+  "task": "plan",
+  "title": "L4 执行计划诊断",
+  "orders": [
+    [
+      "a",
+      "east",
+      30,
+      "long memo"
+    ],
+    [
+      "b",
+      "west",
+      90,
+      "memo"
+    ],
+    [
+      "c",
+      "east",
+      70,
+      "memo"
+    ],
+    [
+      "d",
+      "west",
+      -5,
+      "memo"
+    ],
+    [
+      "e",
+      "north",
+      null,
+      "memo"
+    ]
+  ],
+  "schema": "id string, region string, amount long, note string"
+}

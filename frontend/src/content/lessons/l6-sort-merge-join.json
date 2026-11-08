@@ -1,0 +1,226 @@
+{
+  "slug": "l6-sort-merge-join",
+  "version": 1,
+  "title": "有序相遇，排序与分布都要看",
+  "mission": "拆解排序合并连接的前置条件和常见成本。",
+  "correction": "SMJ 不是每次必定双边重新 Shuffle/Sort；已有分布/顺序可能复用，AQE 也可能改选型。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-sort-merge-join/route",
+      "knowledgeIds": [
+        "l6-sort-merge-join/route"
+      ],
+      "title": "为什么名字里有 Sort 和 Merge",
+      "intro": "两侧按等值键匹配，采用排序合并路线。",
+      "code": "# 简化教学：满足分布 -> 按键有序 -> 合并匹配。",
+      "prompt": "主要需要哪些条件？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "两侧所有行都必须在 Driver",
+              "feedback": "不是收集全部数据的算法要求。"
+            },
+            {
+              "id": "o2",
+              "text": "只要字段名相同就够",
+              "feedback": "名称不保证分布或有序。"
+            },
+            {
+              "id": "o0",
+              "text": "匹配分区内按键有序，并满足相应分布",
+              "feedback": "对，分布与顺序共同服务匹配。"
+            }
+          ]
+        }
+      ],
+      "insight": "SMJ 利用键有序的输入合并匹配，必要的分布和排序需由计划满足。",
+      "ability": "为什么名字里有 Sort 和 Merge",
+      "reading": {
+        "id": "l6-sort-merge-join/route/reading",
+        "title": "为什么名字里有 Sort 和 Merge",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SMJ 利用键有序的输入合并匹配，必要的分布和排序需由计划满足。",
+        "boundary": "实际支持条件还取决于键类型、连接类型与实现。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-sort-merge-join/reuse",
+      "knowledgeIds": [
+        "l6-sort-merge-join/reuse"
+      ],
+      "title": "输入已经有合适分布与顺序",
+      "intro": "下游排序合并连接要求可能被上游满足。",
+      "code": "# 教学情境：已有符合要求的键分布/排序。",
+      "prompt": "是否必定再执行两边完整交换和排序？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "不一定，需核对实际计划是否复用条件",
+              "feedback": "对，不能按算法名固定数节点。"
+            },
+            {
+              "id": "o0",
+              "text": "必定，每个 SMJ 都一样",
+              "feedback": "忽略了已有条件和优化。"
+            },
+            {
+              "id": "o2",
+              "text": "完全不需要执行匹配",
+              "feedback": "条件合适也仍需连接计算。"
+            }
+          ]
+        }
+      ],
+      "insight": "必要时补充分布与顺序，已满足时可能复用；计划是检查额外工作的依据。",
+      "ability": "输入已经有合适分布与顺序",
+      "reading": {
+        "id": "l6-sort-merge-join/reuse/reading",
+        "title": "输入已经有合适分布与顺序",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "必要时补充分布与顺序，已满足时可能复用；计划是检查额外工作的依据。",
+        "boundary": "不要把存在 SMJ 直接翻译成固定交换/排序次数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-sort-merge-join/reuse-transfer",
+        "knowledgeId": "l6-sort-merge-join/reuse",
+        "title": "先看已有条件",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 教学计划里 SMJ 某侧没有新的 Sort。",
+        "prompt": "能直接判定计划漏算吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能",
+              "feedback": "不能只看缺少一个名字就判错。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，可能已有顺序，需核对具体计划",
+              "feedback": "对，检查要求如何满足。"
+            },
+            {
+              "id": "r2",
+              "text": "说明它是 CROSS JOIN",
+              "feedback": "并非因此改变语义。"
+            }
+          ]
+        },
+        "insight": "满足分布与顺序的工作可能被复用，不应机械重复添加。"
+      }
+    },
+    {
+      "id": "l6-sort-merge-join/memory",
+      "knowledgeIds": [
+        "l6-sort-merge-join/memory"
+      ],
+      "title": "SMJ 就没有内存压力吗",
+      "intro": "大连接采用 SMJ，同时出现 sort spill 与长尾。",
+      "code": "# 合成运行证据。",
+      "prompt": "应如何看待？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "SMJ 绝不需要内存",
+              "feedback": "排序和缓冲仍消耗资源。"
+            },
+            {
+              "id": "o1",
+              "text": "排序、缓冲和倾斜仍可能造成资源压力",
+              "feedback": "对，按节点与指标诊断。"
+            },
+            {
+              "id": "o2",
+              "text": "一定是广播维表太大",
+              "feedback": "当前不能直接归因为广播。"
+            }
+          ]
+        }
+      ],
+      "insight": "SMJ 的资源问题常需结合排序、spill、键分布和任务大小判断。",
+      "ability": "SMJ 就没有内存压力吗",
+      "reading": {
+        "id": "l6-sort-merge-join/memory/reading",
+        "title": "SMJ 就没有内存压力吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SMJ 的资源问题常需结合排序、spill、键分布和任务大小判断。",
+        "boundary": "算法名不是 OOM 或 spill 的豁免证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-sort-merge-join/duplicates",
+      "knowledgeIds": [
+        "l6-sort-merge-join/duplicates"
+      ],
+      "title": "换成 SMJ 能消除重复维表吗",
+      "intro": "维表同键两行导致金额放大。",
+      "code": "# 相同逻辑 INNER JOIN，物理算法从 BHJ 改 SMJ。",
+      "prompt": "会自动修正基数错误吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "会，排序会去重",
+              "feedback": "排序不等于业务去重。"
+            },
+            {
+              "id": "o2",
+              "text": "必然改成单行",
+              "feedback": "不会按算法名自动压行。"
+            },
+            {
+              "id": "o1",
+              "text": "不会，匹配语义与重复数据仍存在",
+              "feedback": "对，需修正唯一性约定或处理规则。"
+            }
+          ]
+        }
+      ],
+      "insight": "连接正确性先由逻辑条件和数据基数决定，换物理策略不应悄悄改变结果。",
+      "ability": "换成 SMJ 能消除重复维表吗",
+      "reading": {
+        "id": "l6-sort-merge-join/duplicates/reading",
+        "title": "换成 SMJ 能消除重复维表吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "连接正确性先由逻辑条件和数据基数决定，换物理策略不应悄悄改变结果。",
+        "boundary": "重复冲突的正确保留规则需要业务定义。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

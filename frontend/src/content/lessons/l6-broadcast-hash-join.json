@@ -1,0 +1,226 @@
+{
+  "slug": "l6-broadcast-hash-join",
+  "version": 1,
+  "title": "小表广播，先问装得下吗",
+  "mission": "理解构建侧复制、匹配要求与内存风险。",
+  "correction": "广播不等于把事实表 collect 到 Python，也不保证消除整个查询所有 Shuffle；压缩文件大小不是哈希结构内存上限。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-broadcast-hash-join/build",
+      "knowledgeIds": [
+        "l6-broadcast-hash-join/build"
+      ],
+      "title": "广播复制的是哪一类工作",
+      "intro": "大事实表与适合广播的小维表做等值连接。",
+      "code": "# 教学情境：维表为候选构建侧。",
+      "prompt": "主要路线是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "把大表全部收进 Python Driver 列表",
+              "feedback": "这不是分布式广播连接的含义。"
+            },
+            {
+              "id": "o0",
+              "text": "把小侧传给执行节点构建匹配结构",
+              "feedback": "对，复制较小构建关系来本地匹配。"
+            },
+            {
+              "id": "o2",
+              "text": "把两表结果提前写死",
+              "feedback": "不能代替真实匹配。"
+            }
+          ]
+        }
+      ],
+      "insight": "BHJ 在适用的等值连接中广播构建侧，让另一侧分区据此匹配。",
+      "ability": "广播复制的是哪一类工作",
+      "reading": {
+        "id": "l6-broadcast-hash-join/build/reading",
+        "title": "广播复制的是哪一类工作",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "BHJ 在适用的等值连接中广播构建侧，让另一侧分区据此匹配。",
+        "boundary": "能构建哪一侧还受连接类型等适用条件限制。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-broadcast-hash-join/memory",
+      "knowledgeIds": [
+        "l6-broadcast-hash-join/memory"
+      ],
+      "title": "磁盘 5 MiB 就必然安全吗",
+      "intro": "维表文件压缩后 5 MiB，尚无运行构建内存指标。",
+      "code": "# 合成情境：压缩数据与内存哈希结构不同。",
+      "prompt": "正确判断是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "一定只占 5 MiB 内存",
+              "feedback": "压缩文件体积不是内存上限。"
+            },
+            {
+              "id": "o2",
+              "text": "只要改成广播就不会 OOM",
+              "feedback": "广播复制可能制造内存压力。"
+            },
+            {
+              "id": "o1",
+              "text": "核对统计、反压缩与哈希开销及各节点余量",
+              "feedback": "对，需要估算并实测容量。"
+            }
+          ]
+        }
+      ],
+      "insight": "广播容量要考虑实际构建关系、结构膨胀、并发与节点内存，而非只看磁盘文件。",
+      "ability": "磁盘 5 MiB 就必然安全吗",
+      "reading": {
+        "id": "l6-broadcast-hash-join/memory/reading",
+        "title": "磁盘 5 MiB 就必然安全吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "广播容量要考虑实际构建关系、结构膨胀、并发与节点内存，而非只看磁盘文件。",
+        "boundary": "小样本或计划估计不能替代运行验证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-broadcast-hash-join/memory-transfer",
+        "knowledgeId": "l6-broadcast-hash-join/memory",
+        "title": "广播后的代价在哪",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 小文件展开并建哈希后大幅膨胀。",
+        "prompt": "应怎样处理选型？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "结合节点容量和实际构建量评估",
+              "feedback": "对，容量需要证据。"
+            },
+            {
+              "id": "r0",
+              "text": "忽略膨胀，文件小就安全",
+              "feedback": "真实工作集才影响安全余量。"
+            },
+            {
+              "id": "r2",
+              "text": "把所有事实数据 collect 到 Driver",
+              "feedback": "那可能造成更大风险。"
+            }
+          ]
+        },
+        "insight": "广播在执行节点消耗构建内存，文件大小和并发都不能忽略。"
+      }
+    },
+    {
+      "id": "l6-broadcast-hash-join/shuffle",
+      "knowledgeIds": [
+        "l6-broadcast-hash-join/shuffle"
+      ],
+      "title": "BHJ 出现后聚合还可能交换吗",
+      "intro": "连接后还要按 region 汇总。",
+      "code": "# 教学片段：HashAggregate -> Exchange -> BroadcastHashJoin。",
+      "prompt": "哪句正确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "连接路线与下游聚合的分布要求要分别看",
+              "feedback": "对，逐段解释计划。"
+            },
+            {
+              "id": "o0",
+              "text": "有 BHJ 就整个查询零 Shuffle",
+              "feedback": "其他算子仍可能要求重分布。"
+            },
+            {
+              "id": "o2",
+              "text": "Exchange 一定是计划错误",
+              "feedback": "可能是合法聚合分布要求。"
+            }
+          ]
+        }
+      ],
+      "insight": "广播路线可能避免某些连接侧重分布，但不消除全查询其他交换。",
+      "ability": "BHJ 出现后聚合还可能交换吗",
+      "reading": {
+        "id": "l6-broadcast-hash-join/shuffle/reading",
+        "title": "BHJ 出现后聚合还可能交换吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "广播路线可能避免某些连接侧重分布，但不消除全查询其他交换。",
+        "boundary": "需要区分 BroadcastExchange 与 ShuffleExchange。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-broadcast-hash-join/verify",
+      "knowledgeIds": [
+        "l6-broadcast-hash-join/verify"
+      ],
+      "title": "Hint 写上后如何证明采用",
+      "intro": "写了 broadcast(dim)，还没有读取计划。",
+      "code": "fact.join(F.broadcast(dim), \"user_id\")",
+      "prompt": "下一步应？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "直接宣布必定更快",
+              "feedback": "提示不是无条件性能保证。"
+            },
+            {
+              "id": "o1",
+              "text": "核对实际连接节点与构建侧，再测结果和资源",
+              "feedback": "对，验证实施与收益。"
+            },
+            {
+              "id": "o2",
+              "text": "删除全部检查",
+              "feedback": "检查是必要证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "广播提示表达选型倾向，实际采用和安全性仍需核对计划、语义和指标。",
+      "ability": "Hint 写上后如何证明采用",
+      "reading": {
+        "id": "l6-broadcast-hash-join/verify/reading",
+        "title": "Hint 写上后如何证明采用",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "广播提示表达选型倾向，实际采用和安全性仍需核对计划、语义和指标。",
+        "boundary": "不同连接条件或类型可能不支持所想的算法。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

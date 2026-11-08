@@ -1,0 +1,226 @@
+{
+  "slug": "l4-dependency-narrow-wide",
+  "version": 1,
+  "title": "哪一步需要跨分区贡献",
+  "mission": "通过数据来源判断依赖，不死记算子名。",
+  "correction": "窄依赖不保证数据量不变或只有一个 stage；宽依赖与交换是分布要求线索，具体查询仍看实际计划。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-dependency-narrow-wide/local",
+      "knowledgeIds": [
+        "l4-dependency-narrow-wide/local"
+      ],
+      "title": "每行乘二要找其他分区吗",
+      "intro": "一个分区拿到自己的金额就能逐行乘二。",
+      "code": "rdd.map(lambda amount: amount * 2)",
+      "prompt": "这个变换本身需要汇合其他分区吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "不需要，可局部处理",
+              "feedback": "对，这一步无需其他分区的贡献。"
+            },
+            {
+              "id": "o1",
+              "text": "必须收齐全表",
+              "feedback": "单行变换不需要全局数据。"
+            },
+            {
+              "id": "o2",
+              "text": "必须先广播所有分区",
+              "feedback": "没有这个要求。"
+            }
+          ]
+        }
+      ],
+      "insight": "窄依赖类变换通常允许按输入分区局部推进。",
+      "ability": "每行乘二要找其他分区吗",
+      "reading": {
+        "id": "l4-dependency-narrow-wide/local/reading",
+        "title": "每行乘二要找其他分区吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "窄依赖类变换通常允许按输入分区局部推进。",
+        "boundary": "它的上游或下游仍可能包含交换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-dependency-narrow-wide/global",
+      "knowledgeIds": [
+        "l4-dependency-narrow-wide/global"
+      ],
+      "title": "同一个键在两处分散",
+      "intro": "分区 A 有 north/10，分区 B 有 north/20。",
+      "code": "目标：每个 region 只有一个总额。",
+      "prompt": "仅让每分区独立求和，能直接完成最终目标吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，两份结果自动是一份",
+              "feedback": "两份局部结果还未合并。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，最终还需汇合相同键的贡献",
+              "feedback": "对，这就是分布要求。"
+            },
+            {
+              "id": "o2",
+              "text": "只要换字段名就能",
+              "feedback": "改名不完成汇合。"
+            }
+          ]
+        }
+      ],
+      "insight": "按键全局汇总需要汇合相同键的贡献；上游不满足分布要求时常引入交换。",
+      "ability": "同一个键在两处分散",
+      "reading": {
+        "id": "l4-dependency-narrow-wide/global/reading",
+        "title": "同一个键在两处分散",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "按键全局汇总需要汇合相同键的贡献；上游不满足分布要求时常引入交换。",
+        "boundary": "已满足分布或优化后的计划可能避免某些额外交换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-dependency-narrow-wide/dependency-transfer",
+        "knowledgeId": "l4-dependency-narrow-wide/global",
+        "title": "两个局部总分",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# A: X=4；B: X=9；目标一行 X 的总分。",
+        "prompt": "缺少什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "多起一个变量名",
+              "feedback": "名字不合并数据。"
+            },
+            {
+              "id": "r0",
+              "text": "把两个局部贡献合并",
+              "feedback": "对，应得到全局总分。"
+            },
+            {
+              "id": "r2",
+              "text": "只保留先到的一份",
+              "feedback": "会丢掉一部分贡献。"
+            }
+          ]
+        },
+        "insight": "局部结果不等于全局结果，关键是相同键贡献是否已经汇合。"
+      }
+    },
+    {
+      "id": "l4-dependency-narrow-wide/rows",
+      "knowledgeIds": [
+        "l4-dependency-narrow-wide/rows"
+      ],
+      "title": "窄依赖会不会减少行数",
+      "intro": "filter 在每个分区内去掉无效金额。",
+      "code": "rdd.filter(lambda amount: amount > 0)",
+      "prompt": "哪个判断正确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "窄依赖必须保持行数",
+              "feedback": "依赖类型不规定行数守恒。"
+            },
+            {
+              "id": "o2",
+              "text": "过滤必然改成一个分区",
+              "feedback": "过滤不承诺改变分区数。"
+            },
+            {
+              "id": "o1",
+              "text": "可减少行数，依赖类型与行数变化不同",
+              "feedback": "对，过滤局部处理也能减少记录。"
+            }
+          ]
+        }
+      ],
+      "insight": "依赖描述数据来源关系，不是输出行数或文件数量的标签。",
+      "ability": "窄依赖会不会减少行数",
+      "reading": {
+        "id": "l4-dependency-narrow-wide/rows/reading",
+        "title": "窄依赖会不会减少行数",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "依赖描述数据来源关系，不是输出行数或文件数量的标签。",
+        "boundary": "flatMap 也可能局部增加记录。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-dependency-narrow-wide/boundary",
+      "knowledgeIds": [
+        "l4-dependency-narrow-wide/boundary"
+      ],
+      "title": "不要从名字猜固定 Stage 数",
+      "intro": "一个查询含过滤、聚合和自适应计划。",
+      "code": "# 目标：解释可能的调度边界。",
+      "prompt": "该依据什么确认实际 Stage？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "计划与 Spark UI 的实际运行记录",
+              "feedback": "对，运行调度还受交换、复用和 AQE 影响。"
+            },
+            {
+              "id": "o0",
+              "text": "代码里函数调用数量",
+              "feedback": "代码步骤不一一对应运行阶段。"
+            },
+            {
+              "id": "o2",
+              "text": "只数 map 名字",
+              "feedback": "map 数量不是完整证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "交换常形成调度边界，但确切 Job/Stage/Task 应核对实际执行。",
+      "ability": "不要从名字猜固定 Stage 数",
+      "reading": {
+        "id": "l4-dependency-narrow-wide/boundary/reading",
+        "title": "不要从名字猜固定 Stage 数",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "交换常形成调度边界，但确切 Job/Stage/Task 应核对实际执行。",
+        "boundary": "explain 本身不能给所有后续 action 承诺固定调度次数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

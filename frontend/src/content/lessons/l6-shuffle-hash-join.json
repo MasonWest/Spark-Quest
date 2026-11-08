@@ -1,0 +1,226 @@
+{
+  "slug": "l6-shuffle-hash-join",
+  "version": 1,
+  "title": "按分区建哈希，也要装得下",
+  "mission": "区分全局广播与局部构建，检查每份的容量。",
+  "correction": "SHJ 仍需满足分布并在构建分区建立哈希；可构建哪侧和是否选用受条件限制，不是禁广播后的必然回退。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-shuffle-hash-join/local-build",
+      "knowledgeIds": [
+        "l6-shuffle-hash-join/local-build"
+      ],
+      "title": "每份自己建一张匹配结构",
+      "intro": "等值连接采用分区哈希路线。",
+      "code": "# 教学模型：同键分布满足后，在每份构建哈希。",
+      "prompt": "与广播的主要区别之一是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "通常按分区构建，而不是把整侧关系复制给各节点",
+              "feedback": "对，构建范围与分布路线不同。"
+            },
+            {
+              "id": "o1",
+              "text": "不再需要任何键条件",
+              "feedback": "哈希匹配需要适用条件。"
+            },
+            {
+              "id": "o2",
+              "text": "自动消除所有排序与内存需求",
+              "feedback": "仍有分布和内存要求。"
+            }
+          ]
+        }
+      ],
+      "insight": "SHJ 在满足分布的分区中建立构建侧匹配结构。",
+      "ability": "每份自己建一张匹配结构",
+      "reading": {
+        "id": "l6-shuffle-hash-join/local-build/reading",
+        "title": "每份自己建一张匹配结构",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "SHJ 在满足分布的分区中建立构建侧匹配结构。",
+        "boundary": "不等于所有 JOIN 都能用，也不意味着无交换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-shuffle-hash-join/partition-memory",
+      "knowledgeIds": [
+        "l6-shuffle-hash-join/partition-memory"
+      ],
+      "title": "总体不大，一份特别大",
+      "intro": "构建侧总量尚可，但一个热点分区远大于其他份。",
+      "code": "# 合成证据：单分区建表接近内存上限。",
+      "prompt": "应重点检查？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只看整表平均大小",
+              "feedback": "平均会掩盖热点。"
+            },
+            {
+              "id": "o1",
+              "text": "最大构建分区与并发内存余量",
+              "feedback": "对，任务级容量很重要。"
+            },
+            {
+              "id": "o2",
+              "text": "只看磁盘文件名",
+              "feedback": "文件名不解释资源占用。"
+            }
+          ]
+        }
+      ],
+      "insight": "局部分区建哈希需要关注最大工作集，而不仅是总量或平均值。",
+      "ability": "总体不大，一份特别大",
+      "reading": {
+        "id": "l6-shuffle-hash-join/partition-memory/reading",
+        "title": "总体不大，一份特别大",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "局部分区建哈希需要关注最大工作集，而不仅是总量或平均值。",
+        "boundary": "并发任务与其他算子也会占用节点资源。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-shuffle-hash-join/partition-transfer",
+        "knowledgeId": "l6-shuffle-hash-join/partition-memory",
+        "title": "最大值不能被平均数遮住",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 四份构建量 1、1、1、40 MiB；仅有平均指标。",
+        "prompt": "还需看什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "只把平均当所有分区大小",
+              "feedback": "不均衡时不成立。"
+            },
+            {
+              "id": "r2",
+              "text": "把 40 当成 1",
+              "feedback": "不能修改测量事实。"
+            },
+            {
+              "id": "r0",
+              "text": "最大分区及运行内存",
+              "feedback": "对，长尾工作集可能决定风险。"
+            }
+          ]
+        },
+        "insight": "分区哈希连接的容量风险要按最大构建分区与并发评估。"
+      }
+    },
+    {
+      "id": "l6-shuffle-hash-join/fallback",
+      "knowledgeIds": [
+        "l6-shuffle-hash-join/fallback"
+      ],
+      "title": "关了广播会必选 SHJ 吗",
+      "intro": "设置自动广播阈值为 -1，其他条件未知。",
+      "code": "spark.conf.set(\"spark.sql.autoBroadcastJoinThreshold\", -1)",
+      "prompt": "能保证下一条连接变成 SHJ 吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能",
+              "feedback": "关闭一条自动路线不强制另一条。"
+            },
+            {
+              "id": "o2",
+              "text": "会自动变 CROSS JOIN",
+              "feedback": "不能因此改变逻辑条件。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，还可能有 SMJ 或其他路线",
+              "feedback": "对，需看条件、设置和计划。"
+            }
+          ]
+        }
+      ],
+      "insight": "排除某候选策略不等于保证选择指定另一策略。",
+      "ability": "关了广播会必选 SHJ 吗",
+      "reading": {
+        "id": "l6-shuffle-hash-join/fallback/reading",
+        "title": "关了广播会必选 SHJ 吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "排除某候选策略不等于保证选择指定另一策略。",
+        "boundary": "显式 hint、AQE 与其他配置还需分别考虑。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-shuffle-hash-join/measure",
+      "knowledgeIds": [
+        "l6-shuffle-hash-join/measure"
+      ],
+      "title": "少了排序就一定更快吗",
+      "intro": "SHJ 与 SMJ 在同一正确查询上做对照。",
+      "code": "# 尚未控制负载或测资源。",
+      "prompt": "更合理的结论？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "比较排序开销、建哈希容量、倾斜与实际指标",
+              "feedback": "对，按条件评价权衡。"
+            },
+            {
+              "id": "o0",
+              "text": "SHJ 永远更快",
+              "feedback": "局部哈希也可能有资源瓶颈。"
+            },
+            {
+              "id": "o2",
+              "text": "SMJ 永远更快",
+              "feedback": "没有全场景最优路线。"
+            }
+          ]
+        }
+      ],
+      "insight": "物理策略比较应结合数据分布、资源与代表性运行，不能只删去一个成本项。",
+      "ability": "少了排序就一定更快吗",
+      "reading": {
+        "id": "l6-shuffle-hash-join/measure/reading",
+        "title": "少了排序就一定更快吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "物理策略比较应结合数据分布、资源与代表性运行，不能只删去一个成本项。",
+        "boundary": "确保结果语义和实验条件一致。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

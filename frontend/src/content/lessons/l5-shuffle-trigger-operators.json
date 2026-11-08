@@ -1,0 +1,226 @@
+{
+  "slug": "l5-shuffle-trigger-operators",
+  "version": 1,
+  "title": "用分布要求识别交换候选",
+  "mission": "逐个问聚合、去重、连接和排序需要怎样的数据位置。",
+  "correction": "算子名称是候选线索，不能替代物理计划；JOIN 策略、已有分布、LIMIT 优化和 AQE 都会影响交换。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-shuffle-trigger-operators/aggregate",
+      "knowledgeIds": [
+        "l5-shuffle-trigger-operators/aggregate"
+      ],
+      "title": "同键指标需要汇合",
+      "intro": "地区贡献散在多个分区。",
+      "code": "df.groupBy(\"region\").sum(\"amount\")",
+      "prompt": "什么使它常成为交换来源？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "函数名字长",
+              "feedback": "文本长度不是原因。"
+            },
+            {
+              "id": "o2",
+              "text": "每行都必须去同一台固定机器",
+              "feedback": "不是所有行去同一固定机器。"
+            },
+            {
+              "id": "o0",
+              "text": "同键贡献需要满足聚合分布要求",
+              "feedback": "对，上游不满足时通常重分布。"
+            }
+          ]
+        }
+      ],
+      "insight": "聚合、去重等操作常对数据位置提出要求，交换用于满足这些要求。",
+      "ability": "同键指标需要汇合",
+      "reading": {
+        "id": "l5-shuffle-trigger-operators/aggregate/reading",
+        "title": "同键指标需要汇合",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "聚合、去重等操作常对数据位置提出要求，交换用于满足这些要求。",
+        "boundary": "局部预聚合和已有分布会改变实际交换内容与必要性。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-shuffle-trigger-operators/join",
+      "knowledgeIds": [
+        "l5-shuffle-trigger-operators/join"
+      ],
+      "title": "看到 JOIN 就认定两边重分布吗",
+      "intro": "维表可广播，事实表来自多个分区。",
+      "code": "# 教学情境：候选 BroadcastHashJoin。",
+      "prompt": "哪个说法更稳妥？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "先核对连接策略与两侧分布",
+              "feedback": "对，具体物理实现决定交换方式。"
+            },
+            {
+              "id": "o0",
+              "text": "所有 JOIN 都双边 Shuffle",
+              "feedback": "广播路线与此不同。"
+            },
+            {
+              "id": "o2",
+              "text": "只要叫 JOIN 就没有任务",
+              "feedback": "连接仍需要计算。"
+            }
+          ]
+        }
+      ],
+      "insight": "连接的分布动作取决于具体策略、连接条件和输入分布。",
+      "ability": "看到 JOIN 就认定两边重分布吗",
+      "reading": {
+        "id": "l5-shuffle-trigger-operators/join/reading",
+        "title": "看到 JOIN 就认定两边重分布吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "连接的分布动作取决于具体策略、连接条件和输入分布。",
+        "boundary": "广播也有传输与内存成本，不等于免费。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-shuffle-trigger-operators/trigger-transfer",
+        "knowledgeId": "l5-shuffle-trigger-operators/join",
+        "title": "节点名只是线索",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 同一逻辑连接在两次环境里选择不同策略。",
+        "prompt": "比较交换时先做什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "核对物理算子、分布和最终计划",
+              "feedback": "对，检查实际路线。"
+            },
+            {
+              "id": "r0",
+              "text": "只数 JOIN 字样",
+              "feedback": "逻辑名字不足以判断物理动作。"
+            },
+            {
+              "id": "r2",
+              "text": "假定都相同",
+              "feedback": "数据与配置可能改变实现。"
+            }
+          ]
+        },
+        "insight": "交换由分布要求与物理计划决定，不能按算子名固定计数。"
+      }
+    },
+    {
+      "id": "l5-shuffle-trigger-operators/distinct",
+      "knowledgeIds": [
+        "l5-shuffle-trigger-operators/distinct"
+      ],
+      "title": "去重如何知道远处也有同一行",
+      "intro": "重复记录可能出现在不同输入分区。",
+      "code": "df.distinct()",
+      "prompt": "为什么常需要跨分区组织？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "为了把每行变成字符串",
+              "feedback": "不是去重要求。"
+            },
+            {
+              "id": "o0",
+              "text": "为了让重复候选能被统一判断",
+              "feedback": "对，局部唯一不保证全局唯一。"
+            },
+            {
+              "id": "o2",
+              "text": "因为 distinct 一定是单机函数",
+              "feedback": "分布式去重不是单机专属。"
+            }
+          ]
+        }
+      ],
+      "insight": "全局唯一性需要覆盖不同分区的重复候选，不能只在每份独立判定。",
+      "ability": "去重如何知道远处也有同一行",
+      "reading": {
+        "id": "l5-shuffle-trigger-operators/distinct/reading",
+        "title": "去重如何知道远处也有同一行",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "全局唯一性需要覆盖不同分区的重复候选，不能只在每份独立判定。",
+        "boundary": "具体交换还取决于已有分布与优化。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-shuffle-trigger-operators/topn",
+      "knowledgeIds": [
+        "l5-shuffle-trigger-operators/topn"
+      ],
+      "title": "ORDER BY LIMIT 不一定全量长链",
+      "intro": "只要最高 5 条，优化器可能使用 Top N 路径。",
+      "code": "df.orderBy(F.desc(\"amount\")).limit(5)",
+      "prompt": "应怎样解释计划？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "必须与完整全量排序逐字相同",
+              "feedback": "优化器可能选择不同物理路线。"
+            },
+            {
+              "id": "o2",
+              "text": "LIMIT 自动随机均匀抽样",
+              "feedback": "LIMIT 不是随机抽样。"
+            },
+            {
+              "id": "o1",
+              "text": "检查实际 Top N 实现，仍核对完整排序规则",
+              "feedback": "对，语义与实现分开。"
+            }
+          ]
+        }
+      ],
+      "insight": "限制结果数量可能让优化器选择不同的排序/收集方案，但业务并列规则仍需定义。",
+      "ability": "ORDER BY LIMIT 不一定全量长链",
+      "reading": {
+        "id": "l5-shuffle-trigger-operators/topn/reading",
+        "title": "ORDER BY LIMIT 不一定全量长链",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "限制结果数量可能让优化器选择不同的排序/收集方案，但业务并列规则仍需定义。",
+        "boundary": "不要从代码强行推断固定 Shuffle 次数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

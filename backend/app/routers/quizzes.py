@@ -39,7 +39,7 @@ from ..services import (
     record_activity,
 )
 from ..badge_service import evaluate_badges, increment_user_stats
-from ..l2_question_bank import questions_for_phase
+from ..reviewed_question_bank import questions_for_phase, has_reviewed_bank
 
 router = APIRouter(prefix="/api")
 
@@ -188,8 +188,8 @@ def submit_quiz(lesson_id: int, payload: QuizSubmitIn, db: Session = Depends(get
         selected_by_q[ans.question_id] = ans.selected_index
 
     total = len(ordered_ids)
-    if lesson.slug.startswith("l2-") and total != 5:
-        raise HTTPException(status_code=422, detail="L2 课末检验需提交 5 道不同的题")
+    if has_reviewed_bank(lesson.slug) and total != 5:
+        raise HTTPException(status_code=422, detail="课末检验需提交 5 道不同的题")
     correct = 0
     weak_points: List[int] = []
     results: List[QuizResultItem] = []

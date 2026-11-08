@@ -311,8 +311,9 @@ for index, item in enumerate(i for i in DELAYED['items'] if i['slug'].startswith
     wrong.insert((index + 2) % 3, answer)
     item['options'] = wrong
 GUIDES['lessons']['l3-what-is-spark-sql']['sources'].append(dict(title='SQL 查询与命令 API', url=BASE+'api/scala/org/apache/spark/sql/SparkSession.html'))
-GUIDES['version'] = 2
-DELAYED['version'] = 2
+GUIDES['version'] = max(GUIDES['version'], 2)
+DELAYED['version'] = max(DELAYED['version'], 2)
+DELAYED['items'].sort(key=lambda item:(item['slug'],item['id']))
 outputs = {ROOT / 'lessons' / f'{slug}.json': data for slug, data in lessons.items()}
 outputs[ROOT / 'standardGuides.json'] = GUIDES
 outputs[ROOT / 'delayedChecks.json'] = DELAYED

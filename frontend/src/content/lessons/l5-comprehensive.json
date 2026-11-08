@@ -1,0 +1,318 @@
+{
+  "slug": "l5-comprehensive",
+  "version": 1,
+  "title": "准备练习：让汇合正确且可解释",
+  "mission": "独立任务会换输入与分区数，检查结果和负载证据。",
+  "correction": "分区调节不能改变指标语义；合成分布不等于生产热点，局部小样本不证明性能收益。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-comprehensive/contract",
+      "knowledgeIds": [
+        "l5-comprehensive/contract"
+      ],
+      "title": "先定键和值的含义",
+      "intro": "输入 (product, qty)，目标每商品总量。",
+      "code": "# 不要求保留原始事件顺序。",
+      "prompt": "最先确定什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "先挑最多分区数",
+              "feedback": "数量应与目标和负载匹配。"
+            },
+            {
+              "id": "o2",
+              "text": "先决定机器名称",
+              "feedback": "机器名称不定义指标。"
+            },
+            {
+              "id": "o0",
+              "text": "规约口径与预期总量",
+              "feedback": "对，正确性先于分布优化。"
+            }
+          ]
+        }
+      ],
+      "insight": "先确认输入、键、值和聚合规则，再讨论执行分布。",
+      "ability": "先定键和值的含义",
+      "reading": {
+        "id": "l5-comprehensive/contract/reading",
+        "title": "先定键和值的含义",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先确认输入、键、值和聚合规则，再讨论执行分布。",
+        "boundary": "本任务采用可加总的整数数量。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-comprehensive/local",
+      "knowledgeIds": [
+        "l5-comprehensive/local"
+      ],
+      "title": "局部 8 和 9 还没合并",
+      "intro": "同一商品在两个分区分别得到 8、9。",
+      "code": "# 两份局部计数。",
+      "prompt": "最终应是多少？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o2",
+              "text": "17",
+              "feedback": "对，保留全部贡献。"
+            },
+            {
+              "id": "o0",
+              "text": "8",
+              "feedback": "漏掉另一份。"
+            },
+            {
+              "id": "o1",
+              "text": "9",
+              "feedback": "漏掉第一份。"
+            }
+          ]
+        }
+      ],
+      "insight": "局部规约应保留与最终合并兼容的状态。",
+      "ability": "局部 8 和 9 还没合并",
+      "reading": {
+        "id": "l5-comprehensive/local/reading",
+        "title": "局部 8 和 9 还没合并",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "局部规约应保留与最终合并兼容的状态。",
+        "boundary": "不要把局部计数直接当最终唯一结果。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-comprehensive/invariance",
+      "knowledgeIds": [
+        "l5-comprehensive/invariance"
+      ],
+      "title": "换分区数，正确答案会变吗",
+      "intro": "同一整数加法输入分别使用 2 和 4 个输出分区。",
+      "code": "# 目标保持按商品精确总量。",
+      "prompt": "预期应是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "结果必须翻倍",
+              "feedback": "分区不是复制业务贡献。"
+            },
+            {
+              "id": "o0",
+              "text": "结果指标相同，数据位置/任务可能不同",
+              "feedback": "对，分区调节不应改业务结果。"
+            },
+            {
+              "id": "o2",
+              "text": "每键总量等于分区数",
+              "feedback": "指标与分区数不是同一个量。"
+            }
+          ]
+        }
+      ],
+      "insight": "正确的分布式聚合应在改变合理分区设置后保持业务语义。",
+      "ability": "换分区数，正确答案会变吗",
+      "reading": {
+        "id": "l5-comprehensive/invariance/reading",
+        "title": "换分区数，正确答案会变吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "正确的分布式聚合应在改变合理分区设置后保持业务语义。",
+        "boundary": "浮点、非结合规约与顺序依赖需要另定验收约定。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-comprehensive/invariance-transfer",
+        "knowledgeId": "l5-comprehensive/invariance",
+        "title": "更多分区不是更多数量",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 输入数量总和 25，改变 numPartitions。",
+        "prompt": "正确总和应变成什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "仍是 25",
+              "feedback": "对，业务结果不变。"
+            },
+            {
+              "id": "r0",
+              "text": "随分区数变化",
+              "feedback": "分区改变不应改变合法贡献。"
+            },
+            {
+              "id": "r2",
+              "text": "自动减半",
+              "feedback": "没有这样的语义。"
+            }
+          ]
+        },
+        "insight": "分区设置可以改变执行位置和任务，不应改变整数加法的按键总量。"
+      }
+    },
+    {
+      "id": "l5-comprehensive/skew",
+      "knowledgeIds": [
+        "l5-comprehensive/skew"
+      ],
+      "title": "分区多了热点还在",
+      "intro": "一个商品占输入 80%，按商品哈希分区后依然集中。",
+      "code": "# 合成分布：一个热点商品。",
+      "prompt": "该怎样解释？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "分区数增加必然拆开同一键",
+              "feedback": "键分区仍把同键组织到一起。"
+            },
+            {
+              "id": "o2",
+              "text": "热键会自动消失",
+              "feedback": "不会自动改变业务分布。"
+            },
+            {
+              "id": "o1",
+              "text": "同一键仍可能集中，应识别热点与规约状态",
+              "feedback": "对，加分区不是所有倾斜的解药。"
+            }
+          ]
+        }
+      ],
+      "insight": "增加分区常能切分不同键，但不保证拆开一个热点键的全部最终状态。",
+      "ability": "分区多了热点还在",
+      "reading": {
+        "id": "l5-comprehensive/skew/reading",
+        "title": "分区多了热点还在",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "增加分区常能切分不同键，但不保证拆开一个热点键的全部最终状态。",
+        "boundary": "预聚合可减少内容，复杂热点治理仍需正确合并策略。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-comprehensive/measure",
+      "knowledgeIds": [
+        "l5-comprehensive/measure"
+      ],
+      "title": "只报行数够不够",
+      "intro": "每分区记录数接近，但值的大小差异很大。",
+      "code": "# 合成情境：大数组与小整数混合。",
+      "prompt": "还应观察什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "字节、计算与 task 时间分布",
+              "feedback": "对，负载不只是记录数。"
+            },
+            {
+              "id": "o1",
+              "text": "只看分区名称",
+              "feedback": "名称不能反映负载。"
+            },
+            {
+              "id": "o2",
+              "text": "认定必定无倾斜",
+              "feedback": "工作量仍可能不均。"
+            }
+          ]
+        }
+      ],
+      "insight": "负载证据需匹配真正的资源消耗，而非只选择容易统计的数字。",
+      "ability": "只报行数够不够",
+      "reading": {
+        "id": "l5-comprehensive/measure/reading",
+        "title": "只报行数够不够",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "负载证据需匹配真正的资源消耗，而非只选择容易统计的数字。",
+        "boundary": "本地验收的分区计数不代表生产内存或网络实测。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-comprehensive/report",
+      "knowledgeIds": [
+        "l5-comprehensive/report"
+      ],
+      "title": "交付计算与分布证据",
+      "intro": "验收脚本会换数据、空输入和输出分区数。",
+      "code": "# 目标：正确总量 + 可解释分区证据。",
+      "prompt": "哪份交付更完整？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "固定写死原样例总量",
+              "feedback": "换输入会暴露硬编码。"
+            },
+            {
+              "id": "o1",
+              "text": "可运行实现、独立验收与明确限制",
+              "feedback": "对，留下可复现证据。"
+            },
+            {
+              "id": "o2",
+              "text": "只保存最漂亮的耗时",
+              "feedback": "单个耗时不解释正确性或条件。"
+            }
+          ]
+        }
+      ],
+      "insight": "毕业任务应证明实现能应对变化，并如实说明已验证范围。",
+      "ability": "交付计算与分布证据",
+      "reading": {
+        "id": "l5-comprehensive/report/reading",
+        "title": "交付计算与分布证据",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "毕业任务应证明实现能应对变化，并如实说明已验证范围。",
+        "boundary": "它不是生产性能或防作弊认证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

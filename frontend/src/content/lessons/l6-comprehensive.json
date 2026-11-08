@@ -1,0 +1,318 @@
+{
+  "slug": "l6-comprehensive",
+  "version": 1,
+  "title": "准备练习：交付不丢不重的补维汇总",
+  "mission": "独立任务会测试未匹配、NULL、维表重复与不同输入。",
+  "correction": "章末目标先保证连接语义、唯一性与逐组金额，再记录实际策略证据。计划和小样本不提供生产加速认证。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-comprehensive/contract",
+      "knowledgeIds": [
+        "l6-comprehensive/contract"
+      ],
+      "title": "先定补维规则",
+      "intro": "所有有效订单都必须保留；维表缺失时归入 unknown。",
+      "code": "# 事实表为左侧。",
+      "prompt": "应先表达什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "INNER JOIN 丢掉缺失订单",
+              "feedback": "会丢掉未匹配事实。"
+            },
+            {
+              "id": "o0",
+              "text": "LEFT JOIN 与明确缺失标签规则",
+              "feedback": "对，语义符合保留事实的要求。"
+            },
+            {
+              "id": "o2",
+              "text": "CROSS JOIN 所有用户",
+              "feedback": "会产生不需要的匹配组合。"
+            }
+          ]
+        }
+      ],
+      "insight": "先把保留规则与缺失处理写清，才能验证连接没有丢行。",
+      "ability": "先定补维规则",
+      "reading": {
+        "id": "l6-comprehensive/contract/reading",
+        "title": "先定补维规则",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先把保留规则与缺失处理写清，才能验证连接没有丢行。",
+        "boundary": "NULL 键是否互配必须另行约定。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-comprehensive/dimension",
+      "knowledgeIds": [
+        "l6-comprehensive/dimension"
+      ],
+      "title": "维表发生键冲突",
+      "intro": "同一个非空用户键出现两个标签，需求未定义保留哪一个。",
+      "code": "# 输入约定要求唯一非空键。",
+      "prompt": "毕业实现应怎样处理？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "任取一个并宣称正确",
+              "feedback": "没有业务选择规则。"
+            },
+            {
+              "id": "o2",
+              "text": "把所有订单金额乘二",
+              "feedback": "这会直接破坏金额。"
+            },
+            {
+              "id": "o1",
+              "text": "明确拒绝并报告冲突，而不是悄悄放大或丢弃",
+              "feedback": "对，契约错误不能伪装成正常结果。"
+            }
+          ]
+        }
+      ],
+      "insight": "对违反唯一性约定的维表显式失败，避免静默放大或任意保留。",
+      "ability": "维表发生键冲突",
+      "reading": {
+        "id": "l6-comprehensive/dimension/reading",
+        "title": "维表发生键冲突",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "对违反唯一性约定的维表显式失败，避免静默放大或任意保留。",
+        "boundary": "允许什么重复需由任务约定，本任务明确拒绝重复非空键。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-comprehensive/unmatched",
+      "knowledgeIds": [
+        "l6-comprehensive/unmatched"
+      ],
+      "title": "有一张订单没找到维度",
+      "intro": "有效订单 10 元匹配 north，20 元未匹配，业务要求保留两者。",
+      "code": "# 缺失统一标签 unknown。",
+      "prompt": "汇总应怎样包含这些金额？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "north/10 与 unknown/20 都保留",
+              "feedback": "对，保留并明确标记未知。"
+            },
+            {
+              "id": "o0",
+              "text": "只保留 north/10",
+              "feedback": "漏了未匹配事实。"
+            },
+            {
+              "id": "o2",
+              "text": "north/30",
+              "feedback": "不应把未知强行归给 north。"
+            }
+          ]
+        }
+      ],
+      "insight": "缺失标签应按约定处理，不能为了更整齐的报表丢掉事实或错误归属。",
+      "ability": "有一张订单没找到维度",
+      "reading": {
+        "id": "l6-comprehensive/unmatched/reading",
+        "title": "有一张订单没找到维度",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "缺失标签应按约定处理，不能为了更整齐的报表丢掉事实或错误归属。",
+        "boundary": "NULL、未匹配和显式标签 unknown 可能合并到同一报告组，需在契约中说明。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-comprehensive/unmatched-transfer",
+        "knowledgeId": "l6-comprehensive/unmatched",
+        "title": "匹配失败也有业务贡献",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 5 元订单匹配 A，7 元订单未匹配，约定保留后者为 unknown。",
+        "prompt": "应交付什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "A=5，unknown=7",
+              "feedback": "对，贡献保留且来源明确。"
+            },
+            {
+              "id": "r0",
+              "text": "A=12",
+              "feedback": "把未知误归属。"
+            },
+            {
+              "id": "r2",
+              "text": "只有 A=5",
+              "feedback": "漏算了业务事实。"
+            }
+          ]
+        },
+        "insight": "连接后过滤右侧空值可能把原本应保留的未匹配事实再次排除。"
+      }
+    },
+    {
+      "id": "l6-comprehensive/null-key",
+      "knowledgeIds": [
+        "l6-comprehensive/null-key"
+      ],
+      "title": "两个缺失用户号是否应该互配",
+      "intro": "契约规定普通等值连接，事实 NULL 用户号应视为未知。",
+      "code": "ON fact.user_id = dim.user_id",
+      "prompt": "维表也有 NULL 时应怎样处理？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "自动将所有缺失键互配",
+              "feedback": "会改变普通等值语义并可能放大。"
+            },
+            {
+              "id": "o1",
+              "text": "仍按普通等值语义，不互配 NULL",
+              "feedback": "对，按契约处理未知。"
+            },
+            {
+              "id": "o2",
+              "text": "把用户号都改为字符串 NULL",
+              "feedback": "伪造相同键会改变匹配。"
+            }
+          ]
+        }
+      ],
+      "insight": "NULL 键语义是正确性约定的一部分，不应为了匹配率随意改变。",
+      "ability": "两个缺失用户号是否应该互配",
+      "reading": {
+        "id": "l6-comprehensive/null-key/reading",
+        "title": "两个缺失用户号是否应该互配",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "NULL 键语义是正确性约定的一部分，不应为了匹配率随意改变。",
+        "boundary": "若业务另需空安全相等，应显式设计并核对基数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-comprehensive/strategy",
+      "knowledgeIds": [
+        "l6-comprehensive/strategy"
+      ],
+      "title": "结果对了，再验证广播建议",
+      "intro": "维表经验证足够小，准备测试广播。",
+      "code": "# 对照：无 hint 与 broadcast(dim)。",
+      "prompt": "需要保留哪些证据？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只保存 hint 源码",
+              "feedback": "源码不证明采用或安全。"
+            },
+            {
+              "id": "o2",
+              "text": "固定宣称减少两次 Shuffle",
+              "feedback": "交换次数不能无条件承诺。"
+            },
+            {
+              "id": "o0",
+              "text": "实际计划、构建侧、结果与资源测量条件",
+              "feedback": "对，实施与收益分别核对。"
+            }
+          ]
+        }
+      ],
+      "insight": "正确连接与可审查策略证据共同构成实作交付。",
+      "ability": "结果对了，再验证广播建议",
+      "reading": {
+        "id": "l6-comprehensive/strategy/reading",
+        "title": "结果对了，再验证广播建议",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "正确连接与可审查策略证据共同构成实作交付。",
+        "boundary": "本机小规模结果不等于生产内存或性能认证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-comprehensive/accept",
+      "knowledgeIds": [
+        "l6-comprehensive/accept"
+      ],
+      "title": "换输入后还能交付吗",
+      "intro": "验收还会加入新用户、未匹配订单与重复维表键。",
+      "code": "# 目标：明确契约、稳定指标与冲突处理。",
+      "prompt": "哪种实现可靠？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "按传入数据计算并拒绝契约冲突",
+              "feedback": "对，行为要覆盖正常与异常输入。"
+            },
+            {
+              "id": "o0",
+              "text": "把原样例结果写死",
+              "feedback": "更换输入会失效。"
+            },
+            {
+              "id": "o2",
+              "text": "只在原数据上看 show",
+              "feedback": "样本展示不足以证明规则。"
+            }
+          ]
+        }
+      ],
+      "insight": "毕业任务应验证输入变化、空输入和契约异常，并记录未验证的运行边界。",
+      "ability": "换输入后还能交付吗",
+      "reading": {
+        "id": "l6-comprehensive/accept/reading",
+        "title": "换输入后还能交付吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "毕业任务应验证输入变化、空输入和契约异常，并记录未验证的运行边界。",
+        "boundary": "结果验收不是防作弊或生产能力认证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

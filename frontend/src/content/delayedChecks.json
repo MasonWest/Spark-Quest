@@ -1,80 +1,30 @@
 {
-  "version": 2,
+  "version": 3,
   "items": [
     {
-      "id": "filter.null-condition-delayed-v1",
-      "slug": "l2-select-filter",
-      "taskId": "step-444ef9a2c7",
-      "knowledgeId": "filter.null-condition",
-      "title": "NULL 筛选",
-      "prompt": "库存记录中，哪些行会留下？",
-      "code": "stock\nnull\n-2\n0\n7\n\nitems.filter(F.col(\"stock\") <= 0)",
+      "id": "aggregate.avg-null-delayed-v1",
+      "slug": "l2-groupby-agg",
+      "taskId": "step-c7978bddd1",
+      "knowledgeId": "aggregate.avg-null",
+      "title": "平均值分母",
+      "prompt": "不做任何填补，结果是多少？",
+      "code": "distance\nnull\n12\n18\n30\n\nF.avg(\"distance\")",
       "options": [
         {
           "id": "o0",
-          "text": "仅 -2 和 0"
+          "text": "15"
         },
         {
           "id": "o1",
-          "text": "null、-2 和 0"
+          "text": "20"
         },
         {
           "id": "o2",
-          "text": "仅 0"
-        }
-      ],
-      "correctOptionId": "o0",
-      "explanation": "比较 NULL 得到未知，filter 只留下条件为 true 的行，所以保留 -2 和 0。未知库存不能当作零。"
-    },
-    {
-      "id": "column.when-null-delayed-v1",
-      "slug": "l2-withcolumn",
-      "taskId": "step-b387e09c4f",
-      "knowledgeId": "column.when-null",
-      "title": "空值分支",
-      "prompt": "下面三行依次得到什么标签？",
-      "code": "reading\nnull\n0\n6\n\nF.when(F.col(\"reading\").isNull(), \"缺失\")\\\n .otherwise(\"已记录\")",
-      "options": [
-        {
-          "id": "o0",
-          "text": "缺失、缺失、已记录"
-        },
-        {
-          "id": "o1",
-          "text": "已记录、已记录、已记录"
-        },
-        {
-          "id": "o2",
-          "text": "缺失、已记录、已记录"
-        }
-      ],
-      "correctOptionId": "o2",
-      "explanation": "isNull 只判断未知；0 是已记录的数值，因此三行依次为缺失、已记录、已记录。"
-    },
-    {
-      "id": "dedup.retention-delayed-v1",
-      "slug": "l2-sort-dedup",
-      "taskId": "step-3538b5a3ab",
-      "knowledgeId": "dedup.retention",
-      "title": "去重保留规则",
-      "prompt": "需求是每个账号保留最高版本。这段代码保证了什么？",
-      "code": "account | revision\nA       | 2\nA       | 5\nB       | 1\n\ndf.orderBy(F.col(\"revision\").desc())\\\n  .dropDuplicates([\"account\"])",
-      "options": [
-        {
-          "id": "o0",
-          "text": "一定留下 A 的版本 5 和 B 的版本 1"
-        },
-        {
-          "id": "o1",
-          "text": "每个账号一行，但不保证 A 保留版本 5"
-        },
-        {
-          "id": "o2",
-          "text": "每个账号的全部版本都会保留"
+          "text": "NULL"
         }
       ],
       "correctOptionId": "o1",
-      "explanation": "按 account 去重保证键唯一，不保证保留排序后的最高版本。要表达最高版本，可按账号取 max；需要整行时使用有完整排序规则的窗口。"
+      "explanation": "avg 忽略 NULL，三个已知距离的平均值为 (12+18+30)/3=20。若要按四次记录摊分，需要明确另写计算。"
     },
     {
       "id": "aggregate.count-null-delayed-v1",
@@ -102,129 +52,129 @@
       "explanation": "count(*) 统计全部四行；count(weight) 只统计两个非空值。两者对应不同的业务指标。"
     },
     {
-      "id": "aggregate.avg-null-delayed-v1",
-      "slug": "l2-groupby-agg",
-      "taskId": "step-c7978bddd1",
-      "knowledgeId": "aggregate.avg-null",
-      "title": "平均值分母",
-      "prompt": "不做任何填补，结果是多少？",
-      "code": "distance\nnull\n12\n18\n30\n\nF.avg(\"distance\")",
+      "id": "filter.null-condition-delayed-v1",
+      "slug": "l2-select-filter",
+      "taskId": "step-444ef9a2c7",
+      "knowledgeId": "filter.null-condition",
+      "title": "NULL 筛选",
+      "prompt": "库存记录中，哪些行会留下？",
+      "code": "stock\nnull\n-2\n0\n7\n\nitems.filter(F.col(\"stock\") <= 0)",
       "options": [
         {
           "id": "o0",
-          "text": "15"
+          "text": "仅 -2 和 0"
         },
         {
           "id": "o1",
-          "text": "20"
+          "text": "null、-2 和 0"
         },
         {
           "id": "o2",
-          "text": "NULL"
+          "text": "仅 0"
+        }
+      ],
+      "correctOptionId": "o0",
+      "explanation": "比较 NULL 得到未知，filter 只留下条件为 true 的行，所以保留 -2 和 0。未知库存不能当作零。"
+    },
+    {
+      "id": "dedup.retention-delayed-v1",
+      "slug": "l2-sort-dedup",
+      "taskId": "step-3538b5a3ab",
+      "knowledgeId": "dedup.retention",
+      "title": "去重保留规则",
+      "prompt": "需求是每个账号保留最高版本。这段代码保证了什么？",
+      "code": "account | revision\nA       | 2\nA       | 5\nB       | 1\n\ndf.orderBy(F.col(\"revision\").desc())\\\n  .dropDuplicates([\"account\"])",
+      "options": [
+        {
+          "id": "o0",
+          "text": "一定留下 A 的版本 5 和 B 的版本 1"
+        },
+        {
+          "id": "o1",
+          "text": "每个账号一行，但不保证 A 保留版本 5"
+        },
+        {
+          "id": "o2",
+          "text": "每个账号的全部版本都会保留"
         }
       ],
       "correctOptionId": "o1",
-      "explanation": "avg 忽略 NULL，三个已知距离的平均值为 (12+18+30)/3=20。若要按四次记录摊分，需要明确另写计算。"
+      "explanation": "按 account 去重保证键唯一，不保证保留排序后的最高版本。要表达最高版本，可按账号取 max；需要整行时使用有完整排序规则的窗口。"
     },
     {
-      "id": "l3-what-is-spark-sql/result-delayed-v1",
-      "slug": "l3-what-is-spark-sql",
-      "taskId": "l3-what-is-spark-sql/result",
-      "knowledgeId": "sql.result-dataframe",
-      "title": "SQL 查询返回什么",
-      "code": "q = spark.sql(\"SELECT id FROM customers\")\nq.limit(2)",
-      "prompt": "关于 q，哪个判断成立？",
+      "id": "column.when-null-delayed-v1",
+      "slug": "l2-withcolumn",
+      "taskId": "step-b387e09c4f",
+      "knowledgeId": "column.when-null",
+      "title": "空值分支",
+      "prompt": "下面三行依次得到什么标签？",
+      "code": "reading\nnull\n0\n6\n\nF.when(F.col(\"reading\").isNull(), \"缺失\")\\\n .otherwise(\"已记录\")",
+      "options": [
+        {
+          "id": "o0",
+          "text": "缺失、缺失、已记录"
+        },
+        {
+          "id": "o1",
+          "text": "已记录、已记录、已记录"
+        },
+        {
+          "id": "o2",
+          "text": "缺失、已记录、已记录"
+        }
+      ],
+      "correctOptionId": "o2",
+      "explanation": "isNull 只判断未知；0 是已记录的数值，因此三行依次为缺失、已记录、已记录。"
+    },
+    {
+      "id": "l3-comprehensive/stages-delayed-v1",
+      "slug": "l3-comprehensive",
+      "taskId": "l3-comprehensive/stages",
+      "knowledgeId": "project.sql-stages",
+      "title": "至少与超过的区别",
+      "code": "某组金额 120、80，需求是合计至少 200。",
+      "prompt": "应使用什么条件？",
       "options": [
         {
           "id": "d0",
-          "text": "Python 字典"
-        },
-        {
-          "id": "d2",
-          "text": "已落盘的临时表"
+          "text": "WHERE amount > 200"
         },
         {
           "id": "d1",
-          "text": "可以继续组合查询的 DataFrame"
+          "text": "HAVING SUM(amount) >= 200"
+        },
+        {
+          "id": "d2",
+          "text": "HAVING SUM(amount) > 200"
         }
       ],
       "correctOptionId": "d1",
-      "explanation": "SELECT 返回 DataFrame，limit 可以继续组合查询；既没有收集成字典，也没有写成表。"
+      "explanation": "至少包含边界，且筛组内合计应在聚合后使用 HAVING SUM(amount) >= 200。"
     },
     {
-      "id": "l3-temp-views/scope-delayed-v1",
-      "slug": "l3-temp-views",
-      "taskId": "l3-temp-views/session",
-      "knowledgeId": "view.global-scope",
-      "title": "全局视图的范围",
-      "code": "一个 Spark 应用里：s1 创建 global_temp.metrics；s2=s1.newSession()。",
-      "prompt": "哪个判断成立？",
+      "id": "l3-functions-and-udf/coalesce-delayed-v1",
+      "slug": "l3-functions-and-udf",
+      "taskId": "l3-functions-and-udf/coalesce",
+      "knowledgeId": "function.coalesce-null",
+      "title": "空字符串会自动补上吗",
+      "code": "code 三行：空字符串、NULL、A。\nSELECT COALESCE(code, 'NA') FROM items",
+      "prompt": "结果依次是？",
       "options": [
         {
           "id": "d0",
-          "text": "s2 可在同一应用中访问 global_temp.metrics"
-        },
-        {
-          "id": "d1",
-          "text": "独立重启程序后这个临时视图永久存在"
+          "text": "NA、NA、A"
         },
         {
           "id": "d2",
-          "text": "s2 必须写 local.metrics"
-        }
-      ],
-      "correctOptionId": "d0",
-      "explanation": "global_temp 临时视图可以在同一应用内跨会话访问，不是跨应用的永久目录。"
-    },
-    {
-      "id": "l3-select-basics/literal-delayed-v1",
-      "slug": "l3-select-basics",
-      "taskId": "l3-select-basics/literal",
-      "knowledgeId": "select.literal",
-      "title": "列引用还是固定标签",
-      "code": "-- product = book\nSELECT product, 'product' AS kind FROM items",
-      "prompt": "kind 的值是？",
-      "options": [
-        {
-          "id": "d0",
-          "text": "book"
-        },
-        {
-          "id": "d2",
-          "text": "字符串 product"
+          "text": "空字符串、NULL、A"
         },
         {
           "id": "d1",
-          "text": "字段不存在"
+          "text": "空字符串、NA、A"
         }
       ],
-      "correctOptionId": "d2",
-      "explanation": "product 是列引用，单引号内的 product 是固定字符串；kind 得到字符串 product。"
-    },
-    {
-      "id": "l3-where-order-limit/null-delayed-v1",
-      "slug": "l3-where-order-limit",
-      "taskId": "l3-where-order-limit/null",
-      "knowledgeId": "where.null",
-      "title": "缺失时间的筛选",
-      "code": "ts 三行：NULL、2026-01-01、2026-01-02。\nSELECT * FROM events WHERE ts IS NULL",
-      "prompt": "会保留什么？",
-      "options": [
-        {
-          "id": "d1",
-          "text": "所有行"
-        },
-        {
-          "id": "d2",
-          "text": "没有行"
-        },
-        {
-          "id": "d0",
-          "text": "只有未知时间那行"
-        }
-      ],
-      "correctOptionId": "d0",
-      "explanation": "IS NULL 对未知时间得到 true，因此只保留那行；它与 ts = NULL 不同。"
+      "correctOptionId": "d1",
+      "explanation": "空字符串非 NULL，因此保留；只有 NULL 使用 NA。"
     },
     {
       "id": "l3-groupby-having/having-delayed-v1",
@@ -277,29 +227,29 @@
       "explanation": "每条左行匹配两条右行，3×2=6。JOIN 不会自动压缩同键记录。"
     },
     {
-      "id": "l3-functions-and-udf/coalesce-delayed-v1",
-      "slug": "l3-functions-and-udf",
-      "taskId": "l3-functions-and-udf/coalesce",
-      "knowledgeId": "function.coalesce-null",
-      "title": "空字符串会自动补上吗",
-      "code": "code 三行：空字符串、NULL、A。\nSELECT COALESCE(code, 'NA') FROM items",
-      "prompt": "结果依次是？",
+      "id": "l3-select-basics/literal-delayed-v1",
+      "slug": "l3-select-basics",
+      "taskId": "l3-select-basics/literal",
+      "knowledgeId": "select.literal",
+      "title": "列引用还是固定标签",
+      "code": "-- product = book\nSELECT product, 'product' AS kind FROM items",
+      "prompt": "kind 的值是？",
       "options": [
         {
           "id": "d0",
-          "text": "NA、NA、A"
+          "text": "book"
         },
         {
           "id": "d2",
-          "text": "空字符串、NULL、A"
+          "text": "字符串 product"
         },
         {
           "id": "d1",
-          "text": "空字符串、NA、A"
+          "text": "字段不存在"
         }
       ],
-      "correctOptionId": "d1",
-      "explanation": "空字符串非 NULL，因此保留；只有 NULL 使用 NA。"
+      "correctOptionId": "d2",
+      "explanation": "product 是列引用，单引号内的 product 是固定字符串；kind 得到字符串 product。"
     },
     {
       "id": "l3-tables-and-formats/append-delayed-v1",
@@ -327,29 +277,754 @@
       "explanation": "INSERT INTO 追加，两次各 4 行得到 8 行；不自动去重，也不需要再调用 show。"
     },
     {
-      "id": "l3-comprehensive/stages-delayed-v1",
-      "slug": "l3-comprehensive",
-      "taskId": "l3-comprehensive/stages",
-      "knowledgeId": "project.sql-stages",
-      "title": "至少与超过的区别",
-      "code": "某组金额 120、80，需求是合计至少 200。",
-      "prompt": "应使用什么条件？",
+      "id": "l3-temp-views/scope-delayed-v1",
+      "slug": "l3-temp-views",
+      "taskId": "l3-temp-views/session",
+      "knowledgeId": "view.global-scope",
+      "title": "全局视图的范围",
+      "code": "一个 Spark 应用里：s1 创建 global_temp.metrics；s2=s1.newSession()。",
+      "prompt": "哪个判断成立？",
       "options": [
         {
           "id": "d0",
-          "text": "WHERE amount > 200"
+          "text": "s2 可在同一应用中访问 global_temp.metrics"
         },
         {
           "id": "d1",
-          "text": "HAVING SUM(amount) >= 200"
+          "text": "独立重启程序后这个临时视图永久存在"
         },
         {
           "id": "d2",
-          "text": "HAVING SUM(amount) > 200"
+          "text": "s2 必须写 local.metrics"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "global_temp 临时视图可以在同一应用内跨会话访问，不是跨应用的永久目录。"
+    },
+    {
+      "id": "l3-what-is-spark-sql/result-delayed-v1",
+      "slug": "l3-what-is-spark-sql",
+      "taskId": "l3-what-is-spark-sql/result",
+      "knowledgeId": "sql.result-dataframe",
+      "title": "SQL 查询返回什么",
+      "code": "q = spark.sql(\"SELECT id FROM customers\")\nq.limit(2)",
+      "prompt": "关于 q，哪个判断成立？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "Python 字典"
+        },
+        {
+          "id": "d2",
+          "text": "已落盘的临时表"
+        },
+        {
+          "id": "d1",
+          "text": "可以继续组合查询的 DataFrame"
         }
       ],
       "correctOptionId": "d1",
-      "explanation": "至少包含边界，且筛组内合计应在聚合后使用 HAVING SUM(amount) >= 200。"
+      "explanation": "SELECT 返回 DataFrame，limit 可以继续组合查询；既没有收集成字典，也没有写成表。"
+    },
+    {
+      "id": "l3-where-order-limit/null-delayed-v1",
+      "slug": "l3-where-order-limit",
+      "taskId": "l3-where-order-limit/null",
+      "knowledgeId": "where.null",
+      "title": "缺失时间的筛选",
+      "code": "ts 三行：NULL、2026-01-01、2026-01-02。\nSELECT * FROM events WHERE ts IS NULL",
+      "prompt": "会保留什么？",
+      "options": [
+        {
+          "id": "d1",
+          "text": "所有行"
+        },
+        {
+          "id": "d2",
+          "text": "没有行"
+        },
+        {
+          "id": "d0",
+          "text": "只有未知时间那行"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "IS NULL 对未知时间得到 true，因此只保留那行；它与 ts = NULL 不同。"
+    },
+    {
+      "id": "l4-catalyst-rules/push-transfer-delayed-v1",
+      "slug": "l4-catalyst-rules",
+      "taskId": "l4-catalyst-rules/pushdown",
+      "knowledgeId": "l4-catalyst-rules/pushdown",
+      "title": "下推只是部分证据",
+      "code": "# Scan 中只下推 IsNotNull(k)。",
+      "prompt": "能证明所有业务过滤都已下推吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，需要逐条核对谓词"
+        },
+        {
+          "id": "d2",
+          "text": "证明源数据已干净"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "下推与残余过滤共同保证语义，不能从单个标记推断所有条件已执行。"
+    },
+    {
+      "id": "l4-comprehensive/accept-transfer-delayed-v1",
+      "slug": "l4-comprehensive",
+      "taskId": "l4-comprehensive/evidence",
+      "knowledgeId": "l4-comprehensive/evidence",
+      "title": "更快但少了一组",
+      "code": "# 两次运行读入不同输入量。",
+      "prompt": "能直接比较优化幅度吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "不能，需控制条件"
+        },
+        {
+          "id": "d1",
+          "text": "能，直接按秒数算"
+        },
+        {
+          "id": "d2",
+          "text": "必须认定改写有效"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "正确结果与可比条件是性能结论的前提。"
+    },
+    {
+      "id": "l4-dependency-narrow-wide/dependency-transfer-delayed-v1",
+      "slug": "l4-dependency-narrow-wide",
+      "taskId": "l4-dependency-narrow-wide/global",
+      "knowledgeId": "l4-dependency-narrow-wide/global",
+      "title": "两个局部总分",
+      "code": "# 两分区分别出现同一商品的数量。",
+      "prompt": "按商品交一行总量需要什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "仅独立 map 即完成"
+        },
+        {
+          "id": "d1",
+          "text": "汇合该商品的各分区贡献"
+        },
+        {
+          "id": "d2",
+          "text": "只打印其中一分区"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "局部结果不等于全局结果，关键是相同键贡献是否已经汇合。"
+    },
+    {
+      "id": "l4-explain-api/estimate-transfer-delayed-v1",
+      "slug": "l4-explain-api",
+      "taskId": "l4-explain-api/cost",
+      "knowledgeId": "l4-explain-api/cost",
+      "title": "估计和实测分开",
+      "code": "# 计划没有可用 rowCount 统计。",
+      "prompt": "是否应把它理解为 0 行？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "是"
+        },
+        {
+          "id": "d1",
+          "text": "必定只有 1 行"
+        },
+        {
+          "id": "d2",
+          "text": "否，表示缺少可用统计"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "缺少统计不是零数据，估计大小也不等于运行内存上限。"
+    },
+    {
+      "id": "l4-job-stage-task/job-transfer-delayed-v1",
+      "slug": "l4-job-stage-task",
+      "taskId": "l4-job-stage-task/job",
+      "knowledgeId": "l4-job-stage-task/job",
+      "title": "多条 job 记录",
+      "code": "# 一次广播查询包含准备工作和主查询。",
+      "prompt": "如何核对 job 数？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "强制只能一个"
+        },
+        {
+          "id": "d1",
+          "text": "按源码行数决定"
+        },
+        {
+          "id": "d2",
+          "text": "看实际运行证据，不固定推算"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "用户 action 和运行 job 不保证固定一对一，应以实际执行记录为准。"
+    },
+    {
+      "id": "l4-logical-vs-physical/route-transfer-delayed-v1",
+      "slug": "l4-logical-vs-physical",
+      "taskId": "l4-logical-vs-physical/route",
+      "knowledgeId": "l4-logical-vs-physical/route",
+      "title": "需求和路线分层",
+      "code": "# 某等值连接初始 SMJ，执行后 AQE 改为 BHJ。",
+      "prompt": "这必然代表业务需求变了吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "是"
+        },
+        {
+          "id": "d1",
+          "text": "否，可能调整物理路线"
+        },
+        {
+          "id": "d2",
+          "text": "必须重新定义字段"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "逻辑语义与物理路线应分开；路线变化还要核对适用条件与结果。"
+    },
+    {
+      "id": "l4-read-plan/marker-transfer-delayed-v1",
+      "slug": "l4-read-plan",
+      "taskId": "l4-read-plan/markers",
+      "knowledgeId": "l4-read-plan/markers",
+      "title": "计划里的 3 是什么",
+      "code": "# formatted 计划里的节点编号 (7)。",
+      "prompt": "它是否就是 task ID=7？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "是"
+        },
+        {
+          "id": "d1",
+          "text": "不是，这是计划节点引用"
+        },
+        {
+          "id": "d2",
+          "text": "必然是第七台机器"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "计划节点、代码生成区域与运行 Job/Stage/Task 的编号不能直接对应。"
+    },
+    {
+      "id": "l4-wholestage-codegen/fusion-transfer-delayed-v1",
+      "slug": "l4-wholestage-codegen",
+      "taskId": "l4-wholestage-codegen/boundary",
+      "knowledgeId": "l4-wholestage-codegen/boundary",
+      "title": "代码生成不是万能消除器",
+      "code": "# 一个查询存在多个代码生成区域。",
+      "prompt": "说明它必定没优化吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "是"
+        },
+        {
+          "id": "d1",
+          "text": "不是，算子与交换可能形成合理边界"
+        },
+        {
+          "id": "d2",
+          "text": "说明 region 字段错误"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "代码生成解决执行实现问题，不自动消除交换或保证单一区域。"
+    },
+    {
+      "id": "l4-why-explain/timer-transfer-delayed-v1",
+      "slug": "l4-why-explain",
+      "taskId": "l4-why-explain/plan-not-timer",
+      "knowledgeId": "l4-why-explain/plan-not-timer",
+      "title": "计划不是秒表",
+      "code": "# 新片段：BroadcastExchange -> Scan dim",
+      "prompt": "能仅凭它得出广播实际耗时吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能，固定 1 秒"
+        },
+        {
+          "id": "d1",
+          "text": "能，由行数直接推算"
+        },
+        {
+          "id": "d2",
+          "text": "不能，还需运行指标"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "计划是执行结构证据，实际耗时必须测量。"
+    },
+    {
+      "id": "l5-comprehensive/invariance-transfer-delayed-v1",
+      "slug": "l5-comprehensive",
+      "taskId": "l5-comprehensive/invariance",
+      "knowledgeId": "l5-comprehensive/invariance",
+      "title": "更多分区不是更多数量",
+      "code": "# 同一数据换成 3、5 个分区，用整数加法规约。",
+      "prompt": "必须保持什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "每键总量"
+        },
+        {
+          "id": "d1",
+          "text": "每个 task 耗时"
+        },
+        {
+          "id": "d2",
+          "text": "每分区记录顺序"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "分区设置可以改变执行位置和任务，不应改变整数加法的按键总量。"
+    },
+    {
+      "id": "l5-narrow-wide-partition/sort-transfer-delayed-v1",
+      "slug": "l5-narrow-wide-partition",
+      "taskId": "l5-narrow-wide-partition/sort",
+      "knowledgeId": "l5-narrow-wide-partition/sort",
+      "title": "各组有序不等于整体有序",
+      "code": "# 两份各自排好，但最大/最小范围交叠。",
+      "prompt": "缺少什么保证？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "跨分区全局顺序"
+        },
+        {
+          "id": "d1",
+          "text": "字段类型必须是文字"
+        },
+        {
+          "id": "d2",
+          "text": "所有记录重复"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "全局排序不仅要求分区内部有序，还要满足分区之间的范围顺序。"
+    },
+    {
+      "id": "l5-partition-count-parallelism/tiny-transfer-delayed-v1",
+      "slug": "l5-partition-count-parallelism",
+      "taskId": "l5-partition-count-parallelism/tiny",
+      "knowledgeId": "l5-partition-count-parallelism/tiny",
+      "title": "更多不自动更好",
+      "code": "# 新方案分区翻倍，总耗时却上升。",
+      "prompt": "哪种解释值得检查？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "调度/管理成本上升"
+        },
+        {
+          "id": "d1",
+          "text": "结果必然翻倍"
+        },
+        {
+          "id": "d2",
+          "text": "排序语义改变"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "分区增加会改变任务粒度与开销，收益要实测。"
+    },
+    {
+      "id": "l5-reducebykey-vs-groupbykey/combine-transfer-delayed-v1",
+      "slug": "l5-reducebykey-vs-groupbykey",
+      "taskId": "l5-reducebykey-vs-groupbykey/combine",
+      "knowledgeId": "l5-reducebykey-vs-groupbykey/combine",
+      "title": "少传值，不少算贡献",
+      "code": "# 两分区局部合计 6 和 11。",
+      "prompt": "reduceByKey 求和后的值？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "17"
+        },
+        {
+          "id": "d1",
+          "text": "11"
+        },
+        {
+          "id": "d2",
+          "text": "6"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "局部合并改变中间组织，不改变所有合法贡献都参与最终规约的要求。"
+    },
+    {
+      "id": "l5-repartition-coalesce/coalesce-transfer-delayed-v1",
+      "slug": "l5-repartition-coalesce",
+      "taskId": "l5-repartition-coalesce/merge",
+      "knowledgeId": "l5-repartition-coalesce/merge",
+      "title": "合成一份真的总更快吗",
+      "code": "# 两个数据量差异很大的分区被合并。",
+      "prompt": "coalesce 能保证输出严格均衡吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，需检查负载"
+        },
+        {
+          "id": "d2",
+          "text": "会自动删掉大分区"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "分区合并不保证均衡，过度集中还可能制造单任务瓶颈。"
+    },
+    {
+      "id": "l5-shuffle-cost/bytes-transfer-delayed-v1",
+      "slug": "l5-shuffle-cost",
+      "taskId": "l5-shuffle-cost/bytes",
+      "knowledgeId": "l5-shuffle-cost/bytes",
+      "title": "一百行也可能很重",
+      "code": "# A/B 行数相同，B 的 Shuffle 字节显著更大。",
+      "prompt": "优先核对什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "字段宽度与不必要列"
+        },
+        {
+          "id": "d1",
+          "text": "变量名大小写"
+        },
+        {
+          "id": "d2",
+          "text": "代码注释行数"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "记录数量与字节量不同，评估交换应同时考虑宽度与结构。"
+    },
+    {
+      "id": "l5-shuffle-trigger-operators/trigger-transfer-delayed-v1",
+      "slug": "l5-shuffle-trigger-operators",
+      "taskId": "l5-shuffle-trigger-operators/join",
+      "knowledgeId": "l5-shuffle-trigger-operators/join",
+      "title": "节点名只是线索",
+      "code": "# 一个聚合输入已满足所需键分布。",
+      "prompt": "是否必然再有一次 Shuffle？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "必然"
+        },
+        {
+          "id": "d1",
+          "text": "不一定，核对实际计划"
+        },
+        {
+          "id": "d2",
+          "text": "一定不做计算"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "交换由分布要求与物理计划决定，不能按算子名固定计数。"
+    },
+    {
+      "id": "l5-what-is-partition/empty-transfer-delayed-v1",
+      "slug": "l5-what-is-partition",
+      "taskId": "l5-what-is-partition/empty",
+      "knowledgeId": "l5-what-is-partition/empty",
+      "title": "分区不是行数",
+      "code": "# 空输入仍声明两个计算分区。",
+      "prompt": "能直接推出有两行数据吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，分区可为空"
+        },
+        {
+          "id": "d2",
+          "text": "表示两张表"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "计算分区数与记录数不同，空分区仍可能存在。"
+    },
+    {
+      "id": "l5-what-is-shuffle/partial-transfer-delayed-v1",
+      "slug": "l5-what-is-shuffle",
+      "taskId": "local-is-not-global",
+      "knowledgeId": "shuffle.local-global",
+      "title": "局部正确还不够",
+      "code": "# 新分区局部计数：P=3 与 P=4。",
+      "prompt": "交付一行 P 的全局计数应是多少？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "3"
+        },
+        {
+          "id": "d1",
+          "text": "4"
+        },
+        {
+          "id": "d2",
+          "text": "7"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "局部结果可以各自正确，但全局指标仍需把同键贡献合并。"
+    },
+    {
+      "id": "l6-broadcast-hash-join/memory-transfer-delayed-v1",
+      "slug": "l6-broadcast-hash-join",
+      "taskId": "l6-broadcast-hash-join/memory",
+      "knowledgeId": "l6-broadcast-hash-join/memory",
+      "title": "广播后的代价在哪",
+      "code": "# 同时运行多条广播查询。",
+      "prompt": "仅看单条维表文件大小足够吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "足够"
+        },
+        {
+          "id": "d1",
+          "text": "不足，还需考虑并发与每节点内存"
+        },
+        {
+          "id": "d2",
+          "text": "只看总磁盘空间"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "广播在执行节点消耗构建内存，文件大小和并发都不能忽略。"
+    },
+    {
+      "id": "l6-broadcast-hint-and-control/disable-transfer-delayed-v1",
+      "slug": "l6-broadcast-hint-and-control",
+      "taskId": "l6-broadcast-hint-and-control/disable",
+      "knowledgeId": "l6-broadcast-hint-and-control/disable",
+      "title": "关自动不等于全禁",
+      "code": "# 自动阈值关闭，AQE 设置另有广播相关配置。",
+      "prompt": "可以只凭一个参数保证无广播吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "可以"
+        },
+        {
+          "id": "d1",
+          "text": "不可以，应核对完整配置和实际计划"
+        },
+        {
+          "id": "d2",
+          "text": "所有 JOIN 必报错"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "自动、显式提示和自适应控制不能混成一个开关。"
+    },
+    {
+      "id": "l6-comprehensive/unmatched-transfer-delayed-v1",
+      "slug": "l6-comprehensive",
+      "taskId": "l6-comprehensive/unmatched",
+      "knowledgeId": "l6-comprehensive/unmatched",
+      "title": "匹配失败也有业务贡献",
+      "code": "# LEFT JOIN 后直接 WHERE dim.label IS NOT NULL。",
+      "prompt": "可能违反什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "保留未匹配事实的要求"
+        },
+        {
+          "id": "d1",
+          "text": "自动增加分区的要求"
+        },
+        {
+          "id": "d2",
+          "text": "Python 变量长度要求"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "连接后过滤右侧空值可能把原本应保留的未匹配事实再次排除。"
+    },
+    {
+      "id": "l6-how-spark-chooses/threshold-transfer-delayed-v1",
+      "slug": "l6-how-spark-chooses",
+      "taskId": "l6-how-spark-chooses/threshold",
+      "knowledgeId": "l6-how-spark-chooses/threshold",
+      "title": "单个参数不是全套证据",
+      "code": "# 只知道广播阈值设置。",
+      "prompt": "还缺哪类信息？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "连接条件/类型、统计及最终计划"
+        },
+        {
+          "id": "d1",
+          "text": "SQL 注释长度"
+        },
+        {
+          "id": "d2",
+          "text": "变量名是否简短"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "选型需综合条件、统计、配置与实际计划，不能只看阈值。"
+    },
+    {
+      "id": "l6-join-data-skew/skew-transfer-delayed-v1",
+      "slug": "l6-join-data-skew",
+      "taskId": "l6-join-data-skew/more-partitions",
+      "knowledgeId": "l6-join-data-skew/more-partitions",
+      "title": "同键依旧同路由",
+      "code": "# 增加分区后最大 task 仍远慢于中位数。",
+      "prompt": "应先检查什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "热点键、匹配基数和实际负载"
+        },
+        {
+          "id": "d1",
+          "text": "继续只看平均"
+        },
+        {
+          "id": "d2",
+          "text": "改结果总额"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "热点键不能靠盲目增加分区解决，应核对实际负载和匹配规模。"
+    },
+    {
+      "id": "l6-join-strategies-overview/equi-transfer-delayed-v1",
+      "slug": "l6-join-strategies-overview",
+      "taskId": "l6-join-strategies-overview/equi",
+      "knowledgeId": "l6-join-strategies-overview/equi",
+      "title": "Hint 也要有适用条件",
+      "code": "# 非等值连接被提示 BROADCAST。",
+      "prompt": "能只凭提示断定是 BroadcastHashJoin 吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，也可能是其他广播连接路线"
+        },
+        {
+          "id": "d2",
+          "text": "必定没有执行"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "广播提示与具体哈希算法不同，连接条件仍决定可用实现。"
+    },
+    {
+      "id": "l6-shuffle-hash-join/partition-transfer-delayed-v1",
+      "slug": "l6-shuffle-hash-join",
+      "taskId": "l6-shuffle-hash-join/partition-memory",
+      "knowledgeId": "l6-shuffle-hash-join/partition-memory",
+      "title": "最大值不能被平均数遮住",
+      "code": "# 总构建量相同，但方案 B 集中到一个分区。",
+      "prompt": "SHJ 内存风险可视为相同吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "必定相同"
+        },
+        {
+          "id": "d1",
+          "text": "不能，单分区与并发工作集不同"
+        },
+        {
+          "id": "d2",
+          "text": "两者都不建哈希"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "分区哈希连接的容量风险要按最大构建分区与并发评估。"
+    },
+    {
+      "id": "l6-sort-merge-join/reuse-transfer-delayed-v1",
+      "slug": "l6-sort-merge-join",
+      "taskId": "l6-sort-merge-join/reuse",
+      "knowledgeId": "l6-sort-merge-join/reuse",
+      "title": "先看已有条件",
+      "code": "# 某侧已有满足要求的分布。",
+      "prompt": "是否应无条件补一次 repartition？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "应当"
+        },
+        {
+          "id": "d1",
+          "text": "不应，先核对计划与收益"
+        },
+        {
+          "id": "d2",
+          "text": "应先 collect 全表"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "满足分布与顺序的工作可能被复用，不应机械重复添加。"
+    },
+    {
+      "id": "l6-what-is-join/left-transfer-delayed-v1",
+      "slug": "l6-what-is-join",
+      "taskId": "l6-what-is-join/left",
+      "knowledgeId": "l6-what-is-join/left",
+      "title": "没有商品标签也要保留订单",
+      "code": "# 左连接结果某行右侧标签为 NULL。",
+      "prompt": "它是否可能是未匹配左行？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "不可能"
+        },
+        {
+          "id": "d1",
+          "text": "可能，应结合键与维表核对"
+        },
+        {
+          "id": "d2",
+          "text": "说明结果被随机生成"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "左连接保留未匹配的左行，右侧字段可能为空。"
     }
   ]
 }

@@ -6,6 +6,7 @@ import "./CapstoneProject.css";
 export interface Capstone {
   id: string; title: string; estimatedMinutes: number; brief: string; contract: string[];
   downloads: { label: string; href: string }[]; solution: { label: string; href: string }; command: string;
+  validationNote?: string;
   checks: { title: string; body: string }[]; hints: { title: string; body: string }[];
 }
 type Draft = { prediction: string; plan: string; reflection: string };
@@ -34,13 +35,13 @@ export default function CapstoneProject({ project, detail }: { project: Capstone
       <section><h3>01 接任务，先读交付约定</h3><ol className="cp-contract">{project.contract.map(rule => <li key={rule}>{rule}</li>)}</ol><p>使用与六步准备练习不同的新数据，先不要打开参考实现。</p>
         <div className="cp-downloads">{project.downloads.map(asset => <a key={asset.href} href={asset.href} download>{asset.label} ↓</a>)}</div>
       </section>
-      <section><h3>02 自己推导，再动手写</h3><label className="cp-field">你预测会留下哪些订单？各分组应得到什么？<textarea value={draft.prediction} onChange={e => { setDraft({ ...draft, prediction: e.target.value }); setNotice(""); }} rows={4} placeholder="先算笔数、金额与单位；结果相同的分组也要分别核对。" /></label>
+      <section><h3>02 自己推导，再动手写</h3><label className="cp-field">你预测关键结果与检查证据是什么？<textarea value={draft.prediction} onChange={e => { setDraft({ ...draft, prediction: e.target.value }); setNotice(""); }} rows={4} placeholder="先算笔数、金额与单位；结果相同的分组也要分别核对。" /></label>
         <label className="cp-field">你的实现计划<textarea value={draft.plan} onChange={e => { setDraft({ ...draft, plan: e.target.value }); setNotice(""); }} rows={3} placeholder="写下每一步负责什么。代码请在下载的 starter.py 中完成。" /></label>
         <details><summary>我卡住了，给一点提示</summary><p>按需逐级展开，先试着继续，再看下一层。</p>{project.hints.slice(0, hints).map((hint, i) => <div className="cp-hint" key={hint.title}><strong>提示 {i + 1} · {hint.title}</strong><p>{hint.body}</p></div>)}{hints < project.hints.length && <button className="btn-ghost" onClick={() => setHints(n => n + 1)}>{hints === 0 ? "给我一个方向" : hints === 1 ? "提示再具体一点" : "看处理顺序骨架"}</button>}</details>
       </section>
-      <section><h3>03 让结果接受检查</h3><p>实现 starter.py 中的三个函数，将四个下载文件放在同一目录，在已配置的 PySpark 环境执行：</p><pre className="cp-command"><code>{project.command}</code></pre>
+      <section><h3>03 让结果接受检查</h3><p>按运行说明实现 starter.py，将任务文件放在同一目录，在已配置的 PySpark 环境执行：</p><pre className="cp-command"><code>{project.command}</code></pre>
         <ul className="cp-checks">{project.checks.map(check => <li key={check.title}><strong>{check.title}</strong><p>{check.body}</p></li>)}</ul>
-        <p>完整验收输出 PASS，且 files=PASS。只运行 --query-only 会输出 PARTIAL；查询通过也要完成文件验收。Windows 若出现 NativeIO / winutils 错误，请先看运行说明排查环境。</p>
+        <p>{project.validationNote ?? "完整验收输出 PASS，且 files=PASS。只运行 --query-only 会输出 PARTIAL；查询通过也要完成文件验收。Windows 若出现 NativeIO / winutils 错误，请先看运行说明排查环境。"}</p>
         <p className="cp-note">浏览器不执行你的脚本，也不会自动读取本地结果。validation-result.json 是本次本地验收记录，不会改写课程成绩、解锁或连续天数。</p>
       </section>
       <section><h3>04 复盘，再决定是否对照</h3><label className="cp-field">哪项检查失败过？你如何修正？<textarea value={draft.reflection} onChange={e => { setDraft({ ...draft, reflection: e.target.value }); setNotice(""); }} rows={3} placeholder="区分查询错误和环境问题；看过提示或参考实现也可以如实记录。" /></label>

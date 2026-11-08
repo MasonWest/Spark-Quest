@@ -1,0 +1,226 @@
+{
+  "slug": "l4-explain-api",
+  "version": 1,
+  "title": "选对解释模式，不被长计划淹没",
+  "mission": "根据问题选择 extended、formatted、cost 与 codegen。",
+  "correction": "explain 通常不执行完整查询来返回数据，但会分析计划；cost 的统计可能缺失或估计不准。各模式与实际输出随版本变化。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-explain-api/extended",
+      "knowledgeIds": [
+        "l4-explain-api/extended"
+      ],
+      "title": "想追踪优化前后怎么改",
+      "intro": "你需要对比解析、分析、优化和物理计划。",
+      "code": "df.explain(mode=__A__)",
+      "prompt": "A 选哪一个？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "\"formatted\"",
+              "feedback": "formatted 主要展示物理轮廓与节点细节。"
+            },
+            {
+              "id": "o2",
+              "text": "\"codegen\"",
+              "feedback": "codegen 关注生成代码。"
+            },
+            {
+              "id": "o1",
+              "text": "\"extended\"",
+              "feedback": "对，extended 包含多阶段计划。"
+            }
+          ]
+        }
+      ],
+      "insight": "extended 有助于区分解析、分析、优化和物理实现，不必每次都阅读全部模式。",
+      "ability": "想追踪优化前后怎么改",
+      "reading": {
+        "id": "l4-explain-api/extended/reading",
+        "title": "想追踪优化前后怎么改",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "extended 有助于区分解析、分析、优化和物理实现，不必每次都阅读全部模式。",
+        "boundary": "选择模式要服务当前问题，不是内容越多越好。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-explain-api/formatted",
+      "knowledgeIds": [
+        "l4-explain-api/formatted"
+      ],
+      "title": "先找物理轮廓，再看细节",
+      "intro": "计划太长，你只想找扫描、交换与连接节点。",
+      "code": "df.explain(mode=\"formatted\")",
+      "prompt": "这种模式适合什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "看物理轮廓和节点细节",
+              "feedback": "对，用编号与细节辅助定位。"
+            },
+            {
+              "id": "o1",
+              "text": "证明每个 task 耗时",
+              "feedback": "它不是运行计时日志。"
+            },
+            {
+              "id": "o2",
+              "text": "导出完整输入数据",
+              "feedback": "explain 不负责导出数据集。"
+            }
+          ]
+        }
+      ],
+      "insight": "formatted 适合先建立结构，再定位节点信息。",
+      "ability": "先找物理轮廓，再看细节",
+      "reading": {
+        "id": "l4-explain-api/formatted/reading",
+        "title": "先找物理轮廓，再看细节",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "formatted 适合先建立结构，再定位节点信息。",
+        "boundary": "依旧需要运行指标解释实际瓶颈。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-explain-api/cost",
+      "knowledgeIds": [
+        "l4-explain-api/cost"
+      ],
+      "title": "sizeInBytes 是实测内存吗",
+      "intro": "cost 输出某关系 sizeInBytes=64 MiB。",
+      "code": "# 教学统计片段\nStatistics(sizeInBytes=64 MiB)",
+      "prompt": "最稳妥的解读是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "每个 Executor 的精确峰值内存",
+              "feedback": "它不是 Executor 峰值测量。"
+            },
+            {
+              "id": "o1",
+              "text": "计划统计/估计值，需核对来源与时效",
+              "feedback": "对，统计估计不能冒充实测内存。"
+            },
+            {
+              "id": "o2",
+              "text": "一定就是磁盘文件大小",
+              "feedback": "计划统计不必等于磁盘体积。"
+            }
+          ]
+        }
+      ],
+      "insight": "cost 可展示可用的统计估计；缺失、陈旧和膨胀都会影响选型判断。",
+      "ability": "sizeInBytes 是实测内存吗",
+      "reading": {
+        "id": "l4-explain-api/cost/reading",
+        "title": "sizeInBytes 是实测内存吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "cost 可展示可用的统计估计；缺失、陈旧和膨胀都会影响选型判断。",
+        "boundary": "不要仅凭压缩文件大小或一个估计值承诺广播内存安全。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-explain-api/estimate-transfer",
+        "knowledgeId": "l4-explain-api/cost",
+        "title": "估计和实测分开",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 计划估计 20 MiB；运行中哈希结构占用更大。",
+        "prompt": "应该相信什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "统计与运行内存不同，结合指标和安全余量",
+              "feedback": "对，两类数字不能混同。"
+            },
+            {
+              "id": "r0",
+              "text": "估计保证不会超出 20 MiB",
+              "feedback": "估计不是内存上限。"
+            },
+            {
+              "id": "r2",
+              "text": "只看文件名",
+              "feedback": "文件名没有这样的证据。"
+            }
+          ]
+        },
+        "insight": "缺少统计不是零数据，估计大小也不等于运行内存上限。"
+      }
+    },
+    {
+      "id": "l4-explain-api/codegen",
+      "knowledgeIds": [
+        "l4-explain-api/codegen"
+      ],
+      "title": "想查生成代码是否融合",
+      "intro": "当前问题是相邻算子是否进入代码生成区域。",
+      "code": "df.explain(mode=\"codegen\")",
+      "prompt": "哪句更准确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "必定显示所有 Python UDF 源码融合",
+              "feedback": "Python UDF 不能这样一概推断。"
+            },
+            {
+              "id": "o2",
+              "text": "没有代码就一定没有执行",
+              "feedback": "不适用或未生成代码不等于不执行。"
+            },
+            {
+              "id": "o0",
+              "text": "可检查可用生成代码，不是性能保证",
+              "feedback": "对，结合计划边界和指标判断。"
+            }
+          ]
+        }
+      ],
+      "insight": "codegen 模式展示可用的生成代码信息；它解释实现线索而不是直接证明快慢。",
+      "ability": "想查生成代码是否融合",
+      "reading": {
+        "id": "l4-explain-api/codegen/reading",
+        "title": "想查生成代码是否融合",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "codegen 模式展示可用的生成代码信息；它解释实现线索而不是直接证明快慢。",
+        "boundary": "部分算子、类型或配置不参与相同代码生成路径。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

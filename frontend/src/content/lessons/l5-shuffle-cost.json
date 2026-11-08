@@ -1,0 +1,226 @@
+{
+  "slug": "l5-shuffle-cost",
+  "version": 1,
+  "title": "交换成本不只有网络",
+  "mission": "沿序列化、落盘、读取、合并与等待寻找证据。",
+  "correction": "Shuffle 可涉及本地/远端读取、磁盘、序列化、spill 和等待；local 也有成本，不应把总额或数据行数直接换算耗时。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-shuffle-cost/components",
+      "knowledgeIds": [
+        "l5-shuffle-cost/components"
+      ],
+      "title": "网络空闲为何还慢",
+      "intro": "交换阶段有磁盘写入与 spill，网络利用率不高。",
+      "code": "# 合成指标：spill 高，磁盘忙，网络低。",
+      "prompt": "应怎样判断？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "检查磁盘、spill、序列化与任务分布",
+              "feedback": "对，按证据分解成本。"
+            },
+            {
+              "id": "o0",
+              "text": "没有网络就没有 Shuffle 成本",
+              "feedback": "Shuffle 不只有远端网络。"
+            },
+            {
+              "id": "o2",
+              "text": "只把网卡换快",
+              "feedback": "尚无网络瓶颈证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "Shuffle 成本包含数据组织与传输的多个环节，单看网络不足以诊断。",
+      "ability": "网络空闲为何还慢",
+      "reading": {
+        "id": "l5-shuffle-cost/components/reading",
+        "title": "网络空闲为何还慢",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "Shuffle 成本包含数据组织与传输的多个环节，单看网络不足以诊断。",
+        "boundary": "合成指标仅用于训练检查方向。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-shuffle-cost/bytes",
+      "knowledgeIds": [
+        "l5-shuffle-cost/bytes"
+      ],
+      "title": "交换同样行数为什么差很大",
+      "intro": "A 每行只有键和值，B 每行还带长文本。",
+      "code": "# 合成情境：行数相同，记录宽度不同。",
+      "prompt": "哪个比较更有意义？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只比行数就足够",
+              "feedback": "记录宽度会影响字节与处理成本。"
+            },
+            {
+              "id": "o1",
+              "text": "同时看交换字节、字段宽度与序列化",
+              "feedback": "对，行数不能独自代表工作量。"
+            },
+            {
+              "id": "o2",
+              "text": "按列名字数比较",
+              "feedback": "列名长度不是主要的实际负载证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "交换前裁掉不需要的大字段、适用时预聚合，可能减少交换内容。",
+      "ability": "交换同样行数为什么差很大",
+      "reading": {
+        "id": "l5-shuffle-cost/bytes/reading",
+        "title": "交换同样行数为什么差很大",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "交换前裁掉不需要的大字段、适用时预聚合，可能减少交换内容。",
+        "boundary": "必须保留业务需要的字段与正确指标。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-shuffle-cost/bytes-transfer",
+        "knowledgeId": "l5-shuffle-cost/bytes",
+        "title": "一百行也可能很重",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 一百行每行含大数组，另一批一千行每行只含两个整数。",
+        "prompt": "能仅凭行数判断哪批交换更轻吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能，百行必轻",
+              "feedback": "忽略记录大小。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，需看字节与结构",
+              "feedback": "对，负载还取决于值宽度。"
+            },
+            {
+              "id": "r2",
+              "text": "千行一定不用序列化",
+              "feedback": "交换实现仍有组织与序列化成本。"
+            }
+          ]
+        },
+        "insight": "记录数量与字节量不同，评估交换应同时考虑宽度与结构。"
+      }
+    },
+    {
+      "id": "l5-shuffle-cost/local",
+      "knowledgeIds": [
+        "l5-shuffle-cost/local"
+      ],
+      "title": "单机运行还有交换吗",
+      "intro": "local 模式执行需要重新按键组织数据的聚合。",
+      "code": "# 教学情境：没有第二台机器。",
+      "prompt": "正确说法是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "绝不可能出现 Shuffle",
+              "feedback": "Shuffle 的定义不是必须跨机器。"
+            },
+            {
+              "id": "o2",
+              "text": "会自动失去聚合正确性",
+              "feedback": "执行模式不应改变聚合语义。"
+            },
+            {
+              "id": "o1",
+              "text": "仍可有跨分区交换及磁盘等成本",
+              "feedback": "对，本地分区也可能要重分布。"
+            }
+          ]
+        }
+      ],
+      "insight": "单机可执行分区重分布，网络距离不同不代表没有交换工作。",
+      "ability": "单机运行还有交换吗",
+      "reading": {
+        "id": "l5-shuffle-cost/local/reading",
+        "title": "单机运行还有交换吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "单机可执行分区重分布，网络距离不同不代表没有交换工作。",
+        "boundary": "本地小样本开销不能直接估算集群网络成本。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-shuffle-cost/measure",
+      "knowledgeIds": [
+        "l5-shuffle-cost/measure"
+      ],
+      "title": "压缩后变小就一定更快吗",
+      "intro": "交换压缩减少字节，但可能增加 CPU 工作。",
+      "code": "# 合成对照：字节下降，CPU 上升。",
+      "prompt": "应该怎样验收？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "同条件看总耗时和 CPU/IO 等指标",
+              "feedback": "对，改善某指标未必改善端到端。"
+            },
+            {
+              "id": "o0",
+              "text": "只看字节下降就保证成功",
+              "feedback": "要考虑多项成本。"
+            },
+            {
+              "id": "o2",
+              "text": "认定压缩永远无用",
+              "feedback": "收益与数据和资源相关。"
+            }
+          ]
+        }
+      ],
+      "insight": "调优通常是资源与开销之间的权衡，最终以正确结果和目标指标验证。",
+      "ability": "压缩后变小就一定更快吗",
+      "reading": {
+        "id": "l5-shuffle-cost/measure/reading",
+        "title": "压缩后变小就一定更快吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "调优通常是资源与开销之间的权衡，最终以正确结果和目标指标验证。",
+        "boundary": "不要为追求某个漂亮数字而忽略整体表现。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

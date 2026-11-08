@@ -1,0 +1,226 @@
+{
+  "slug": "l6-broadcast-hint-and-control",
+  "version": 1,
+  "title": "给建议，也要核对执行",
+  "mission": "学习 hint 优先意图、适用性与自动广播控制的边界。",
+  "correction": "Hint 不保证所有条件下都采用某算法或更快；禁用自动广播不代表显式提示或自适应广播必定全部禁用。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-hints.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-broadcast-hint-and-control/syntax",
+      "knowledgeIds": [
+        "l6-broadcast-hint-and-control/syntax"
+      ],
+      "title": "把广播建议加在关系上",
+      "intro": "事实表 fact 与维表 dim 适合等值连接。",
+      "code": "fact.join(F.broadcast(dim), \"k\")",
+      "prompt": "此表达式主要说明什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "把 fact 全部 collect 到 Python",
+              "feedback": "不是收集事实表。"
+            },
+            {
+              "id": "o2",
+              "text": "自动检查 dim 键唯一性",
+              "feedback": "hint 不替代数据质量检查。"
+            },
+            {
+              "id": "o0",
+              "text": "给 dim 关系广播选型建议",
+              "feedback": "对，仍需核对计划和容量。"
+            }
+          ]
+        }
+      ],
+      "insight": "hint 表达选型倾向，不替代语义、容量和结果验证。",
+      "ability": "把广播建议加在关系上",
+      "reading": {
+        "id": "l6-broadcast-hint-and-control/syntax/reading",
+        "title": "把广播建议加在关系上",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "hint 表达选型倾向，不替代语义、容量和结果验证。",
+        "boundary": "即使实际广播，也可能存在下游其他交换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-broadcast-hint-and-control/disable",
+      "knowledgeIds": [
+        "l6-broadcast-hint-and-control/disable"
+      ],
+      "title": "-1 控制的是哪一层",
+      "intro": "设置自动广播阈值为 -1，同时代码显式 broadcast(dim)。",
+      "code": "spark.conf.set(\"spark.sql.autoBroadcastJoinThreshold\", -1)\nfact.join(F.broadcast(dim), \"k\")",
+      "prompt": "哪句更准确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "不能据此认定显式 hint 或其他广播控制全部关闭",
+              "feedback": "对，还需核对 hint、AQE 与最终计划。"
+            },
+            {
+              "id": "o0",
+              "text": "任何广播绝不可能发生",
+              "feedback": "自动阈值与显式提示要分开。"
+            },
+            {
+              "id": "o2",
+              "text": "查询自动没有结果",
+              "feedback": "配置不这样改变业务结果。"
+            }
+          ]
+        }
+      ],
+      "insight": "自动广播阈值与显式广播提示、自适应控制是不同层次。",
+      "ability": "-1 控制的是哪一层",
+      "reading": {
+        "id": "l6-broadcast-hint-and-control/disable/reading",
+        "title": "-1 控制的是哪一层",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "自动广播阈值与显式广播提示、自适应控制是不同层次。",
+        "boundary": "具体配置与版本行为应按实际运行验证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-broadcast-hint-and-control/disable-transfer",
+        "knowledgeId": "l6-broadcast-hint-and-control/disable",
+        "title": "关自动不等于全禁",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 关闭 autoBroadcastJoinThreshold，但保留 BROADCAST hint。",
+        "prompt": "应怎样确认？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "认定 hint 失效",
+              "feedback": "不能仅凭这个自动阈值下结论。"
+            },
+            {
+              "id": "r1",
+              "text": "检查连接适用性和最终计划",
+              "feedback": "对，分别看控制层次。"
+            },
+            {
+              "id": "r2",
+              "text": "删除正确性断言",
+              "feedback": "断言仍应保留。"
+            }
+          ]
+        },
+        "insight": "自动、显式提示和自适应控制不能混成一个开关。"
+      }
+    },
+    {
+      "id": "l6-broadcast-hint-and-control/unsupported",
+      "knowledgeIds": [
+        "l6-broadcast-hint-and-control/unsupported"
+      ],
+      "title": "有提示也要支持条件",
+      "intro": "给不支持目标算法的连接条件加 hint。",
+      "code": "# 教学情境：提示与实际物理节点不同。",
+      "prompt": "该怎样处理？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "宣称优化器一定损坏",
+              "feedback": "没有这样的证据。"
+            },
+            {
+              "id": "o0",
+              "text": "先核对支持条件和解释信息",
+              "feedback": "对，提示不是不受约束的命令。"
+            },
+            {
+              "id": "o2",
+              "text": "改业务条件让输出随意变化",
+              "feedback": "结果语义不能随意变。"
+            }
+          ]
+        }
+      ],
+      "insight": "hint 可能因条件不适用等原因未按预期采用，先核对适用性与计划。",
+      "ability": "有提示也要支持条件",
+      "reading": {
+        "id": "l6-broadcast-hint-and-control/unsupported/reading",
+        "title": "有提示也要支持条件",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "hint 可能因条件不适用等原因未按预期采用，先核对适用性与计划。",
+        "boundary": "不同 hint 与版本可能有优先规则，应记录实际行为。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-broadcast-hint-and-control/unsafe",
+      "knowledgeIds": [
+        "l6-broadcast-hint-and-control/unsafe"
+      ],
+      "title": "强制广播后更慢或内存紧张",
+      "intro": "实际已广播，运行指标反而变差。",
+      "code": "# 合成证据：构建内存与等待上升。",
+      "prompt": "合理下一步是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "继续增大所有广播参数",
+              "feedback": "可能加重资源压力。"
+            },
+            {
+              "id": "o2",
+              "text": "只报告 hint 已生效即成功",
+              "feedback": "实施成功不等于优化成功。"
+            },
+            {
+              "id": "o1",
+              "text": "回退并核对容量、并发与替代路线",
+              "feedback": "对，采用不等于收益。"
+            }
+          ]
+        }
+      ],
+      "insight": "要分别验证 hint 是否采用、结果是否正确、资源与耗时是否改善。",
+      "ability": "强制广播后更慢或内存紧张",
+      "reading": {
+        "id": "l6-broadcast-hint-and-control/unsafe/reading",
+        "title": "强制广播后更慢或内存紧张",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "要分别验证 hint 是否采用、结果是否正确、资源与耗时是否改善。",
+        "boundary": "保留回退路径，不把一次试验当普遍最优。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

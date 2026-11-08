@@ -1,0 +1,5946 @@
+{
+  "version": 1,
+  "scope": "L3-L6",
+  "lessons": [
+    {
+      "lesson_slug": "l3-what-is-spark-sql",
+      "questions": [
+        {
+          "key": "l3-what-is-spark-sql/entry/assessment-v1",
+          "knowledge_id": "l3-what-is-spark-sql/entry",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：只有变量 stock_df，SQL 尚无 stock 关系。要查这批库存，应先？",
+          "options": [
+            "把目标 DataFrame 注册为所用临时视图名",
+            "先 show，名称会自动登记",
+            "把变量变成字符串",
+            "先 collect 全表才能查询"
+          ],
+          "correct_index": 0,
+          "explanation": "Python 变量不会自动成为 SQL 关系名；临时视图是一种命名入口。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-what-is-spark-sql/entry/review-v1",
+          "knowledge_id": "l3-what-is-spark-sql/entry",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：只有 Python 变量 visits，SQL 中尚无 visits 关系。希望按此名查询，应先？",
+          "options": [
+            "先 show，名称会自动登记",
+            "把目标 DataFrame 注册为所用临时视图名",
+            "把变量变成字符串",
+            "先 collect 全表才能查询"
+          ],
+          "correct_index": 1,
+          "explanation": "Python 变量不会自动成为 SQL 关系名；临时视图是一种命名入口。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-what-is-spark-sql/result/assessment-v1",
+          "knowledge_id": "l3-what-is-spark-sql/result",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：q=spark.sql(\"SELECT sku FROM stock\")，q 还可做什么？",
+          "options": [
+            "只能处理字符串字符",
+            "必须已经是 Python 列表",
+            "继续用 DataFrame API 组合查询",
+            "必须先持久化为表"
+          ],
+          "correct_index": 2,
+          "explanation": "普通 SELECT 返回 DataFrame，可与 API 衔接。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-what-is-spark-sql/result/review-v1",
+          "knowledge_id": "l3-what-is-spark-sql/result",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：q=spark.sql(\"SELECT event_id FROM events\")，哪种后续有效？",
+          "options": [
+            "只能处理字符串字符",
+            "必须已经是 Python 列表",
+            "必须先持久化为表",
+            "继续用 DataFrame API 组合查询"
+          ],
+          "correct_index": 3,
+          "explanation": "普通 SELECT 返回 DataFrame，可与 API 衔接。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-what-is-spark-sql/equivalence/assessment-v1",
+          "knowledge_id": "l3-what-is-spark-sql/equivalence",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：对同一输入，SQL 与 API 均表达 price>30 的同列投影。可判断？",
+          "options": [
+            "核对语义，性能看计划与实测",
+            "SQL 必快一倍",
+            "API 不能做聚合",
+            "物理计划和秒数无条件完全相同"
+          ],
+          "correct_index": 0,
+          "explanation": "共享优化体系不提供任意写法的固定性能承诺。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-what-is-spark-sql/equivalence/review-v1",
+          "knowledge_id": "l3-what-is-spark-sql/equivalence",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：对同一输入，两接口均按 dept 求相同指标。应先如何理解？",
+          "options": [
+            "SQL 必快一倍",
+            "核对语义，性能看计划与实测",
+            "API 不能做聚合",
+            "物理计划和秒数无条件完全相同"
+          ],
+          "correct_index": 1,
+          "explanation": "共享优化体系不提供任意写法的固定性能承诺。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-what-is-spark-sql/command/assessment-v1",
+          "knowledge_id": "l3-what-is-spark-sql/command",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：执行 INSERT INTO audit SELECT * FROM batch，未接 show。可认定没写入吗？",
+          "options": [
+            "能，所有 sql 都无副作用",
+            "能，必须 collect 命令才执行",
+            "不能，命令与查询需区分",
+            "能，只有 Python write 能写入"
+          ],
+          "correct_index": 2,
+          "explanation": "SQL 命令可能在调用时执行，不能一概套用 SELECT 的惰性。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-what-is-spark-sql/command/remediation-v1",
+          "knowledge_id": "l3-what-is-spark-sql/command",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：执行 CREATE TEMP VIEW 命令后没有 show，能说目录一定未改变吗？",
+          "options": [
+            "能，所有 sql 都无副作用",
+            "能，必须 collect 命令才执行",
+            "能，只有 Python write 能写入",
+            "不能，命令与查询需区分"
+          ],
+          "correct_index": 3,
+          "explanation": "SQL 命令可能在调用时执行，不能一概套用 SELECT 的惰性。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-what-is-spark-sql/source/assessment-v1",
+          "knowledge_id": "l3-what-is-spark-sql/source",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：SQL 除临时视图，还可能从哪里读数据？",
+          "options": [
+            "也可查询目录表和文件源",
+            "只能从 Python 列表",
+            "只能从本地字符串常量",
+            "必须把所有数据变成 pandas"
+          ],
+          "correct_index": 0,
+          "explanation": "临时视图不是 SQL 唯一数据入口。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-what-is-spark-sql/source/remediation-v1",
+          "knowledge_id": "l3-what-is-spark-sql/source",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark SQL 是什么：查询命名关系时，能否把 SQL 限定为只能读取 Python 临时视图？",
+          "options": [
+            "只能从 Python 列表",
+            "也可查询目录表和文件源",
+            "只能从本地字符串常量",
+            "必须把所有数据变成 pandas"
+          ],
+          "correct_index": 1,
+          "explanation": "临时视图不是 SQL 唯一数据入口。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-temp-views",
+      "questions": [
+        {
+          "key": "l3-temp-views/target/assessment-v1",
+          "knowledge_id": "l3-temp-views/target",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：cleaned 已过滤，raw 未过滤。SQL v 应指向 cleaned，应注册谁？",
+          "options": [
+            "raw",
+            "任意对象都一样",
+            "cleaned",
+            "先 show 后会自动选择"
+          ],
+          "correct_index": 2,
+          "explanation": "注册对象决定 SQL 名称对应哪份查询。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-temp-views/target/review-v1",
+          "knowledge_id": "l3-temp-views/target",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：selected 已选目标字段，source 仍全列。v 要对应 selected，应注册谁？",
+          "options": [
+            "source",
+            "任意对象都一样",
+            "先 show 后会自动选择",
+            "selected"
+          ],
+          "correct_index": 3,
+          "explanation": "注册对象决定 SQL 名称对应哪份查询。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-temp-views/replace/assessment-v1",
+          "knowledge_id": "l3-temp-views/replace",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：v 注册旧 df 后，仅把 Python df 重新赋值。v 自动更新吗？",
+          "options": [
+            "不会，需重新注册",
+            "会，变量名是动态指针",
+            "会，所有视图自动跟随变量",
+            "视图必定删除"
+          ],
+          "correct_index": 0,
+          "explanation": "视图登记与 Python 变量重新绑定不同。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-temp-views/replace/review-v1",
+          "knowledge_id": "l3-temp-views/replace",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：把 Python 变量重新绑定到新文件查询，未重新注册 old_view，视图会自动替换吗？",
+          "options": [
+            "会，变量名是动态指针",
+            "不会，需重新注册",
+            "会，所有视图自动跟随变量",
+            "视图必定删除"
+          ],
+          "correct_index": 1,
+          "explanation": "视图登记与 Python 变量重新绑定不同。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-temp-views/global/assessment-v1",
+          "knowledge_id": "l3-temp-views/global",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：同一应用中新建 session，要查全局临时视图 metrics，用？",
+          "options": [
+            "metrics",
+            "local.metrics",
+            "global_temp.metrics",
+            "任意 Python 变量名"
+          ],
+          "correct_index": 2,
+          "explanation": "全局临时视图使用 global_temp 名称空间，范围是当前应用。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-temp-views/global/review-v1",
+          "knowledge_id": "l3-temp-views/global",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：同一 Spark 应用内另一 session 要访问全局临时视图 inventory，用？",
+          "options": [
+            "inventory",
+            "local.inventory",
+            "任意 Python 变量名",
+            "global_temp.inventory"
+          ],
+          "correct_index": 3,
+          "explanation": "全局临时视图使用 global_temp 名称空间，范围是当前应用。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-temp-views/lifetime/assessment-v1",
+          "knowledge_id": "l3-temp-views/lifetime",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：独立退出应用后重启，global_temp.v 会永久保留吗？",
+          "options": [
+            "不足，需另行持久交付",
+            "足够，global 表示永久",
+            "足够，临时视图自动写文件",
+            "只要变量同名就能恢复"
+          ],
+          "correct_index": 0,
+          "explanation": "临时视图不是跨独立应用的持久交付机制。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-temp-views/lifetime/remediation-v1",
+          "knowledge_id": "l3-temp-views/lifetime",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：普通临时视图想留给明天独立程序，单靠注册足够吗？",
+          "options": [
+            "足够，global 表示永久",
+            "不足，需另行持久交付",
+            "足够，临时视图自动写文件",
+            "只要变量同名就能恢复"
+          ],
+          "correct_index": 1,
+          "explanation": "临时视图不是跨独立应用的持久交付机制。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-temp-views/cache/assessment-v1",
+          "knowledge_id": "l3-temp-views/cache",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：createOrReplaceTempView 是否自动缓存全部数据？",
+          "options": [
+            "是，注册必定复制全表",
+            "是，自动建立 Parquet",
+            "不是，三种操作不同",
+            "是，自动给每行做备份"
+          ],
+          "correct_index": 2,
+          "explanation": "注册视图主要登记查询定义，不替代缓存或保存。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-temp-views/cache/remediation-v1",
+          "knowledge_id": "l3-temp-views/cache",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "临时视图（Temporary View）：注册报表临时视图是否等于把查询物化并写到磁盘？",
+          "options": [
+            "是，注册必定复制全表",
+            "是，自动建立 Parquet",
+            "是，自动给每行做备份",
+            "不是，三种操作不同"
+          ],
+          "correct_index": 3,
+          "explanation": "注册视图主要登记查询定义，不替代缓存或保存。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-select-basics",
+      "questions": [
+        {
+          "key": "l3-select-basics/literal/assessment-v1",
+          "knowledge_id": "l3-select-basics/literal",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：sku='pen'。SELECT sku,'sku' AS tag，tag 是？",
+          "options": [
+            "字符串 sku",
+            "pen",
+            "NULL",
+            "字段名错误"
+          ],
+          "correct_index": 0,
+          "explanation": "单引号内是常量，不是列引用。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-select-basics/literal/review-v1",
+          "knowledge_id": "l3-select-basics/literal",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：name='Lee'。SELECT name,'name' AS tag，tag 是？",
+          "options": [
+            "Lee",
+            "字符串 name",
+            "NULL",
+            "字段名错误"
+          ],
+          "correct_index": 1,
+          "explanation": "单引号内是常量，不是列引用。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-select-basics/units/assessment-v1",
+          "knowledge_id": "l3-select-basics/units",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：fee=450 元，SELECT fee/1000.0 AS fee_k 的值？",
+          "options": [
+            "450000",
+            "450",
+            "0.45",
+            "NULL"
+          ],
+          "correct_index": 2,
+          "explanation": "从元到千元除以一千，别名应表达单位。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-select-basics/units/review-v1",
+          "knowledge_id": "l3-select-basics/units",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：fee=750 元，SELECT fee/1000.0 AS fee_k 的值？",
+          "options": [
+            "750000",
+            "750",
+            "NULL",
+            "0.75"
+          ],
+          "correct_index": 3,
+          "explanation": "从元到千元除以一千，别名应表达单位。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-select-basics/identifier/assessment-v1",
+          "knowledge_id": "l3-select-basics/identifier",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：字段名是 net amount，引用它应写？",
+          "options": [
+            "`net amount`",
+            "'net amount'",
+            "net amount",
+            "只能先 collect"
+          ],
+          "correct_index": 0,
+          "explanation": "反引号引用含空格标识符，单引号是字符串常量。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-select-basics/identifier/review-v1",
+          "knowledge_id": "l3-select-basics/identifier",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：字段名是 user label，引用它应写？",
+          "options": [
+            "'user label'",
+            "`user label`",
+            "user label",
+            "只能先 collect"
+          ],
+          "correct_index": 1,
+          "explanation": "反引号引用含空格标识符，单引号是字符串常量。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-select-basics/distinct/assessment-v1",
+          "knowledge_id": "l3-select-basics/distinct",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：数据 city/value 为 A/1、A/2、B/1。SELECT DISTINCT city 几行？",
+          "options": [
+            "1",
+            "3",
+            "2",
+            "0"
+          ],
+          "correct_index": 2,
+          "explanation": "去重依据是输出字段，不是未选择的原始明细列。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-select-basics/distinct/remediation-v1",
+          "knowledge_id": "l3-select-basics/distinct",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：数据 sku/qty 为 X/4、X/9、Y/4。SELECT DISTINCT sku 几行？",
+          "options": [
+            "1",
+            "3",
+            "0",
+            "2"
+          ],
+          "correct_index": 3,
+          "explanation": "去重依据是输出字段，不是未选择的原始明细列。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-select-basics/alias/assessment-v1",
+          "knowledge_id": "l3-select-basics/alias",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：SELECT cost*2 AS doubled FROM t，输出表达式列名？",
+          "options": [
+            "doubled",
+            "cost",
+            "固定叫 value",
+            "自动保留两个同名列"
+          ],
+          "correct_index": 0,
+          "explanation": "AS 为输出表达式指定名称，原字段是否保留取决于投影。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-select-basics/alias/remediation-v1",
+          "knowledge_id": "l3-select-basics/alias",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "SELECT 基础：SELECT age+2 AS age_later FROM t，输出表达式列名？",
+          "options": [
+            "age",
+            "age_later",
+            "固定叫 value",
+            "自动保留两个同名列"
+          ],
+          "correct_index": 1,
+          "explanation": "AS 为输出表达式指定名称，原字段是否保留取决于投影。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-where-order-limit",
+      "questions": [
+        {
+          "key": "l3-where-order-limit/conditions/assessment-v1",
+          "knowledge_id": "l3-where-order-limit/conditions",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：A:east/50,B:west/180,C:east/160，WHERE city='east' AND amount>100 留下？",
+          "options": [
+            "A 和 C",
+            "B 和 C",
+            "只有 C",
+            "全部"
+          ],
+          "correct_index": 2,
+          "explanation": "AND 要两项同时为 true。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-where-order-limit/conditions/review-v1",
+          "knowledge_id": "l3-where-order-limit/conditions",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：A:blue/20,B:red/90,C:blue/80，WHERE team='blue' AND score>50 留下？",
+          "options": [
+            "A 和 C",
+            "B 和 C",
+            "全部",
+            "只有 C"
+          ],
+          "correct_index": 3,
+          "explanation": "AND 要两项同时为 true。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-where-order-limit/null/assessment-v1",
+          "knowledge_id": "l3-where-order-limit/null",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：WHERE updated_at=NULL 为什么筛不到缺失时间？",
+          "options": [
+            "普通比较得到未知，过滤只保留 true",
+            "缺失列永远是空字符串",
+            "SQL 不允许任何 NULL",
+            "NULL 比较一定是普通 false"
+          ],
+          "correct_index": 0,
+          "explanation": "NULL 的普通比较是未知，缺失判断使用 IS NULL。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-where-order-limit/null/review-v1",
+          "knowledge_id": "l3-where-order-limit/null",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：WHERE price=NULL 为什么不等同于 price IS NULL？",
+          "options": [
+            "缺失列永远是空字符串",
+            "普通比较得到未知，过滤只保留 true",
+            "SQL 不允许任何 NULL",
+            "NULL 比较一定是普通 false"
+          ],
+          "correct_index": 1,
+          "explanation": "NULL 的普通比较是未知，缺失判断使用 IS NULL。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-where-order-limit/limit/assessment-v1",
+          "knowledge_id": "l3-where-order-limit/limit",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：没有 ORDER BY 的 LIMIT 3 能保证什么？",
+          "options": [
+            "保证最大值集合",
+            "保证均匀随机样本",
+            "只约束数量，不保证最大或随机",
+            "保证最早导入记录"
+          ],
+          "correct_index": 2,
+          "explanation": "LIMIT 不表达稳定顺序或随机抽样。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-where-order-limit/limit/review-v1",
+          "knowledge_id": "l3-where-order-limit/limit",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：没有排序约定的 limit(4) 是均匀抽样吗？",
+          "options": [
+            "保证最大值集合",
+            "保证均匀随机样本",
+            "保证最早导入记录",
+            "只约束数量，不保证最大或随机"
+          ],
+          "correct_index": 3,
+          "explanation": "LIMIT 不表达稳定顺序或随机抽样。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-where-order-limit/tie/assessment-v1",
+          "knowledge_id": "l3-where-order-limit/tie",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：A:90,B:90,C:100，ORDER BY score DESC,id ASC LIMIT 2 得到？",
+          "options": [
+            "C、A",
+            "C、B",
+            "A、B",
+            "B、C"
+          ],
+          "correct_index": 0,
+          "explanation": "第二排序键决定同分记录的稳定取舍。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-where-order-limit/tie/remediation-v1",
+          "knowledge_id": "l3-where-order-limit/tie",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：A:60,B:60,C:80，ORDER BY score DESC,id ASC LIMIT 2 得到？",
+          "options": [
+            "C、B",
+            "C、A",
+            "A、B",
+            "B、C"
+          ],
+          "correct_index": 1,
+          "explanation": "第二排序键决定同分记录的稳定取舍。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-where-order-limit/empty/assessment-v1",
+          "knowledge_id": "l3-where-order-limit/empty",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：phone 为 NULL、空字符串、555，WHERE phone IS NULL 留下？",
+          "options": [
+            "仅空字符串行",
+            "两种缺失都自动保留",
+            "仅 NULL 行",
+            "没有行"
+          ],
+          "correct_index": 2,
+          "explanation": "空字符串不是 NULL，需要另定义业务缺失规则。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-where-order-limit/empty/remediation-v1",
+          "knowledge_id": "l3-where-order-limit/empty",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "WHERE / ORDER BY / LIMIT：tag 为 NULL、空字符串、X，WHERE tag IS NULL 留下？",
+          "options": [
+            "仅空字符串行",
+            "两种缺失都自动保留",
+            "没有行",
+            "仅 NULL 行"
+          ],
+          "correct_index": 3,
+          "explanation": "空字符串不是 NULL，需要另定义业务缺失规则。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-groupby-having",
+      "questions": [
+        {
+          "key": "l3-groupby-having/stage/assessment-v1",
+          "knowledge_id": "l3-groupby-having/stage",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：A:30+90，B:95，GROUP BY city HAVING SUM(v)>100 保留？",
+          "options": [
+            "只有 A",
+            "只有 B",
+            "A、B 都保留",
+            "都不保留"
+          ],
+          "correct_index": 0,
+          "explanation": "HAVING 比较组内合计，不能以逐笔大额筛选替代。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-groupby-having/stage/review-v1",
+          "knowledge_id": "l3-groupby-having/stage",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：A:50+70，B:99，GROUP BY k HAVING SUM(v)>100 保留？",
+          "options": [
+            "只有 B",
+            "只有 A",
+            "A、B 都保留",
+            "都不保留"
+          ],
+          "correct_index": 1,
+          "explanation": "HAVING 比较组内合计，不能以逐笔大额筛选替代。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-groupby-having/count/assessment-v1",
+          "knowledge_id": "l3-groupby-having/count",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：同组 v=5,NULL,9,NULL，COUNT(*) 与 COUNT(v)？",
+          "options": [
+            "2、2",
+            "4、4",
+            "4、2",
+            "2、4"
+          ],
+          "correct_index": 2,
+          "explanation": "COUNT(*) 计行，COUNT(列) 只计非空。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-groupby-having/count/review-v1",
+          "knowledge_id": "l3-groupby-having/count",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：同组 v=NULL,8,NULL,3，COUNT(*) 与 COUNT(v)？",
+          "options": [
+            "2、2",
+            "4、4",
+            "2、4",
+            "4、2"
+          ],
+          "correct_index": 3,
+          "explanation": "COUNT(*) 计行，COUNT(列) 只计非空。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-groupby-having/grain/assessment-v1",
+          "knowledge_id": "l3-groupby-having/grain",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：SELECT city,id,SUM(v) GROUP BY city，id 未聚合，问题？",
+          "options": [
+            "未定义组内字段取值",
+            "Spark 自动稳定取第一条",
+            "只需加 LIMIT",
+            "字段名越短越正确"
+          ],
+          "correct_index": 0,
+          "explanation": "非分组字段不能不定义选择规则就进入汇总结果。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-groupby-having/grain/review-v1",
+          "knowledge_id": "l3-groupby-having/grain",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：SELECT dept,name,COUNT(*) GROUP BY dept，name 未聚合，问题？",
+          "options": [
+            "Spark 自动稳定取第一条",
+            "未定义组内字段取值",
+            "只需加 LIMIT",
+            "字段名越短越正确"
+          ],
+          "correct_index": 1,
+          "explanation": "非分组字段不能不定义选择规则就进入汇总结果。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-groupby-having/allnull/assessment-v1",
+          "knowledge_id": "l3-groupby-having/allnull",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：同组金额全 NULL，SUM(amount) 返回？",
+          "options": [
+            "0",
+            "行数",
+            "NULL",
+            "空字符串"
+          ],
+          "correct_index": 2,
+          "explanation": "SUM/AVG 的全空组结果不是自动补零。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-groupby-having/allnull/remediation-v1",
+          "knowledge_id": "l3-groupby-having/allnull",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：同组时长全 NULL，AVG(duration) 返回？",
+          "options": [
+            "0",
+            "行数",
+            "空字符串",
+            "NULL"
+          ],
+          "correct_index": 3,
+          "explanation": "SUM/AVG 的全空组结果不是自动补零。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-groupby-having/outer/assessment-v1",
+          "knowledge_id": "l3-groupby-having/outer",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：聚合结果在外层 SELECT 中作为普通列 total。外层 WHERE total>100 可以吗？",
+          "options": [
+            "可以，外层已看到聚合列",
+            "永远不能用 WHERE 筛汇总列",
+            "必须改回逐行 amount 条件",
+            "必须 collect 后筛"
+          ],
+          "correct_index": 0,
+          "explanation": "同层 WHERE 与 HAVING 的阶段区别不禁止外层筛聚合列。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-groupby-having/outer/remediation-v1",
+          "knowledge_id": "l3-groupby-having/outer",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "GROUP BY 与 HAVING：先将按地区合计注册成 report，再 WHERE total>200，可以吗？",
+          "options": [
+            "永远不能用 WHERE 筛汇总列",
+            "可以，外层已看到聚合列",
+            "必须改回逐行 amount 条件",
+            "必须 collect 后筛"
+          ],
+          "correct_index": 1,
+          "explanation": "同层 WHERE 与 HAVING 的阶段区别不禁止外层筛聚合列。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-joins-intro",
+      "questions": [
+        {
+          "key": "l3-joins-intro/inner/assessment-v1",
+          "knowledge_id": "l3-joins-intro/inner",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：订单 o1/u2,o2/u8，用户只有 u2/Lin，INNER JOIN 输出？",
+          "options": [
+            "两张订单都保留且补 NULL",
+            "没有行",
+            "仅 o1/Lin",
+            "把用户名填给所有订单"
+          ],
+          "correct_index": 2,
+          "explanation": "INNER 仅保留满足条件的匹配行对。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-joins-intro/inner/review-v1",
+          "knowledge_id": "l3-joins-intro/inner",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：订单 o1/u3,o2/u9，用户只有 u3/Kai，INNER JOIN 输出？",
+          "options": [
+            "两张订单都保留且补 NULL",
+            "没有行",
+            "把用户名填给所有订单",
+            "仅 o1/Kai"
+          ],
+          "correct_index": 3,
+          "explanation": "INNER 仅保留满足条件的匹配行对。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-joins-intro/multiply/assessment-v1",
+          "knowledge_id": "l3-joins-intro/multiply",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：同键左 4 行，右 2 行，全部等值匹配，输出几行？",
+          "options": [
+            "8",
+            "4",
+            "6",
+            "1"
+          ],
+          "correct_index": 0,
+          "explanation": "同键匹配按行对组合，不能当作自动去重。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-joins-intro/multiply/review-v1",
+          "knowledge_id": "l3-joins-intro/multiply",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：同键左 2 行，右 5 行，全部等值匹配，输出几行？",
+          "options": [
+            "5",
+            "10",
+            "7",
+            "1"
+          ],
+          "correct_index": 1,
+          "explanation": "同键匹配按行对组合，不能当作自动去重。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-joins-intro/types/assessment-v1",
+          "knowledge_id": "l3-joins-intro/types",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：字符串键和整数键比较，尚未看值和配置，能说全不匹配吗？",
+          "options": [
+            "可以，绝对全部不匹配",
+            "名字相同就一定匹配",
+            "不能，需查值与转换规则",
+            "任何情况下必定报错"
+          ],
+          "correct_index": 2,
+          "explanation": "转换、坏值和设置会影响行为，类型不同不是固定空结果保证。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-joins-intro/types/review-v1",
+          "knowledge_id": "l3-joins-intro/types",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：不同类型连接键出现问题，能只凭类型不同断定结果为空吗？",
+          "options": [
+            "可以，绝对全部不匹配",
+            "名字相同就一定匹配",
+            "任何情况下必定报错",
+            "不能，需查值与转换规则"
+          ],
+          "correct_index": 3,
+          "explanation": "转换、坏值和设置会影响行为，类型不同不是固定空结果保证。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-joins-intro/alias/assessment-v1",
+          "knowledge_id": "l3-joins-intro/alias",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：o 和 u 都有 id，想明确引用用户侧，写？",
+          "options": [
+            "u.id",
+            "'u.id'",
+            "id",
+            "COUNT(*)"
+          ],
+          "correct_index": 0,
+          "explanation": "用关系别名限定字段来源，避免同名列歧义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-joins-intro/alias/remediation-v1",
+          "knowledge_id": "l3-joins-intro/alias",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：a 和 b 都有 key，想明确引用 b 侧，写？",
+          "options": [
+            "'b.key'",
+            "b.key",
+            "key",
+            "COUNT(*)"
+          ],
+          "correct_index": 1,
+          "explanation": "用关系别名限定字段来源，避免同名列歧义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-joins-intro/unique/assessment-v1",
+          "knowledge_id": "l3-joins-intro/unique",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：订单一行 40 元，维表同键三行，INNER 后 SUM(amount)？",
+          "options": [
+            "40",
+            "3",
+            "120",
+            "0"
+          ],
+          "correct_index": 2,
+          "explanation": "维表重复会复制订单贡献，聚合前需验证键约定。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-joins-intro/unique/remediation-v1",
+          "knowledge_id": "l3-joins-intro/unique",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "多表关联（JOIN）入门：订单一行 30 元，维表同键四行，INNER 后 SUM(amount)？",
+          "options": [
+            "30",
+            "4",
+            "0",
+            "120"
+          ],
+          "correct_index": 3,
+          "explanation": "维表重复会复制订单贡献，聚合前需验证键约定。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-functions-and-udf",
+      "questions": [
+        {
+          "key": "l3-functions-and-udf/builtin/assessment-v1",
+          "knowledge_id": "l3-functions-and-udf/builtin",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：UPPER(TRIM(' jo ')) 返回？",
+          "options": [
+            "JO",
+            " JO ",
+            "jo",
+            "NULL"
+          ],
+          "correct_index": 0,
+          "explanation": "先去首尾空格，再大写。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-functions-and-udf/builtin/review-v1",
+          "knowledge_id": "l3-functions-and-udf/builtin",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：UPPER(TRIM(' li ')) 返回？",
+          "options": [
+            " LI ",
+            "LI",
+            "li",
+            "NULL"
+          ],
+          "correct_index": 1,
+          "explanation": "先去首尾空格，再大写。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-functions-and-udf/coalesce/assessment-v1",
+          "knowledge_id": "l3-functions-and-udf/coalesce",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：COALESCE('', 'NA') 返回？",
+          "options": [
+            "NA",
+            "NULL",
+            "空字符串",
+            "报列名错误"
+          ],
+          "correct_index": 2,
+          "explanation": "COALESCE 只跳过 NULL，空字符串仍是非空值。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-functions-and-udf/coalesce/review-v1",
+          "knowledge_id": "l3-functions-and-udf/coalesce",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：COALESCE('', 'fallback') 返回？",
+          "options": [
+            "fallback",
+            "NULL",
+            "报列名错误",
+            "空字符串"
+          ],
+          "correct_index": 3,
+          "explanation": "COALESCE 只跳过 NULL，空字符串仍是非空值。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-functions-and-udf/case/assessment-v1",
+          "knowledge_id": "l3-functions-and-udf/case",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：x=NULL，CASE WHEN x IS NULL THEN 'missing' ELSE 'ok' END？",
+          "options": [
+            "missing",
+            "ok",
+            "0",
+            "NULL"
+          ],
+          "correct_index": 0,
+          "explanation": "显式 NULL 分支可表达缺失标签。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-functions-and-udf/case/review-v1",
+          "knowledge_id": "l3-functions-and-udf/case",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：x=NULL，CASE WHEN x IS NULL THEN 'unknown' ELSE 'known' END？",
+          "options": [
+            "known",
+            "unknown",
+            "0",
+            "NULL"
+          ],
+          "correct_index": 1,
+          "explanation": "显式 NULL 分支可表达缺失标签。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-functions-and-udf/register/assessment-v1",
+          "knowledge_id": "l3-functions-and-udf/register",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：Python 函数已验证，SQL 报函数名未解析，应？",
+          "options": [
+            "只改 Python 变量名",
+            "只对 DataFrame 调 show",
+            "注册 SQL 名称与返回类型",
+            "先把整个表 collect"
+          ],
+          "correct_index": 2,
+          "explanation": "列表达式包装不自动等于 SQL 函数名注册。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-functions-and-udf/register/remediation-v1",
+          "knowledge_id": "l3-functions-and-udf/register",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：DataFrame 里 F.udf 包装过函数，想按名称在 SQL 调用，还需要？",
+          "options": [
+            "只改 Python 变量名",
+            "只对 DataFrame 调 show",
+            "先把整个表 collect",
+            "注册 SQL 名称与返回类型"
+          ],
+          "correct_index": 3,
+          "explanation": "列表达式包装不自动等于 SQL 函数名注册。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-functions-and-udf/performance/assessment-v1",
+          "knowledge_id": "l3-functions-and-udf/performance",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：内置能表达需求时，为何先比较内置而非直接 Python UDF？",
+          "options": [
+            "先看内置可否表达，再实测",
+            "UDF 任何场景必慢万倍",
+            "pandas UDF 任何场景必更快",
+            "内置函数保证绝不会占内存"
+          ],
+          "correct_index": 0,
+          "explanation": "优先表达能力与执行路径，避免无依据的绝对性能结论。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-functions-and-udf/performance/remediation-v1",
+          "knowledge_id": "l3-functions-and-udf/performance",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "内置函数与 UDF：想用 UDF 做简单大写，应优先核对什么？",
+          "options": [
+            "UDF 任何场景必慢万倍",
+            "先看内置可否表达，再实测",
+            "pandas UDF 任何场景必更快",
+            "内置函数保证绝不会占内存"
+          ],
+          "correct_index": 1,
+          "explanation": "优先表达能力与执行路径，避免无依据的绝对性能结论。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-tables-and-formats",
+      "questions": [
+        {
+          "key": "l3-tables-and-formats/catalog/assessment-v1",
+          "knowledge_id": "l3-tables-and-formats/catalog",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：没有外部 Hive Metastore，能一概说所有目录表只活在 session 吗？",
+          "options": [
+            "能，所有表只有临时视图",
+            "能，数据源表不可能存在",
+            "不能，要查 catalog 配置",
+            "只看变量名即可"
+          ],
+          "correct_index": 2,
+          "explanation": "临时视图与数据源目录表不同，持久性取决于配置。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-tables-and-formats/catalog/review-v1",
+          "knowledge_id": "l3-tables-and-formats/catalog",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：目录表重启后缺失，应只用“没 Hive”解释吗？",
+          "options": [
+            "能，所有表只有临时视图",
+            "能，数据源表不可能存在",
+            "只看变量名即可",
+            "不能，要查 catalog 配置"
+          ],
+          "correct_index": 3,
+          "explanation": "临时视图与数据源目录表不同，持久性取决于配置。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-tables-and-formats/path/assessment-v1",
+          "knowledge_id": "l3-tables-and-formats/path",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：parquet.`/practice/items` 中前后分别是什么？",
+          "options": [
+            "数据源格式与可信文件路径",
+            "数据库密码与用户名",
+            "输出字段与别名",
+            "两个 Python 变量"
+          ],
+          "correct_index": 0,
+          "explanation": "支持的数据源路径可直接成为 SQL 读取入口。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-tables-and-formats/path/review-v1",
+          "knowledge_id": "l3-tables-and-formats/path",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：json.`/practice/events` 中前后分别是什么？",
+          "options": [
+            "数据库密码与用户名",
+            "数据源格式与可信文件路径",
+            "输出字段与别名",
+            "两个 Python 变量"
+          ],
+          "correct_index": 1,
+          "explanation": "支持的数据源路径可直接成为 SQL 读取入口。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-tables-and-formats/append/assessment-v1",
+          "knowledge_id": "l3-tables-and-formats/append",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：空练习表每批 6 行，INSERT INTO 两次，最终多少？",
+          "options": [
+            "6",
+            "0",
+            "12",
+            "1"
+          ],
+          "correct_index": 2,
+          "explanation": "追加不自动按批次幂等。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-tables-and-formats/append/review-v1",
+          "knowledge_id": "l3-tables-and-formats/append",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：空练习表每批 7 行，INSERT INTO 两次，最终多少？",
+          "options": [
+            "7",
+            "0",
+            "1",
+            "14"
+          ],
+          "correct_index": 3,
+          "explanation": "追加不自动按批次幂等。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-tables-and-formats/overwrite/assessment-v1",
+          "knowledge_id": "l3-tables-and-formats/overwrite",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：希望替换目标表结果，应区分哪种语义？",
+          "options": [
+            "覆盖与追加的目标规则",
+            "把所有写命令当 ignore",
+            "依靠 show 自动去重",
+            "把文件重命名成相同名字"
+          ],
+          "correct_index": 0,
+          "explanation": "写入成功与可重跑是不同要求，需明确目标和语义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-tables-and-formats/overwrite/remediation-v1",
+          "knowledge_id": "l3-tables-and-formats/overwrite",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：同批完整结果重跑，不希望反复追加，应首先考虑？",
+          "options": [
+            "把所有写命令当 ignore",
+            "覆盖与追加的目标规则",
+            "依靠 show 自动去重",
+            "把文件重命名成相同名字"
+          ],
+          "correct_index": 1,
+          "explanation": "写入成功与可重跑是不同要求，需明确目标和语义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-tables-and-formats/target/assessment-v1",
+          "knowledge_id": "l3-tables-and-formats/target",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：只有输入视图存在，直接 INSERT OVERWRITE 到未知表够吗？",
+          "options": [
+            "够，输入存在自动创建正确目标",
+            "够，普通视图就是可写文件表",
+            "不够，核对输出契约",
+            "只要 LIMIT 就会成功"
+          ],
+          "correct_index": 2,
+          "explanation": "输入可查询不能证明输出目标存在且可写。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-tables-and-formats/target/remediation-v1",
+          "knowledge_id": "l3-tables-and-formats/target",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark SQL 与表 / 文件格式：SELECT 成功后能认定输出目录表一定可写吗？",
+          "options": [
+            "够，输入存在自动创建正确目标",
+            "够，普通视图就是可写文件表",
+            "只要 LIMIT 就会成功",
+            "不够，核对输出契约"
+          ],
+          "correct_index": 3,
+          "explanation": "输入可查询不能证明输出目标存在且可写。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l3-comprehensive",
+      "questions": [
+        {
+          "key": "l3-comprehensive/dedup/assessment-v1",
+          "knowledge_id": "l3-comprehensive/dedup",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：重复导入完整相同行，SQL 应怎样定义去重对象？",
+          "options": [
+            "对约定的完整输出行组合 DISTINCT",
+            "只保留随机一条城市",
+            "用 LIMIT 替代去重",
+            "把金额求平均"
+          ],
+          "correct_index": 0,
+          "explanation": "去重应匹配业务相等约定，不能任意丢键或值。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-comprehensive/dedup/review-v1",
+          "knowledge_id": "l3-comprehensive/dedup",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：同订单三列完全相同，只计一次，先应做什么？",
+          "options": [
+            "只保留随机一条城市",
+            "对约定的完整输出行组合 DISTINCT",
+            "用 LIMIT 替代去重",
+            "把金额求平均"
+          ],
+          "correct_index": 1,
+          "explanation": "去重应匹配业务相等约定，不能任意丢键或值。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-comprehensive/threshold/assessment-v1",
+          "knowledge_id": "l3-comprehensive/threshold",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：组内 90+110，需求至少 200，应？",
+          "options": [
+            "WHERE v>=200，保留两笔",
+            "HAVING SUM(v)>200，仍保留",
+            "HAVING SUM(v)>=200，保留",
+            "LIMIT 200，自动达标"
+          ],
+          "correct_index": 2,
+          "explanation": "至少包含边界，且比较组内合计应在聚合后。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-comprehensive/threshold/review-v1",
+          "knowledge_id": "l3-comprehensive/threshold",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：组内 80+120，需求至少 200，应？",
+          "options": [
+            "WHERE v>=200，保留两笔",
+            "HAVING SUM(v)>200，仍保留",
+            "LIMIT 200，自动达标",
+            "HAVING SUM(v)>=200，保留"
+          ],
+          "correct_index": 3,
+          "explanation": "至少包含边界，且比较组内合计应在聚合后。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-comprehensive/filter/assessment-v1",
+          "knowledge_id": "l3-comprehensive/filter",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：明细 10、-5、NULL，仅正金额参与汇总，WHERE 应？",
+          "options": [
+            "amount>0",
+            "amount IS NOT NULL",
+            "SUM(amount)>0",
+            "amount=NULL"
+          ],
+          "correct_index": 0,
+          "explanation": "有效明细规则不能由非空或聚合门槛替代。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-comprehensive/filter/review-v1",
+          "knowledge_id": "l3-comprehensive/filter",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：明细 30、0、NULL，仅正金额参与汇总，WHERE 应？",
+          "options": [
+            "amount IS NOT NULL",
+            "amount>0",
+            "SUM(amount)>0",
+            "amount=NULL"
+          ],
+          "correct_index": 1,
+          "explanation": "有效明细规则不能由非空或聚合门槛替代。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-comprehensive/units/assessment-v1",
+          "knowledge_id": "l3-comprehensive/units",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：total=625 元，千元字段应是？",
+          "options": [
+            "625000",
+            "625",
+            "0.625",
+            "NULL"
+          ],
+          "correct_index": 2,
+          "explanation": "元转千元除以一千并验证输出类型。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-comprehensive/units/remediation-v1",
+          "knowledge_id": "l3-comprehensive/units",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：total=875 元，千元字段应是？",
+          "options": [
+            "875000",
+            "875",
+            "NULL",
+            "0.875"
+          ],
+          "correct_index": 3,
+          "explanation": "元转千元除以一千并验证输出类型。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-comprehensive/accept/assessment-v1",
+          "knowledge_id": "l3-comprehensive/accept",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：全表总额相同但某城市分错，验收应？",
+          "options": [
+            "还需逐组与交付验收",
+            "只看 show 正常就通过",
+            "只看总额就通过",
+            "只看脚本没有异常就通过"
+          ],
+          "correct_index": 0,
+          "explanation": "正确性与交付可用需要多层证据。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-comprehensive/accept/remediation-v1",
+          "knowledge_id": "l3-comprehensive/accept",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark SQL 综合练习：查询样本正常但写出尚未读回，能完整通过吗？",
+          "options": [
+            "只看 show 正常就通过",
+            "还需逐组与交付验收",
+            "只看总额就通过",
+            "只看脚本没有异常就通过"
+          ],
+          "correct_index": 1,
+          "explanation": "正确性与交付可用需要多层证据。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-why-explain",
+      "questions": [
+        {
+          "key": "l4-why-explain/plan/assessment-v1",
+          "knowledge_id": "l4-why-explain/plan",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：计划出现 Sort 与 Exchange，能直接得出准确耗时吗？",
+          "options": [
+            "能，节点数乘一秒",
+            "能，Exchange 固定最慢",
+            "不能，需运行指标",
+            "能，最上面固定最慢"
+          ],
+          "correct_index": 2,
+          "explanation": "计划不是计时器，必须用运行证据验证瓶颈。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-why-explain/plan/review-v1",
+          "knowledge_id": "l4-why-explain/plan",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：只看到 Scan 与 HashAggregate，能认定哪个节点耗时最多吗？",
+          "options": [
+            "能，节点数乘一秒",
+            "能，Exchange 固定最慢",
+            "能，最上面固定最慢",
+            "不能，需运行指标"
+          ],
+          "correct_index": 3,
+          "explanation": "计划不是计时器，必须用运行证据验证瓶颈。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-why-explain/hypothesis/assessment-v1",
+          "knowledge_id": "l4-why-explain/hypothesis",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：读取 40 列只用两列，应优先验证什么？",
+          "options": [
+            "列裁剪与实际读取量",
+            "立即删除源数据列",
+            "总是缓存全部宽表",
+            "增加输出行数"
+          ],
+          "correct_index": 0,
+          "explanation": "先验证能否减少无用读取，不破坏源数据。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-why-explain/hypothesis/review-v1",
+          "knowledge_id": "l4-why-explain/hypothesis",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：报表没用长文本，却观察到宽读取，应先检查？",
+          "options": [
+            "立即删除源数据列",
+            "列裁剪与实际读取量",
+            "总是缓存全部宽表",
+            "增加输出行数"
+          ],
+          "correct_index": 1,
+          "explanation": "先验证能否减少无用读取，不破坏源数据。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-why-explain/correct/assessment-v1",
+          "knowledge_id": "l4-why-explain/correct",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：优化后更快但少一个分组，能算成功吗？",
+          "options": [
+            "只要更快就是成功",
+            "少数据自然正确",
+            "先修正结果，不算成功",
+            "按节点数打分即可"
+          ],
+          "correct_index": 2,
+          "explanation": "性能改动以正确业务语义为前提。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-why-explain/correct/review-v1",
+          "knowledge_id": "l4-why-explain/correct",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：总耗时下降，但有效订单数错误，应怎样评价？",
+          "options": [
+            "只要更快就是成功",
+            "少数据自然正确",
+            "按节点数打分即可",
+            "先修正结果，不算成功"
+          ],
+          "correct_index": 3,
+          "explanation": "性能改动以正确业务语义为前提。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-why-explain/metrics/assessment-v1",
+          "knowledge_id": "l4-why-explain/metrics",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：多数任务快但一个慢，计划只提示聚合，应再看？",
+          "options": [
+            "task 分布、数据量、spill 等指标",
+            "只看 SQL 文本长度",
+            "只看颜色",
+            "只看变量名"
+          ],
+          "correct_index": 0,
+          "explanation": "实际负载和运行分布帮助检验计划假设。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-why-explain/metrics/remediation-v1",
+          "knowledge_id": "l4-why-explain/metrics",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：只知道总耗时增长，想定位长尾，应收集？",
+          "options": [
+            "只看 SQL 文本长度",
+            "task 分布、数据量、spill 等指标",
+            "只看颜色",
+            "只看变量名"
+          ],
+          "correct_index": 1,
+          "explanation": "实际负载和运行分布帮助检验计划假设。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-why-explain/experiment/assessment-v1",
+          "knowledge_id": "l4-why-explain/experiment",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：A/B 使用不同输入量，可以直接算加速倍数吗？",
+          "options": [
+            "可以，不必核对条件",
+            "只挑最快一次即可",
+            "不能，控制或记录可比条件",
+            "必然是优化器更新"
+          ],
+          "correct_index": 2,
+          "explanation": "性能归因需要结果正确与实验条件可比。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-why-explain/experiment/remediation-v1",
+          "knowledge_id": "l4-why-explain/experiment",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "为什么该看执行计划：原方案冷缓存，新方案热缓存，可直接归因于改写吗？",
+          "options": [
+            "可以，不必核对条件",
+            "只挑最快一次即可",
+            "必然是优化器更新",
+            "不能，控制或记录可比条件"
+          ],
+          "correct_index": 3,
+          "explanation": "性能归因需要结果正确与实验条件可比。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-logical-vs-physical",
+      "questions": [
+        {
+          "key": "l4-logical-vs-physical/meaning/assessment-v1",
+          "knowledge_id": "l4-logical-vs-physical/meaning",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：“按门店求总量”首先是哪类描述？",
+          "options": [
+            "逻辑计算需求",
+            "网络端口配置",
+            "物理机器编号",
+            "磁盘目录数量"
+          ],
+          "correct_index": 0,
+          "explanation": "逻辑描述说明计算语义，尚未确定具体执行路线。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-logical-vs-physical/meaning/review-v1",
+          "knowledge_id": "l4-logical-vs-physical/meaning",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：“把两个关系按用户键匹配”首先是哪类描述？",
+          "options": [
+            "网络端口配置",
+            "逻辑计算需求",
+            "物理机器编号",
+            "磁盘目录数量"
+          ],
+          "correct_index": 1,
+          "explanation": "逻辑描述说明计算语义，尚未确定具体执行路线。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-logical-vs-physical/routes/assessment-v1",
+          "knowledge_id": "l4-logical-vs-physical/routes",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：同一等值连接从 SMJ 变 BHJ，必然改业务吗？",
+          "options": [
+            "必然，节点名不同就是不同需求",
+            "必定少算行数",
+            "不必，需核对等价性",
+            "只能其中一个合法"
+          ],
+          "correct_index": 2,
+          "explanation": "语义与实现不同层，仍需核对实际条件和结果。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-logical-vs-physical/routes/review-v1",
+          "knowledge_id": "l4-logical-vs-physical/routes",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：同语义聚合选择不同物理实现，必定结果不同吗？",
+          "options": [
+            "必然，节点名不同就是不同需求",
+            "必定少算行数",
+            "只能其中一个合法",
+            "不必，需核对等价性"
+          ],
+          "correct_index": 3,
+          "explanation": "语义与实现不同层，仍需核对实际条件和结果。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-logical-vs-physical/analysis/assessment-v1",
+          "knowledge_id": "l4-logical-vs-physical/analysis",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：字段拼成 pricce，实际只有 price，应先解决？",
+          "options": [
+            "先修复语义分析问题",
+            "先增内存即可",
+            "先加所有 hint",
+            "先改变输出排序"
+          ],
+          "correct_index": 0,
+          "explanation": "语义分析错误不能靠资源调参解决。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-logical-vs-physical/analysis/review-v1",
+          "knowledge_id": "l4-logical-vs-physical/analysis",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：引用不存在的关系，调 Shuffle 参数能补出来吗？",
+          "options": [
+            "先增内存即可",
+            "先修复语义分析问题",
+            "先加所有 hint",
+            "先改变输出排序"
+          ],
+          "correct_index": 1,
+          "explanation": "语义分析错误不能靠资源调参解决。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-logical-vs-physical/optimization/assessment-v1",
+          "knowledge_id": "l4-logical-vs-physical/optimization",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：优化后 Filter 和 Project 被重排，应首先核对？",
+          "options": [
+            "节点越少就可以改结果",
+            "所有节点必须逐字对应代码",
+            "保持语义，不是逐行记录",
+            "重排必定错误"
+          ],
+          "correct_index": 2,
+          "explanation": "计划重写有语义约束，不应按源码逐行计数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-logical-vs-physical/optimization/remediation-v1",
+          "knowledge_id": "l4-logical-vs-physical/optimization",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：表达式被折叠后与源码不同，正确理解是？",
+          "options": [
+            "节点越少就可以改结果",
+            "所有节点必须逐字对应代码",
+            "重排必定错误",
+            "保持语义，不是逐行记录"
+          ],
+          "correct_index": 3,
+          "explanation": "计划重写有语义约束，不应按源码逐行计数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-logical-vs-physical/aqe/assessment-v1",
+          "knowledge_id": "l4-logical-vs-physical/aqe",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：初始计划未 final，选型能当最终事实吗？",
+          "options": [
+            "初始与最终计划及运行条件",
+            "只看第一次打印",
+            "只看变量名",
+            "只看 SQL 注释"
+          ],
+          "correct_index": 0,
+          "explanation": "AQE 可能调整部分物理路线，应保存运行证据。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-logical-vs-physical/aqe/remediation-v1",
+          "knowledge_id": "l4-logical-vs-physical/aqe",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "逻辑计划 vs 物理计划：运行统计可能改变路线，比较时应看？",
+          "options": [
+            "只看第一次打印",
+            "初始与最终计划及运行条件",
+            "只看变量名",
+            "只看 SQL 注释"
+          ],
+          "correct_index": 1,
+          "explanation": "AQE 可能调整部分物理路线，应保存运行证据。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-explain-api",
+      "questions": [
+        {
+          "key": "l4-explain-api/extended/assessment-v1",
+          "knowledge_id": "l4-explain-api/extended",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：要看 parsed/analyzed/optimized/physical，用？",
+          "options": [
+            "formatted",
+            "codegen",
+            "extended",
+            "collect"
+          ],
+          "correct_index": 2,
+          "explanation": "extended 适合追踪多阶段计划。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-explain-api/extended/review-v1",
+          "knowledge_id": "l4-explain-api/extended",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：想比较优化前后多个计划阶段，用？",
+          "options": [
+            "formatted",
+            "codegen",
+            "collect",
+            "extended"
+          ],
+          "correct_index": 3,
+          "explanation": "extended 适合追踪多阶段计划。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-explain-api/formatted/assessment-v1",
+          "knowledge_id": "l4-explain-api/formatted",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：要先看物理轮廓和编号细节，用？",
+          "options": [
+            "formatted",
+            "collect",
+            "count",
+            "缓存模式"
+          ],
+          "correct_index": 0,
+          "explanation": "formatted 帮助分层阅读物理结构与节点细节。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-explain-api/formatted/review-v1",
+          "knowledge_id": "l4-explain-api/formatted",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：执行树很长，想先定位节点再看属性，用？",
+          "options": [
+            "collect",
+            "formatted",
+            "count",
+            "缓存模式"
+          ],
+          "correct_index": 1,
+          "explanation": "formatted 帮助分层阅读物理结构与节点细节。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-explain-api/cost/assessment-v1",
+          "knowledge_id": "l4-explain-api/cost",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：cost 中估计 30 MiB 是精确峰值内存吗？",
+          "options": [
+            "能，精确等于峰值",
+            "能，必等于磁盘文件",
+            "不能，估计不是实测",
+            "能，必等于每个 task 内存"
+          ],
+          "correct_index": 2,
+          "explanation": "统计可能缺失、陈旧，也不是哈希构建内存上限。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-explain-api/cost/review-v1",
+          "knowledge_id": "l4-explain-api/cost",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：sizeInBytes 变化可直接当内存实测变化吗？",
+          "options": [
+            "能，精确等于峰值",
+            "能，必等于磁盘文件",
+            "能，必等于每个 task 内存",
+            "不能，估计不是实测"
+          ],
+          "correct_index": 3,
+          "explanation": "统计可能缺失、陈旧，也不是哈希构建内存上限。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-explain-api/codegen/assessment-v1",
+          "knowledge_id": "l4-explain-api/codegen",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：想核对可用生成代码，应选择？",
+          "options": [
+            "codegen",
+            "show",
+            "count",
+            "repartition"
+          ],
+          "correct_index": 0,
+          "explanation": "codegen 提供实现线索，不直接承诺性能。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-explain-api/codegen/remediation-v1",
+          "knowledge_id": "l4-explain-api/codegen",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：检查兼容算子的代码生成信息，应选择？",
+          "options": [
+            "show",
+            "codegen",
+            "count",
+            "repartition"
+          ],
+          "correct_index": 1,
+          "explanation": "codegen 提供实现线索，不直接承诺性能。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-explain-api/execution/assessment-v1",
+          "knowledge_id": "l4-explain-api/execution",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：explain 通常会完整计算并返回业务数据吗？",
+          "options": [
+            "是，必已完整落盘",
+            "是，所有行都 collect",
+            "不是，可能分析计划但不是完整业务执行验收",
+            "是，已经通过性能验收"
+          ],
+          "correct_index": 2,
+          "explanation": "计划分析与请求完整结果是不同操作。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-explain-api/execution/remediation-v1",
+          "knowledge_id": "l4-explain-api/execution",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "explain() 怎么用：打印计划是否等于完成整个写出结果？",
+          "options": [
+            "是，必已完整落盘",
+            "是，所有行都 collect",
+            "是，已经通过性能验收",
+            "不是，可能分析计划但不是完整业务执行验收"
+          ],
+          "correct_index": 3,
+          "explanation": "计划分析与请求完整结果是不同操作。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-read-plan",
+      "questions": [
+        {
+          "key": "l4-read-plan/source/assessment-v1",
+          "knowledge_id": "l4-read-plan/source",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：Aggregate <- Exchange <- Filter <- Scan，来源在哪里？",
+          "options": [
+            "Scan 叶子",
+            "最上方结果节点",
+            "所有节点各读一份全表",
+            "代码行号"
+          ],
+          "correct_index": 0,
+          "explanation": "从叶子识别来源，再追踪数据变换。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-read-plan/source/review-v1",
+          "knowledge_id": "l4-read-plan/source",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：Project <- Filter <- Scan，输入从哪里进入？",
+          "options": [
+            "最上方结果节点",
+            "Scan 叶子",
+            "所有节点各读一份全表",
+            "代码行号"
+          ],
+          "correct_index": 1,
+          "explanation": "从叶子识别来源，再追踪数据变换。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-read-plan/exchange/assessment-v1",
+          "knowledge_id": "l4-read-plan/exchange",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：BroadcastExchange 必是双侧按键 Shuffle 吗？",
+          "options": [
+            "可以，所有交换相同",
+            "表示完全没通信",
+            "不能，交换类型不同",
+            "表示所有行进入 Python"
+          ],
+          "correct_index": 2,
+          "explanation": "交换类型不同，不可只数单词。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-read-plan/exchange/review-v1",
+          "knowledge_id": "l4-read-plan/exchange",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：存在 BroadcastHashJoin，能把所有 Exchange 当同一种吗？",
+          "options": [
+            "可以，所有交换相同",
+            "表示完全没通信",
+            "表示所有行进入 Python",
+            "不能，交换类型不同"
+          ],
+          "correct_index": 3,
+          "explanation": "交换类型不同，不可只数单词。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-read-plan/id/assessment-v1",
+          "knowledge_id": "l4-read-plan/id",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：*(5) Project 是否就是 Spark UI Stage 5？",
+          "options": [
+            "不是，两套编号不同",
+            "是，严格一一对应",
+            "表示第五/八台机器",
+            "表示输出行数"
+          ],
+          "correct_index": 0,
+          "explanation": "计划节点、代码生成区域和运行任务编号不同。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-read-plan/id/review-v1",
+          "knowledge_id": "l4-read-plan/id",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：formatted 节点编号 (8) 是否就是 task ID 8？",
+          "options": [
+            "是，严格一一对应",
+            "不是，两套编号不同",
+            "表示第五/八台机器",
+            "表示输出行数"
+          ],
+          "correct_index": 1,
+          "explanation": "计划节点、代码生成区域和运行任务编号不同。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-read-plan/adaptive/assessment-v1",
+          "knowledge_id": "l4-read-plan/adaptive",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：isFinalPlan=false，应怎样解释？",
+          "options": [
+            "证明 AQE 一定失败",
+            "保证路线不再变化",
+            "代表执行后结合最终计划与指标核对",
+            "只看初始图就最终定论"
+          ],
+          "correct_index": 2,
+          "explanation": "初始计划不能冒充最终执行证据。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-read-plan/adaptive/remediation-v1",
+          "knowledge_id": "l4-read-plan/adaptive",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：运行前 AQE 计划还未 final，下一步？",
+          "options": [
+            "证明 AQE 一定失败",
+            "保证路线不再变化",
+            "只看初始图就最终定论",
+            "代表执行后结合最终计划与指标核对"
+          ],
+          "correct_index": 3,
+          "explanation": "初始计划不能冒充最终执行证据。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-read-plan/time/assessment-v1",
+          "knowledge_id": "l4-read-plan/time",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：树上下层次等于逐秒串行顺序吗？",
+          "options": [
+            "不能，有管线与并行",
+            "可以，必定逐节点串行",
+            "每层固定耗一秒",
+            "层数等于 Executor 数"
+          ],
+          "correct_index": 0,
+          "explanation": "计划数据流不是精确 wall-clock 调度时间表。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-read-plan/time/remediation-v1",
+          "knowledge_id": "l4-read-plan/time",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "怎么读执行计划文本：顶层节点一定在所有下层完全结束后单机执行吗？",
+          "options": [
+            "可以，必定逐节点串行",
+            "不能，有管线与并行",
+            "每层固定耗一秒",
+            "层数等于 Executor 数"
+          ],
+          "correct_index": 1,
+          "explanation": "计划数据流不是精确 wall-clock 调度时间表。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-catalyst-rules",
+      "questions": [
+        {
+          "key": "l4-catalyst-rules/prune/assessment-v1",
+          "knowledge_id": "l4-catalyst-rules/prune",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：只输出两列，ReadSchema 裁到两列，是什么证据？",
+          "options": [
+            "所有行已自动缓存",
+            "业务行数必须减半",
+            "列裁剪线索，仍需实测",
+            "数据已永久删除"
+          ],
+          "correct_index": 2,
+          "explanation": "裁剪字段与删行、缓存、物化不同。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-catalyst-rules/prune/review-v1",
+          "knowledge_id": "l4-catalyst-rules/prune",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：宽表去掉无用描述字段，扫描结构收窄，说明？",
+          "options": [
+            "所有行已自动缓存",
+            "业务行数必须减半",
+            "数据已永久删除",
+            "列裁剪线索，仍需实测"
+          ],
+          "correct_index": 3,
+          "explanation": "裁剪字段与删行、缓存、物化不同。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-catalyst-rules/pushdown/assessment-v1",
+          "knowledge_id": "l4-catalyst-rules/pushdown",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：Scan 只下推 IsNotNull，仍有残余 Filter，应？",
+          "options": [
+            "还需核对残余过滤",
+            "删掉所有 Filter",
+            "宣称全部条件已下推",
+            "认为数据源已永久清洗"
+          ],
+          "correct_index": 0,
+          "explanation": "部分下推不能替代全部业务条件。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-catalyst-rules/pushdown/review-v1",
+          "knowledge_id": "l4-catalyst-rules/pushdown",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：部分谓词可由数据源处理，另一些仍在执行树中，应？",
+          "options": [
+            "删掉所有 Filter",
+            "还需核对残余过滤",
+            "宣称全部条件已下推",
+            "认为数据源已永久清洗"
+          ],
+          "correct_index": 1,
+          "explanation": "部分下推不能替代全部业务条件。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-catalyst-rules/fold/assessment-v1",
+          "knowledge_id": "l4-catalyst-rules/fold",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：v*(3+4) 可在不变语义下怎样化简？",
+          "options": [
+            "把 v 改成 7",
+            "删除 v",
+            "v*7",
+            "直接删除所有行"
+          ],
+          "correct_index": 2,
+          "explanation": "常量折叠不等于覆盖输入数据。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-catalyst-rules/fold/review-v1",
+          "knowledge_id": "l4-catalyst-rules/fold",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：v*(4+5) 可在不变语义下怎样化简？",
+          "options": [
+            "把 v 改成 9",
+            "删除 v",
+            "直接删除所有行",
+            "v*9"
+          ],
+          "correct_index": 3,
+          "explanation": "常量折叠不等于覆盖输入数据。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-catalyst-rules/join-filter/assessment-v1",
+          "knowledge_id": "l4-catalyst-rules/join-filter",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：把 LEFT JOIN 后右列过滤挪位置，应先检查？",
+          "options": [
+            "NULL 与未匹配行的语义等价",
+            "只看代码更短",
+            "只看参数更大",
+            "直接改 INNER 保证快"
+          ],
+          "correct_index": 0,
+          "explanation": "外连接条件移动可能改变保留行。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-catalyst-rules/join-filter/remediation-v1",
+          "knowledge_id": "l4-catalyst-rules/join-filter",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：跨外连接移动条件，节点少了就够吗？",
+          "options": [
+            "只看代码更短",
+            "NULL 与未匹配行的语义等价",
+            "只看参数更大",
+            "直接改 INNER 保证快"
+          ],
+          "correct_index": 1,
+          "explanation": "外连接条件移动可能改变保留行。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-catalyst-rules/benefit/assessment-v1",
+          "knowledge_id": "l4-catalyst-rules/benefit",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：计划少一个节点就保证更快吗？",
+          "options": [
+            "能，少一个固定快一倍",
+            "能，自动不耗 CPU",
+            "不能，收益需要测量",
+            "能，结果无需再验"
+          ],
+          "correct_index": 2,
+          "explanation": "规则实施与实际收益要分别验证。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-catalyst-rules/benefit/remediation-v1",
+          "knowledge_id": "l4-catalyst-rules/benefit",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Catalyst 优化规则：列裁剪出现后能无条件承诺固定加速吗？",
+          "options": [
+            "能，少一个固定快一倍",
+            "能，自动不耗 CPU",
+            "能，结果无需再验",
+            "不能，收益需要测量"
+          ],
+          "correct_index": 3,
+          "explanation": "规则实施与实际收益要分别验证。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-wholestage-codegen",
+      "questions": [
+        {
+          "key": "l4-wholestage-codegen/fusion/assessment-v1",
+          "knowledge_id": "l4-wholestage-codegen/fusion",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：兼容算子融合主要减少什么？",
+          "options": [
+            "部分调用与交接开销",
+            "业务要求中的记录",
+            "所有网络和磁盘成本",
+            "输入字段含义"
+          ],
+          "correct_index": 0,
+          "explanation": "执行实现优化不能改变业务结果。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-wholestage-codegen/fusion/review-v1",
+          "knowledge_id": "l4-wholestage-codegen/fusion",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：生成代码执行能改善哪类开销？",
+          "options": [
+            "业务要求中的记录",
+            "部分调用与交接开销",
+            "所有网络和磁盘成本",
+            "输入字段含义"
+          ],
+          "correct_index": 1,
+          "explanation": "执行实现优化不能改变业务结果。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-wholestage-codegen/python/assessment-v1",
+          "knowledge_id": "l4-wholestage-codegen/python",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：出现 Python 执行边界，应怎样检查？",
+          "options": [
+            "认定函数体全被优化器等价重写",
+            "固定宣布慢万倍",
+            "比较等价内置表达式并测实际开销",
+            "只改函数名字"
+          ],
+          "correct_index": 2,
+          "explanation": "检查必要性与执行成本，避免绝对倍数结论。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-wholestage-codegen/python/review-v1",
+          "knowledge_id": "l4-wholestage-codegen/python",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：简单逻辑用 UDF，计划出现 Python 节点，应先？",
+          "options": [
+            "认定函数体全被优化器等价重写",
+            "固定宣布慢万倍",
+            "只改函数名字",
+            "比较等价内置表达式并测实际开销"
+          ],
+          "correct_index": 3,
+          "explanation": "检查必要性与执行成本，避免绝对倍数结论。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-wholestage-codegen/exchange/assessment-v1",
+          "knowledge_id": "l4-wholestage-codegen/exchange",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：Project 融合后 Exchange 必消失吗？",
+          "options": [
+            "不能，分布要求仍在",
+            "能，所有交换必被消除",
+            "能，数据自动单分区",
+            "能，所有连接变广播"
+          ],
+          "correct_index": 0,
+          "explanation": "代码生成不自动取消交换要求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-wholestage-codegen/exchange/review-v1",
+          "knowledge_id": "l4-wholestage-codegen/exchange",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：代码生成可自动满足任何跨分区分布要求吗？",
+          "options": [
+            "能，所有交换必被消除",
+            "不能，分布要求仍在",
+            "能，数据自动单分区",
+            "能，所有连接变广播"
+          ],
+          "correct_index": 1,
+          "explanation": "代码生成不自动取消交换要求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-wholestage-codegen/memory/assessment-v1",
+          "knowledge_id": "l4-wholestage-codegen/memory",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：用了紧凑内部表示就不会 OOM 吗？",
+          "options": [
+            "能，内存自动无限",
+            "能，算法不再存状态",
+            "不能，工作集仍有限",
+            "能，所有数据都在磁盘不用内存"
+          ],
+          "correct_index": 2,
+          "explanation": "表示优化不能取消资源约束。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-wholestage-codegen/memory/remediation-v1",
+          "knowledge_id": "l4-wholestage-codegen/memory",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：Tungsten 相关优化能保证没有 spill 吗？",
+          "options": [
+            "能，内存自动无限",
+            "能，算法不再存状态",
+            "能，所有数据都在磁盘不用内存",
+            "不能，工作集仍有限"
+          ],
+          "correct_index": 3,
+          "explanation": "表示优化不能取消资源约束。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-wholestage-codegen/markers/assessment-v1",
+          "knowledge_id": "l4-wholestage-codegen/markers",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：多个生成代码区域一定失败吗？",
+          "options": [
+            "不能，边界可能合理",
+            "能，只允许一个区域",
+            "表示分区数错误",
+            "表示数据必重复"
+          ],
+          "correct_index": 0,
+          "explanation": "兼容性和边界由实际实现决定。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-wholestage-codegen/markers/remediation-v1",
+          "knowledge_id": "l4-wholestage-codegen/markers",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "WholeStageCodegen 与 Tungsten：没有把所有算子放在同一区域，能判定未优化吗？",
+          "options": [
+            "能，只允许一个区域",
+            "不能，边界可能合理",
+            "表示分区数错误",
+            "表示数据必重复"
+          ],
+          "correct_index": 1,
+          "explanation": "兼容性和边界由实际实现决定。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-dependency-narrow-wide",
+      "questions": [
+        {
+          "key": "l4-dependency-narrow-wide/map/assessment-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/map",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：单行数值加一需要其他分区贡献吗？",
+          "options": [
+            "必须先 collect 全表",
+            "必须全局排序",
+            "本身可局部处理",
+            "必须广播所有行"
+          ],
+          "correct_index": 2,
+          "explanation": "局部变换的输入需求与全局汇合不同。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/map/review-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/map",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：每行字符串去空格本身需要全局汇合吗？",
+          "options": [
+            "必须先 collect 全表",
+            "必须全局排序",
+            "必须广播所有行",
+            "本身可局部处理"
+          ],
+          "correct_index": 3,
+          "explanation": "局部变换的输入需求与全局汇合不同。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/combine/assessment-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/combine",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：同键局部总量 14 与 21，最终一行应？",
+          "options": [
+            "35",
+            "14",
+            "21",
+            "任意一份"
+          ],
+          "correct_index": 0,
+          "explanation": "保留所有分区贡献，局部不等于全局。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/combine/review-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/combine",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：同键局部总量 16 与 24，最终一行应？",
+          "options": [
+            "16",
+            "40",
+            "24",
+            "任意一份"
+          ],
+          "correct_index": 1,
+          "explanation": "保留所有分区贡献，局部不等于全局。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/rows/assessment-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/rows",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：filter 减少行数就一定宽依赖吗？",
+          "options": [
+            "是，依赖由输出行数决定",
+            "必定变成一个分区",
+            "不是，先看数据来源需求",
+            "自动消除所有后续交换"
+          ],
+          "correct_index": 2,
+          "explanation": "行数变化与依赖关系不同。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/rows/review-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/rows",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：flatMap 增加行数就一定宽依赖吗？",
+          "options": [
+            "是，依赖由输出行数决定",
+            "必定变成一个分区",
+            "自动消除所有后续交换",
+            "不是，先看数据来源需求"
+          ],
+          "correct_index": 3,
+          "explanation": "行数变化与依赖关系不同。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/existing/assessment-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/existing",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：已满足按键分布，聚合必再交换一次吗？",
+          "options": [
+            "看计划，可能复用分布",
+            "任何 groupBy 必再一次",
+            "直接跳过聚合",
+            "只看代码行数"
+          ],
+          "correct_index": 0,
+          "explanation": "分布要求与已有条件共同决定额外工作。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/existing/remediation-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/existing",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：上游分布可能满足下游要求，应怎样核对？",
+          "options": [
+            "任何 groupBy 必再一次",
+            "看计划，可能复用分布",
+            "直接跳过聚合",
+            "只看代码行数"
+          ],
+          "correct_index": 1,
+          "explanation": "分布要求与已有条件共同决定额外工作。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/stages/assessment-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/stages",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：源码三个转换就固定三个 stage 吗？",
+          "options": [
+            "能，调用与 stage 严格一一对应",
+            "只数变量数量",
+            "不能，结合交换、复用、AQE 和运行证据",
+            "只数 SELECT 列数"
+          ],
+          "correct_index": 2,
+          "explanation": "运行划分不能机械由源码步骤计数。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-dependency-narrow-wide/stages/remediation-v1",
+          "knowledge_id": "l4-dependency-narrow-wide/stages",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "窄依赖 vs 宽依赖：有两个宽依赖名字就能承诺所有运行 stage 数吗？",
+          "options": [
+            "能，调用与 stage 严格一一对应",
+            "只数变量数量",
+            "只数 SELECT 列数",
+            "不能，结合交换、复用、AQE 和运行证据"
+          ],
+          "correct_index": 3,
+          "explanation": "运行划分不能机械由源码步骤计数。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-job-stage-task",
+      "questions": [
+        {
+          "key": "l4-job-stage-task/slots/assessment-v1",
+          "knowledge_id": "l4-job-stage-task/slots",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：9 tasks、3 slots，忽略其他约束，大致？",
+          "options": [
+            "分批运行，总数不等于同时数",
+            "全部必须同时运行",
+            "只能存在 slots 个分区",
+            "自动丢弃未调度任务"
+          ],
+          "correct_index": 0,
+          "explanation": "资源槽位限制并发，不取消待处理数据。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-job-stage-task/slots/review-v1",
+          "knowledge_id": "l4-job-stage-task/slots",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：10 tasks、2 slots，忽略其他约束，大致？",
+          "options": [
+            "全部必须同时运行",
+            "分批运行，总数不等于同时数",
+            "只能存在 slots 个分区",
+            "自动丢弃未调度任务"
+          ],
+          "correct_index": 1,
+          "explanation": "资源槽位限制并发，不取消待处理数据。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-job-stage-task/jobs/assessment-v1",
+          "knowledge_id": "l4-job-stage-task/jobs",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：一个 action 保证只有一个 job 吗？",
+          "options": [
+            "保证，必然用户重复点",
+            "job 数等于结果行数",
+            "不保证，需核对实际执行",
+            "Spark 只能有一个 job"
+          ],
+          "correct_index": 2,
+          "explanation": "action 与运行 job 不保证固定一对一。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-job-stage-task/jobs/review-v1",
+          "knowledge_id": "l4-job-stage-task/jobs",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：一次 collect 出现多个 job 能直接判重复提交吗？",
+          "options": [
+            "保证，必然用户重复点",
+            "job 数等于结果行数",
+            "Spark 只能有一个 job",
+            "不保证，需核对实际执行"
+          ],
+          "correct_index": 3,
+          "explanation": "action 与运行 job 不保证固定一对一。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-job-stage-task/attempt/assessment-v1",
+          "knowledge_id": "l4-job-stage-task/attempt",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：task 6 第一次失败第二次成功，说明？",
+          "options": [
+            "同一任务有多个尝试",
+            "分区必定翻倍",
+            "结果必重复两份",
+            "stage 必新增两台机器"
+          ],
+          "correct_index": 0,
+          "explanation": "区分 task 与 attempt，重试不直接定义业务结果。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-job-stage-task/attempt/review-v1",
+          "knowledge_id": "l4-job-stage-task/attempt",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：同一 task 出现两个 attempt，必定两个逻辑分区吗？",
+          "options": [
+            "分区必定翻倍",
+            "同一任务有多个尝试",
+            "结果必重复两份",
+            "stage 必新增两台机器"
+          ],
+          "correct_index": 1,
+          "explanation": "区分 task 与 attempt，重试不直接定义业务结果。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-job-stage-task/tail/assessment-v1",
+          "knowledge_id": "l4-job-stage-task/tail",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：中位数 1s，最大 80s，应优先检查？",
+          "options": [
+            "只看总平均就足够",
+            "只把所有参数加倍",
+            "长尾任务的键、字节、spill 与异常",
+            "先删除慢键"
+          ],
+          "correct_index": 2,
+          "explanation": "分布和异常证据比盲目调参更有针对性。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-job-stage-task/tail/remediation-v1",
+          "knowledge_id": "l4-job-stage-task/tail",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：平均不高但一个任务持续很久，应检查？",
+          "options": [
+            "只看总平均就足够",
+            "只把所有参数加倍",
+            "先删除慢键",
+            "长尾任务的键、字节、spill 与异常"
+          ],
+          "correct_index": 3,
+          "explanation": "分布和异常证据比盲目调参更有针对性。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-job-stage-task/codegen/assessment-v1",
+          "knowledge_id": "l4-job-stage-task/codegen",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：*(4) 是否表示四个 task？",
+          "options": [
+            "不能，需看运行记录",
+            "是，严格等同",
+            "表示四/九台 Executor",
+            "表示输出行数"
+          ],
+          "correct_index": 0,
+          "explanation": "计划标记与调度计数不能混为一谈。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-job-stage-task/codegen/remediation-v1",
+          "knowledge_id": "l4-job-stage-task/codegen",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Job / Stage / Task 层级：计划节点 (9) 是否表示九个并发任务？",
+          "options": [
+            "是，严格等同",
+            "不能，需看运行记录",
+            "表示四/九台 Executor",
+            "表示输出行数"
+          ],
+          "correct_index": 1,
+          "explanation": "计划标记与调度计数不能混为一谈。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l4-comprehensive",
+      "questions": [
+        {
+          "key": "l4-comprehensive/contract/assessment-v1",
+          "knowledge_id": "l4-comprehensive/contract",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：两个方案报表结果不同，先比较什么？",
+          "options": [
+            "只交最快的",
+            "先删验收断言",
+            "先解决语义与结果差异",
+            "只给计划截图"
+          ],
+          "correct_index": 2,
+          "explanation": "正确性是优化比较的前提。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-comprehensive/contract/review-v1",
+          "knowledge_id": "l4-comprehensive/contract",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：改写少了一个组但更快，能直接交付吗？",
+          "options": [
+            "只交最快的",
+            "先删验收断言",
+            "只给计划截图",
+            "先解决语义与结果差异"
+          ],
+          "correct_index": 3,
+          "explanation": "正确性是优化比较的前提。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l4-comprehensive/change/assessment-v1",
+          "knowledge_id": "l4-comprehensive/change",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：聚合前额外随机重分区无业务要求，应怎样实验？",
+          "options": [
+            "单一可回退改动，比较结果与实际计划",
+            "把分区数无限增大",
+            "跳过所有聚合",
+            "直接删除输入记录"
+          ],
+          "correct_index": 0,
+          "explanation": "假设需要以等价结果和执行证据验证。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-comprehensive/change/review-v1",
+          "knowledge_id": "l4-comprehensive/change",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：多一个重分布节点可疑，下一步？",
+          "options": [
+            "把分区数无限增大",
+            "单一可回退改动，比较结果与实际计划",
+            "跳过所有聚合",
+            "直接删除输入记录"
+          ],
+          "correct_index": 1,
+          "explanation": "假设需要以等价结果和执行证据验证。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l4-comprehensive/evidence/assessment-v1",
+          "knowledge_id": "l4-comprehensive/evidence",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：sizeInBytes 下降但未测内存，报告应写？",
+          "options": [
+            "内存/耗时必同倍下降",
+            "生产必快十倍",
+            "只报告已观察证据",
+            "所有环境都已认证"
+          ],
+          "correct_index": 2,
+          "explanation": "结论不能超过证据范围。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-comprehensive/evidence/review-v1",
+          "knowledge_id": "l4-comprehensive/evidence",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：节点数下降但未跑代表规模，报告应写？",
+          "options": [
+            "内存/耗时必同倍下降",
+            "生产必快十倍",
+            "所有环境都已认证",
+            "只报告已观察证据"
+          ],
+          "correct_index": 3,
+          "explanation": "结论不能超过证据范围。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l4-comprehensive/record/assessment-v1",
+          "knowledge_id": "l4-comprehensive/record",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：AQE 开启的对照实验应保留什么？",
+          "options": [
+            "初始/最终计划、结果和运行条件",
+            "只保留最短图",
+            "只保留代码行数",
+            "只保留最快秒数"
+          ],
+          "correct_index": 0,
+          "explanation": "记录足以让其他人重现实验与解释差异。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-comprehensive/record/remediation-v1",
+          "knowledge_id": "l4-comprehensive/record",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "综合练习：路线执行后改变，应交付哪些证据？",
+          "options": [
+            "只保留最短图",
+            "初始/最终计划、结果和运行条件",
+            "只保留代码行数",
+            "只保留最快秒数"
+          ],
+          "correct_index": 1,
+          "explanation": "记录足以让其他人重现实验与解释差异。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l4-comprehensive/limits/assessment-v1",
+          "knowledge_id": "l4-comprehensive/limits",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：小数据本地通过能保证生产性能吗？",
+          "options": [
+            "保证所有集群同样收益",
+            "把缺少证据删除",
+            "列明范围与待验证项",
+            "把计划节点当秒数"
+          ],
+          "correct_index": 2,
+          "explanation": "本地实作不是生产性能认证。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l4-comprehensive/limits/remediation-v1",
+          "knowledge_id": "l4-comprehensive/limits",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "综合练习：诊断文字完成但还没生产试验，应如何说明？",
+          "options": [
+            "保证所有集群同样收益",
+            "把缺少证据删除",
+            "把计划节点当秒数",
+            "列明范围与待验证项"
+          ],
+          "correct_index": 3,
+          "explanation": "本地实作不是生产性能认证。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-what-is-partition",
+      "questions": [
+        {
+          "key": "l5-what-is-partition/machine/assessment-v1",
+          "knowledge_id": "l5-what-is-partition/machine",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区是什么：6 个计算分区就一定 6 台机器吗？",
+          "options": [
+            "不能，分区不是资源数",
+            "能，严格一分区一机器",
+            "分区就是文件目录",
+            "分区就是结果行数"
+          ],
+          "correct_index": 0,
+          "explanation": "计算份、机器、并行槽位和目录不同概念。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-what-is-partition/machine/review-v1",
+          "knowledge_id": "l5-what-is-partition/machine",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "分区是什么：local[2] 下 9 个分区能据此推出九个并发线程吗？",
+          "options": [
+            "能，严格一分区一机器",
+            "不能，分区不是资源数",
+            "分区就是文件目录",
+            "分区就是结果行数"
+          ],
+          "correct_index": 1,
+          "explanation": "计算份、机器、并行槽位和目录不同概念。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-what-is-partition/empty/assessment-v1",
+          "knowledge_id": "l5-what-is-partition/empty",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区是什么：2 行数据分 7 份，允许空分区吗？",
+          "options": [
+            "不允许，必须复制数据",
+            "不允许，自动丢弃分区定义",
+            "允许，分区可以为空",
+            "每分区必有一张表"
+          ],
+          "correct_index": 2,
+          "explanation": "空分区不需要伪造业务数据填满。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-what-is-partition/empty/review-v1",
+          "knowledge_id": "l5-what-is-partition/empty",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "分区是什么：空输入可以仍有多个计算分区吗？",
+          "options": [
+            "不允许，必须复制数据",
+            "不允许，自动丢弃分区定义",
+            "每分区必有一张表",
+            "允许，分区可以为空"
+          ],
+          "correct_index": 3,
+          "explanation": "空分区不需要伪造业务数据填满。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-what-is-partition/directory/assessment-v1",
+          "knowledge_id": "l5-what-is-partition/directory",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区是什么：write.partitionBy(day) 主要约定？",
+          "options": [
+            "按字段值组织目录",
+            "每个目录必一个文件",
+            "每键必一个 Executor",
+            "只剩一个计算 task"
+          ],
+          "correct_index": 0,
+          "explanation": "存储布局不等于计算分区与文件数承诺。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-what-is-partition/directory/review-v1",
+          "knowledge_id": "l5-what-is-partition/directory",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "分区是什么：按 region 写分区目录主要说明？",
+          "options": [
+            "每个目录必一个文件",
+            "按字段值组织目录",
+            "每键必一个 Executor",
+            "只剩一个计算 task"
+          ],
+          "correct_index": 1,
+          "explanation": "存储布局不等于计算分区与文件数承诺。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-what-is-partition/load/assessment-v1",
+          "knowledge_id": "l5-what-is-partition/load",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区是什么：只有分区数，能认定均衡吗？",
+          "options": [
+            "能，每份自动等字节",
+            "能，每份自动等 CPU",
+            "不能，还需看负载",
+            "能，每份自动等行宽"
+          ],
+          "correct_index": 2,
+          "explanation": "数量不说明记录宽度、工作集和实际耗时。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-what-is-partition/load/remediation-v1",
+          "knowledge_id": "l5-what-is-partition/load",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "分区是什么：16 份计算数据是否保证每份工作量一样？",
+          "options": [
+            "能，每份自动等字节",
+            "能，每份自动等 CPU",
+            "能，每份自动等行宽",
+            "不能，还需看负载"
+          ],
+          "correct_index": 3,
+          "explanation": "数量不说明记录宽度、工作集和实际耗时。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-what-is-partition/inspect/assessment-v1",
+          "knowledge_id": "l5-what-is-partition/inspect",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区是什么：查看负载只看行数够吗？",
+          "options": [
+            "不够，还需字节与计算成本",
+            "够，所有行同等成本",
+            "只看变量名",
+            "只看文件扩展名"
+          ],
+          "correct_index": 0,
+          "explanation": "记录数量不能独立代表全部资源负载。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-what-is-partition/inspect/remediation-v1",
+          "knowledge_id": "l5-what-is-partition/inspect",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "分区是什么：两分区行数相同但值宽度不同，工作量必一样吗？",
+          "options": [
+            "够，所有行同等成本",
+            "不够，还需字节与计算成本",
+            "只看变量名",
+            "只看文件扩展名"
+          ],
+          "correct_index": 1,
+          "explanation": "记录数量不能独立代表全部资源负载。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-partition-count-parallelism",
+      "questions": [
+        {
+          "key": "l5-partition-count-parallelism/waves/assessment-v1",
+          "knowledge_id": "l5-partition-count-parallelism/waves",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：15 tasks、3 slots，能全同时吗？",
+          "options": [
+            "全部必同时",
+            "只处理 slots 个",
+            "通常需要分批调度",
+            "必须丢掉其余任务"
+          ],
+          "correct_index": 2,
+          "explanation": "分区提供潜在工作，资源约束并发。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-partition-count-parallelism/waves/review-v1",
+          "knowledge_id": "l5-partition-count-parallelism/waves",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：18 tasks、2 slots，能全同时吗？",
+          "options": [
+            "全部必同时",
+            "只处理 slots 个",
+            "必须丢掉其余任务",
+            "通常需要分批调度"
+          ],
+          "correct_index": 3,
+          "explanation": "分区提供潜在工作，资源约束并发。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-partition-count-parallelism/tiny/assessment-v1",
+          "knowledge_id": "l5-partition-count-parallelism/tiny",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：极小任务成千上万，优先检查？",
+          "options": [
+            "任务粒度与调度开销",
+            "继续盲目加十倍",
+            "认定管理完全免费",
+            "把行数当秒数"
+          ],
+          "correct_index": 0,
+          "explanation": "更多分区可能提高管理开销而非加速。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-partition-count-parallelism/tiny/review-v1",
+          "knowledge_id": "l5-partition-count-parallelism/tiny",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：小数据切出过多份，启动调度占比大，应？",
+          "options": [
+            "继续盲目加十倍",
+            "任务粒度与调度开销",
+            "认定管理完全免费",
+            "把行数当秒数"
+          ],
+          "correct_index": 1,
+          "explanation": "更多分区可能提高管理开销而非加速。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-partition-count-parallelism/large/assessment-v1",
+          "knowledge_id": "l5-partition-count-parallelism/large",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：每任务工作集过大且 spill，多看什么？",
+          "options": [
+            "只缩短文件名",
+            "保证内存自动够",
+            "负载分布、容量与合理切分",
+            "只增加结果列"
+          ],
+          "correct_index": 2,
+          "explanation": "任务粒度与算子状态影响资源需求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-partition-count-parallelism/large/review-v1",
+          "knowledge_id": "l5-partition-count-parallelism/large",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：少数超大分区导致长任务，应先看？",
+          "options": [
+            "只缩短文件名",
+            "保证内存自动够",
+            "只增加结果列",
+            "负载分布、容量与合理切分"
+          ],
+          "correct_index": 3,
+          "explanation": "任务粒度与算子状态影响资源需求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-partition-count-parallelism/aqe/assessment-v1",
+          "knowledge_id": "l5-partition-count-parallelism/aqe",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：设置 Shuffle 分区 200 后 AQE 能调整吗？",
+          "options": [
+            "可能调整，核对最终执行",
+            "永远严格所有阶段 200",
+            "代表 200 行输入",
+            "代表 200 台机器"
+          ],
+          "correct_index": 0,
+          "explanation": "初始相关配置不等于最终所有调度。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-partition-count-parallelism/aqe/remediation-v1",
+          "knowledge_id": "l5-partition-count-parallelism/aqe",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：配置值能代表所有阶段最终 task 数吗？",
+          "options": [
+            "永远严格所有阶段 200",
+            "可能调整，核对最终执行",
+            "代表 200 行输入",
+            "代表 200 台机器"
+          ],
+          "correct_index": 1,
+          "explanation": "初始相关配置不等于最终所有调度。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-partition-count-parallelism/hot/assessment-v1",
+          "knowledge_id": "l5-partition-count-parallelism/hot",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：一个键占大多数，只加分区保证拆散吗？",
+          "options": [
+            "保证均分",
+            "会自动删除热键",
+            "不能，热键仍可能集中",
+            "总额自动降低"
+          ],
+          "correct_index": 2,
+          "explanation": "同键集中是单纯数量调节不能保证解决的问题。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-partition-count-parallelism/hot/remediation-v1",
+          "knowledge_id": "l5-partition-count-parallelism/hot",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "分区数与并行度：热键仍按同一键哈希路由，增加总份数能保证均分吗？",
+          "options": [
+            "保证均分",
+            "会自动删除热键",
+            "总额自动降低",
+            "不能，热键仍可能集中"
+          ],
+          "correct_index": 3,
+          "explanation": "同键集中是单纯数量调节不能保证解决的问题。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-what-is-shuffle",
+      "questions": [
+        {
+          "key": "l5-what-is-shuffle/global/assessment-v1",
+          "knowledge_id": "l5-what-is-shuffle/global",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：同键局部值 15、25 要交一行总量，应？",
+          "options": [
+            "汇合全部局部贡献",
+            "取先到的一份",
+            "只改列名",
+            "随便去重一份"
+          ],
+          "correct_index": 0,
+          "explanation": "局部正确还需全局汇合。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-what-is-shuffle/global/review-v1",
+          "knowledge_id": "l5-what-is-shuffle/global",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：同键局部值 17、23 要交一行总量，应？",
+          "options": [
+            "取先到的一份",
+            "汇合全部局部贡献",
+            "只改列名",
+            "随便去重一份"
+          ],
+          "correct_index": 1,
+          "explanation": "局部正确还需全局汇合。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-what-is-shuffle/local/assessment-v1",
+          "knowledge_id": "l5-what-is-shuffle/local",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：只有单机 local 就一定没 Shuffle 吗？",
+          "options": [
+            "完全不可能",
+            "只可能复制文件名",
+            "仍可发生重分布",
+            "等同广播整表"
+          ],
+          "correct_index": 2,
+          "explanation": "Shuffle 不以跨机器网络为必要条件。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-what-is-shuffle/local/review-v1",
+          "knowledge_id": "l5-what-is-shuffle/local",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：同机多个分区重组织是否可有 Shuffle？",
+          "options": [
+            "完全不可能",
+            "只可能复制文件名",
+            "等同广播整表",
+            "仍可发生重分布"
+          ],
+          "correct_index": 3,
+          "explanation": "Shuffle 不以跨机器网络为必要条件。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-what-is-shuffle/combine/assessment-v1",
+          "knowledge_id": "l5-what-is-shuffle/combine",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：支持局部预聚合时可能减少什么？",
+          "options": [
+            "待交换中间内容",
+            "合法业务贡献",
+            "最终语义要求",
+            "所有运行成本"
+          ],
+          "correct_index": 0,
+          "explanation": "预聚合减少组织开销，不漏算贡献。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-what-is-shuffle/combine/review-v1",
+          "knowledge_id": "l5-what-is-shuffle/combine",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：同键很多，交换前合并局部状态可能减少什么？",
+          "options": [
+            "合法业务贡献",
+            "待交换中间内容",
+            "最终语义要求",
+            "所有运行成本"
+          ],
+          "correct_index": 1,
+          "explanation": "预聚合减少组织开销，不漏算贡献。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-what-is-shuffle/exchange/assessment-v1",
+          "knowledge_id": "l5-what-is-shuffle/exchange",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：BroadcastExchange 和 ShuffleExchange 等同吗？",
+          "options": [
+            "完全等同",
+            "都等于 Python collect",
+            "不能，交换类型要区分",
+            "都表示没有通信"
+          ],
+          "correct_index": 2,
+          "explanation": "交换满足不同分布路线，不应只数单词。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-what-is-shuffle/exchange/remediation-v1",
+          "knowledge_id": "l5-what-is-shuffle/exchange",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：看到 Exchange 字样可直接数成同类按键交换吗？",
+          "options": [
+            "完全等同",
+            "都等于 Python collect",
+            "都表示没有通信",
+            "不能，交换类型要区分"
+          ],
+          "correct_index": 3,
+          "explanation": "交换满足不同分布路线，不应只数单词。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-what-is-shuffle/skew/assessment-v1",
+          "knowledge_id": "l5-what-is-shuffle/skew",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：按键分区后热点仍集中，应该？",
+          "options": [
+            "核对热键、字节、匹配/聚合工作集",
+            "直接删热键",
+            "认定所有分区完全均衡",
+            "固定增加分区即保证解决"
+          ],
+          "correct_index": 0,
+          "explanation": "热点与任务分布需要具体证据。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-what-is-shuffle/skew/remediation-v1",
+          "knowledge_id": "l5-what-is-shuffle/skew",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Shuffle 是什么：交换后一个任务远慢于其他，下一步？",
+          "options": [
+            "直接删热键",
+            "核对热键、字节、匹配/聚合工作集",
+            "认定所有分区完全均衡",
+            "固定增加分区即保证解决"
+          ],
+          "correct_index": 1,
+          "explanation": "热点与任务分布需要具体证据。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-shuffle-cost",
+      "questions": [
+        {
+          "key": "l5-shuffle-cost/components/assessment-v1",
+          "knowledge_id": "l5-shuffle-cost/components",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：网络低但磁盘与 spill 高，能说没有交换成本吗？",
+          "options": [
+            "能，无网络就零成本",
+            "一定是 SQL 文本长",
+            "不能，仍可能有 IO 等成本",
+            "一定是字段名太长"
+          ],
+          "correct_index": 2,
+          "explanation": "交换成本不只网络传输。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-shuffle-cost/components/review-v1",
+          "knowledge_id": "l5-shuffle-cost/components",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：local 中交换阶段慢，能只因无远端网卡就排除 Shuffle 吗？",
+          "options": [
+            "能，无网络就零成本",
+            "一定是 SQL 文本长",
+            "一定是字段名太长",
+            "不能，仍可能有 IO 等成本"
+          ],
+          "correct_index": 3,
+          "explanation": "交换成本不只网络传输。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-shuffle-cost/width/assessment-v1",
+          "knowledge_id": "l5-shuffle-cost/width",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：行数相同一批含大数组，另一批两个整数，哪个信息还重要？",
+          "options": [
+            "还需记录宽度与结构",
+            "只看行数就足够",
+            "只看列名长度",
+            "只看输入文件名"
+          ],
+          "correct_index": 0,
+          "explanation": "数据宽度影响序列化与传输、内存工作。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-shuffle-cost/width/review-v1",
+          "knowledge_id": "l5-shuffle-cost/width",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：一百条宽记录与一千条窄记录，能只数行吗？",
+          "options": [
+            "只看行数就足够",
+            "还需记录宽度与结构",
+            "只看列名长度",
+            "只看输入文件名"
+          ],
+          "correct_index": 1,
+          "explanation": "数据宽度影响序列化与传输、内存工作。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-shuffle-cost/prune/assessment-v1",
+          "knowledge_id": "l5-shuffle-cost/prune",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：交换前不需要的大文本字段，合理实验是？",
+          "options": [
+            "删除所有业务字段",
+            "只改别名",
+            "在保持语义下裁剪并对照交换量",
+            "按最长字段排序"
+          ],
+          "correct_index": 2,
+          "explanation": "减少不必要内容可能降低交换开销。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-shuffle-cost/prune/review-v1",
+          "knowledge_id": "l5-shuffle-cost/prune",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：查询后续只用键与数值，携带长备注应考虑？",
+          "options": [
+            "删除所有业务字段",
+            "只改别名",
+            "按最长字段排序",
+            "在保持语义下裁剪并对照交换量"
+          ],
+          "correct_index": 3,
+          "explanation": "减少不必要内容可能降低交换开销。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-shuffle-cost/compress/assessment-v1",
+          "knowledge_id": "l5-shuffle-cost/compress",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：压缩后字节下降、CPU 上升，如何判断？",
+          "options": [
+            "同条件比较端到端和资源指标",
+            "只看字节即可宣称成功",
+            "压缩永远无效",
+            "CPU 永远免费"
+          ],
+          "correct_index": 0,
+          "explanation": "资源之间有权衡，目标指标需要实测。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-shuffle-cost/compress/remediation-v1",
+          "knowledge_id": "l5-shuffle-cost/compress",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：交换压缩变小是否自动代表总耗时下降？",
+          "options": [
+            "只看字节即可宣称成功",
+            "同条件比较端到端和资源指标",
+            "压缩永远无效",
+            "CPU 永远免费"
+          ],
+          "correct_index": 1,
+          "explanation": "资源之间有权衡，目标指标需要实测。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-shuffle-cost/spill/assessment-v1",
+          "knowledge_id": "l5-shuffle-cost/spill",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：spill 增加最直接提示哪类排查？",
+          "options": [
+            "只看变量大小写",
+            "删除正确性断言",
+            "任务工作集、内存压力与负载分布",
+            "认定网络必坏"
+          ],
+          "correct_index": 2,
+          "explanation": "spill 是运行证据，需要结合任务与资源解释。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-shuffle-cost/spill/remediation-v1",
+          "knowledge_id": "l5-shuffle-cost/spill",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Shuffle 为什么贵：交换相关任务频繁落盘，应先看？",
+          "options": [
+            "只看变量大小写",
+            "删除正确性断言",
+            "认定网络必坏",
+            "任务工作集、内存压力与负载分布"
+          ],
+          "correct_index": 3,
+          "explanation": "spill 是运行证据，需要结合任务与资源解释。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-narrow-wide-partition",
+      "questions": [
+        {
+          "key": "l5-narrow-wide-partition/flatmap/assessment-v1",
+          "knowledge_id": "l5-narrow-wide-partition/flatmap",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：局部分词产生更多行，一定宽依赖吗？",
+          "options": [
+            "不一定，要看来源关系",
+            "一定，增加行数就是宽",
+            "必须 collect 全表",
+            "必须先全局排序"
+          ],
+          "correct_index": 0,
+          "explanation": "看数据来源需求，而不是行数变化。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-narrow-wide-partition/flatmap/review-v1",
+          "knowledge_id": "l5-narrow-wide-partition/flatmap",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：每行独立扩展三行，需要先汇合全表吗？",
+          "options": [
+            "一定，增加行数就是宽",
+            "不一定，要看来源关系",
+            "必须 collect 全表",
+            "必须先全局排序"
+          ],
+          "correct_index": 1,
+          "explanation": "看数据来源需求，而不是行数变化。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-narrow-wide-partition/sort/assessment-v1",
+          "knowledge_id": "l5-narrow-wide-partition/sort",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：A=[2,9]，B=[3,8] 各自有序，串接全局有序吗？",
+          "options": [
+            "是，局部有序自动全局有序",
+            "只要有四行就是",
+            "不是，跨分区范围仍交叠",
+            "改列名即可"
+          ],
+          "correct_index": 2,
+          "explanation": "全局有序还需满足分区间范围顺序。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-narrow-wide-partition/sort/review-v1",
+          "knowledge_id": "l5-narrow-wide-partition/sort",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：A=[1,7]，B=[4,6] 各自有序，串接全局有序吗？",
+          "options": [
+            "是，局部有序自动全局有序",
+            "只要有四行就是",
+            "改列名即可",
+            "不是，跨分区范围仍交叠"
+          ],
+          "correct_index": 3,
+          "explanation": "全局有序还需满足分区间范围顺序。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-narrow-wide-partition/filter/assessment-v1",
+          "knowledge_id": "l5-narrow-wide-partition/filter",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：过滤掉九成行会自动减九成分区吗？",
+          "options": [
+            "不能按行数比例保证",
+            "能，严格按比例",
+            "必删除分区定义",
+            "必随机重分区所有行"
+          ],
+          "correct_index": 0,
+          "explanation": "行数和分区数不是比例绑定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-narrow-wide-partition/filter/review-v1",
+          "knowledge_id": "l5-narrow-wide-partition/filter",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：filter 后只有几行能保证自动一个分区吗？",
+          "options": [
+            "能，严格按比例",
+            "不能按行数比例保证",
+            "必删除分区定义",
+            "必随机重分区所有行"
+          ],
+          "correct_index": 1,
+          "explanation": "行数和分区数不是比例绑定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-narrow-wide-partition/reuse/assessment-v1",
+          "knowledge_id": "l5-narrow-wide-partition/reuse",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：下游按 k 聚合，上游可能已按 k 分布，应？",
+          "options": [
+            "必再交换固定一次",
+            "可以跳过求和语义",
+            "先核对计划，可能复用",
+            "必须 collect"
+          ],
+          "correct_index": 2,
+          "explanation": "已有条件会影响额外分布工作。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-narrow-wide-partition/reuse/remediation-v1",
+          "knowledge_id": "l5-narrow-wide-partition/reuse",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：已有分布满足要求时是否无条件再 repartition？",
+          "options": [
+            "必再交换固定一次",
+            "可以跳过求和语义",
+            "必须 collect",
+            "先核对计划，可能复用"
+          ],
+          "correct_index": 3,
+          "explanation": "已有条件会影响额外分布工作。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-narrow-wide-partition/local-global/assessment-v1",
+          "knowledge_id": "l5-narrow-wide-partition/local-global",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：各分区独立去重能保证全局唯一吗？",
+          "options": [
+            "不够，还要覆盖跨分区重复候选",
+            "足够，名字相同会自动合并",
+            "随意删一个分区",
+            "只看 show 第一行"
+          ],
+          "correct_index": 0,
+          "explanation": "局部唯一和全局唯一不同。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-narrow-wide-partition/local-global/remediation-v1",
+          "knowledge_id": "l5-narrow-wide-partition/local-global",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "窄/宽依赖在分区层面的含义：同一行在两个分区都存在，仅局部 distinct 够吗？",
+          "options": [
+            "足够，名字相同会自动合并",
+            "不够，还要覆盖跨分区重复候选",
+            "随意删一个分区",
+            "只看 show 第一行"
+          ],
+          "correct_index": 1,
+          "explanation": "局部唯一和全局唯一不同。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-shuffle-trigger-operators",
+      "questions": [
+        {
+          "key": "l5-shuffle-trigger-operators/aggregate/assessment-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/aggregate",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：分散同键贡献需要汇总，常见交换原因？",
+          "options": [
+            "函数名太长",
+            "所有行必须进 Driver",
+            "满足按键汇合的分布要求",
+            "先把金额转字符串"
+          ],
+          "correct_index": 2,
+          "explanation": "交换服务具体分布要求，不是语法附加税。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/aggregate/review-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/aggregate",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：全局按门店统计且上游分布不满足，应？",
+          "options": [
+            "函数名太长",
+            "所有行必须进 Driver",
+            "先把金额转字符串",
+            "满足按键汇合的分布要求"
+          ],
+          "correct_index": 3,
+          "explanation": "交换服务具体分布要求，不是语法附加税。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/joins/assessment-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/joins",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：任何 JOIN 都双边 Shuffle 吗？",
+          "options": [
+            "不能，取决于路线",
+            "能，任何场景固定两次",
+            "JOIN 完全不计算",
+            "所有 JOIN 都收集到 Driver"
+          ],
+          "correct_index": 0,
+          "explanation": "连接策略与输入分布共同影响交换。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/joins/review-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/joins",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：维表广播时能机械按两侧各算一次 Shuffle 吗？",
+          "options": [
+            "能，任何场景固定两次",
+            "不能，取决于路线",
+            "JOIN 完全不计算",
+            "所有 JOIN 都收集到 Driver"
+          ],
+          "correct_index": 1,
+          "explanation": "连接策略与输入分布共同影响交换。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/dedup/assessment-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/dedup",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：重复跨多个分区，distinct 为何常需重组织？",
+          "options": [
+            "只有每份首行",
+            "只看字段名字",
+            "不同分区的重复候选",
+            "只看目录数量"
+          ],
+          "correct_index": 2,
+          "explanation": "全局判断不能只检查每份独立记录。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/dedup/review-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/dedup",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：全局唯一需要判断什么范围？",
+          "options": [
+            "只有每份首行",
+            "只看字段名字",
+            "只看目录数量",
+            "不同分区的重复候选"
+          ],
+          "correct_index": 3,
+          "explanation": "全局判断不能只检查每份独立记录。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/topn/assessment-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/topn",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：ORDER BY LIMIT 必与全量排序逐字同计划吗？",
+          "options": [
+            "不能，可能优化为 Top N",
+            "必须逐字相同",
+            "LIMIT 等于随机抽样",
+            "LIMIT 不需要排序语义"
+          ],
+          "correct_index": 0,
+          "explanation": "语义与物理实现需分开。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/topn/remediation-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/topn",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：只取最高几条时能假定完整长排序链必存在吗？",
+          "options": [
+            "必须逐字相同",
+            "不能，可能优化为 Top N",
+            "LIMIT 等于随机抽样",
+            "LIMIT 不需要排序语义"
+          ],
+          "correct_index": 1,
+          "explanation": "语义与物理实现需分开。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/count/assessment-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/count",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：仅数 Exchange 字样就得出实际阶段数可靠吗？",
+          "options": [
+            "可靠，严格固定映射",
+            "等于输出列数",
+            "不可靠，需实际执行证据",
+            "等于机器数"
+          ],
+          "correct_index": 2,
+          "explanation": "实际计划与运行证据决定执行划分。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-shuffle-trigger-operators/count/remediation-v1",
+          "knowledge_id": "l5-shuffle-trigger-operators/count",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "哪些操作会触发 Shuffle：静态源码里三个疑似交换操作，能断言最终调度吗？",
+          "options": [
+            "可靠，严格固定映射",
+            "等于输出列数",
+            "等于机器数",
+            "不可靠，需实际执行证据"
+          ],
+          "correct_index": 3,
+          "explanation": "实际计划与运行证据决定执行划分。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-reducebykey-vs-groupbykey",
+      "questions": [
+        {
+          "key": "l5-reducebykey-vs-groupbykey/local-combine/assessment-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/local-combine",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：只需整数总量，reduceByKey 相比先收集全部值可能省？",
+          "options": [
+            "部分中间传输/状态内容",
+            "全部最终合并",
+            "所有合法贡献",
+            "所有运行任务"
+          ],
+          "correct_index": 0,
+          "explanation": "可规约目标可以局部压缩贡献。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/local-combine/review-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/local-combine",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：同键很多，局部规约为何有用？",
+          "options": [
+            "全部最终合并",
+            "部分中间传输/状态内容",
+            "所有合法贡献",
+            "所有运行任务"
+          ],
+          "correct_index": 1,
+          "explanation": "可规约目标可以局部压缩贡献。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/sum/assessment-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/sum",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：A 局部 9+6，B 局部 12，最终加法结果？",
+          "options": [
+            "15",
+            "12",
+            "27",
+            "只保留第一个"
+          ],
+          "correct_index": 2,
+          "explanation": "局部合并不丢跨分区贡献。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/sum/review-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/sum",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：A 局部 8+7，B 局部 15，最终加法结果？",
+          "options": [
+            "15",
+            "7",
+            "只保留第一个",
+            "30"
+          ],
+          "correct_index": 3,
+          "explanation": "局部合并不丢跨分区贡献。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/algebra/assessment-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/algebra",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：减法直接分布式规约并依赖固定顺序，风险？",
+          "options": [
+            "检查结合性与顺序依赖",
+            "分区越多自然越正确",
+            "只看函数名字",
+            "默认结果顺序永远固定"
+          ],
+          "correct_index": 0,
+          "explanation": "重组贡献需要满足相应代数与验收约定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/algebra/review-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/algebra",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：用有序字符串拼接做无序规约，应该检查？",
+          "options": [
+            "分区越多自然越正确",
+            "检查结合性与顺序依赖",
+            "只看函数名字",
+            "默认结果顺序永远固定"
+          ],
+          "correct_index": 1,
+          "explanation": "重组贡献需要满足相应代数与验收约定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/values/assessment-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/values",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：业务确需原始同键事件集合，是否一律用加法规约？",
+          "options": [
+            "强制加法，丢事件也无妨",
+            "只保留最后一条",
+            "按信息需求选处理并评估状态容量",
+            "任何集合需求都不允许"
+          ],
+          "correct_index": 2,
+          "explanation": "工具选择必须保留业务需要的信息。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/values/remediation-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/values",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：目标需要检查每个值，简单 sum 不足，应该？",
+          "options": [
+            "强制加法，丢事件也无妨",
+            "只保留最后一条",
+            "任何集合需求都不允许",
+            "按信息需求选处理并评估状态容量"
+          ],
+          "correct_index": 3,
+          "explanation": "工具选择必须保留业务需要的信息。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/shuffle/assessment-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/shuffle",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：reduceByKey 能保证没有任何 Shuffle 吗？",
+          "options": [
+            "仍可能需最终交换汇合",
+            "永远零交换",
+            "只看局部即可完成",
+            "自动把所有键删掉"
+          ],
+          "correct_index": 0,
+          "explanation": "局部预聚合与全局完成不同。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-reducebykey-vs-groupbykey/shuffle/remediation-v1",
+          "knowledge_id": "l5-reducebykey-vs-groupbykey/shuffle",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "reduceByKey vs groupByKey：局部合并后各分区同键结果还需汇合吗？",
+          "options": [
+            "永远零交换",
+            "仍可能需最终交换汇合",
+            "只看局部即可完成",
+            "自动把所有键删掉"
+          ],
+          "correct_index": 1,
+          "explanation": "局部预聚合与全局完成不同。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-repartition-coalesce",
+      "questions": [
+        {
+          "key": "l5-repartition-coalesce/increase/assessment-v1",
+          "knowledge_id": "l5-repartition-coalesce/increase",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：从 3 份增加为 9 份，repartition 通常？",
+          "options": [
+            "只改变量名",
+            "保证相同数量机器",
+            "通过重分布组织目标分区",
+            "自动聚合成目标行数"
+          ],
+          "correct_index": 2,
+          "explanation": "重分区不是改元数据或业务聚合。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-repartition-coalesce/increase/review-v1",
+          "knowledge_id": "l5-repartition-coalesce/increase",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：从 2 份增加为 6 份，repartition 通常？",
+          "options": [
+            "只改变量名",
+            "保证相同数量机器",
+            "自动聚合成目标行数",
+            "通过重分布组织目标分区"
+          ],
+          "correct_index": 3,
+          "explanation": "重分区不是改元数据或业务聚合。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-repartition-coalesce/coalesce/assessment-v1",
+          "knowledge_id": "l5-repartition-coalesce/coalesce",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：默认 coalesce 减分区是否保证完美均衡？",
+          "options": [
+            "不能，可能仍不均衡",
+            "能，任何数据严格等量",
+            "会自动去重",
+            "会自动创建目录分区"
+          ],
+          "correct_index": 0,
+          "explanation": "减少份数不等于完整重新均匀分布。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-repartition-coalesce/coalesce/review-v1",
+          "knowledge_id": "l5-repartition-coalesce/coalesce",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：合并现有份能保证每份字节完全相等吗？",
+          "options": [
+            "能，任何数据严格等量",
+            "不能，可能仍不均衡",
+            "会自动去重",
+            "会自动创建目录分区"
+          ],
+          "correct_index": 1,
+          "explanation": "减少份数不等于完整重新均匀分布。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-repartition-coalesce/single/assessment-v1",
+          "knowledge_id": "l5-repartition-coalesce/single",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：大数据 coalesce(1) 的主要风险？",
+          "options": [
+            "无限内存",
+            "必零 IO",
+            "单任务容量和并行瓶颈",
+            "保证最快"
+          ],
+          "correct_index": 2,
+          "explanation": "过度集中会改变任务粒度和容量需求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-repartition-coalesce/single/review-v1",
+          "knowledge_id": "l5-repartition-coalesce/single",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：昂贵工作集中单分区可能怎样？",
+          "options": [
+            "无限内存",
+            "必零 IO",
+            "保证最快",
+            "单任务容量和并行瓶颈"
+          ],
+          "correct_index": 3,
+          "explanation": "过度集中会改变任务粒度和容量需求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-repartition-coalesce/key/assessment-v1",
+          "knowledge_id": "l5-repartition-coalesce/key",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：repartition(5,k) 自动得到每键一行吗？",
+          "options": [
+            "不是，只改变分布",
+            "是，自动求和",
+            "是，自动去重",
+            "是，自动单文件"
+          ],
+          "correct_index": 0,
+          "explanation": "重分区不替代聚合或唯一性规则。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-repartition-coalesce/key/remediation-v1",
+          "knowledge_id": "l5-repartition-coalesce/key",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：按 region 重分区等于业务分组求和吗？",
+          "options": [
+            "是，自动求和",
+            "不是，只改变分布",
+            "是，自动去重",
+            "是，自动单文件"
+          ],
+          "correct_index": 1,
+          "explanation": "重分区不替代聚合或唯一性规则。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-repartition-coalesce/files/assessment-v1",
+          "knowledge_id": "l5-repartition-coalesce/files",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：小文件很多时应先量什么？",
+          "options": [
+            "无条件一个文件",
+            "只改扩展名",
+            "文件数量/大小、数据量与写入并发",
+            "把目录全重命名"
+          ],
+          "correct_index": 2,
+          "explanation": "交付布局与吞吐需要具体测量和约定。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-repartition-coalesce/files/remediation-v1",
+          "knowledge_id": "l5-repartition-coalesce/files",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "repartition vs coalesce：想调写入分区数，先看什么？",
+          "options": [
+            "无条件一个文件",
+            "只改扩展名",
+            "把目录全重命名",
+            "文件数量/大小、数据量与写入并发"
+          ],
+          "correct_index": 3,
+          "explanation": "交付布局与吞吐需要具体测量和约定。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l5-comprehensive",
+      "questions": [
+        {
+          "key": "l5-comprehensive/invariance/assessment-v1",
+          "knowledge_id": "l5-comprehensive/invariance",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：整数求和从 2 分区改 5 分区应保持？",
+          "options": [
+            "每键业务总量",
+            "每个 task 耗时完全相同",
+            "每条记录所在机器相同",
+            "中间记录顺序相同"
+          ],
+          "correct_index": 0,
+          "explanation": "分区调节不应改变可规约整数指标。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-comprehensive/invariance/review-v1",
+          "knowledge_id": "l5-comprehensive/invariance",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：同一输入从 3 分区改 6 分区，应先核对？",
+          "options": [
+            "每个 task 耗时完全相同",
+            "每键业务总量",
+            "每条记录所在机器相同",
+            "中间记录顺序相同"
+          ],
+          "correct_index": 1,
+          "explanation": "分区调节不应改变可规约整数指标。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l5-comprehensive/keys/assessment-v1",
+          "knowledge_id": "l5-comprehensive/keys",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：不同商品归在同一输出分区，应怎样聚合？",
+          "options": [
+            "按分区把所有键当同一商品",
+            "只保留一个键",
+            "仍按真实键分别统计",
+            "按机器名替代键"
+          ],
+          "correct_index": 2,
+          "explanation": "分区位置不改变业务键的相等定义。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-comprehensive/keys/review-v1",
+          "knowledge_id": "l5-comprehensive/keys",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：哈希碰撞使多个键共处一份，可直接把键合并吗？",
+          "options": [
+            "按分区把所有键当同一商品",
+            "只保留一个键",
+            "按机器名替代键",
+            "仍按真实键分别统计"
+          ],
+          "correct_index": 3,
+          "explanation": "分区位置不改变业务键的相等定义。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l5-comprehensive/hot/assessment-v1",
+          "knowledge_id": "l5-comprehensive/hot",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：热键占多数，单纯加分区足够吗？",
+          "options": [
+            "检查热点与实际负载，不能保证仅加数量解决",
+            "保证均匀",
+            "只看平均即可通过",
+            "删除热键就是优化"
+          ],
+          "correct_index": 0,
+          "explanation": "长尾需要有针对性的负载与语义证据。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-comprehensive/hot/review-v1",
+          "knowledge_id": "l5-comprehensive/hot",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：最大 task 很大，中位数很小，应如何评价？",
+          "options": [
+            "保证均匀",
+            "检查热点与实际负载，不能保证仅加数量解决",
+            "只看平均即可通过",
+            "删除热键就是优化"
+          ],
+          "correct_index": 1,
+          "explanation": "长尾需要有针对性的负载与语义证据。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l5-comprehensive/empty/assessment-v1",
+          "knowledge_id": "l5-comprehensive/empty",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：空输入的每键总量结果应？",
+          "options": [
+            "固定一行 unknown=0",
+            "原样例总额",
+            "空结果，不伪造业务键",
+            "输出分区数行结果"
+          ],
+          "correct_index": 2,
+          "explanation": "空输入仍需符合业务语义，而不是凑固定行数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-comprehensive/empty/remediation-v1",
+          "knowledge_id": "l5-comprehensive/empty",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "综合练习：没有任何商品记录时应硬造一个键吗？",
+          "options": [
+            "固定一行 unknown=0",
+            "原样例总额",
+            "输出分区数行结果",
+            "空结果，不伪造业务键"
+          ],
+          "correct_index": 3,
+          "explanation": "空输入仍需符合业务语义，而不是凑固定行数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l5-comprehensive/proof/assessment-v1",
+          "knowledge_id": "l5-comprehensive/proof",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：给出一份本地任务耗时能证明生产更快吗？",
+          "options": [
+            "不能，证据有适用范围",
+            "能，所有集群相同",
+            "只要截图漂亮即可",
+            "所有指标互相等价"
+          ],
+          "correct_index": 0,
+          "explanation": "测量证据有适用范围，不能超范围推断。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l5-comprehensive/proof/remediation-v1",
+          "knowledge_id": "l5-comprehensive/proof",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "综合练习：分区计数正常就等于网络/内存认证吗？",
+          "options": [
+            "能，所有集群相同",
+            "不能，证据有适用范围",
+            "只要截图漂亮即可",
+            "所有指标互相等价"
+          ],
+          "correct_index": 1,
+          "explanation": "测量证据有适用范围，不能超范围推断。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-what-is-join",
+      "questions": [
+        {
+          "key": "l6-what-is-join/pairs/assessment-v1",
+          "knowledge_id": "l6-what-is-join/pairs",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：一张 60 元订单匹配两条维度，SUM 得到？",
+          "options": [
+            "60",
+            "0",
+            "120",
+            "1"
+          ],
+          "correct_index": 2,
+          "explanation": "匹配行对放大贡献，维表唯一性要验证。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-what-is-join/pairs/review-v1",
+          "knowledge_id": "l6-what-is-join/pairs",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：一张 20 元订单匹配三条维度，SUM 得到？",
+          "options": [
+            "20",
+            "0",
+            "1",
+            "60"
+          ],
+          "correct_index": 3,
+          "explanation": "匹配行对放大贡献，维表唯一性要验证。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-what-is-join/left/assessment-v1",
+          "knowledge_id": "l6-what-is-join/left",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：所有事实都保留，未匹配补空，选哪种语义？",
+          "options": [
+            "fact LEFT JOIN dim",
+            "fact INNER JOIN dim",
+            "只保留 dim",
+            "无条件 CROSS JOIN"
+          ],
+          "correct_index": 0,
+          "explanation": "连接类型决定未匹配事实去向。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-what-is-join/left/review-v1",
+          "knowledge_id": "l6-what-is-join/left",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：订单用户缺维也不能丢，哪种关系合适？",
+          "options": [
+            "fact INNER JOIN dim",
+            "fact LEFT JOIN dim",
+            "只保留 dim",
+            "无条件 CROSS JOIN"
+          ],
+          "correct_index": 1,
+          "explanation": "连接类型决定未匹配事实去向。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-what-is-join/null/assessment-v1",
+          "knowledge_id": "l6-what-is-join/null",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：普通等号下两侧 NULL 键会互配吗？",
+          "options": [
+            "会，缺失必相等",
+            "必类型报错",
+            "不会，条件为未知",
+            "会，自动生成相同用户号"
+          ],
+          "correct_index": 2,
+          "explanation": "NULL 匹配需按普通或空安全语义显式约定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-what-is-join/null/review-v1",
+          "knowledge_id": "l6-what-is-join/null",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：ON a.k=b.k，两行 k 均 NULL，条件为 true 吗？",
+          "options": [
+            "会，缺失必相等",
+            "必类型报错",
+            "会，自动生成相同用户号",
+            "不会，条件为未知"
+          ],
+          "correct_index": 3,
+          "explanation": "NULL 匹配需按普通或空安全语义显式约定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-what-is-join/unique/assessment-v1",
+          "knowledge_id": "l6-what-is-join/unique",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：补维期望不放大事实，应先查？",
+          "options": [
+            "键唯一、缺失、类型与匹配基数",
+            "只看名字",
+            "只调广播阈值",
+            "只把结果排序"
+          ],
+          "correct_index": 0,
+          "explanation": "先保证数据约束与连接语义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-what-is-join/unique/remediation-v1",
+          "knowledge_id": "l6-what-is-join/unique",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：维表更新后报表金额翻倍，优先核对？",
+          "options": [
+            "只看名字",
+            "键唯一、缺失、类型与匹配基数",
+            "只调广播阈值",
+            "只把结果排序"
+          ],
+          "correct_index": 1,
+          "explanation": "先保证数据约束与连接语义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-what-is-join/postfilter/assessment-v1",
+          "knowledge_id": "l6-what-is-join/postfilter",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：LEFT JOIN 后 WHERE dim.tag IS NOT NULL 可能？",
+          "options": [
+            "保证保留所有左行",
+            "自动防止全部重复",
+            "排除本应保留的未匹配左行",
+            "自动广播"
+          ],
+          "correct_index": 2,
+          "explanation": "后过滤可能再次排除外连接保留行。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-what-is-join/postfilter/remediation-v1",
+          "knowledge_id": "l6-what-is-join/postfilter",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "JOIN 是什么（为什么比单表聚合更重）：左连接后排除右侧空值，可能违反什么？",
+          "options": [
+            "保证保留所有左行",
+            "自动防止全部重复",
+            "自动广播",
+            "排除本应保留的未匹配左行"
+          ],
+          "correct_index": 3,
+          "explanation": "后过滤可能再次排除外连接保留行。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-join-strategies-overview",
+      "questions": [
+        {
+          "key": "l6-join-strategies-overview/layers/assessment-v1",
+          "knowledge_id": "l6-join-strategies-overview/layers",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：LEFT 与 SortMergeJoin 属于同一层吗？",
+          "options": [
+            "语义与物理实现两层",
+            "两者不能共存",
+            "后者自动改变前者",
+            "都是文件格式"
+          ],
+          "correct_index": 0,
+          "explanation": "逻辑类型与执行策略应分开。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-join-strategies-overview/layers/review-v1",
+          "knowledge_id": "l6-join-strategies-overview/layers",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：INNER 与 BroadcastHashJoin 如何区分？",
+          "options": [
+            "两者不能共存",
+            "语义与物理实现两层",
+            "后者自动改变前者",
+            "都是文件格式"
+          ],
+          "correct_index": 1,
+          "explanation": "逻辑类型与执行策略应分开。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-join-strategies-overview/equi/assessment-v1",
+          "knowledge_id": "l6-join-strategies-overview/equi",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：仅 a.x>b.y，没有等值键，能无条件选 BHJ 吗？",
+          "options": [
+            "能，所有 JOIN 都同算法",
+            "把条件改成相等即可忽略语义",
+            "不能，要核对算法适用性",
+            "必定零计算"
+          ],
+          "correct_index": 2,
+          "explanation": "适用条件约束候选算法。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-join-strategies-overview/equi/review-v1",
+          "knowledge_id": "l6-join-strategies-overview/equi",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：范围匹配能照搬等值哈希路线吗？",
+          "options": [
+            "能，所有 JOIN 都同算法",
+            "把条件改成相等即可忽略语义",
+            "必定零计算",
+            "不能，要核对算法适用性"
+          ],
+          "correct_index": 3,
+          "explanation": "适用条件约束候选算法。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-join-strategies-overview/tradeoff/assessment-v1",
+          "knowledge_id": "l6-join-strategies-overview/tradeoff",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：比较 BHJ/SMJ/SHJ 应看？",
+          "options": [
+            "数据规模/分布、条件、内存、计划和指标",
+            "仅看名字长度",
+            "只用最新名词",
+            "只看 SQL 大小写"
+          ],
+          "correct_index": 0,
+          "explanation": "不同路线有不同交换、排序和构建权衡。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-join-strategies-overview/tradeoff/review-v1",
+          "knowledge_id": "l6-join-strategies-overview/tradeoff",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：不同物理路线怎么选证据？",
+          "options": [
+            "仅看名字长度",
+            "数据规模/分布、条件、内存、计划和指标",
+            "只用最新名词",
+            "只看 SQL 大小写"
+          ],
+          "correct_index": 1,
+          "explanation": "不同路线有不同交换、排序和构建权衡。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-join-strategies-overview/aqe/assessment-v1",
+          "knowledge_id": "l6-join-strategies-overview/aqe",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：初始 SMJ 但 AQE 开启，应以什么核对最终？",
+          "options": [
+            "只看最初图",
+            "只看源码 hint",
+            "最终计划及运行条件和结果",
+            "只看输入路径"
+          ],
+          "correct_index": 2,
+          "explanation": "自适应变化与实际收益分别验证。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-join-strategies-overview/aqe/remediation-v1",
+          "knowledge_id": "l6-join-strategies-overview/aqe",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：运行统计可能改变连接路线，报告应包含？",
+          "options": [
+            "只看最初图",
+            "只看源码 hint",
+            "只看输入路径",
+            "最终计划及运行条件和结果"
+          ],
+          "correct_index": 3,
+          "explanation": "自适应变化与实际收益分别验证。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-join-strategies-overview/semantics/assessment-v1",
+          "knowledge_id": "l6-join-strategies-overview/semantics",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：换物理策略应该自动改变 INNER 的保留规则吗？",
+          "options": [
+            "不可以，需保持业务语义",
+            "可以，所有策略结果可随意变",
+            "可以，只看秒数",
+            "可以，字段名相同就够"
+          ],
+          "correct_index": 0,
+          "explanation": "逻辑语义改变不是单纯物理优化。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-join-strategies-overview/semantics/remediation-v1",
+          "knowledge_id": "l6-join-strategies-overview/semantics",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "JOIN 策略全景（Spark 怎么拼）：为了更快把 LEFT 改 INNER，可以直接说只改了物理实现吗？",
+          "options": [
+            "可以，所有策略结果可随意变",
+            "不可以，需保持业务语义",
+            "可以，只看秒数",
+            "可以，字段名相同就够"
+          ],
+          "correct_index": 1,
+          "explanation": "逻辑语义改变不是单纯物理优化。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-broadcast-hash-join",
+      "questions": [
+        {
+          "key": "l6-broadcast-hash-join/build/assessment-v1",
+          "knowledge_id": "l6-broadcast-hash-join/build",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：小维表 BHJ 一般复制什么给执行节点？",
+          "options": [
+            "全部事实表 Python 列表",
+            "固定业务答案",
+            "适用的小构建侧及其匹配结构",
+            "所有分区结果文件名"
+          ],
+          "correct_index": 2,
+          "explanation": "广播不等于把大事实收进 Python。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-broadcast-hash-join/build/review-v1",
+          "knowledge_id": "l6-broadcast-hash-join/build",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：广播构建关系主要服务什么？",
+          "options": [
+            "全部事实表 Python 列表",
+            "固定业务答案",
+            "所有分区结果文件名",
+            "适用的小构建侧及其匹配结构"
+          ],
+          "correct_index": 3,
+          "explanation": "广播不等于把大事实收进 Python。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-broadcast-hash-join/memory/assessment-v1",
+          "knowledge_id": "l6-broadcast-hash-join/memory",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：压缩文件 3 MiB 能保证构建只用 3 MiB 吗？",
+          "options": [
+            "不能，要看实际工作集",
+            "能，精确等同",
+            "必定永不 OOM",
+            "内存自动转无限"
+          ],
+          "correct_index": 0,
+          "explanation": "文件体积不是节点工作集上限。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-broadcast-hash-join/memory/review-v1",
+          "knowledge_id": "l6-broadcast-hash-join/memory",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：文件很小就可忽略并发广播内存吗？",
+          "options": [
+            "能，精确等同",
+            "不能，要看实际工作集",
+            "必定永不 OOM",
+            "内存自动转无限"
+          ],
+          "correct_index": 1,
+          "explanation": "文件体积不是节点工作集上限。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-broadcast-hash-join/other-exchange/assessment-v1",
+          "knowledge_id": "l6-broadcast-hash-join/other-exchange",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：连接 BHJ 后下游 groupBy 还可能交换吗？",
+          "options": [
+            "绝不可能",
+            "只有 SQL 才有交换",
+            "仍可能，分段检查",
+            "只有 API 才有交换"
+          ],
+          "correct_index": 2,
+          "explanation": "连接路线不取消其他算子要求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-broadcast-hash-join/other-exchange/review-v1",
+          "knowledge_id": "l6-broadcast-hash-join/other-exchange",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：存在 BHJ 就能宣布全查询零 Shuffle 吗？",
+          "options": [
+            "绝不可能",
+            "只有 SQL 才有交换",
+            "只有 API 才有交换",
+            "仍可能，分段检查"
+          ],
+          "correct_index": 3,
+          "explanation": "连接路线不取消其他算子要求。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-broadcast-hash-join/hint/assessment-v1",
+          "knowledge_id": "l6-broadcast-hash-join/hint",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：源码写 broadcast(dim) 就证明收益吗？",
+          "options": [
+            "还要验证采用、结果、容量和指标",
+            "源码即性能证明",
+            "节点即固定十倍收益",
+            "无需再验结果"
+          ],
+          "correct_index": 0,
+          "explanation": "实施和收益是不同验收项。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-broadcast-hash-join/hint/remediation-v1",
+          "knowledge_id": "l6-broadcast-hash-join/hint",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：广播节点实际出现后能立刻认定更快吗？",
+          "options": [
+            "源码即性能证明",
+            "还要验证采用、结果、容量和指标",
+            "节点即固定十倍收益",
+            "无需再验结果"
+          ],
+          "correct_index": 1,
+          "explanation": "实施和收益是不同验收项。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-broadcast-hash-join/support/assessment-v1",
+          "knowledge_id": "l6-broadcast-hash-join/support",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：没有等值键但有广播提示，必 BHJ 吗？",
+          "options": [
+            "会，提示无条件强制哈希",
+            "会，自动改条件",
+            "不会，仍需满足适用性",
+            "会，自动删未匹配行"
+          ],
+          "correct_index": 2,
+          "explanation": "广播与具体算法的适用性不能混同。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-broadcast-hash-join/support/remediation-v1",
+          "knowledge_id": "l6-broadcast-hash-join/support",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Broadcast Hash Join（小表广播）：广播提示会取消连接类型支持限制吗？",
+          "options": [
+            "会，提示无条件强制哈希",
+            "会，自动改条件",
+            "会，自动删未匹配行",
+            "不会，仍需满足适用性"
+          ],
+          "correct_index": 3,
+          "explanation": "广播与具体算法的适用性不能混同。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-sort-merge-join",
+      "questions": [
+        {
+          "key": "l6-sort-merge-join/requirements/assessment-v1",
+          "knowledge_id": "l6-sort-merge-join/requirements",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：SMJ 主要利用怎样的输入？",
+          "options": [
+            "相应键分布与分区内有序等要求",
+            "全部收进 Driver",
+            "所有行同一文件",
+            "字段名短于五字"
+          ],
+          "correct_index": 0,
+          "explanation": "算法路线建立在分布与排序要求上。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-sort-merge-join/requirements/review-v1",
+          "knowledge_id": "l6-sort-merge-join/requirements",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：排序合并匹配需要计划满足什么？",
+          "options": [
+            "全部收进 Driver",
+            "相应键分布与分区内有序等要求",
+            "所有行同一文件",
+            "字段名短于五字"
+          ],
+          "correct_index": 1,
+          "explanation": "算法路线建立在分布与排序要求上。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-sort-merge-join/reuse/assessment-v1",
+          "knowledge_id": "l6-sort-merge-join/reuse",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：已有合适分布/顺序时 SMJ 必再双侧重排吗？",
+          "options": [
+            "必须固定重做所有步骤",
+            "说明自动变 CROSS JOIN",
+            "不必，可能复用已有条件",
+            "说明没有任何计算"
+          ],
+          "correct_index": 2,
+          "explanation": "必要工作可能由上游满足。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-sort-merge-join/reuse/review-v1",
+          "knowledge_id": "l6-sort-merge-join/reuse",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：计划一侧无新 Sort 可直接判错误吗？",
+          "options": [
+            "必须固定重做所有步骤",
+            "说明自动变 CROSS JOIN",
+            "说明没有任何计算",
+            "不必，可能复用已有条件"
+          ],
+          "correct_index": 3,
+          "explanation": "必要工作可能由上游满足。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-sort-merge-join/resource/assessment-v1",
+          "knowledge_id": "l6-sort-merge-join/resource",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：SMJ 保证没有 spill 或内存压力吗？",
+          "options": [
+            "排序、缓冲和倾斜仍需资源诊断",
+            "SMJ 完全不用内存",
+            "一定是广播过大",
+            "完全不必看运行指标"
+          ],
+          "correct_index": 0,
+          "explanation": "算法名不是资源问题豁免。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-sort-merge-join/resource/review-v1",
+          "knowledge_id": "l6-sort-merge-join/resource",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：排序合并时慢 task 伴随 spill，应如何看？",
+          "options": [
+            "SMJ 完全不用内存",
+            "排序、缓冲和倾斜仍需资源诊断",
+            "一定是广播过大",
+            "完全不必看运行指标"
+          ],
+          "correct_index": 1,
+          "explanation": "算法名不是资源问题豁免。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-sort-merge-join/duplicate/assessment-v1",
+          "knowledge_id": "l6-sort-merge-join/duplicate",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：维表重复，换 SMJ 会自动去重吗？",
+          "options": [
+            "会，排序即去重",
+            "会，每键自动一行",
+            "不会，需解决基数问题",
+            "会，自动取第一条"
+          ],
+          "correct_index": 2,
+          "explanation": "物理策略不应悄悄修正或改变业务语义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-sort-merge-join/duplicate/remediation-v1",
+          "knowledge_id": "l6-sort-merge-join/duplicate",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：SMJ 能修复多对多金额放大吗？",
+          "options": [
+            "会，排序即去重",
+            "会，每键自动一行",
+            "会，自动取第一条",
+            "不会，需解决基数问题"
+          ],
+          "correct_index": 3,
+          "explanation": "物理策略不应悄悄修正或改变业务语义。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-sort-merge-join/performance/assessment-v1",
+          "knowledge_id": "l6-sort-merge-join/performance",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：SMJ 一定比 SHJ 慢吗？",
+          "options": [
+            "不能，按负载与资源比较",
+            "永远更慢",
+            "永远更快",
+            "名字决定全部性能"
+          ],
+          "correct_index": 0,
+          "explanation": "物理路线需要条件化评价。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-sort-merge-join/performance/remediation-v1",
+          "knowledge_id": "l6-sort-merge-join/performance",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Sort-Merge Join（大表×大表默认）：少一个哈希结构就保证总成本最低吗？",
+          "options": [
+            "永远更慢",
+            "不能，按负载与资源比较",
+            "永远更快",
+            "名字决定全部性能"
+          ],
+          "correct_index": 1,
+          "explanation": "物理路线需要条件化评价。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-shuffle-hash-join",
+      "questions": [
+        {
+          "key": "l6-shuffle-hash-join/local/assessment-v1",
+          "knowledge_id": "l6-shuffle-hash-join/local",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：SHJ 的构建范围主要怎样理解？",
+          "options": [
+            "把大表 collect 到 Python",
+            "完全不使用匹配键",
+            "在满足分布的构建侧分区中",
+            "自动没有任何内存"
+          ],
+          "correct_index": 2,
+          "explanation": "局部分区建哈希仍有分布与容量要求。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-shuffle-hash-join/local/review-v1",
+          "knowledge_id": "l6-shuffle-hash-join/local",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：与整侧广播不同，分区哈希主要在哪里建结构？",
+          "options": [
+            "把大表 collect 到 Python",
+            "完全不使用匹配键",
+            "自动没有任何内存",
+            "在满足分布的构建侧分区中"
+          ],
+          "correct_index": 3,
+          "explanation": "局部分区建哈希仍有分布与容量要求。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-shuffle-hash-join/max/assessment-v1",
+          "knowledge_id": "l6-shuffle-hash-join/max",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：构建分区为 2、2、2、50 MiB，只看平均够吗？",
+          "options": [
+            "最大任务工作集与并发余量",
+            "仅总平均",
+            "文件名",
+            "输出列名字数"
+          ],
+          "correct_index": 0,
+          "explanation": "峰值和并发决定局部容量风险。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-shuffle-hash-join/max/review-v1",
+          "knowledge_id": "l6-shuffle-hash-join/max",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：整表不大但一个构建分区巨大，应重点看？",
+          "options": [
+            "仅总平均",
+            "最大任务工作集与并发余量",
+            "文件名",
+            "输出列名字数"
+          ],
+          "correct_index": 1,
+          "explanation": "峰值和并发决定局部容量风险。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-shuffle-hash-join/disable/assessment-v1",
+          "knowledge_id": "l6-shuffle-hash-join/disable",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：关闭自动广播就必定 SHJ 吗？",
+          "options": [
+            "能，只有一个回退策略",
+            "必变 CROSS JOIN",
+            "不能，未指定唯一回退",
+            "必不运行"
+          ],
+          "correct_index": 2,
+          "explanation": "关闭一种候选不等于指定另一种。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-shuffle-hash-join/disable/review-v1",
+          "knowledge_id": "l6-shuffle-hash-join/disable",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：autoBroadcastJoinThreshold=-1 能强制选 SHJ 吗？",
+          "options": [
+            "能，只有一个回退策略",
+            "必变 CROSS JOIN",
+            "必不运行",
+            "不能，未指定唯一回退"
+          ],
+          "correct_index": 3,
+          "explanation": "关闭一种候选不等于指定另一种。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-shuffle-hash-join/tradeoff/assessment-v1",
+          "knowledge_id": "l6-shuffle-hash-join/tradeoff",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：少了排序就可保证 SHJ 更快吗？",
+          "options": [
+            "综合建表容量、分布、倾斜与实测",
+            "只看 Sort 字样",
+            "只看 SQL 长度",
+            "固定按名字排序"
+          ],
+          "correct_index": 0,
+          "explanation": "删除一个成本项不代表总成本最低。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-shuffle-hash-join/tradeoff/remediation-v1",
+          "knowledge_id": "l6-shuffle-hash-join/tradeoff",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：对照 SMJ/SHJ 应怎样评价？",
+          "options": [
+            "只看 Sort 字样",
+            "综合建表容量、分布、倾斜与实测",
+            "只看 SQL 长度",
+            "固定按名字排序"
+          ],
+          "correct_index": 1,
+          "explanation": "删除一个成本项不代表总成本最低。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-shuffle-hash-join/semantics/assessment-v1",
+          "knowledge_id": "l6-shuffle-hash-join/semantics",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：分区哈希路线会自动修复 NULL 键业务规则吗？",
+          "options": [
+            "可以，算法替代契约",
+            "可以，匹配率自动百分百",
+            "不能，契约仍需检查",
+            "可以，维表自动唯一"
+          ],
+          "correct_index": 2,
+          "explanation": "物理选型不代替数据质量与连接类型。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-shuffle-hash-join/semantics/remediation-v1",
+          "knowledge_id": "l6-shuffle-hash-join/semantics",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Shuffle Hash Join 与兜底策略：选 SHJ 后可省略唯一性验证吗？",
+          "options": [
+            "可以，算法替代契约",
+            "可以，匹配率自动百分百",
+            "可以，维表自动唯一",
+            "不能，契约仍需检查"
+          ],
+          "correct_index": 3,
+          "explanation": "物理选型不代替数据质量与连接类型。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-how-spark-chooses",
+      "questions": [
+        {
+          "key": "l6-how-spark-chooses/statistics/assessment-v1",
+          "knowledge_id": "l6-how-spark-chooses/statistics",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：catalog 统计陈旧，选型排查应？",
+          "options": [
+            "统计来源、时效与实际规模",
+            "只看文件后缀",
+            "认定优化器永远精确",
+            "只改变量名"
+          ],
+          "correct_index": 0,
+          "explanation": "可用统计质量影响策略判断。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-how-spark-chooses/statistics/review-v1",
+          "knowledge_id": "l6-how-spark-chooses/statistics",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：文件变化后计划规模估计仍旧，应先查？",
+          "options": [
+            "只看文件后缀",
+            "统计来源、时效与实际规模",
+            "认定优化器永远精确",
+            "只改变量名"
+          ],
+          "correct_index": 1,
+          "explanation": "可用统计质量影响策略判断。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-how-spark-chooses/threshold/assessment-v1",
+          "knowledge_id": "l6-how-spark-chooses/threshold",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：估计小于阈值能无条件保证 BHJ 吗？",
+          "options": [
+            "能，阈值是唯一因素",
+            "表示结果一定为空",
+            "不能，阈值不是唯一因素",
+            "表示内存一定足够"
+          ],
+          "correct_index": 2,
+          "explanation": "单个参数不是完整选择模型。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-how-spark-chooses/threshold/review-v1",
+          "knowledge_id": "l6-how-spark-chooses/threshold",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：只知道自动阈值，能锁定最终连接节点吗？",
+          "options": [
+            "能，阈值是唯一因素",
+            "表示结果一定为空",
+            "表示内存一定足够",
+            "不能，阈值不是唯一因素"
+          ],
+          "correct_index": 3,
+          "explanation": "单个参数不是完整选择模型。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-how-spark-chooses/runtime/assessment-v1",
+          "knowledge_id": "l6-how-spark-chooses/runtime",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：AQE 转换路线必定发生吗？",
+          "options": [
+            "不保证，要看最终计划",
+            "总会发生",
+            "永不可能发生",
+            "只要有 JOIN 就发生"
+          ],
+          "correct_index": 0,
+          "explanation": "自适应优化有条件，不是固定改写口号。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-how-spark-chooses/runtime/review-v1",
+          "knowledge_id": "l6-how-spark-chooses/runtime",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：运行统计出现后，所有 SMJ 都必改 BHJ 吗？",
+          "options": [
+            "总会发生",
+            "不保证，要看最终计划",
+            "永不可能发生",
+            "只要有 JOIN 就发生"
+          ],
+          "correct_index": 1,
+          "explanation": "自适应优化有条件，不是固定改写口号。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-how-spark-chooses/compare/assessment-v1",
+          "knowledge_id": "l6-how-spark-chooses/compare",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：方案一冷缓存，方案二热缓存，可直接归因策略吗？",
+          "options": [
+            "可以，只看秒数",
+            "必须选快的宣称成功",
+            "不能，实验条件不同",
+            "按代码行数消除差异"
+          ],
+          "correct_index": 2,
+          "explanation": "实验条件会影响归因。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-how-spark-chooses/compare/remediation-v1",
+          "knowledge_id": "l6-how-spark-chooses/compare",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：A/B 输入量不同，耗时差能直接证明 hint 收益吗？",
+          "options": [
+            "可以，只看秒数",
+            "必须选快的宣称成功",
+            "按代码行数消除差异",
+            "不能，实验条件不同"
+          ],
+          "correct_index": 3,
+          "explanation": "实验条件会影响归因。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-how-spark-chooses/preserve/assessment-v1",
+          "knowledge_id": "l6-how-spark-chooses/preserve",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：改变配置前后逐组结果不同，应？",
+          "options": [
+            "先修正语义/实现，不算正确优化",
+            "只看快慢",
+            "先删原断言",
+            "保留错误结果即可"
+          ],
+          "correct_index": 0,
+          "explanation": "正确结果先于性能结论。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-how-spark-chooses/preserve/remediation-v1",
+          "knowledge_id": "l6-how-spark-chooses/preserve",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "Spark 怎么选 JOIN 策略（基于代价）：策略试验丢失未匹配事实，怎样评价？",
+          "options": [
+            "只看快慢",
+            "先修正语义/实现，不算正确优化",
+            "先删原断言",
+            "保留错误结果即可"
+          ],
+          "correct_index": 1,
+          "explanation": "正确结果先于性能结论。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-broadcast-hint-and-control",
+      "questions": [
+        {
+          "key": "l6-broadcast-hint-and-control/intent/assessment-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/intent",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：F.broadcast(dim) 表达什么？",
+          "options": [
+            "自动校验维表唯一",
+            "所有数据 collect 到 Python",
+            "广播选型倾向，仍需适用性验证",
+            "固定加速十倍"
+          ],
+          "correct_index": 2,
+          "explanation": "提示不是语义、容量或收益认证。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/intent/review-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/intent",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：SQL BROADCAST 提示主要表达什么？",
+          "options": [
+            "自动校验维表唯一",
+            "所有数据 collect 到 Python",
+            "固定加速十倍",
+            "广播选型倾向，仍需适用性验证"
+          ],
+          "correct_index": 3,
+          "explanation": "提示不是语义、容量或收益认证。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/disable/assessment-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/disable",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：关闭自动广播阈值，显式 hint 必失效吗？",
+          "options": [
+            "不能，控制层次不同",
+            "能，所有广播都全禁",
+            "所有 JOIN 必报错",
+            "所有查询变单线程"
+          ],
+          "correct_index": 0,
+          "explanation": "自动、显式和自适应配置需分别理解。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/disable/review-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/disable",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：只改一个自动阈值，能保证 AQE/显式广播全关闭吗？",
+          "options": [
+            "能，所有广播都全禁",
+            "不能，控制层次不同",
+            "所有 JOIN 必报错",
+            "所有查询变单线程"
+          ],
+          "correct_index": 1,
+          "explanation": "自动、显式和自适应配置需分别理解。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/unsupported/assessment-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/unsupported",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：提示未采用，先检查？",
+          "options": [
+            "认定 Spark 必损坏",
+            "随意改业务条件",
+            "核对支持范围与实际解释信息",
+            "只加更多相同提示"
+          ],
+          "correct_index": 2,
+          "explanation": "hint 不能取消算法适用条件。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/unsupported/review-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/unsupported",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：连接条件不支持目标算法时应？",
+          "options": [
+            "认定 Spark 必损坏",
+            "随意改业务条件",
+            "只加更多相同提示",
+            "核对支持范围与实际解释信息"
+          ],
+          "correct_index": 3,
+          "explanation": "hint 不能取消算法适用条件。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/memory/assessment-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/memory",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：实际广播后内存压力上升，合理做法？",
+          "options": [
+            "可回退并检查容量/并发/替代路线",
+            "只宣布 hint 已生效即成功",
+            "持续盲目放大阈值",
+            "删除结果校验"
+          ],
+          "correct_index": 0,
+          "explanation": "采用和收益应分别验收。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/memory/remediation-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/memory",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：hint 生效但总体更慢，应？",
+          "options": [
+            "只宣布 hint 已生效即成功",
+            "可回退并检查容量/并发/替代路线",
+            "持续盲目放大阈值",
+            "删除结果校验"
+          ],
+          "correct_index": 1,
+          "explanation": "采用和收益应分别验收。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/proof/assessment-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/proof",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：证明广播采用主要看什么？",
+          "options": [
+            "只看注释",
+            "只看变量名",
+            "实际物理节点、构建侧与最终计划",
+            "只看函数被调用次数"
+          ],
+          "correct_index": 2,
+          "explanation": "源码倾向不等于实际执行路线。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-broadcast-hint-and-control/proof/remediation-v1",
+          "knowledge_id": "l6-broadcast-hint-and-control/proof",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "主动控制：broadcast() 提示与避坑：源码有提示而计划未知，缺什么？",
+          "options": [
+            "只看注释",
+            "只看变量名",
+            "只看函数被调用次数",
+            "实际物理节点、构建侧与最终计划"
+          ],
+          "correct_index": 3,
+          "explanation": "源码倾向不等于实际执行路线。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-join-data-skew",
+      "questions": [
+        {
+          "key": "l6-join-data-skew/tail/assessment-v1",
+          "knowledge_id": "l6-join-data-skew/tail",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：中位 2s、最大 100s，热键占多数，应？",
+          "options": [
+            "键/字节/匹配基数、spill 和异常",
+            "只看平均",
+            "删最慢键",
+            "固定所有资源翻倍"
+          ],
+          "correct_index": 0,
+          "explanation": "长尾有多种原因，需结合分布与运行证据。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-join-data-skew/tail/review-v1",
+          "knowledge_id": "l6-join-data-skew/tail",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：多数快但一个巨慢，连接阶段要查？",
+          "options": [
+            "只看平均",
+            "键/字节/匹配基数、spill 和异常",
+            "删最慢键",
+            "固定所有资源翻倍"
+          ],
+          "correct_index": 1,
+          "explanation": "长尾有多种原因，需结合分布与运行证据。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-join-data-skew/partitions/assessment-v1",
+          "knowledge_id": "l6-join-data-skew/partitions",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：同键哈希路由，分区翻倍保证热键均分吗？",
+          "options": [
+            "保证均分",
+            "自动删热点",
+            "不能，热键仍可能集中",
+            "自动改键值"
+          ],
+          "correct_index": 2,
+          "explanation": "增加不同键的容器不保证拆开一个键。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-join-data-skew/partitions/review-v1",
+          "knowledge_id": "l6-join-data-skew/partitions",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：repartition(200,k) 能保证拆开一个键所有行吗？",
+          "options": [
+            "保证均分",
+            "自动删热点",
+            "自动改键值",
+            "不能，热键仍可能集中"
+          ],
+          "correct_index": 3,
+          "explanation": "增加不同键的容器不保证拆开一个键。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-join-data-skew/salt/assessment-v1",
+          "knowledge_id": "l6-join-data-skew/salt",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：只给事实键随机加盐，维表不配套，风险？",
+          "options": [
+            "漏配或重复，需要保语义扩展与还原",
+            "必定更正确",
+            "自动有序",
+            "自动唯一"
+          ],
+          "correct_index": 0,
+          "explanation": "加盐要保证原匹配关系，不是随意改键。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-join-data-skew/salt/review-v1",
+          "knowledge_id": "l6-join-data-skew/salt",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：salting 未定义还原规则就求和，风险？",
+          "options": [
+            "必定更正确",
+            "漏配或重复，需要保语义扩展与还原",
+            "自动有序",
+            "自动唯一"
+          ],
+          "correct_index": 1,
+          "explanation": "加盐要保证原匹配关系，不是随意改键。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-join-data-skew/quality/assessment-v1",
+          "knowledge_id": "l6-join-data-skew/quality",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：维表重复千次使金额放大，应先？",
+          "options": [
+            "只调分区掩盖",
+            "认定正常现象",
+            "确认唯一性与冲突规则",
+            "把金额随意除千"
+          ],
+          "correct_index": 2,
+          "explanation": "数据基数错误可同时制造正确性与性能问题。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-join-data-skew/quality/remediation-v1",
+          "knowledge_id": "l6-join-data-skew/quality",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：预期一对一却实际一对多，应先？",
+          "options": [
+            "只调分区掩盖",
+            "认定正常现象",
+            "把金额随意除千",
+            "确认唯一性与冲突规则"
+          ],
+          "correct_index": 3,
+          "explanation": "数据基数错误可同时制造正确性与性能问题。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-join-data-skew/aqe/assessment-v1",
+          "knowledge_id": "l6-join-data-skew/aqe",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：开 AQE 就保证所有倾斜解决吗？",
+          "options": [
+            "不能，需验证实际效果",
+            "能，无需再看",
+            "能，所有键自动均匀",
+            "能，自动修复维表冲突"
+          ],
+          "correct_index": 0,
+          "explanation": "机制开启与实际适用/收益不同。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-join-data-skew/aqe/remediation-v1",
+          "knowledge_id": "l6-join-data-skew/aqe",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "JOIN 中的数据倾斜（Skew）：最终仍有长尾，能只说 AQE 已开启就验收吗？",
+          "options": [
+            "能，无需再看",
+            "不能，需验证实际效果",
+            "能，所有键自动均匀",
+            "能，自动修复维表冲突"
+          ],
+          "correct_index": 1,
+          "explanation": "机制开启与实际适用/收益不同。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l6-comprehensive",
+      "questions": [
+        {
+          "key": "l6-comprehensive/left/assessment-v1",
+          "knowledge_id": "l6-comprehensive/left",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：所有有效事实保留，未匹配标签 unknown，应？",
+          "options": [
+            "INNER JOIN 后忽略缺失",
+            "无条件 CROSS JOIN",
+            "事实 LEFT JOIN 维度并定义缺失标签",
+            "只输出维度"
+          ],
+          "correct_index": 2,
+          "explanation": "保留事实与缺失口径先于物理选择。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-comprehensive/left/review-v1",
+          "knowledge_id": "l6-comprehensive/left",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：缺维不能丢订单，主体关系怎样表达？",
+          "options": [
+            "INNER JOIN 后忽略缺失",
+            "无条件 CROSS JOIN",
+            "只输出维度",
+            "事实 LEFT JOIN 维度并定义缺失标签"
+          ],
+          "correct_index": 3,
+          "explanation": "保留事实与缺失口径先于物理选择。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l6-comprehensive/conflict/assessment-v1",
+          "knowledge_id": "l6-comprehensive/conflict",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：维表两个相同非空键，任务规定唯一，应？",
+          "options": [
+            "明确拒绝契约冲突，而非任取/放大",
+            "随便取第一条",
+            "任意把金额乘二",
+            "用广播掩盖"
+          ],
+          "correct_index": 0,
+          "explanation": "异常输入需要明确失败行为。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-comprehensive/conflict/review-v1",
+          "knowledge_id": "l6-comprehensive/conflict",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：遇到违反唯一约定的两个标签，需求未定义取舍，应？",
+          "options": [
+            "随便取第一条",
+            "明确拒绝契约冲突，而非任取/放大",
+            "任意把金额乘二",
+            "用广播掩盖"
+          ],
+          "correct_index": 1,
+          "explanation": "异常输入需要明确失败行为。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l6-comprehensive/unmatched/assessment-v1",
+          "knowledge_id": "l6-comprehensive/unmatched",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：匹配订单 12 元、未匹配 18 元，约定保留 unknown，应？",
+          "options": [
+            "全部归到已知组",
+            "只保留已知组",
+            "已知组 12、unknown 18",
+            "全部删除"
+          ],
+          "correct_index": 2,
+          "explanation": "未匹配贡献应按约定保留并明确标记。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-comprehensive/unmatched/review-v1",
+          "knowledge_id": "l6-comprehensive/unmatched",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "综合练习：匹配订单 14 元、未匹配 16 元，约定保留 unknown，应？",
+          "options": [
+            "全部归到已知组",
+            "只保留已知组",
+            "全部删除",
+            "已知组 14、unknown 16"
+          ],
+          "correct_index": 3,
+          "explanation": "未匹配贡献应按约定保留并明确标记。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l6-comprehensive/null/assessment-v1",
+          "knowledge_id": "l6-comprehensive/null",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：任务规定普通等值，事实 NULL 键是否应和维度 NULL 互配？",
+          "options": [
+            "不应，需遵守既定 NULL 语义",
+            "应自动互配",
+            "只要更快就可改",
+            "全部变成字符串 NULL 即无影响"
+          ],
+          "correct_index": 0,
+          "explanation": "空安全策略改变要显式定义，不能偷偷改变基数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-comprehensive/null/remediation-v1",
+          "knowledge_id": "l6-comprehensive/null",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "综合练习：为增加匹配率把 NULL 都变同一伪造用户号是否自然等价？",
+          "options": [
+            "应自动互配",
+            "不应，需遵守既定 NULL 语义",
+            "只要更快就可改",
+            "全部变成字符串 NULL 即无影响"
+          ],
+          "correct_index": 1,
+          "explanation": "空安全策略改变要显式定义，不能偷偷改变基数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l6-comprehensive/accept/assessment-v1",
+          "knowledge_id": "l6-comprehensive/accept",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "综合练习：结果与计划正确就保证生产加速吗？",
+          "options": [
+            "保证所有集群更快",
+            "只给一张 hint 截图",
+            "说明已验范围和待测项",
+            "删除未验范围"
+          ],
+          "correct_index": 2,
+          "explanation": "正确性、实施、收益与适用范围是不同结论。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l6-comprehensive/accept/remediation-v1",
+          "knowledge_id": "l6-comprehensive/accept",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "综合练习：本地连接验收通过应怎样报告？",
+          "options": [
+            "保证所有集群更快",
+            "只给一张 hint 截图",
+            "删除未验范围",
+            "说明已验范围和待测项"
+          ],
+          "correct_index": 3,
+          "explanation": "正确性、实施、收益与适用范围是不同结论。",
+          "dimension": "transfer"
+        }
+      ]
+    }
+  ]
+}

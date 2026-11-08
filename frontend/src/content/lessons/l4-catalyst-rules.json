@@ -1,0 +1,226 @@
+{
+  "slug": "l4-catalyst-rules",
+  "version": 1,
+  "title": "优化器改了什么，还没证明什么",
+  "mission": "通过列裁剪、过滤与表达式变换形成可验证的认识。",
+  "correction": "规则是否适用取决于数据源、表达式和配置。谓词下推不等于所有过滤都在存储端完成，优化也不保证固定耗时收益。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-catalyst-rules/columns",
+      "knowledgeIds": [
+        "l4-catalyst-rules/columns"
+      ],
+      "title": "只需要两个字段",
+      "intro": "输出只用 region、amount，但源有 30 列。",
+      "code": "# 教学片段：ReadSchema 只剩 region, amount",
+      "prompt": "这是什么线索？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "所有文件都已完整缓存",
+              "feedback": "列裁剪不是缓存。"
+            },
+            {
+              "id": "o0",
+              "text": "列裁剪可能减少读取/处理字段",
+              "feedback": "对，检查实际读量与数据源支持。"
+            },
+            {
+              "id": "o2",
+              "text": "返回行数必定减少",
+              "feedback": "选列不必改变行数。"
+            }
+          ]
+        }
+      ],
+      "insight": "列裁剪移除后续不需要的字段，有助于减少读取与计算。",
+      "ability": "只需要两个字段",
+      "reading": {
+        "id": "l4-catalyst-rules/columns/reading",
+        "title": "只需要两个字段",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "列裁剪移除后续不需要的字段，有助于减少读取与计算。",
+        "boundary": "不同数据格式和数据源的实际收益不同。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-catalyst-rules/pushdown",
+      "knowledgeIds": [
+        "l4-catalyst-rules/pushdown"
+      ],
+      "title": "PushedFilters 不等于所有条件都完成",
+      "intro": "某数据源展示 PushedFilters，同时计划仍有 Filter。",
+      "code": "# 教学片段\nFilter complex_condition\n+- Scan PushedFilters: [IsNotNull(amount)]",
+      "prompt": "该怎样理解？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "所有过滤都在存储端完成了",
+              "feedback": "这里并没有这样的证据。"
+            },
+            {
+              "id": "o2",
+              "text": "Filter 一定是重复错误",
+              "feedback": "保留残余校验可能是必要的。"
+            },
+            {
+              "id": "o1",
+              "text": "部分条件可下推，仍可能需要残余过滤",
+              "feedback": "对，应核对具体下推条件和残余条件。"
+            }
+          ]
+        }
+      ],
+      "insight": "下推能力与具体谓词有关；读到 PushedFilters 不应跳过剩余语义检查。",
+      "ability": "PushedFilters 不等于所有条件都完成",
+      "reading": {
+        "id": "l4-catalyst-rules/pushdown/reading",
+        "title": "PushedFilters 不等于所有条件都完成",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "下推能力与具体谓词有关；读到 PushedFilters 不应跳过剩余语义检查。",
+        "boundary": "数据源可能只提供部分过滤保证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-catalyst-rules/push-transfer",
+        "knowledgeId": "l4-catalyst-rules/pushdown",
+        "title": "下推只是部分证据",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 扫描支持 price>0；自定义清洗条件仍在 Filter。",
+        "prompt": "还需要执行清洗条件吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "不用，扫描存在就够",
+              "feedback": "扫描不能替代未下推规则。"
+            },
+            {
+              "id": "r2",
+              "text": "只看 LIMIT",
+              "feedback": "LIMIT 不是清洗条件。"
+            },
+            {
+              "id": "r1",
+              "text": "需要，残余条件还要满足",
+              "feedback": "对，不能丢掉残余语义。"
+            }
+          ]
+        },
+        "insight": "下推与残余过滤共同保证语义，不能从单个标记推断所有条件已执行。"
+      }
+    },
+    {
+      "id": "l4-catalyst-rules/folding",
+      "knowledgeIds": [
+        "l4-catalyst-rules/folding"
+      ],
+      "title": "常量能否提前算",
+      "intro": "表达式是 amount * (2+3)。",
+      "code": "SELECT amount * (2 + 3) AS x FROM orders",
+      "prompt": "优化器可以做什么而不改变语义？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "把 2+3 折叠成 5",
+              "feedback": "对，这是常量表达式优化。"
+            },
+            {
+              "id": "o1",
+              "text": "删除 amount 列的所有值",
+              "feedback": "那会改变结果。"
+            },
+            {
+              "id": "o2",
+              "text": "把所有 amount 改成 5",
+              "feedback": "常量折叠不是覆盖输入数据。"
+            }
+          ]
+        }
+      ],
+      "insight": "常量折叠可提前化简确定性的表达式。",
+      "ability": "常量能否提前算",
+      "reading": {
+        "id": "l4-catalyst-rules/folding/reading",
+        "title": "常量能否提前算",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "常量折叠可提前化简确定性的表达式。",
+        "boundary": "涉及 NULL、溢出、非确定性或配置时要按具体表达式分析。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-catalyst-rules/verify",
+      "knowledgeIds": [
+        "l4-catalyst-rules/verify"
+      ],
+      "title": "手动把条件提前就一定等价吗",
+      "intro": "你准备跨外连接移动一个过滤条件。",
+      "code": "# 教学情境：LEFT JOIN 后过滤右侧列。",
+      "prompt": "应该先做什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只要节点少就直接提交",
+              "feedback": "较短计划不能证明等价。"
+            },
+            {
+              "id": "o1",
+              "text": "核对 NULL 与未匹配行语义，做结果对照",
+              "feedback": "对，外连接下移动条件可能改变保留行。"
+            },
+            {
+              "id": "o2",
+              "text": "把所有 LEFT JOIN 改为 INNER",
+              "feedback": "这可能改变业务需求。"
+            }
+          ]
+        }
+      ],
+      "insight": "优化需要保持语义，外连接、NULL 和非确定表达式都需要特别谨慎。",
+      "ability": "手动把条件提前就一定等价吗",
+      "reading": {
+        "id": "l4-catalyst-rules/verify/reading",
+        "title": "手动把条件提前就一定等价吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "优化需要保持语义，外连接、NULL 和非确定表达式都需要特别谨慎。",
+        "boundary": "手工改写不能只看运行速度或节点数量。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "slug": "l5-what-is-partition",
+  "version": 1,
+  "title": "一张表怎样分成可调度的小份",
+  "mission": "区分逻辑数据、计算分区、运行任务和输出目录。",
+  "correction": "计算分区不是物理机器或文件目录；一个分区可以为空，分区数也不等于同时运行任务数。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-what-is-partition/pieces",
+      "knowledgeIds": [
+        "l5-what-is-partition/pieces"
+      ],
+      "title": "四份数据不一定四台机器",
+      "intro": "一个 DataFrame 有 4 个分区，运行在 local[2]。",
+      "code": "# 教学情境：4 partitions，2 个本地执行线程。",
+      "prompt": "能推出什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "必须有四台 Executor 机器",
+              "feedback": "分区不是机器数。"
+            },
+            {
+              "id": "o2",
+              "text": "只能保存成四个目录",
+              "feedback": "目录布局是另一回事。"
+            },
+            {
+              "id": "o1",
+              "text": "计算有四份，但同时处理受资源限制",
+              "feedback": "对，份数和并发资源不同。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区是分布式计算的基本数据份，运行时由任务处理。",
+      "ability": "四份数据不一定四台机器",
+      "reading": {
+        "id": "l5-what-is-partition/pieces/reading",
+        "title": "四份数据不一定四台机器",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区是分布式计算的基本数据份，运行时由任务处理。",
+        "boundary": "一个任务处理一份数据的常见模型不等于所有查询固定调度。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-what-is-partition/empty",
+      "knowledgeIds": [
+        "l5-what-is-partition/empty"
+      ],
+      "title": "八个分区却只有三行",
+      "intro": "输入很小，手动分成 8 份。",
+      "code": "# 教学情境：3 rows，8 partitions。",
+      "prompt": "分区能为空吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，分区数不等于非空份数",
+              "feedback": "对，小数据可能有空分区。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，Spark 必须复制行补满",
+              "feedback": "不会为填满分区随意复制结果。"
+            },
+            {
+              "id": "o2",
+              "text": "不能，必然变成三分区",
+              "feedback": "没有这样的自动保证。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区可以为空，检查分布应同时看分区数量和每份负载。",
+      "ability": "八个分区却只有三行",
+      "reading": {
+        "id": "l5-what-is-partition/empty/reading",
+        "title": "八个分区却只有三行",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区可以为空，检查分布应同时看分区数量和每份负载。",
+        "boundary": "小数据的空分区不自动说明生产数据也均匀。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-what-is-partition/empty-transfer",
+        "knowledgeId": "l5-what-is-partition/empty",
+        "title": "分区不是行数",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 两条记录被分到五个分区。",
+        "prompt": "正确说法是？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "每个分区必须一条",
+              "feedback": "记录数不够也允许空分区。"
+            },
+            {
+              "id": "r1",
+              "text": "可能有空分区",
+              "feedback": "对，不能把分区数当非空份数。"
+            },
+            {
+              "id": "r2",
+              "text": "Spark 必复制成五行",
+              "feedback": "不应因此复制业务记录。"
+            }
+          ]
+        },
+        "insight": "计算分区数与记录数不同，空分区仍可能存在。"
+      }
+    },
+    {
+      "id": "l5-what-is-partition/directory",
+      "knowledgeIds": [
+        "l5-what-is-partition/directory"
+      ],
+      "title": "partitionBy 的分区是另一层",
+      "intro": "写入使用 partitionBy(\"day\")。",
+      "code": "report.write.partitionBy(\"day\").parquet(path)",
+      "prompt": "这主要约定什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "每个 day 必然只有一个文件",
+              "feedback": "文件数还受任务与写入过程影响。"
+            },
+            {
+              "id": "o0",
+              "text": "输出目录按 day 值组织",
+              "feedback": "对，这是存储目录组织。"
+            },
+            {
+              "id": "o2",
+              "text": "计算只剩一个 task",
+              "feedback": "它不提供这样的计算承诺。"
+            }
+          ]
+        }
+      ],
+      "insight": "计算分区和存储目录分区需要分开描述。",
+      "ability": "partitionBy 的分区是另一层",
+      "reading": {
+        "id": "l5-what-is-partition/directory/reading",
+        "title": "partitionBy 的分区是另一层",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计算分区和存储目录分区需要分开描述。",
+        "boundary": "目录数量、文件数量和任务数量不能互换。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-what-is-partition/inspect",
+      "knowledgeIds": [
+        "l5-what-is-partition/inspect"
+      ],
+      "title": "想知道分区是否均匀",
+      "intro": "getNumPartitions 返回 16。",
+      "code": "# 只有分区总数，尚无每分区大小。",
+      "prompt": "还应收集什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只看变量名",
+              "feedback": "名字不是测量。"
+            },
+            {
+              "id": "o2",
+              "text": "把 16 当作均匀分配证明",
+              "feedback": "有十六份不代表一样大。"
+            },
+            {
+              "id": "o0",
+              "text": "每分区行数/字节与运行耗时分布",
+              "feedback": "对，总数不说明负载分布。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区数量只是一个维度，判断均衡还需要负载与任务分布证据。",
+      "ability": "想知道分区是否均匀",
+      "reading": {
+        "id": "l5-what-is-partition/inspect/reading",
+        "title": "想知道分区是否均匀",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区数量只是一个维度，判断均衡还需要负载与任务分布证据。",
+        "boundary": "行数也不能完全替代字节与每行计算成本。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

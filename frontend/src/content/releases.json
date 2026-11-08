@@ -75,24 +75,128 @@
     "version": 1,
     "hash": "43fb8239086e2b6919a785544c3bd340f7e30df73ed82b18a944584c00dc3fa7"
   },
+  "l4-catalyst-rules": {
+    "version": 1,
+    "hash": "be4d1e79ded447f8a61555378f528afb6978a68bf0149c68633c6630ae9ff9f1"
+  },
+  "l4-comprehensive": {
+    "version": 1,
+    "hash": "7a4a3c1f261f49e2320097737ee1bd2b8a4b282029cb9e88a4197cf324447ae8"
+  },
+  "l4-dependency-narrow-wide": {
+    "version": 1,
+    "hash": "32275af82a496f2001912eded0de265cca8a86a84aa704a26076205d7372083b"
+  },
+  "l4-explain-api": {
+    "version": 1,
+    "hash": "d36a011a245fe8cbe9e55c7eb3547031078e47df57eba32958838e65cfc5695f"
+  },
+  "l4-job-stage-task": {
+    "version": 1,
+    "hash": "255127b9afc2b36508feaed9fd77164cd991b2708e68fcd6916d76c76a8d8809"
+  },
+  "l4-logical-vs-physical": {
+    "version": 1,
+    "hash": "53c6e2efc6a0cbfde09a54a1910efd264a24e89fbefb3f4a622222718cb1a97f"
+  },
+  "l4-read-plan": {
+    "version": 1,
+    "hash": "edf752e7b6d807fa6a924921761709be85f06c6c5c0f58dc0304edfbb89ccea2"
+  },
+  "l4-wholestage-codegen": {
+    "version": 1,
+    "hash": "32e9035a7a6ec4b1feaee1edc35b447da0b46d07abf691144ead2f68de374a85"
+  },
+  "l4-why-explain": {
+    "version": 1,
+    "hash": "5a961039bc91cc94f94051f60453c88c5c12a9f022560e1b5c29df1fbf2a77d5"
+  },
+  "l5-comprehensive": {
+    "version": 1,
+    "hash": "2af0de223006a0ef9b1f4cd8142a227a6ac3e9bf77297ea40f045d60066508ed"
+  },
+  "l5-narrow-wide-partition": {
+    "version": 1,
+    "hash": "ccd9ff7fd2a9f594499ba4101d7bdd276d27b1d0f1be070436b90ebcc28e3881"
+  },
+  "l5-partition-count-parallelism": {
+    "version": 1,
+    "hash": "3e47ca1435930ca509702b777124656007495a33ce15043ab9b7d2fc576ccfb0"
+  },
+  "l5-reducebykey-vs-groupbykey": {
+    "version": 1,
+    "hash": "9e1dd1a15d3654cd043fcea9083d459a185d754b8efcf3c45f316407493f7d32"
+  },
+  "l5-repartition-coalesce": {
+    "version": 1,
+    "hash": "195a0138098fcca04a5f790b7e8f8bd66dcb1efedbcf8da683d83b565d92bc0d"
+  },
+  "l5-shuffle-cost": {
+    "version": 1,
+    "hash": "2024c4b5fd266dc5ce825bf671ca04a62a8dbfc96f1ac4c59830a86cc9a802ba"
+  },
+  "l5-shuffle-trigger-operators": {
+    "version": 1,
+    "hash": "6ffcdadbd707d61810003504200943606841275a194ec297d5c0349438bc5ae5"
+  },
+  "l5-what-is-partition": {
+    "version": 1,
+    "hash": "a5006dc84fbd291bcdd4f3ad64c83e06b2235ad0d4653dd9574addce521651f0"
+  },
   "l5-what-is-shuffle": {
-    "version": 3,
-    "hash": "1f97f2492c00b720c0af57b55e14496772ea0aaddfdd55d45b62866d7507f80b"
+    "version": 4,
+    "hash": "355c3b1dd53b4d79969d36e7a3fec9627130306abdcc47ac9628d4259f4fee1e"
+  },
+  "l6-broadcast-hash-join": {
+    "version": 1,
+    "hash": "848b01c1bc0acef0b8a270bb6f3af10b64cc5c22c9ed108e8c6685872d35df1d"
+  },
+  "l6-broadcast-hint-and-control": {
+    "version": 1,
+    "hash": "bb600aea705d0a5b3f17ebed020c1c77b8263ded1be33c065ae3e4437c1d8b62"
+  },
+  "l6-comprehensive": {
+    "version": 1,
+    "hash": "1c82b3c74c1ccd618a473dbc7e04c1f6e7da083e1a5c63c2546f067001b5f6d1"
+  },
+  "l6-how-spark-chooses": {
+    "version": 1,
+    "hash": "1afdb1a02fbe63dc84c8d4ae65ffb315f7d6cb9a195b74003012cc6e450e95f6"
+  },
+  "l6-join-data-skew": {
+    "version": 1,
+    "hash": "f99a459e462b0eb2b315cbd9b253dd6f9d3602a186748e04daa52786de058466"
+  },
+  "l6-join-strategies-overview": {
+    "version": 1,
+    "hash": "44ff0cce518870b85c88a1eeeb6c652049e90ab3516dada84bef0d0fcdc528f0"
+  },
+  "l6-shuffle-hash-join": {
+    "version": 1,
+    "hash": "a76e49132c3511869c0f00af38f924a570f72297fa50dfc5fa582fc60116ac10"
+  },
+  "l6-sort-merge-join": {
+    "version": 1,
+    "hash": "50a8a4f5023a6aa7b19d51fba0bd18a93c503525c480c182d4be158d0b8ee599"
+  },
+  "l6-what-is-join": {
+    "version": 1,
+    "hash": "355734a691599d8f27ceb57e56be3fb2153d2ae27ae1671f2889e940e4f22d7d"
   },
   "l7-what-is-tuning": {
     "version": 1,
     "hash": "53938e41562f72a6269e99106ef74523506a402800f23c9f18322bbcc265ce77"
   },
   "delayed-checks": {
-    "version": 2,
-    "hash": "7f514678a44270fd12edfd25da82474e786472fb2791a03c2a539faf4ea0750c"
+    "version": 3,
+    "hash": "90b4d6bd4899d6c7a4185ea61f426816a8c366e94641cc675c54f4898f2ac0ea"
   },
   "standard-guides": {
-    "version": 2,
-    "hash": "73cdba6f8fc51e134278cd18f3b29d1bab2f50f040123ba3e9c415d784547621"
+    "version": 3,
+    "hash": "73ace0a79aa1db7d2b58e4e809b7ad68948964b50c2de768addc8ca79b8a90fe"
   },
   "capstones": {
-    "version": 2,
-    "hash": "0edba03b779d6443ae375ae2ca440b05ceccd249e9c5c4e634e6ff22aa6230ae"
+    "version": 3,
+    "hash": "988fb8481929e43dd80fa88b3a066f388cc64c4bfd84aad3c3486e1839846305"
   }
 }

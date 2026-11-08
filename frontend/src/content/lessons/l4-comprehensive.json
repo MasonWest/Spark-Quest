@@ -1,0 +1,318 @@
+{
+  "slug": "l4-comprehensive",
+  "version": 1,
+  "title": "准备练习：给优化建议配证据",
+  "mission": "先用这六步热身，独立任务要运行自己的查询并保存计划。",
+  "correction": "优化成功必须同时满足语义正确、计划证据与代表性运行验证；教学计划和合成指标不是真实基准报告。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-comprehensive/contract",
+      "knowledgeIds": [
+        "l4-comprehensive/contract"
+      ],
+      "title": "先锁住业务口径",
+      "intro": "日报只统计正金额，按 region 汇总。",
+      "code": "# 待比较：原查询 vs 改写查询。",
+      "prompt": "开始对比前先确定什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "先把所有参数设大",
+              "feedback": "参数不应代替需求。"
+            },
+            {
+              "id": "o2",
+              "text": "只选更短的代码",
+              "feedback": "短代码也可能改变语义。"
+            },
+            {
+              "id": "o0",
+              "text": "业务字段、过滤口径与预期结果",
+              "feedback": "对，先定义等价性。"
+            }
+          ]
+        }
+      ],
+      "insight": "有可检查的结果约定，计划比较才有意义。",
+      "ability": "先锁住业务口径",
+      "reading": {
+        "id": "l4-comprehensive/contract/reading",
+        "title": "先锁住业务口径",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "有可检查的结果约定，计划比较才有意义。",
+        "boundary": "不要用正确性换速度。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-comprehensive/remove",
+      "knowledgeIds": [
+        "l4-comprehensive/remove"
+      ],
+      "title": "看见额外重分布",
+      "intro": "聚合前有一个无业务要求的 repartition(7)。",
+      "code": "# 教学片段：RoundRobinPartitioning(7) -> 按 region 聚合。",
+      "prompt": "更合理的实验是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "去掉它并比较结果与实际计划",
+              "feedback": "对，验证额外分布是否必要。"
+            },
+            {
+              "id": "o1",
+              "text": "把它改成 repartition(7000) 后直接上线",
+              "feedback": "放大参数没有依据。"
+            },
+            {
+              "id": "o2",
+              "text": "删掉聚合只保留扫描",
+              "feedback": "那会改变需求。"
+            }
+          ]
+        }
+      ],
+      "insight": "先提出单一可回退改动，再核对计划与结果。",
+      "ability": "看见额外重分布",
+      "reading": {
+        "id": "l4-comprehensive/remove/reading",
+        "title": "看见额外重分布",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先提出单一可回退改动，再核对计划与结果。",
+        "boundary": "优化器可能重写计划，不能只看代码删了几行。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-comprehensive/evidence",
+      "knowledgeIds": [
+        "l4-comprehensive/evidence"
+      ],
+      "title": "节点少了就完成了吗",
+      "intro": "改写后计划少一个交换。",
+      "code": "# 教学情境：尚未验证输出与运行指标。",
+      "prompt": "还需要什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只截一张短计划图",
+              "feedback": "截图不替代验收。"
+            },
+            {
+              "id": "o0",
+              "text": "结果逐组对照与代表性测量",
+              "feedback": "对，结构变化不是全部证据。"
+            },
+            {
+              "id": "o2",
+              "text": "删除旧断言",
+              "feedback": "断言应保留。"
+            }
+          ]
+        }
+      ],
+      "insight": "计划优化只是证据链一环，还需验证结果与真实成本。",
+      "ability": "节点少了就完成了吗",
+      "reading": {
+        "id": "l4-comprehensive/evidence/reading",
+        "title": "节点少了就完成了吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计划优化只是证据链一环，还需验证结果与真实成本。",
+        "boundary": "小样本与冷启动可能掩盖实际收益。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-comprehensive/accept-transfer",
+        "knowledgeId": "l4-comprehensive/evidence",
+        "title": "更快但少了一组",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 新查询用时下降，但漏掉一个 region。",
+        "prompt": "能算成功吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "不能，先修正结果差异",
+              "feedback": "对，先满足业务正确性。"
+            },
+            {
+              "id": "r0",
+              "text": "能，少一组不重要",
+              "feedback": "分组是交付约定的一部分。"
+            },
+            {
+              "id": "r2",
+              "text": "能，只看总耗时",
+              "feedback": "错误答案的耗时没有同等比较意义。"
+            }
+          ]
+        },
+        "insight": "正确结果与可比条件是性能结论的前提。"
+      }
+    },
+    {
+      "id": "l4-comprehensive/stats",
+      "knowledgeIds": [
+        "l4-comprehensive/stats"
+      ],
+      "title": "估计变化不等于性能实测",
+      "intro": "cost 中 sizeInBytes 下降。",
+      "code": "# 只有计划统计，没有运行测量。",
+      "prompt": "该如何报告？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "内存一定下降同样倍数",
+              "feedback": "统计不是内存实测。"
+            },
+            {
+              "id": "o2",
+              "text": "已经避免所有 OOM",
+              "feedback": "没有这样的保证。"
+            },
+            {
+              "id": "o1",
+              "text": "估计变化，仍待运行指标验证",
+              "feedback": "对，清楚说明证据类型。"
+            }
+          ]
+        }
+      ],
+      "insight": "报告要区分估计、计划结构和实测，不把一种证据冒充另一种。",
+      "ability": "估计变化不等于性能实测",
+      "reading": {
+        "id": "l4-comprehensive/stats/reading",
+        "title": "估计变化不等于性能实测",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "报告要区分估计、计划结构和实测，不把一种证据冒充另一种。",
+        "boundary": "结果大小、工作集和峰值内存是不同量。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-comprehensive/aqe",
+      "knowledgeIds": [
+        "l4-comprehensive/aqe"
+      ],
+      "title": "比较初始还是最终",
+      "intro": "查询启用 AQE，已完成一次代表执行。",
+      "code": "# 已有初始计划与执行后的计划。",
+      "prompt": "该保留什么作为证据？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "注明执行条件并保留前后计划及指标",
+              "feedback": "对，说明自适应变化与实验条件。"
+            },
+            {
+              "id": "o0",
+              "text": "只保留最喜欢的一份",
+              "feedback": "选择性保留会隐藏变化。"
+            },
+            {
+              "id": "o2",
+              "text": "只保留 Python 代码行数",
+              "feedback": "行数不说明执行路线。"
+            }
+          ]
+        }
+      ],
+      "insight": "可审查的诊断记录应包含输入、设置、查询、计划与结果。",
+      "ability": "比较初始还是最终",
+      "reading": {
+        "id": "l4-comprehensive/aqe/reading",
+        "title": "比较初始还是最终",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "可审查的诊断记录应包含输入、设置、查询、计划与结果。",
+        "boundary": "测试环境版本也应记录。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-comprehensive/report",
+      "knowledgeIds": [
+        "l4-comprehensive/report"
+      ],
+      "title": "把未验证的部分写出来",
+      "intro": "小样本结果正确，尚未跑生产规模。",
+      "code": "# 交付一份优化建议。",
+      "prompt": "报告里应该写？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "保证生产提升十倍",
+              "feedback": "没有这样的实测证据。"
+            },
+            {
+              "id": "o1",
+              "text": "已验证范围、待验证假设和回退条件",
+              "feedback": "对，结论要与证据匹配。"
+            },
+            {
+              "id": "o2",
+              "text": "删除所有限制说明",
+              "feedback": "限制决定结论的适用范围。"
+            }
+          ]
+        }
+      ],
+      "insight": "明确已验证与未验证的部分，建议才可安全评估和继续实验。",
+      "ability": "把未验证的部分写出来",
+      "reading": {
+        "id": "l4-comprehensive/report/reading",
+        "title": "把未验证的部分写出来",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "明确已验证与未验证的部分，建议才可安全评估和继续实验。",
+        "boundary": "教学验收不是生产性能认证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

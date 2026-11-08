@@ -47,7 +47,8 @@ REVIEWED = BASE / "app" / "l2_reviewed_bank.json"
 
 
 def reviewed_entries():
-    return json.loads(REVIEWED.read_text(encoding="utf-8"))["lessons"] if REVIEWED.exists() else []
+    paths = [REVIEWED, BASE / "app/l3_l6_reviewed_bank.json"]
+    return [entry for path in paths if path.exists() for entry in json.loads(path.read_text(encoding="utf-8"))["lessons"]]
 
 
 def check_reviewed(cur):

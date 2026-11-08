@@ -62,3 +62,7 @@ backend/_*
 
 # App icons are product assets, not verification screenshots
 !frontend/public/icons/*.png
+
+# Generated local graduation evidence (downloadable source kits stay tracked)
+frontend/public/practice/*-graduation/practice/
+frontend/public/practice/*-graduation/validation-result.json

@@ -1,6 +1,6 @@
 {
   "slug": "l5-what-is-shuffle",
-  "version": 3,
+  "version": 4,
   "title": "让分散的地区成绩汇合",
   "mission": "两份分区都算完了，为什么还没得到最终答案？从数据放在哪里开始，亲手推演一次按键汇合。",
   "correction": "Shuffle 是跨分区重分布，可能读取本地或远端 Shuffle 数据，不要求每条记录都经过跨机器网络；local 模式也可以有 Shuffle。计划中的 ShuffleExchange 是线索，BroadcastExchange 不是同一种交换；AQE 下最终 Stage 数要结合实际执行确认。",
@@ -50,6 +50,37 @@
         "endMarker": "【一个直观的心智模型】",
         "connection": "你刚才得到 north 的两份局部答案，正好对应原文中的问题：数据分散在各处，但需求要的是每个地区的一份总结果。先认识这种“分散位置与计算目标不匹配”，再去理解为什么需要重分布。",
         "boundary": "“同 key 凑到一起”指最终聚合需要汇合这个键的贡献，不要求把每条原始明细原封不动搬到一起。支持局部预聚合时，可以先把每个分区的明细缩成局部结果；也不能由这句话断定任何查询必然增加一次交换。"
+      },
+      "remediation": {
+        "id": "l5-what-is-shuffle/partial-transfer",
+        "knowledgeId": "shuffle.local-global",
+        "title": "局部正确还不够",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 两份分区：X 的局部总额分别 12、18。",
+        "prompt": "目标每键一行，应怎样完成？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r1",
+              "text": "汇合得到 X 的全局合计",
+              "feedback": "对，必须合并同键贡献。"
+            },
+            {
+              "id": "r0",
+              "text": "保留任意一份",
+              "feedback": "会丢失贡献。"
+            },
+            {
+              "id": "r2",
+              "text": "把两份都重命名为 total",
+              "feedback": "改名不会汇合。"
+            }
+          ]
+        },
+        "insight": "局部结果可以各自正确，但全局指标仍需把同键贡献合并。"
       }
     },
     {
@@ -248,14 +279,14 @@
               "feedback": "Shuffle 不以跨机器传输为必要条件；也可以读取本地交换数据。"
             },
             {
-              "id": "exists",
-              "text": "仍可能有 Shuffle，数据在分区间重分布",
-              "feedback": "对，不能把网络跨机器与分区重分布画等号。"
-            },
-            {
               "id": "driver",
               "text": "自动变成 Driver 中央汇总",
               "feedback": "local 模式并不意味着每个算子自动变成 Driver 集中汇总。"
+            },
+            {
+              "id": "exists",
+              "text": "仍可能有 Shuffle，数据在分区间重分布",
+              "feedback": "对，不能把网络跨机器与分区重分布画等号。"
             }
           ]
         },

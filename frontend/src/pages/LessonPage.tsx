@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import type { LessonDetail, LessonNote } from "../types";
 import { statusLabel } from "../types";
 import LessonJourney from "../components/LessonJourney";
-import { journeys } from "../content/journeys";
+import { loadJourney, type JourneyLesson } from "../content/journeys";
 import { standardGuides } from "../content/standardGuides";
 import capstoneBank from "../content/capstones.json";
 import CapstoneProject, { type Capstone } from "../components/CapstoneProject";
@@ -20,6 +20,7 @@ export default function LessonPage() {
   const [searchParams] = useSearchParams();
   // Phase 6b: 复习失败后跳过来重读本课，读完后从这里回到复习。
   const fromReview = searchParams.get("from") === "review";
+  const [journey, setJourney] = useState<JourneyLesson | null>(null);
   const [data, setData] = useState<LessonDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -30,25 +31,25 @@ export default function LessonPage() {
   const [noteBusy, setNoteBusy] = useState(false);
 
   useEffect(() => {
-    setData(null);
-    setError(null);
-    setNotFound(false);
-    setNotes([]);
-    setNoteDraft("");
-    fetch(`/api/lessons/${id}`)
-      .then((res) => {
+    let active = true;
+    const controller = new AbortController();
+    setData(null); setJourney(null); setError(null); setNotFound(false);
+    setNotes([]); setNoteDraft("");
+    fetch(`/api/lessons/${id}`, { signal: controller.signal })
+      .then(res => {
         if (res.status === 404) {
-          setNotFound(true);
+          if (active) setNotFound(true);
           throw new Error("课程不存在");
         }
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json() as Promise<LessonDetail>;
       })
-      .then(setData)
-      .catch((e) => {
-        if (!notFound) setError(String(e));
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      .then(async detail => {
+        const content = await loadJourney(detail.slug);
+        if (active) { setJourney(content); setData(detail); }
+      })
+      .catch(e => { if (active && e.name !== "AbortError") setError(String(e)); });
+    return () => { active = false; controller.abort(); };
   }, [id]);
 
   useEffect(() => {
@@ -140,7 +141,6 @@ export default function LessonPage() {
   }
 
   const c = data.content;
-  const journey = journeys[data.slug];
   const standard = standardGuides[data.slug];
   const capstone = (capstoneBank.lessons as Record<string, Capstone>)[data.slug];
 

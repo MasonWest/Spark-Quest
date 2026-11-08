@@ -104,3 +104,16 @@ L2 使用 `standardGuides.json`（独立版本与发布摘要）提供当前标�
 标准讲解、延迟题与毕业配置分别为独立 v2；L3 旧数据库阅读不冒充互动迁移记录。新课不要编造 legacyTaskIds。两章共用 CapstoneProject，SQL 任务的 build_report 接收 spark 和本次 orders，参考实现每次替换自己的视图，避免复用前一输入。
 
 L3 38 步/9 补救/9 延迟的原文与代码均经结构检查及浏览器回归；`check-l3-examples.py` 独立实跑关键语义与六种错误报告。验收不认证所有干扰项质量、所有 Spark 版本或长期学习保持。正式题源的 34 项纠错与既有库升级说明见根目录 L3_ROLLOUT_PLAN.md。
+
+
+## L4–L6 批次与按需加载
+
+`author-l4-l6-content.py` 显式编写 27 课/115 步，包含保留的 Shuffle 五步，其他为新 v1。Shuffle 因增加补救升 v4，主步骤/选项 ID 与原题内容保持，v3 本机记录仍在原键；按既有策略新版独立开始，不伪造跨版本成绩。L3 作者脚本改为保留后续版本与统一延迟顺序，双方 --check 均可重复验证。
+
+标准讲义/延迟题库/毕业配置升独立 v3。L3–L6 共36课，每课一个补救/隔天重点，并非每一步都有自适应分支。合成指标与简化计划明确标记，不能当真实基准。
+
+`journeys.ts` 按 slug 动态加载当前课完整内容；`journeyIndex.json` 是构建检查派生的轻量版本/任务 ID 索引，供首页和延迟调度使用，不含答案字段。内容通过审查后用 --record-release 同步索引；普通构建检测索引漂移而不静默重新解释旧进度。`loadProgress` 接受最小元数据，单测对照完整课和索引确保记录一致。LessonPage 切换路由取消旧请求，避免慢响应覆盖新课程。
+
+L4–L6 毕业任务下载 kit 分别使用 task.json，`lab-verifier-template.py` 为三份独立 verify.py 的共同源。任务目标是计划、分区或连接证据，不伪装成 Parquet 读写认证；自动 PASS 与人工诊断 review 明确分开。不要随意改已发布下载资产；内容摘要同时锁定配置和资产。
+
+正式题源 `backend/app/l3_l6_reviewed_bank.json` 由显式作者脚本产生，36 课各 5 assessment +3 review +2 remediation；服务端两种五题组隔离。180 组目标两份材料不等于360个新概念，答案长度/位置指标不等于教学质量证明。原题保留历史，并未重新认证所有旧文本。

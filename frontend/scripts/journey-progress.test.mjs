@@ -108,3 +108,17 @@ test('corrupt or denied delayed storage cannot produce a recorded success',()=>{
   assert.throws(()=>submitDelayed(c,item.correctOptionId,[item],lessons,{getItem:s.getItem,setItem(){throw Error('denied')}},at+day));
   assert.equal(s.getItem(delayedKey),'[]');
 });
+
+
+test('metadata-only loading preserves progress and delayed scheduling without fetching lesson answers',()=>{
+  const index=JSON.parse(fs.readFileSync(new URL('../src/content/journeyIndex.json',import.meta.url),'utf8'));
+  for (const [slug,meta] of Object.entries(index)) {
+    const full=JSON.parse(fs.readFileSync(new URL(`../src/content/lessons/${slug}.json`,import.meta.url),'utf8'));
+    assert.equal(meta.version,full.version);assert.deepEqual(meta.tasks.map(t=>t.id),full.tasks.map(t=>t.id));
+    assert.ok(meta.tasks.every(t=>!('fields' in t)));
+    const s=storage();const p=freshProgress(full);s.setItem(progressKey(full),JSON.stringify(p));
+    assert.deepEqual(loadProgress(meta,s),loadProgress(full,s));
+  }
+  const {item,l,s,at,lessons}=delayedFixture();
+  assert.deepEqual(delayedQueue([item],index,s,at+day),delayedQueue([item],lessons,s,at+day));
+});

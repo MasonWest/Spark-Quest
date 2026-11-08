@@ -1,0 +1,226 @@
+{
+  "slug": "l4-job-stage-task",
+  "version": 1,
+  "title": "把一次运行拆成可核对的层次",
+  "mission": "知道 Job、Stage、Task 分别解决什么，再读 UI。",
+  "correction": "action、job、stage 并非一对一固定映射；任务尝试数还受重试和推测执行影响。一个 stage 通常按分区产生 task，但同时运行数受资源限制。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-job-stage-task/task",
+      "knowledgeIds": [
+        "l4-job-stage-task/task"
+      ],
+      "title": "八个分区，两核同时跑多少",
+      "intro": "一个简单 stage 有 8 个任务，当前可用并行槽位为 2，忽略其他限制。",
+      "code": "# 合成调度情境：8 tasks，2 slots。",
+      "prompt": "大致怎样执行？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "八个始终全部同时跑",
+              "feedback": "并发还受槽位限制。"
+            },
+            {
+              "id": "o1",
+              "text": "通常分批运行，不能把任务总数当同时数",
+              "feedback": "对，总任务与同时运行不同。"
+            },
+            {
+              "id": "o2",
+              "text": "只有两个分区存在",
+              "feedback": "分区仍可能有八个。"
+            }
+          ]
+        }
+      ],
+      "insight": "任务总数和同时运行的任务数不同；并行资源不足时会分批调度。",
+      "ability": "八个分区，两核同时跑多少",
+      "reading": {
+        "id": "l4-job-stage-task/task/reading",
+        "title": "八个分区，两核同时跑多少",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "任务总数和同时运行的任务数不同；并行资源不足时会分批调度。",
+        "boundary": "实际槽位、调度池与其他负载还会影响执行。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-job-stage-task/job",
+      "knowledgeIds": [
+        "l4-job-stage-task/job"
+      ],
+      "title": "一个 action 就一定一个 job 吗",
+      "intro": "查询包含广播准备、自适应执行或其他内部工作。",
+      "code": "# 教学情境：一次用户请求产生多个 UI job 记录。",
+      "prompt": "该怎样理解？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "一定是用户重复点了按钮",
+              "feedback": "内部执行也可能产生多次提交。"
+            },
+            {
+              "id": "o2",
+              "text": "Spark 只支持一个 job",
+              "feedback": "应用可以有多个 job。"
+            },
+            {
+              "id": "o1",
+              "text": "一次 action 与 job 数不保证一对一",
+              "feedback": "对，需要沿实际执行记录解释。"
+            }
+          ]
+        }
+      ],
+      "insight": "action 是用户请求结果的入口，实际 job 划分还取决于查询执行过程。",
+      "ability": "一个 action 就一定一个 job 吗",
+      "reading": {
+        "id": "l4-job-stage-task/job/reading",
+        "title": "一个 action 就一定一个 job 吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "action 是用户请求结果的入口，实际 job 划分还取决于查询执行过程。",
+        "boundary": "不要用简单口号代替 UI 证据。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-job-stage-task/job-transfer",
+        "knowledgeId": "l4-job-stage-task/job",
+        "title": "多条 job 记录",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 某查询只触发一次 collect，UI 有多条 job 记录。",
+        "prompt": "能立刻认定重复提交吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能",
+              "feedback": "不能仅凭数量认定。"
+            },
+            {
+              "id": "r2",
+              "text": "说明结果一定重复",
+              "feedback": "job 数不直接等于重复结果。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，需核对内部执行过程",
+              "feedback": "对，先确认提交与内部过程。"
+            }
+          ]
+        },
+        "insight": "用户 action 和运行 job 不保证固定一对一，应以实际执行记录为准。"
+      }
+    },
+    {
+      "id": "l4-job-stage-task/attempt",
+      "knowledgeIds": [
+        "l4-job-stage-task/attempt"
+      ],
+      "title": "重试后 UI 为何多了一次",
+      "intro": "一个逻辑任务第一次失败，第二次成功。",
+      "code": "# 合成日志：task 4 attempt 0 failed；attempt 1 success。",
+      "prompt": "这意味着什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "同一任务有多个尝试，不必等于新增逻辑分区",
+              "feedback": "对，区分任务与 attempt。"
+            },
+            {
+              "id": "o0",
+              "text": "数据分区必然翻倍",
+              "feedback": "重试不必增加逻辑分区。"
+            },
+            {
+              "id": "o2",
+              "text": "最终必然重复两行",
+              "feedback": "正确提交机制不是把每次尝试都累加为结果。"
+            }
+          ]
+        }
+      ],
+      "insight": "task attempt 记录执行尝试，重试与推测执行可能增加尝试数。",
+      "ability": "重试后 UI 为何多了一次",
+      "reading": {
+        "id": "l4-job-stage-task/attempt/reading",
+        "title": "重试后 UI 为何多了一次",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "task attempt 记录执行尝试，重试与推测执行可能增加尝试数。",
+        "boundary": "诊断失败需看异常和提交结果，不能仅看计数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-job-stage-task/waves",
+      "knowledgeIds": [
+        "l4-job-stage-task/waves"
+      ],
+      "title": "加分区后还剩一个特别慢的任务",
+      "intro": "多数 task 很快，单个 task 远慢于其他。",
+      "code": "# 合成指标：中位数 2s，最大 60s。",
+      "prompt": "更有针对性的下一步是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "继续只增加总分区数",
+              "feedback": "单个热点可能不会被盲目加分区解决。"
+            },
+            {
+              "id": "o1",
+              "text": "检查慢分区的数据量、键分布和 spill",
+              "feedback": "对，先定位长尾原因。"
+            },
+            {
+              "id": "o2",
+              "text": "认定所有 Executor 都同样慢",
+              "feedback": "指标显示的是不均衡。"
+            }
+          ]
+        }
+      ],
+      "insight": "同时观察中位数和最大值，可帮助区分普遍成本与长尾问题。",
+      "ability": "加分区后还剩一个特别慢的任务",
+      "reading": {
+        "id": "l4-job-stage-task/waves/reading",
+        "title": "加分区后还剩一个特别慢的任务",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "同时观察中位数和最大值，可帮助区分普遍成本与长尾问题。",
+        "boundary": "合成指标只训练推理，不是生产基准。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

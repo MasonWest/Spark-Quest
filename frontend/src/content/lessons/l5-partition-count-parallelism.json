@@ -1,0 +1,226 @@
+{
+  "slug": "l5-partition-count-parallelism",
+  "version": 1,
+  "title": "分区数与并发，怎样一起考虑",
+  "mission": "在太少、太碎和热点之间找到可验证的调节方法。",
+  "correction": "分区越多并非越快；并发受槽位与调度约束，AQE 也可能调整 Shuffle 后分区。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-partition-count-parallelism/slots",
+      "knowledgeIds": [
+        "l5-partition-count-parallelism/slots"
+      ],
+      "title": "十二份任务只有三处同时做",
+      "intro": "一个简单 stage 有 12 个 task，只有 3 个可用槽位。",
+      "code": "# 合成场景：忽略其他开销。",
+      "prompt": "应怎样理解？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "大致分批调度，不是十二个同时运行",
+              "feedback": "对，资源决定并发上限。"
+            },
+            {
+              "id": "o1",
+              "text": "分区会自动复制成三倍",
+              "feedback": "调度不要求复制数据。"
+            },
+            {
+              "id": "o2",
+              "text": "必须丢掉九份数据",
+              "feedback": "不能丢掉未调度数据。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区提供潜在并行工作，并行槽位决定某时刻能处理多少。",
+      "ability": "十二份任务只有三处同时做",
+      "reading": {
+        "id": "l5-partition-count-parallelism/slots/reading",
+        "title": "十二份任务只有三处同时做",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区提供潜在并行工作，并行槽位决定某时刻能处理多少。",
+        "boundary": "实际运行还有调度开销和其他负载。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-partition-count-parallelism/tiny",
+      "knowledgeIds": [
+        "l5-partition-count-parallelism/tiny"
+      ],
+      "title": "一万份极小任务也有成本",
+      "intro": "每份数据很小，任务启动和调度占比较大。",
+      "code": "# 合成指标：task 很短，总调度时间显著。",
+      "prompt": "更合理的下一步是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "无条件再加十倍分区",
+              "feedback": "过碎可能继续增加开销。"
+            },
+            {
+              "id": "o1",
+              "text": "评估减少过碎任务并测量总体耗时",
+              "feedback": "对，调节需要与负载规模匹配。"
+            },
+            {
+              "id": "o2",
+              "text": "认定数据越少调度越免费",
+              "feedback": "小任务也有管理成本。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区过少可能无法并行，过多可能被调度与管理成本主导。",
+      "ability": "一万份极小任务也有成本",
+      "reading": {
+        "id": "l5-partition-count-parallelism/tiny/reading",
+        "title": "一万份极小任务也有成本",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区过少可能无法并行，过多可能被调度与管理成本主导。",
+        "boundary": "没有适合所有数据规模的固定分区常数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-partition-count-parallelism/tiny-transfer",
+        "knowledgeId": "l5-partition-count-parallelism/tiny",
+        "title": "更多不自动更好",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 20 MiB 输入切成 20000 个小任务。",
+        "prompt": "能保证比 20 个更快吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能，越多越快",
+              "feedback": "忽略了管理与调度成本。"
+            },
+            {
+              "id": "r2",
+              "text": "一定没有任何 task",
+              "feedback": "不是零任务。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，应测量任务粒度与资源开销",
+              "feedback": "对，结合数据规模实验。"
+            }
+          ]
+        },
+        "insight": "分区增加会改变任务粒度与开销，收益要实测。"
+      }
+    },
+    {
+      "id": "l5-partition-count-parallelism/large",
+      "knowledgeIds": [
+        "l5-partition-count-parallelism/large"
+      ],
+      "title": "每份太大时看什么",
+      "intro": "部分 task spill 很多，内存压力高。",
+      "code": "# 合成指标：大分区，长 task，spill 增加。",
+      "prompt": "应先验证什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只把文件名缩短",
+              "feedback": "文件名不解决工作集。"
+            },
+            {
+              "id": "o2",
+              "text": "假定内存永远够",
+              "feedback": "容量受实际数据和算子影响。"
+            },
+            {
+              "id": "o0",
+              "text": "每分区负载、数据分布与资源，再试合理切分",
+              "feedback": "对，先解释每份工作的容量。"
+            }
+          ]
+        }
+      ],
+      "insight": "任务工作集过大时，分区粒度与算子状态都可能影响内存、spill 和耗时。",
+      "ability": "每份太大时看什么",
+      "reading": {
+        "id": "l5-partition-count-parallelism/large/reading",
+        "title": "每份太大时看什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "任务工作集过大时，分区粒度与算子状态都可能影响内存、spill 和耗时。",
+        "boundary": "增加分区也不一定拆开同一个热点键。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-partition-count-parallelism/aqe",
+      "knowledgeIds": [
+        "l5-partition-count-parallelism/aqe"
+      ],
+      "title": "设置 200，实际一定 200 吗",
+      "intro": "配置了 spark.sql.shuffle.partitions=200，并启用 AQE。",
+      "code": "# 观察执行后的分区与 task 数。",
+      "prompt": "正确预期是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "AQE 等机制可能调整，需要核对最终执行",
+              "feedback": "对，实际计划与运行记录决定结果。"
+            },
+            {
+              "id": "o0",
+              "text": "所有后续阶段永远 200 个 task",
+              "feedback": "这是初始/相关配置，不是所有阶段的承诺。"
+            },
+            {
+              "id": "o2",
+              "text": "整个应用只有 200 行",
+              "feedback": "分区配置不是数据行数。"
+            }
+          ]
+        }
+      ],
+      "insight": "配置值与最终执行划分可能不同，应核对具体算子和 AQE 行为。",
+      "ability": "设置 200，实际一定 200 吗",
+      "reading": {
+        "id": "l5-partition-count-parallelism/aqe/reading",
+        "title": "设置 200，实际一定 200 吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "配置值与最终执行划分可能不同，应核对具体算子和 AQE 行为。",
+        "boundary": "本课不承诺固定的运行 Stage/Task 数。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

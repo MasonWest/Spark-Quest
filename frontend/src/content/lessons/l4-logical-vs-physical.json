@@ -1,0 +1,226 @@
+{
+  "slug": "l4-logical-vs-physical",
+  "version": 1,
+  "title": "同一需求，执行路线可以不同",
+  "mission": "分开看要算什么与怎样计算。",
+  "correction": "逻辑计划也有解析、分析和优化阶段；物理计划不是源码逐行翻译，AQE 还可能在运行后调整。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-logical-vs-physical/meaning",
+      "knowledgeIds": [
+        "l4-logical-vs-physical/meaning"
+      ],
+      "title": "先说需求，再说机器怎么做",
+      "intro": "需求是每地区销售合计。",
+      "code": "orders.groupBy(\"region\").sum(\"amount\")",
+      "prompt": "“按地区求和”首先描述哪一层？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "网络连接数",
+              "feedback": "语句没有给出网络连接数。"
+            },
+            {
+              "id": "o0",
+              "text": "业务与逻辑计算需求",
+              "feedback": "对，它还没有指定具体物理聚合路线。"
+            },
+            {
+              "id": "o2",
+              "text": "物理机器编号",
+              "feedback": "逻辑字段不对应机器编号。"
+            }
+          ]
+        }
+      ],
+      "insight": "逻辑计划描述关系与表达式，物理计划选择满足需求的执行算子。",
+      "ability": "先说需求，再说机器怎么做",
+      "reading": {
+        "id": "l4-logical-vs-physical/meaning/reading",
+        "title": "先说需求，再说机器怎么做",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "逻辑计划描述关系与表达式，物理计划选择满足需求的执行算子。",
+        "boundary": "同一语义可能存在多个可行物理实现。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-logical-vs-physical/route",
+      "knowledgeIds": [
+        "l4-logical-vs-physical/route"
+      ],
+      "title": "同样连接，为什么路线不同",
+      "intro": "同一等值连接，维表规模与统计发生变化。",
+      "code": "# 简化教学对照\n方案 A: BroadcastHashJoin\n方案 B: SortMergeJoin",
+      "prompt": "两种节点说明什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "业务连接条件必定不同",
+              "feedback": "节点名不同并不证明条件不同。"
+            },
+            {
+              "id": "o2",
+              "text": "两者输出字段必定不同",
+              "feedback": "字段也取决于投影与连接条件。"
+            },
+            {
+              "id": "o1",
+              "text": "可能是同一逻辑连接的不同物理实现",
+              "feedback": "对，选型受数据与配置影响。"
+            }
+          ]
+        }
+      ],
+      "insight": "比较计划时先确认语义，再解释物理选型及其条件。",
+      "ability": "同样连接，为什么路线不同",
+      "reading": {
+        "id": "l4-logical-vs-physical/route/reading",
+        "title": "同样连接，为什么路线不同",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "比较计划时先确认语义，再解释物理选型及其条件。",
+        "boundary": "不要只凭算子名字宣称结果相同或某个一定更快。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-logical-vs-physical/route-transfer",
+        "knowledgeId": "l4-logical-vs-physical/route",
+        "title": "需求和路线分层",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 对照：同样 SELECT k,SUM(v) GROUP BY k\n计划分别使用不同聚合实现。",
+        "prompt": "应怎样解释？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "一定是一份计划错了",
+              "feedback": "不能仅凭不同就判错。"
+            },
+            {
+              "id": "r2",
+              "text": "一定是不同业务",
+              "feedback": "逻辑需求已明确相同。"
+            },
+            {
+              "id": "r0",
+              "text": "可能同需求不同实现，仍需核对语义与结果",
+              "feedback": "对，物理实现可以变化。"
+            }
+          ]
+        },
+        "insight": "逻辑语义与物理路线应分开；路线变化还要核对适用条件与结果。"
+      }
+    },
+    {
+      "id": "l4-logical-vs-physical/analysis",
+      "knowledgeIds": [
+        "l4-logical-vs-physical/analysis"
+      ],
+      "title": "字段不存在在哪一步暴露",
+      "intro": "查询引用 amuont，实际字段为 amount。",
+      "code": "SELECT amuont FROM orders",
+      "prompt": "优化前应先解决什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "字段解析与分析错误",
+              "feedback": "对，先让名字和类型可解析。"
+            },
+            {
+              "id": "o0",
+              "text": "把 Shuffle 分区加倍",
+              "feedback": "参数不能补出缺失字段。"
+            },
+            {
+              "id": "o2",
+              "text": "给结果排序",
+              "feedback": "排序不解决字段拼错。"
+            }
+          ]
+        }
+      ],
+      "insight": "分析阶段解析关系、字段与类型；未解决的语义错误不能靠物理调参修复。",
+      "ability": "字段不存在在哪一步暴露",
+      "reading": {
+        "id": "l4-logical-vs-physical/analysis/reading",
+        "title": "字段不存在在哪一步暴露",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分析阶段解析关系、字段与类型；未解决的语义错误不能靠物理调参修复。",
+        "boundary": "错误可能在构造或请求计划时暴露，不能一概推迟到 action。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-logical-vs-physical/optimized",
+      "knowledgeIds": [
+        "l4-logical-vs-physical/optimized"
+      ],
+      "title": "谓词位置变了，先看结果语义",
+      "intro": "优化前有 Project 和 Filter，优化后部分表达式已合并。",
+      "code": "# 教学情境：优化计划与原写法不逐行对应。",
+      "prompt": "哪个判断可靠？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "优化器可以随意少算几行",
+              "feedback": "那会破坏查询正确性。"
+            },
+            {
+              "id": "o0",
+              "text": "优化器必须保持查询语义",
+              "feedback": "对，规则变换应保持语义。"
+            },
+            {
+              "id": "o2",
+              "text": "节点少就保证更快",
+              "feedback": "成本还取决于数据与执行。"
+            }
+          ]
+        }
+      ],
+      "insight": "优化计划可以重写表达式与关系结构，不能把计划当作用户代码逐行执行记录。",
+      "ability": "谓词位置变了，先看结果语义",
+      "reading": {
+        "id": "l4-logical-vs-physical/optimized/reading",
+        "title": "谓词位置变了，先看结果语义",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "优化计划可以重写表达式与关系结构，不能把计划当作用户代码逐行执行记录。",
+        "boundary": "有非确定性、NULL 或类型转换时更需谨慎分析等价性。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

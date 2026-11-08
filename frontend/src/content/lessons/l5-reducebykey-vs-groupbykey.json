@@ -1,0 +1,226 @@
+{
+  "slug": "l5-reducebykey-vs-groupbykey",
+  "version": 1,
+  "title": "只求总量，别先收齐所有值",
+  "mission": "在 Pair RDD 中比较局部合并与保留完整值集合的需求。",
+  "correction": "reduceByKey 可局部合并但并非消除最终交换；规约函数应满足适用的结合/交换要求，浮点和有序拼接需特别谨慎。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#working-with-key-value-pairs",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l5-reducebykey-vs-groupbykey/goal",
+      "knowledgeIds": [
+        "l5-reducebykey-vs-groupbykey/goal"
+      ],
+      "title": "只求每商品数量",
+      "intro": "输入是 (product, quantity)，目标每商品总量。",
+      "code": "pairs.reduceByKey(lambda a, b: a + b)",
+      "prompt": "这比先 groupByKey 再求和可能少什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "部分待交换的明细值",
+              "feedback": "对，局部合并可减少传输内容。"
+            },
+            {
+              "id": "o1",
+              "text": "最终所有计算",
+              "feedback": "最终仍需合并跨分区贡献。"
+            },
+            {
+              "id": "o2",
+              "text": "业务中的合法数量",
+              "feedback": "正确规约不应丢贡献。"
+            }
+          ]
+        }
+      ],
+      "insight": "可规约的聚合可在局部先合并，避免为求和携带全部原始值集合。",
+      "ability": "只求每商品数量",
+      "reading": {
+        "id": "l5-reducebykey-vs-groupbykey/goal/reading",
+        "title": "只求每商品数量",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "可规约的聚合可在局部先合并，避免为求和携带全部原始值集合。",
+        "boundary": "重复键少或值结构不同，实际收益需测量。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-reducebykey-vs-groupbykey/combine",
+      "knowledgeIds": [
+        "l5-reducebykey-vs-groupbykey/combine"
+      ],
+      "title": "局部合并后剩下什么",
+      "intro": "A 分区同键值 2、3，B 分区同键值 4。",
+      "code": "# 按加法规约；先局部合并，再全局合并。",
+      "prompt": "最终结果是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "5，因为只保留 A",
+              "feedback": "漏了 B 的贡献。"
+            },
+            {
+              "id": "o2",
+              "text": "9，局部合并不丢跨分区贡献",
+              "feedback": "对，5 与 4 还要合并。"
+            },
+            {
+              "id": "o1",
+              "text": "4，因为 B 后到",
+              "feedback": "不应按到达顺序覆盖。"
+            }
+          ]
+        }
+      ],
+      "insight": "局部规约减少中间值数量，最终仍需把同键各分区贡献汇合。",
+      "ability": "局部合并后剩下什么",
+      "reading": {
+        "id": "l5-reducebykey-vs-groupbykey/combine/reading",
+        "title": "局部合并后剩下什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "局部规约减少中间值数量，最终仍需把同键各分区贡献汇合。",
+        "boundary": "不是“reduceByKey 完全没有 Shuffle”的保证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l5-reducebykey-vs-groupbykey/combine-transfer",
+        "knowledgeId": "l5-reducebykey-vs-groupbykey/combine",
+        "title": "少传值，不少算贡献",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# A: k=[5,7]；B: k=[8]；按加法规约。",
+        "prompt": "最终 k 是多少？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "12",
+              "feedback": "还漏掉 B 的 8。"
+            },
+            {
+              "id": "r1",
+              "text": "20",
+              "feedback": "对，局部 12 再合并 8。"
+            },
+            {
+              "id": "r2",
+              "text": "8",
+              "feedback": "漏掉 A 的贡献。"
+            }
+          ]
+        },
+        "insight": "局部合并改变中间组织，不改变所有合法贡献都参与最终规约的要求。"
+      }
+    },
+    {
+      "id": "l5-reducebykey-vs-groupbykey/need-values",
+      "knowledgeIds": [
+        "l5-reducebykey-vs-groupbykey/need-values"
+      ],
+      "title": "如果确实要检查所有原始值",
+      "intro": "业务要逐个检查同键事件，简单总量不足。",
+      "code": "# 目标：保留/检查同键原始事件集合。",
+      "prompt": "应怎样选择？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "任何需求都必须 reduceByKey 加法",
+              "feedback": "加法不能表达所有集合需求。"
+            },
+            {
+              "id": "o2",
+              "text": "直接丢掉原始事件",
+              "feedback": "会破坏需求。"
+            },
+            {
+              "id": "o1",
+              "text": "按业务需求选集合处理并评估内存与倾斜",
+              "feedback": "对，优化不能牺牲所需信息。"
+            }
+          ]
+        }
+      ],
+      "insight": "是否可以规约取决于目标能否用有限状态合并表达，而不只是接口名字。",
+      "ability": "如果确实要检查所有原始值",
+      "reading": {
+        "id": "l5-reducebykey-vs-groupbykey/need-values/reading",
+        "title": "如果确实要检查所有原始值",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "是否可以规约取决于目标能否用有限状态合并表达，而不只是接口名字。",
+        "boundary": "确需集合时仍要评估热点键与状态大小。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l5-reducebykey-vs-groupbykey/algebra",
+      "knowledgeIds": [
+        "l5-reducebykey-vs-groupbykey/algebra"
+      ],
+      "title": "减法能随意重组吗",
+      "intro": "打算用 reduceByKey(lambda a,b:a-b)。",
+      "code": "# 1-2-3 与 1-(2-3) 结果不同。",
+      "prompt": "有什么风险？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "重组顺序可能改变结果，不适合这样依赖顺序",
+              "feedback": "对，检查规约函数的代数要求。"
+            },
+            {
+              "id": "o1",
+              "text": "减法总能保证同结果",
+              "feedback": "减法不满足所需结合性质。"
+            },
+            {
+              "id": "o2",
+              "text": "只要多分区就会变加法",
+              "feedback": "分区不会改变运算定义。"
+            }
+          ]
+        }
+      ],
+      "insight": "分布式规约会重组局部贡献，函数需满足相应结合/交换要求。",
+      "ability": "减法能随意重组吗",
+      "reading": {
+        "id": "l5-reducebykey-vs-groupbykey/algebra/reading",
+        "title": "减法能随意重组吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分布式规约会重组局部贡献，函数需满足相应结合/交换要求。",
+        "boundary": "浮点加法还可能有舍入差异，验收应采用合理数值约定。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

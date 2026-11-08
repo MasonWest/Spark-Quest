@@ -1,0 +1,226 @@
+{
+  "slug": "l4-why-explain",
+  "version": 1,
+  "title": "日报变慢，先找一条证据",
+  "mission": "别先猜内存或改参数。从查询计划提出可以验证的假设。",
+  "correction": "explain 不是计时器，也不直接给出完整运行瓶颈。计划可能需要分析/元数据工作；实际读量、等待与最终 AQE 行为要结合执行指标。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l4-why-explain/evidence",
+      "knowledgeIds": [
+        "l4-why-explain/evidence"
+      ],
+      "title": "只有总耗时，先别开药方",
+      "intro": "两次日报各跑了 20 秒和 60 秒，尚未控制输入与资源。",
+      "code": "# 教学情境\n原来 20s，现在 60s；没有计划或 UI 指标。",
+      "prompt": "第一步更合理的是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "收集计划、数据规模与运行指标，形成假设",
+              "feedback": "对，先定位变化发生在哪一段。"
+            },
+            {
+              "id": "o0",
+              "text": "先把 Executor 内存翻倍",
+              "feedback": "内存是否瓶颈还没有证据。"
+            },
+            {
+              "id": "o2",
+              "text": "认定 SQL 语法变长导致变慢",
+              "feedback": "文本长度不是可靠的成本证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "诊断从需求、执行计划和指标出发。先描述问题，再决定改什么。",
+      "ability": "只有总耗时，先别开药方",
+      "reading": {
+        "id": "l4-why-explain/evidence/reading",
+        "title": "只有总耗时，先别开药方",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "诊断从需求、执行计划和指标出发。先描述问题，再决定改什么。",
+        "boundary": "耗时对比还需控制缓存、资源和输入等条件。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-why-explain/plan-not-timer",
+      "knowledgeIds": [
+        "l4-why-explain/plan-not-timer"
+      ],
+      "title": "计划能回答什么",
+      "intro": "一份计划中出现 Sort 和 Exchange。",
+      "code": "# 简化教学计划\nSort [total DESC]\n+- Exchange rangepartitioning(total, 8)\n   +- Scan source",
+      "prompt": "仅凭这段能确定什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "Exchange 恰好耗时 30 秒",
+              "feedback": "计划文本没有这项实测耗时。"
+            },
+            {
+              "id": "o0",
+              "text": "排序/交换值得进一步检查",
+              "feedback": "对，节点提供检查方向。"
+            },
+            {
+              "id": "o2",
+              "text": "瓶颈必定在网络",
+              "feedback": "还缺交换量、磁盘、等待等证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "计划说明如何执行，不直接提供每个节点的实际耗时。",
+      "ability": "计划能回答什么",
+      "reading": {
+        "id": "l4-why-explain/plan-not-timer/reading",
+        "title": "计划能回答什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计划说明如何执行，不直接提供每个节点的实际耗时。",
+        "boundary": "示例是简化片段，不是一次真实运行报告。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l4-why-explain/timer-transfer",
+        "knowledgeId": "l4-why-explain/plan-not-timer",
+        "title": "计划不是秒表",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# 教学片段：HashAggregate -> Exchange -> Scan",
+        "prompt": "看到 Exchange，接下来应该？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "先认定磁盘坏了",
+              "feedback": "还没有硬件故障证据。"
+            },
+            {
+              "id": "r1",
+              "text": "查交换量、task 分布和运行时间",
+              "feedback": "对，用指标验证怀疑。"
+            },
+            {
+              "id": "r2",
+              "text": "按节点数算秒数",
+              "feedback": "节点数不能换算秒数。"
+            }
+          ]
+        },
+        "insight": "计划是执行结构证据，实际耗时必须测量。"
+      }
+    },
+    {
+      "id": "l4-why-explain/hypothesis",
+      "knowledgeIds": [
+        "l4-why-explain/hypothesis"
+      ],
+      "title": "从宽扫描提出可验证假设",
+      "intro": "报表只输出地区与金额，源文件还有大量描述字段。",
+      "code": "# 教学片段\nReadSchema: region, amount, long_description",
+      "prompt": "应该优先验证什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "必须把所有列缓存",
+              "feedback": "缓存全部字段可能放大资源开销。"
+            },
+            {
+              "id": "o2",
+              "text": "先删除源文件中的描述字段",
+              "feedback": "不应破坏源数据来做第一次验证。"
+            },
+            {
+              "id": "o0",
+              "text": "是否可只读取需要的列，并对照读量",
+              "feedback": "对，先验证裁剪是否生效及收益。"
+            }
+          ]
+        }
+      ],
+      "insight": "减少不需要的读取是可检验的假设；确认列裁剪和实际读取量再判断收益。",
+      "ability": "从宽扫描提出可验证假设",
+      "reading": {
+        "id": "l4-why-explain/hypothesis/reading",
+        "title": "从宽扫描提出可验证假设",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "减少不需要的读取是可检验的假设；确认列裁剪和实际读取量再判断收益。",
+        "boundary": "不同数据源的裁剪能力不同，计划中的字段列表只是证据之一。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l4-why-explain/compare",
+      "knowledgeIds": [
+        "l4-why-explain/compare"
+      ],
+      "title": "结果也要一起验收",
+      "intro": "优化后 40 秒变 20 秒，但输出总额少了一半。",
+      "code": "# 对比：耗时下降；业务结果发生变化。",
+      "prompt": "这次算优化成功吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "不算，先验证等价结果和测试条件",
+              "feedback": "对，正确性是前提。"
+            },
+            {
+              "id": "o0",
+              "text": "算，只要更快",
+              "feedback": "更快的错误答案不满足需求。"
+            },
+            {
+              "id": "o2",
+              "text": "算，因为行数更少",
+              "feedback": "减少结果可能是错误过滤造成。"
+            }
+          ]
+        }
+      ],
+      "insight": "性能变更要同时验证结果、计划、指标和测试条件。",
+      "ability": "结果也要一起验收",
+      "reading": {
+        "id": "l4-why-explain/compare/reading",
+        "title": "结果也要一起验收",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "性能变更要同时验证结果、计划、指标和测试条件。",
+        "boundary": "小样本收益不能直接外推生产规模。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

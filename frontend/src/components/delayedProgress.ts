@@ -1,5 +1,4 @@
-import type { JourneyLesson } from "../content/journeys";
-import { loadProgress } from "./journeyProgress";
+import { loadProgress, type ProgressLesson } from "./journeyProgress";
 export interface DelayedItem { id: string; slug: string; taskId: string; knowledgeId: string; title: string; prompt: string; code: string; options: {id: string; text: string}[]; correctOptionId: string; explanation: string }
 export interface DelayedEvent { itemId: string; sourceAt: string; answer: string; correctOptionId: string; correct: boolean; at: string }
 export interface DelayedCandidate { item: DelayedItem; sourceAt: string; dueAt: number }
@@ -13,7 +12,7 @@ export function loadDelayed(storage: Store): DelayedEvent[] {
   if (!Array.isArray(events) || !events.every(e => e && typeof e.itemId === "string" && typeof e.answer === "string" && typeof e.correctOptionId === "string" && typeof e.correct === "boolean" && Number.isFinite(Date.parse(e.at)) && Number.isFinite(Date.parse(e.sourceAt)))) throw Error("无法读取验证记录");
   return events;
 }
-export function delayedQueue(items: DelayedItem[], lessons: Record<string, JourneyLesson>, storage: Store, now = Date.now()): DelayedCandidate[] {
+export function delayedQueue(items: DelayedItem[], lessons: Record<string, ProgressLesson>, storage: Store, now = Date.now()): DelayedCandidate[] {
   const events = loadDelayed(storage);
   return items.flatMap(item => {
     const lesson = lessons[item.slug];
@@ -30,7 +29,7 @@ export function delayedQueue(items: DelayedItem[], lessons: Record<string, Journ
     return dueAt <= now ? [{ item, sourceAt, dueAt }] : [];
   }).sort((a,b) => a.dueAt - b.dueAt);
 }
-export function submitDelayed(candidate: DelayedCandidate, answer: string, items: DelayedItem[], lessons: Record<string, JourneyLesson>, storage: Store, now = Date.now()): DelayedEvent {
+export function submitDelayed(candidate: DelayedCandidate, answer: string, items: DelayedItem[], lessons: Record<string, ProgressLesson>, storage: Store, now = Date.now()): DelayedEvent {
   const current = delayedQueue(items, lessons, storage, now).find(c => c.item.id === candidate.item.id && c.sourceAt === candidate.sourceAt);
   if (!current || !current.item.options.some(o => o.id === answer)) throw Error("这道题的安排已更新，请重新打开验证。");
   const event = { itemId: current.item.id, sourceAt: current.sourceAt, answer, correctOptionId: current.item.correctOptionId, correct: answer === current.item.correctOptionId, at: new Date(now).toISOString() };

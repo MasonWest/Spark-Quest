@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import bank from "../content/delayedChecks.json";
-import { journeys } from "../content/journeys";
+import { journeyIndex } from "../content/journeys";
 import { delayedQueue } from "./delayedProgress";
 export default function DelayedCheckLink() {
   const [count, setCount] = useState(0);
   useEffect(() => {
-    const refresh = () => { try { setCount(delayedQueue(bank.items, journeys, localStorage).length); } catch { setCount(0); } };
+    const refresh = () => { try { setCount(delayedQueue(bank.items, journeyIndex, localStorage).length); } catch { setCount(0); } };
     refresh(); const timer = window.setInterval(refresh, 60000);
     window.addEventListener("focus", refresh); window.addEventListener("storage", refresh);
     return () => { clearInterval(timer); window.removeEventListener("focus", refresh); window.removeEventListener("storage", refresh); };

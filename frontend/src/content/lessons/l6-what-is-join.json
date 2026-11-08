@@ -1,0 +1,226 @@
+{
+  "slug": "l6-what-is-join",
+  "version": 1,
+  "title": "连接先保正确，再谈快慢",
+  "mission": "从行对、未匹配和重复维表开始。",
+  "correction": "JOIN 输出由连接类型、条件和匹配基数决定；同名键不保证同一含义，物理策略改变不应改变业务语义。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html",
+  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "tasks": [
+    {
+      "id": "l6-what-is-join/pairs",
+      "knowledgeIds": [
+        "l6-what-is-join/pairs"
+      ],
+      "title": "一行订单匹配两行维表",
+      "intro": "订单 u1/50，用户表同键两条记录。",
+      "code": "# INNER JOIN ON user_id",
+      "prompt": "连接后求金额总和是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "50",
+              "feedback": "维表重复会产生两个匹配行对。"
+            },
+            {
+              "id": "o2",
+              "text": "0",
+              "feedback": "两行都能匹配。"
+            },
+            {
+              "id": "o1",
+              "text": "100",
+              "feedback": "对，50 被复制到两对里。"
+            }
+          ]
+        }
+      ],
+      "insight": "连接是产生匹配行对，不是自动查字典取唯一值。",
+      "ability": "一行订单匹配两行维表",
+      "reading": {
+        "id": "l6-what-is-join/pairs/reading",
+        "title": "一行订单匹配两行维表",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "连接是产生匹配行对，不是自动查字典取唯一值。",
+        "boundary": "维表唯一性必须由约定或检查保证。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-what-is-join/left",
+      "knowledgeIds": [
+        "l6-what-is-join/left"
+      ],
+      "title": "缺少维度的订单要不要保留",
+      "intro": "订单 u1、u9；维表只有 u1，业务要求所有订单都保留。",
+      "code": "# 目标：未匹配订单带 NULL 维度。",
+      "prompt": "应选择什么语义？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "LEFT JOIN，以订单为左侧",
+              "feedback": "对，左连接保留左侧全部行。"
+            },
+            {
+              "id": "o0",
+              "text": "INNER JOIN",
+              "feedback": "INNER 会丢掉 u9。"
+            },
+            {
+              "id": "o2",
+              "text": "CROSS JOIN",
+              "feedback": "交叉连接不是按键补维度。"
+            }
+          ]
+        }
+      ],
+      "insight": "连接类型决定未匹配行的去向，先明确业务保留规则。",
+      "ability": "缺少维度的订单要不要保留",
+      "reading": {
+        "id": "l6-what-is-join/left/reading",
+        "title": "缺少维度的订单要不要保留",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "连接类型决定未匹配行的去向，先明确业务保留规则。",
+        "boundary": "连接后在 WHERE 过滤右侧列可能又排除未匹配行。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "remediation": {
+        "id": "l6-what-is-join/left-transfer",
+        "knowledgeId": "l6-what-is-join/left",
+        "title": "没有商品标签也要保留订单",
+        "intro": "换一个情境，验证同一个判断。",
+        "code": "# fact 中商品 x、y；dim 只有 x；所有 fact 行都要保留。",
+        "prompt": "应优先表达哪种关系？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "fact INNER JOIN dim",
+              "feedback": "会丢掉未匹配 y。"
+            },
+            {
+              "id": "r0",
+              "text": "fact LEFT JOIN dim",
+              "feedback": "对，保留左侧事实行。"
+            },
+            {
+              "id": "r2",
+              "text": "只输出 dim",
+              "feedback": "会丢掉事实数据。"
+            }
+          ]
+        },
+        "insight": "左连接保留未匹配的左行，右侧字段可能为空。"
+      }
+    },
+    {
+      "id": "l6-what-is-join/null",
+      "knowledgeIds": [
+        "l6-what-is-join/null"
+      ],
+      "title": "NULL 键能靠普通等号匹配吗",
+      "intro": "两侧各有一行键为 NULL。",
+      "code": "ON a.k = b.k",
+      "prompt": "只靠这个条件会匹配这两行吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "会，因为都缺失",
+              "feedback": "普通等号不是空安全相等。"
+            },
+            {
+              "id": "o1",
+              "text": "不会，普通比较为未知",
+              "feedback": "对，需要另明确空值匹配规则。"
+            },
+            {
+              "id": "o2",
+              "text": "一定抛类型错误",
+              "feedback": "NULL 不自动导致类型错误。"
+            }
+          ]
+        }
+      ],
+      "insight": "普通等值连接不把 NULL 与 NULL 当成 true；空安全比较需显式选择。",
+      "ability": "NULL 键能靠普通等号匹配吗",
+      "reading": {
+        "id": "l6-what-is-join/null/reading",
+        "title": "NULL 键能靠普通等号匹配吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "普通等值连接不把 NULL 与 NULL 当成 true；空安全比较需显式选择。",
+        "boundary": "业务是否允许缺失键互配需先定义，不能为增加匹配率随意改变。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-what-is-join/check",
+      "knowledgeIds": [
+        "l6-what-is-join/check"
+      ],
+      "title": "补标签前先查什么",
+      "intro": "维表号称每用户一行，但数据来源变过。",
+      "code": "# 需求：补标签后订单数量不放大。",
+      "prompt": "应先核对？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只看 dim 变量名",
+              "feedback": "名称不保证唯一。"
+            },
+            {
+              "id": "o2",
+              "text": "只看文件扩展名",
+              "feedback": "格式不保证键质量。"
+            },
+            {
+              "id": "o0",
+              "text": "维表键唯一、NULL 与字段类型",
+              "feedback": "对，这直接影响匹配基数与质量。"
+            }
+          ]
+        }
+      ],
+      "insight": "性能选型之前先验证连接键语义、类型、缺失与唯一性。",
+      "ability": "补标签前先查什么",
+      "reading": {
+        "id": "l6-what-is-join/check/reading",
+        "title": "补标签前先查什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "性能选型之前先验证连接键语义、类型、缺失与唯一性。",
+        "boundary": "先随意去重可能掩盖冲突，不等于定义了正确保留规则。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    }
+  ]
+}

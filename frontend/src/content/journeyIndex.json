@@ -1,0 +1,992 @@
+{
+  "l2-comprehensive": {
+    "slug": "l2-comprehensive",
+    "version": 2,
+    "title": "章末挑战：交付一份地区日报",
+    "tasks": [
+      {
+        "id": "step-b3ddc568a0"
+      },
+      {
+        "id": "step-c880c1a1e8"
+      },
+      {
+        "id": "step-564e6a62de"
+      },
+      {
+        "id": "step-ecf0b207ad"
+      },
+      {
+        "id": "step-6a1a6061aa"
+      },
+      {
+        "id": "step-1fb694f68d"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-b3ddc568a0",
+      "step-c880c1a1e8",
+      "step-564e6a62de",
+      "step-ecf0b207ad",
+      "step-6a1a6061aa",
+      "step-1fb694f68d"
+    ]
+  },
+  "l2-create-dataframe": {
+    "slug": "l2-create-dataframe",
+    "version": 2,
+    "title": "把订单接进来",
+    "tasks": [
+      {
+        "id": "step-1316abdccc"
+      },
+      {
+        "id": "step-db3471f92c"
+      },
+      {
+        "id": "step-042153aa70"
+      },
+      {
+        "id": "step-1e20169b95"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-1316abdccc",
+      "step-db3471f92c",
+      "step-042153aa70",
+      "step-1e20169b95"
+    ]
+  },
+  "l2-groupby-agg": {
+    "slug": "l2-groupby-agg",
+    "version": 3,
+    "title": "给每个地区交一张成绩单",
+    "tasks": [
+      {
+        "id": "step-87efcc5bd0"
+      },
+      {
+        "id": "step-6f1f372e24"
+      },
+      {
+        "id": "step-c7978bddd1"
+      },
+      {
+        "id": "step-09661e764f"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-87efcc5bd0",
+      "step-6f1f372e24",
+      "step-c7978bddd1",
+      "step-09661e764f"
+    ]
+  },
+  "l2-inspect": {
+    "slug": "l2-inspect",
+    "version": 2,
+    "title": "给订单做一次体检",
+    "tasks": [
+      {
+        "id": "step-575eab8f9e"
+      },
+      {
+        "id": "step-b8c533c9f4"
+      },
+      {
+        "id": "step-80c09d882d"
+      },
+      {
+        "id": "step-240e830909"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-575eab8f9e",
+      "step-b8c533c9f4",
+      "step-80c09d882d",
+      "step-240e830909"
+    ]
+  },
+  "l2-schema-types": {
+    "slug": "l2-schema-types",
+    "version": 2,
+    "title": "给订单写一份说明书",
+    "tasks": [
+      {
+        "id": "step-92c4ee417f"
+      },
+      {
+        "id": "step-61ba507e24"
+      },
+      {
+        "id": "step-17de387626"
+      },
+      {
+        "id": "step-82726972ef"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-92c4ee417f",
+      "step-61ba507e24",
+      "step-17de387626",
+      "step-82726972ef"
+    ]
+  },
+  "l2-select-filter": {
+    "slug": "l2-select-filter",
+    "version": 3,
+    "title": "给运营一份刚刚好的订单",
+    "tasks": [
+      {
+        "id": "step-65f91c5681"
+      },
+      {
+        "id": "step-a4e9ad8ec5"
+      },
+      {
+        "id": "step-444ef9a2c7"
+      },
+      {
+        "id": "step-429109750e"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-65f91c5681",
+      "step-a4e9ad8ec5",
+      "step-444ef9a2c7",
+      "step-429109750e"
+    ]
+  },
+  "l2-sort-dedup": {
+    "slug": "l2-sort-dedup",
+    "version": 3,
+    "title": "排好名次，再说什么叫重复",
+    "tasks": [
+      {
+        "id": "step-936a1f3bda"
+      },
+      {
+        "id": "step-4d7d78c62c"
+      },
+      {
+        "id": "step-3538b5a3ab"
+      },
+      {
+        "id": "step-a8cd2aa0f2"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-936a1f3bda",
+      "step-4d7d78c62c",
+      "step-3538b5a3ab",
+      "step-a8cd2aa0f2"
+    ]
+  },
+  "l2-what-is-dataframe": {
+    "slug": "l2-what-is-dataframe",
+    "version": 2,
+    "title": "动手理解 · DataFrame",
+    "tasks": [
+      {
+        "id": "step-53733597a3"
+      },
+      {
+        "id": "step-7fe0cf2318"
+      },
+      {
+        "id": "step-87ed0e81b0"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-53733597a3",
+      "step-7fe0cf2318",
+      "step-87ed0e81b0"
+    ]
+  },
+  "l2-withcolumn": {
+    "slug": "l2-withcolumn",
+    "version": 3,
+    "title": "给每笔订单贴上标签",
+    "tasks": [
+      {
+        "id": "step-eee3d903be"
+      },
+      {
+        "id": "step-2117be145c"
+      },
+      {
+        "id": "step-b387e09c4f"
+      },
+      {
+        "id": "step-c872654bbc"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-eee3d903be",
+      "step-2117be145c",
+      "step-b387e09c4f",
+      "step-c872654bbc"
+    ]
+  },
+  "l2-write-data": {
+    "slug": "l2-write-data",
+    "version": 2,
+    "title": "把成绩单交到下一站",
+    "tasks": [
+      {
+        "id": "step-fa4b4ab105"
+      },
+      {
+        "id": "step-89f9993c8e"
+      },
+      {
+        "id": "step-f84125a6f2"
+      },
+      {
+        "id": "step-fde7ea2a2e"
+      }
+    ],
+    "legacyTaskIds": [
+      "step-fa4b4ab105",
+      "step-89f9993c8e",
+      "step-f84125a6f2",
+      "step-fde7ea2a2e"
+    ]
+  },
+  "l3-comprehensive": {
+    "slug": "l3-comprehensive",
+    "version": 1,
+    "title": "准备练习：用 SQL 交付城市日报",
+    "tasks": [
+      {
+        "id": "l3-comprehensive/read"
+      },
+      {
+        "id": "l3-comprehensive/dedup"
+      },
+      {
+        "id": "l3-comprehensive/stages"
+      },
+      {
+        "id": "l3-comprehensive/metric"
+      },
+      {
+        "id": "l3-comprehensive/rank"
+      },
+      {
+        "id": "l3-comprehensive/accept"
+      }
+    ]
+  },
+  "l3-functions-and-udf": {
+    "slug": "l3-functions-and-udf",
+    "version": 1,
+    "title": "先找内置工具，再决定是否自定义",
+    "tasks": [
+      {
+        "id": "l3-functions-and-udf/strings"
+      },
+      {
+        "id": "l3-functions-and-udf/coalesce"
+      },
+      {
+        "id": "l3-functions-and-udf/case"
+      },
+      {
+        "id": "l3-functions-and-udf/udf"
+      }
+    ]
+  },
+  "l3-groupby-having": {
+    "slug": "l3-groupby-having",
+    "version": 1,
+    "title": "先筛订单，还是筛城市日报",
+    "tasks": [
+      {
+        "id": "l3-groupby-having/stage"
+      },
+      {
+        "id": "l3-groupby-having/count"
+      },
+      {
+        "id": "l3-groupby-having/grain"
+      },
+      {
+        "id": "l3-groupby-having/all-null"
+      }
+    ]
+  },
+  "l3-joins-intro": {
+    "slug": "l3-joins-intro",
+    "version": 1,
+    "title": "把订单与用户正确配对",
+    "tasks": [
+      {
+        "id": "l3-joins-intro/inner"
+      },
+      {
+        "id": "l3-joins-intro/multiplicity"
+      },
+      {
+        "id": "l3-joins-intro/types"
+      },
+      {
+        "id": "l3-joins-intro/aliases"
+      }
+    ]
+  },
+  "l3-select-basics": {
+    "slug": "l3-select-basics",
+    "version": 1,
+    "title": "写一份字段清楚的订单投影",
+    "tasks": [
+      {
+        "id": "l3-select-basics/literal"
+      },
+      {
+        "id": "l3-select-basics/units"
+      },
+      {
+        "id": "l3-select-basics/identifier"
+      },
+      {
+        "id": "l3-select-basics/distinct"
+      }
+    ]
+  },
+  "l3-tables-and-formats": {
+    "slug": "l3-tables-and-formats",
+    "version": 1,
+    "title": "名字、文件和写入命令分开看",
+    "tasks": [
+      {
+        "id": "l3-tables-and-formats/catalog"
+      },
+      {
+        "id": "l3-tables-and-formats/path"
+      },
+      {
+        "id": "l3-tables-and-formats/append"
+      },
+      {
+        "id": "l3-tables-and-formats/target"
+      }
+    ]
+  },
+  "l3-temp-views": {
+    "slug": "l3-temp-views",
+    "version": 1,
+    "title": "让 SQL 找到正确的那批数据",
+    "tasks": [
+      {
+        "id": "l3-temp-views/register"
+      },
+      {
+        "id": "l3-temp-views/rebind"
+      },
+      {
+        "id": "l3-temp-views/session"
+      },
+      {
+        "id": "l3-temp-views/persistence"
+      }
+    ]
+  },
+  "l3-what-is-spark-sql": {
+    "slug": "l3-what-is-spark-sql",
+    "version": 1,
+    "title": "给同一批订单换一种提问方式",
+    "tasks": [
+      {
+        "id": "l3-what-is-spark-sql/name"
+      },
+      {
+        "id": "l3-what-is-spark-sql/result"
+      },
+      {
+        "id": "l3-what-is-spark-sql/equivalence"
+      },
+      {
+        "id": "l3-what-is-spark-sql/commands"
+      }
+    ]
+  },
+  "l3-where-order-limit": {
+    "slug": "l3-where-order-limit",
+    "version": 1,
+    "title": "从订单里挑出真正的 Top N",
+    "tasks": [
+      {
+        "id": "l3-where-order-limit/conditions"
+      },
+      {
+        "id": "l3-where-order-limit/null"
+      },
+      {
+        "id": "l3-where-order-limit/limit"
+      },
+      {
+        "id": "l3-where-order-limit/ties"
+      }
+    ]
+  },
+  "l4-catalyst-rules": {
+    "slug": "l4-catalyst-rules",
+    "version": 1,
+    "title": "优化器改了什么，还没证明什么",
+    "tasks": [
+      {
+        "id": "l4-catalyst-rules/columns"
+      },
+      {
+        "id": "l4-catalyst-rules/pushdown"
+      },
+      {
+        "id": "l4-catalyst-rules/folding"
+      },
+      {
+        "id": "l4-catalyst-rules/verify"
+      }
+    ]
+  },
+  "l4-comprehensive": {
+    "slug": "l4-comprehensive",
+    "version": 1,
+    "title": "准备练习：给优化建议配证据",
+    "tasks": [
+      {
+        "id": "l4-comprehensive/contract"
+      },
+      {
+        "id": "l4-comprehensive/remove"
+      },
+      {
+        "id": "l4-comprehensive/evidence"
+      },
+      {
+        "id": "l4-comprehensive/stats"
+      },
+      {
+        "id": "l4-comprehensive/aqe"
+      },
+      {
+        "id": "l4-comprehensive/report"
+      }
+    ]
+  },
+  "l4-dependency-narrow-wide": {
+    "slug": "l4-dependency-narrow-wide",
+    "version": 1,
+    "title": "哪一步需要跨分区贡献",
+    "tasks": [
+      {
+        "id": "l4-dependency-narrow-wide/local"
+      },
+      {
+        "id": "l4-dependency-narrow-wide/global"
+      },
+      {
+        "id": "l4-dependency-narrow-wide/rows"
+      },
+      {
+        "id": "l4-dependency-narrow-wide/boundary"
+      }
+    ]
+  },
+  "l4-explain-api": {
+    "slug": "l4-explain-api",
+    "version": 1,
+    "title": "选对解释模式，不被长计划淹没",
+    "tasks": [
+      {
+        "id": "l4-explain-api/extended"
+      },
+      {
+        "id": "l4-explain-api/formatted"
+      },
+      {
+        "id": "l4-explain-api/cost"
+      },
+      {
+        "id": "l4-explain-api/codegen"
+      }
+    ]
+  },
+  "l4-job-stage-task": {
+    "slug": "l4-job-stage-task",
+    "version": 1,
+    "title": "把一次运行拆成可核对的层次",
+    "tasks": [
+      {
+        "id": "l4-job-stage-task/task"
+      },
+      {
+        "id": "l4-job-stage-task/job"
+      },
+      {
+        "id": "l4-job-stage-task/attempt"
+      },
+      {
+        "id": "l4-job-stage-task/waves"
+      }
+    ]
+  },
+  "l4-logical-vs-physical": {
+    "slug": "l4-logical-vs-physical",
+    "version": 1,
+    "title": "同一需求，执行路线可以不同",
+    "tasks": [
+      {
+        "id": "l4-logical-vs-physical/meaning"
+      },
+      {
+        "id": "l4-logical-vs-physical/route"
+      },
+      {
+        "id": "l4-logical-vs-physical/analysis"
+      },
+      {
+        "id": "l4-logical-vs-physical/optimized"
+      }
+    ]
+  },
+  "l4-read-plan": {
+    "slug": "l4-read-plan",
+    "version": 1,
+    "title": "沿数据流读一棵执行树",
+    "tasks": [
+      {
+        "id": "l4-read-plan/leaves"
+      },
+      {
+        "id": "l4-read-plan/exchange"
+      },
+      {
+        "id": "l4-read-plan/markers"
+      },
+      {
+        "id": "l4-read-plan/adaptive"
+      }
+    ]
+  },
+  "l4-wholestage-codegen": {
+    "slug": "l4-wholestage-codegen",
+    "version": 1,
+    "title": "融合算子，别把星号当奖章",
+    "tasks": [
+      {
+        "id": "l4-wholestage-codegen/fusion"
+      },
+      {
+        "id": "l4-wholestage-codegen/boundary"
+      },
+      {
+        "id": "l4-wholestage-codegen/tungsten"
+      },
+      {
+        "id": "l4-wholestage-codegen/measure"
+      }
+    ]
+  },
+  "l4-why-explain": {
+    "slug": "l4-why-explain",
+    "version": 1,
+    "title": "日报变慢，先找一条证据",
+    "tasks": [
+      {
+        "id": "l4-why-explain/evidence"
+      },
+      {
+        "id": "l4-why-explain/plan-not-timer"
+      },
+      {
+        "id": "l4-why-explain/hypothesis"
+      },
+      {
+        "id": "l4-why-explain/compare"
+      }
+    ]
+  },
+  "l5-comprehensive": {
+    "slug": "l5-comprehensive",
+    "version": 1,
+    "title": "准备练习：让汇合正确且可解释",
+    "tasks": [
+      {
+        "id": "l5-comprehensive/contract"
+      },
+      {
+        "id": "l5-comprehensive/local"
+      },
+      {
+        "id": "l5-comprehensive/invariance"
+      },
+      {
+        "id": "l5-comprehensive/skew"
+      },
+      {
+        "id": "l5-comprehensive/measure"
+      },
+      {
+        "id": "l5-comprehensive/report"
+      }
+    ]
+  },
+  "l5-narrow-wide-partition": {
+    "slug": "l5-narrow-wide-partition",
+    "version": 1,
+    "title": "顺着每份数据的去向想依赖",
+    "tasks": [
+      {
+        "id": "l5-narrow-wide-partition/flatmap"
+      },
+      {
+        "id": "l5-narrow-wide-partition/sort"
+      },
+      {
+        "id": "l5-narrow-wide-partition/filter"
+      },
+      {
+        "id": "l5-narrow-wide-partition/distribute"
+      }
+    ]
+  },
+  "l5-partition-count-parallelism": {
+    "slug": "l5-partition-count-parallelism",
+    "version": 1,
+    "title": "分区数与并发，怎样一起考虑",
+    "tasks": [
+      {
+        "id": "l5-partition-count-parallelism/slots"
+      },
+      {
+        "id": "l5-partition-count-parallelism/tiny"
+      },
+      {
+        "id": "l5-partition-count-parallelism/large"
+      },
+      {
+        "id": "l5-partition-count-parallelism/aqe"
+      }
+    ]
+  },
+  "l5-reducebykey-vs-groupbykey": {
+    "slug": "l5-reducebykey-vs-groupbykey",
+    "version": 1,
+    "title": "只求总量，别先收齐所有值",
+    "tasks": [
+      {
+        "id": "l5-reducebykey-vs-groupbykey/goal"
+      },
+      {
+        "id": "l5-reducebykey-vs-groupbykey/combine"
+      },
+      {
+        "id": "l5-reducebykey-vs-groupbykey/need-values"
+      },
+      {
+        "id": "l5-reducebykey-vs-groupbykey/algebra"
+      }
+    ]
+  },
+  "l5-repartition-coalesce": {
+    "slug": "l5-repartition-coalesce",
+    "version": 1,
+    "title": "什么时候重新分布，什么时候合并",
+    "tasks": [
+      {
+        "id": "l5-repartition-coalesce/increase"
+      },
+      {
+        "id": "l5-repartition-coalesce/merge"
+      },
+      {
+        "id": "l5-repartition-coalesce/keyed"
+      },
+      {
+        "id": "l5-repartition-coalesce/choose"
+      }
+    ]
+  },
+  "l5-shuffle-cost": {
+    "slug": "l5-shuffle-cost",
+    "version": 1,
+    "title": "交换成本不只有网络",
+    "tasks": [
+      {
+        "id": "l5-shuffle-cost/components"
+      },
+      {
+        "id": "l5-shuffle-cost/bytes"
+      },
+      {
+        "id": "l5-shuffle-cost/local"
+      },
+      {
+        "id": "l5-shuffle-cost/measure"
+      }
+    ]
+  },
+  "l5-shuffle-trigger-operators": {
+    "slug": "l5-shuffle-trigger-operators",
+    "version": 1,
+    "title": "用分布要求识别交换候选",
+    "tasks": [
+      {
+        "id": "l5-shuffle-trigger-operators/aggregate"
+      },
+      {
+        "id": "l5-shuffle-trigger-operators/join"
+      },
+      {
+        "id": "l5-shuffle-trigger-operators/distinct"
+      },
+      {
+        "id": "l5-shuffle-trigger-operators/topn"
+      }
+    ]
+  },
+  "l5-what-is-partition": {
+    "slug": "l5-what-is-partition",
+    "version": 1,
+    "title": "一张表怎样分成可调度的小份",
+    "tasks": [
+      {
+        "id": "l5-what-is-partition/pieces"
+      },
+      {
+        "id": "l5-what-is-partition/empty"
+      },
+      {
+        "id": "l5-what-is-partition/directory"
+      },
+      {
+        "id": "l5-what-is-partition/inspect"
+      }
+    ]
+  },
+  "l5-what-is-shuffle": {
+    "slug": "l5-what-is-shuffle",
+    "version": 4,
+    "title": "让分散的地区成绩汇合",
+    "tasks": [
+      {
+        "id": "local-is-not-global"
+      },
+      {
+        "id": "route-partial-keys"
+      },
+      {
+        "id": "combine-before-transfer"
+      },
+      {
+        "id": "recognize-exchange"
+      },
+      {
+        "id": "local-fetch-and-hot-key"
+      }
+    ]
+  },
+  "l6-broadcast-hash-join": {
+    "slug": "l6-broadcast-hash-join",
+    "version": 1,
+    "title": "小表广播，先问装得下吗",
+    "tasks": [
+      {
+        "id": "l6-broadcast-hash-join/build"
+      },
+      {
+        "id": "l6-broadcast-hash-join/memory"
+      },
+      {
+        "id": "l6-broadcast-hash-join/shuffle"
+      },
+      {
+        "id": "l6-broadcast-hash-join/verify"
+      }
+    ]
+  },
+  "l6-broadcast-hint-and-control": {
+    "slug": "l6-broadcast-hint-and-control",
+    "version": 1,
+    "title": "给建议，也要核对执行",
+    "tasks": [
+      {
+        "id": "l6-broadcast-hint-and-control/syntax"
+      },
+      {
+        "id": "l6-broadcast-hint-and-control/disable"
+      },
+      {
+        "id": "l6-broadcast-hint-and-control/unsupported"
+      },
+      {
+        "id": "l6-broadcast-hint-and-control/unsafe"
+      }
+    ]
+  },
+  "l6-comprehensive": {
+    "slug": "l6-comprehensive",
+    "version": 1,
+    "title": "准备练习：交付不丢不重的补维汇总",
+    "tasks": [
+      {
+        "id": "l6-comprehensive/contract"
+      },
+      {
+        "id": "l6-comprehensive/dimension"
+      },
+      {
+        "id": "l6-comprehensive/unmatched"
+      },
+      {
+        "id": "l6-comprehensive/null-key"
+      },
+      {
+        "id": "l6-comprehensive/strategy"
+      },
+      {
+        "id": "l6-comprehensive/accept"
+      }
+    ]
+  },
+  "l6-how-spark-chooses": {
+    "slug": "l6-how-spark-chooses",
+    "version": 1,
+    "title": "统计、配置、适用条件一起决定路线",
+    "tasks": [
+      {
+        "id": "l6-how-spark-chooses/stats"
+      },
+      {
+        "id": "l6-how-spark-chooses/threshold"
+      },
+      {
+        "id": "l6-how-spark-chooses/adaptive"
+      },
+      {
+        "id": "l6-how-spark-chooses/controls"
+      }
+    ]
+  },
+  "l6-join-data-skew": {
+    "slug": "l6-join-data-skew",
+    "version": 1,
+    "title": "一个键拖住了整条连接",
+    "tasks": [
+      {
+        "id": "l6-join-data-skew/tail"
+      },
+      {
+        "id": "l6-join-data-skew/more-partitions"
+      },
+      {
+        "id": "l6-join-data-skew/salting"
+      },
+      {
+        "id": "l6-join-data-skew/cardinality"
+      }
+    ]
+  },
+  "l6-join-strategies-overview": {
+    "slug": "l6-join-strategies-overview",
+    "version": 1,
+    "title": "同一个连接，几条执行路线",
+    "tasks": [
+      {
+        "id": "l6-join-strategies-overview/layers"
+      },
+      {
+        "id": "l6-join-strategies-overview/equi"
+      },
+      {
+        "id": "l6-join-strategies-overview/tradeoff"
+      },
+      {
+        "id": "l6-join-strategies-overview/aqe"
+      }
+    ]
+  },
+  "l6-shuffle-hash-join": {
+    "slug": "l6-shuffle-hash-join",
+    "version": 1,
+    "title": "按分区建哈希，也要装得下",
+    "tasks": [
+      {
+        "id": "l6-shuffle-hash-join/local-build"
+      },
+      {
+        "id": "l6-shuffle-hash-join/partition-memory"
+      },
+      {
+        "id": "l6-shuffle-hash-join/fallback"
+      },
+      {
+        "id": "l6-shuffle-hash-join/measure"
+      }
+    ]
+  },
+  "l6-sort-merge-join": {
+    "slug": "l6-sort-merge-join",
+    "version": 1,
+    "title": "有序相遇，排序与分布都要看",
+    "tasks": [
+      {
+        "id": "l6-sort-merge-join/route"
+      },
+      {
+        "id": "l6-sort-merge-join/reuse"
+      },
+      {
+        "id": "l6-sort-merge-join/memory"
+      },
+      {
+        "id": "l6-sort-merge-join/duplicates"
+      }
+    ]
+  },
+  "l6-what-is-join": {
+    "slug": "l6-what-is-join",
+    "version": 1,
+    "title": "连接先保正确，再谈快慢",
+    "tasks": [
+      {
+        "id": "l6-what-is-join/pairs"
+      },
+      {
+        "id": "l6-what-is-join/left"
+      },
+      {
+        "id": "l6-what-is-join/null"
+      },
+      {
+        "id": "l6-what-is-join/check"
+      }
+    ]
+  },
+  "l7-what-is-tuning": {
+    "slug": "l7-what-is-tuning",
+    "version": 1,
+    "title": "慢作业诊室：先证据，后处方",
+    "tasks": [
+      {
+        "id": "insufficient-evidence"
+      },
+      {
+        "id": "locate-critical-stage"
+      },
+      {
+        "id": "hypothesis-not-proof"
+      },
+      {
+        "id": "choose-equivalent-trial"
+      },
+      {
+        "id": "reject-fast-wrong"
+      },
+      {
+        "id": "transfer-to-new-symptoms"
+      }
+    ]
+  }
+}

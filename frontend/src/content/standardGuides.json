@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -701,6 +701,993 @@
         {
           "title": "Spark 3.5.7 官方说明",
           "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    },
+    "l4-why-explain": {
+      "title": "日报变慢，先找一条证据",
+      "sections": [
+        {
+          "id": "l4-why-explain/evidence",
+          "title": "只有总耗时，先别开药方",
+          "body": "诊断从需求、执行计划和指标出发。先描述问题，再决定改什么。",
+          "boundary": "耗时对比还需控制缓存、资源和输入等条件。"
+        },
+        {
+          "id": "l4-why-explain/plan-not-timer",
+          "title": "计划能回答什么",
+          "body": "计划说明如何执行，不直接提供每个节点的实际耗时。",
+          "boundary": "示例是简化片段，不是一次真实运行报告。"
+        },
+        {
+          "id": "l4-why-explain/hypothesis",
+          "title": "从宽扫描提出可验证假设",
+          "body": "减少不需要的读取是可检验的假设；确认列裁剪和实际读取量再判断收益。",
+          "boundary": "不同数据源的裁剪能力不同，计划中的字段列表只是证据之一。"
+        },
+        {
+          "id": "l4-why-explain/compare",
+          "title": "结果也要一起验收",
+          "body": "性能变更要同时验证结果、计划、指标和测试条件。",
+          "boundary": "小样本收益不能直接外推生产规模。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html"
+        }
+      ]
+    },
+    "l4-logical-vs-physical": {
+      "title": "同一需求，执行路线可以不同",
+      "sections": [
+        {
+          "id": "l4-logical-vs-physical/meaning",
+          "title": "先说需求，再说机器怎么做",
+          "body": "逻辑计划描述关系与表达式，物理计划选择满足需求的执行算子。",
+          "boundary": "同一语义可能存在多个可行物理实现。"
+        },
+        {
+          "id": "l4-logical-vs-physical/route",
+          "title": "同样连接，为什么路线不同",
+          "body": "比较计划时先确认语义，再解释物理选型及其条件。",
+          "boundary": "不要只凭算子名字宣称结果相同或某个一定更快。"
+        },
+        {
+          "id": "l4-logical-vs-physical/analysis",
+          "title": "字段不存在在哪一步暴露",
+          "body": "分析阶段解析关系、字段与类型；未解决的语义错误不能靠物理调参修复。",
+          "boundary": "错误可能在构造或请求计划时暴露，不能一概推迟到 action。"
+        },
+        {
+          "id": "l4-logical-vs-physical/optimized",
+          "title": "谓词位置变了，先看结果语义",
+          "body": "优化计划可以重写表达式与关系结构，不能把计划当作用户代码逐行执行记录。",
+          "boundary": "有非确定性、NULL 或类型转换时更需谨慎分析等价性。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html"
+        }
+      ]
+    },
+    "l4-explain-api": {
+      "title": "选对解释模式，不被长计划淹没",
+      "sections": [
+        {
+          "id": "l4-explain-api/extended",
+          "title": "想追踪优化前后怎么改",
+          "body": "extended 有助于区分解析、分析、优化和物理实现，不必每次都阅读全部模式。",
+          "boundary": "选择模式要服务当前问题，不是内容越多越好。"
+        },
+        {
+          "id": "l4-explain-api/formatted",
+          "title": "先找物理轮廓，再看细节",
+          "body": "formatted 适合先建立结构，再定位节点信息。",
+          "boundary": "依旧需要运行指标解释实际瓶颈。"
+        },
+        {
+          "id": "l4-explain-api/cost",
+          "title": "sizeInBytes 是实测内存吗",
+          "body": "cost 可展示可用的统计估计；缺失、陈旧和膨胀都会影响选型判断。",
+          "boundary": "不要仅凭压缩文件大小或一个估计值承诺广播内存安全。"
+        },
+        {
+          "id": "l4-explain-api/codegen",
+          "title": "想查生成代码是否融合",
+          "body": "codegen 模式展示可用的生成代码信息；它解释实现线索而不是直接证明快慢。",
+          "boundary": "部分算子、类型或配置不参与相同代码生成路径。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html"
+        }
+      ]
+    },
+    "l4-read-plan": {
+      "title": "沿数据流读一棵执行树",
+      "sections": [
+        {
+          "id": "l4-read-plan/leaves",
+          "title": "数据从哪一个节点来",
+          "body": "通常从叶子识别来源，再沿父节点理解变换。",
+          "boundary": "管线与并行执行使实际时间不能只按树从下往上排成串行秒表。"
+        },
+        {
+          "id": "l4-read-plan/exchange",
+          "title": "看到交换，先分清哪一种",
+          "body": "BroadcastExchange 与 ShuffleExchange 解决不同数据分布要求，不能只数 Exchange 字样。",
+          "boundary": "存在广播也不代表整个查询完全没有其他交换。"
+        },
+        {
+          "id": "l4-read-plan/markers",
+          "title": "星号编号不是 Stage 编号",
+          "body": "计划中的代码生成标记与运行时 Job/Stage/Task 标识要分开。",
+          "boundary": "输出标记因版本与模式而异，不能写成固定映射。"
+        },
+        {
+          "id": "l4-read-plan/adaptive",
+          "title": "初始计划还不是最终证据",
+          "body": "启用 AQE 时，初始计划与最终运行计划可能不同。",
+          "boundary": "action 类型也可能改变实际执行查询，核对的是同一目标查询与条件。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html"
+        }
+      ]
+    },
+    "l4-catalyst-rules": {
+      "title": "优化器改了什么，还没证明什么",
+      "sections": [
+        {
+          "id": "l4-catalyst-rules/columns",
+          "title": "只需要两个字段",
+          "body": "列裁剪移除后续不需要的字段，有助于减少读取与计算。",
+          "boundary": "不同数据格式和数据源的实际收益不同。"
+        },
+        {
+          "id": "l4-catalyst-rules/pushdown",
+          "title": "PushedFilters 不等于所有条件都完成",
+          "body": "下推能力与具体谓词有关；读到 PushedFilters 不应跳过剩余语义检查。",
+          "boundary": "数据源可能只提供部分过滤保证。"
+        },
+        {
+          "id": "l4-catalyst-rules/folding",
+          "title": "常量能否提前算",
+          "body": "常量折叠可提前化简确定性的表达式。",
+          "boundary": "涉及 NULL、溢出、非确定性或配置时要按具体表达式分析。"
+        },
+        {
+          "id": "l4-catalyst-rules/verify",
+          "title": "手动把条件提前就一定等价吗",
+          "body": "优化需要保持语义，外连接、NULL 和非确定表达式都需要特别谨慎。",
+          "boundary": "手工改写不能只看运行速度或节点数量。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l4-wholestage-codegen": {
+      "title": "融合算子，别把星号当奖章",
+      "sections": [
+        {
+          "id": "l4-wholestage-codegen/fusion",
+          "title": "相邻步骤为何可以少些交接",
+          "body": "代码生成可把兼容的算子执行片段组合，减少部分解释和调用开销。",
+          "boundary": "能否融合及收益取决于算子、类型、配置与数据。"
+        },
+        {
+          "id": "l4-wholestage-codegen/boundary",
+          "title": "Python UDF 出现在哪里",
+          "body": "Python 执行边界可能增加数据转换和执行开销，优先比较等价内置表达式。",
+          "boundary": "不同 UDF 类型与执行路径有差异，必须按实际场景测量。"
+        },
+        {
+          "id": "l4-wholestage-codegen/tungsten",
+          "title": "紧凑布局不是内存无限",
+          "body": "紧凑内部表示和执行优化可以降低部分开销，但不消除算子状态与资源容量约束。",
+          "boundary": "调优仍需关注实际内存、spill、GC 与任务分布。"
+        },
+        {
+          "id": "l4-wholestage-codegen/measure",
+          "title": "去掉 UDF 后如何判断成功",
+          "body": "先确认结果等价，再以可复现实验评价实现变化。",
+          "boundary": "小数据时间可能主要由启动或调度开销决定。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l4-dependency-narrow-wide": {
+      "title": "哪一步需要跨分区贡献",
+      "sections": [
+        {
+          "id": "l4-dependency-narrow-wide/local",
+          "title": "每行乘二要找其他分区吗",
+          "body": "窄依赖类变换通常允许按输入分区局部推进。",
+          "boundary": "它的上游或下游仍可能包含交换。"
+        },
+        {
+          "id": "l4-dependency-narrow-wide/global",
+          "title": "同一个键在两处分散",
+          "body": "按键全局汇总需要汇合相同键的贡献；上游不满足分布要求时常引入交换。",
+          "boundary": "已满足分布或优化后的计划可能避免某些额外交换。"
+        },
+        {
+          "id": "l4-dependency-narrow-wide/rows",
+          "title": "窄依赖会不会减少行数",
+          "body": "依赖描述数据来源关系，不是输出行数或文件数量的标签。",
+          "boundary": "flatMap 也可能局部增加记录。"
+        },
+        {
+          "id": "l4-dependency-narrow-wide/boundary",
+          "title": "不要从名字猜固定 Stage 数",
+          "body": "交换常形成调度边界，但确切 Job/Stage/Task 应核对实际执行。",
+          "boundary": "explain 本身不能给所有后续 action 承诺固定调度次数。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations"
+        }
+      ]
+    },
+    "l4-job-stage-task": {
+      "title": "把一次运行拆成可核对的层次",
+      "sections": [
+        {
+          "id": "l4-job-stage-task/task",
+          "title": "八个分区，两核同时跑多少",
+          "body": "任务总数和同时运行的任务数不同；并行资源不足时会分批调度。",
+          "boundary": "实际槽位、调度池与其他负载还会影响执行。"
+        },
+        {
+          "id": "l4-job-stage-task/job",
+          "title": "一个 action 就一定一个 job 吗",
+          "body": "action 是用户请求结果的入口，实际 job 划分还取决于查询执行过程。",
+          "boundary": "不要用简单口号代替 UI 证据。"
+        },
+        {
+          "id": "l4-job-stage-task/attempt",
+          "title": "重试后 UI 为何多了一次",
+          "body": "task attempt 记录执行尝试，重试与推测执行可能增加尝试数。",
+          "boundary": "诊断失败需看异常和提交结果，不能仅看计数。"
+        },
+        {
+          "id": "l4-job-stage-task/waves",
+          "title": "加分区后还剩一个特别慢的任务",
+          "body": "同时观察中位数和最大值，可帮助区分普遍成本与长尾问题。",
+          "boundary": "合成指标只训练推理，不是生产基准。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l4-comprehensive": {
+      "title": "准备练习：给优化建议配证据",
+      "sections": [
+        {
+          "id": "l4-comprehensive/contract",
+          "title": "先锁住业务口径",
+          "body": "有可检查的结果约定，计划比较才有意义。",
+          "boundary": "不要用正确性换速度。"
+        },
+        {
+          "id": "l4-comprehensive/remove",
+          "title": "看见额外重分布",
+          "body": "先提出单一可回退改动，再核对计划与结果。",
+          "boundary": "优化器可能重写计划，不能只看代码删了几行。"
+        },
+        {
+          "id": "l4-comprehensive/evidence",
+          "title": "节点少了就完成了吗",
+          "body": "计划优化只是证据链一环，还需验证结果与真实成本。",
+          "boundary": "小样本与冷启动可能掩盖实际收益。"
+        },
+        {
+          "id": "l4-comprehensive/stats",
+          "title": "估计变化不等于性能实测",
+          "body": "报告要区分估计、计划结构和实测，不把一种证据冒充另一种。",
+          "boundary": "结果大小、工作集和峰值内存是不同量。"
+        },
+        {
+          "id": "l4-comprehensive/aqe",
+          "title": "比较初始还是最终",
+          "body": "可审查的诊断记录应包含输入、设置、查询、计划与结果。",
+          "boundary": "测试环境版本也应记录。"
+        },
+        {
+          "id": "l4-comprehensive/report",
+          "title": "把未验证的部分写出来",
+          "body": "明确已验证与未验证的部分，建议才可安全评估和继续实验。",
+          "boundary": "教学验收不是生产性能认证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html"
+        }
+      ]
+    },
+    "l5-what-is-partition": {
+      "title": "一张表怎样分成可调度的小份",
+      "sections": [
+        {
+          "id": "l5-what-is-partition/pieces",
+          "title": "四份数据不一定四台机器",
+          "body": "分区是分布式计算的基本数据份，运行时由任务处理。",
+          "boundary": "一个任务处理一份数据的常见模型不等于所有查询固定调度。"
+        },
+        {
+          "id": "l5-what-is-partition/empty",
+          "title": "八个分区却只有三行",
+          "body": "分区可以为空，检查分布应同时看分区数量和每份负载。",
+          "boundary": "小数据的空分区不自动说明生产数据也均匀。"
+        },
+        {
+          "id": "l5-what-is-partition/directory",
+          "title": "partitionBy 的分区是另一层",
+          "body": "计算分区和存储目录分区需要分开描述。",
+          "boundary": "目录数量、文件数量和任务数量不能互换。"
+        },
+        {
+          "id": "l5-what-is-partition/inspect",
+          "title": "想知道分区是否均匀",
+          "body": "分区数量只是一个维度，判断均衡还需要负载与任务分布证据。",
+          "boundary": "行数也不能完全替代字节与每行计算成本。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l5-partition-count-parallelism": {
+      "title": "分区数与并发，怎样一起考虑",
+      "sections": [
+        {
+          "id": "l5-partition-count-parallelism/slots",
+          "title": "十二份任务只有三处同时做",
+          "body": "分区提供潜在并行工作，并行槽位决定某时刻能处理多少。",
+          "boundary": "实际运行还有调度开销和其他负载。"
+        },
+        {
+          "id": "l5-partition-count-parallelism/tiny",
+          "title": "一万份极小任务也有成本",
+          "body": "分区过少可能无法并行，过多可能被调度与管理成本主导。",
+          "boundary": "没有适合所有数据规模的固定分区常数。"
+        },
+        {
+          "id": "l5-partition-count-parallelism/large",
+          "title": "每份太大时看什么",
+          "body": "任务工作集过大时，分区粒度与算子状态都可能影响内存、spill 和耗时。",
+          "boundary": "增加分区也不一定拆开同一个热点键。"
+        },
+        {
+          "id": "l5-partition-count-parallelism/aqe",
+          "title": "设置 200，实际一定 200 吗",
+          "body": "配置值与最终执行划分可能不同，应核对具体算子和 AQE 行为。",
+          "boundary": "本课不承诺固定的运行 Stage/Task 数。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l5-what-is-shuffle": {
+      "title": "让分散的地区成绩汇合",
+      "sections": [
+        {
+          "id": "local-is-not-global",
+          "title": "两位工人都算对了，答案怎么还是两份？",
+          "body": "各分区的局部合计还不是全局合计。同键贡献需进一步汇合，才能交付一行最终指标。",
+          "boundary": "示意的两份数据不是固定两台机器。"
+        },
+        {
+          "id": "route-partial-keys",
+          "title": "给每份局部结果选一个去处",
+          "body": "按键重分布使相同键的贡献送往满足要求的目标分区，再合并该键的结果；不是按原分区名称拼接。",
+          "boundary": "算子名字只是线索，实际交换还取决于已有分布和计划。"
+        },
+        {
+          "id": "combine-before-transfer",
+          "title": "需要搬的是所有原始明细吗？",
+          "body": "支持局部合并的聚合可先缩小同键的明细贡献，再交换局部状态；这通常减少待传输内容，却不省略最终汇合。",
+          "boundary": "不能把 Shuffle 等同于每条记录都跨机器网络传输。"
+        },
+        {
+          "id": "recognize-exchange",
+          "title": "给刚才的动作找到一个计划线索",
+          "body": "执行树中的 ShuffleExchange 是分布改变线索；广播交换和代码生成标记需分别解释。",
+          "boundary": "实际 Stage 与 AQE 最终计划应结合运行确认。"
+        },
+        {
+          "id": "local-fetch-and-hot-key",
+          "title": "只有一台电脑，就不会有 Shuffle 吗？",
+          "body": "Shuffle 在 local 模式仍可能发生；按键分区也可能让热点键集中，单纯加分区不保证拆散这个键。",
+          "boundary": "预聚合收益取决于重复键比例、值大小和具体聚合实现。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark Shuffle 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations"
+        }
+      ]
+    },
+    "l5-shuffle-cost": {
+      "title": "交换成本不只有网络",
+      "sections": [
+        {
+          "id": "l5-shuffle-cost/components",
+          "title": "网络空闲为何还慢",
+          "body": "Shuffle 成本包含数据组织与传输的多个环节，单看网络不足以诊断。",
+          "boundary": "合成指标仅用于训练检查方向。"
+        },
+        {
+          "id": "l5-shuffle-cost/bytes",
+          "title": "交换同样行数为什么差很大",
+          "body": "交换前裁掉不需要的大字段、适用时预聚合，可能减少交换内容。",
+          "boundary": "必须保留业务需要的字段与正确指标。"
+        },
+        {
+          "id": "l5-shuffle-cost/local",
+          "title": "单机运行还有交换吗",
+          "body": "单机可执行分区重分布，网络距离不同不代表没有交换工作。",
+          "boundary": "本地小样本开销不能直接估算集群网络成本。"
+        },
+        {
+          "id": "l5-shuffle-cost/measure",
+          "title": "压缩后变小就一定更快吗",
+          "body": "调优通常是资源与开销之间的权衡，最终以正确结果和目标指标验证。",
+          "boundary": "不要为追求某个漂亮数字而忽略整体表现。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations"
+        }
+      ]
+    },
+    "l5-narrow-wide-partition": {
+      "title": "顺着每份数据的去向想依赖",
+      "sections": [
+        {
+          "id": "l5-narrow-wide-partition/flatmap",
+          "title": "一行拆成多行要不要汇合",
+          "body": "判断依赖先问是否需要其他分区贡献，而不是看输出行数。",
+          "boundary": "后续按词计数是另一项分布要求。"
+        },
+        {
+          "id": "l5-narrow-wide-partition/sort",
+          "title": "全局有序不是各自排好",
+          "body": "局部排序与全局顺序是不同要求，全局排序还需处理跨分区范围。",
+          "boundary": "已有合适分布时的物理动作应看计划，不能机械保证某次数交换。"
+        },
+        {
+          "id": "l5-narrow-wide-partition/filter",
+          "title": "删行不表示删分区",
+          "body": "过滤改变保留记录，通常不自动按业务行数比例重规划所有分区。",
+          "boundary": "AQE 等后续机制需结合具体计划解释。"
+        },
+        {
+          "id": "l5-narrow-wide-partition/distribute",
+          "title": "已有按键分布还要看什么",
+          "body": "分布是否已满足要求，会影响下游是否需要额外交换。",
+          "boundary": "分区表达式、数量和算子要求需要实际核对。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations"
+        }
+      ]
+    },
+    "l5-shuffle-trigger-operators": {
+      "title": "用分布要求识别交换候选",
+      "sections": [
+        {
+          "id": "l5-shuffle-trigger-operators/aggregate",
+          "title": "同键指标需要汇合",
+          "body": "聚合、去重等操作常对数据位置提出要求，交换用于满足这些要求。",
+          "boundary": "局部预聚合和已有分布会改变实际交换内容与必要性。"
+        },
+        {
+          "id": "l5-shuffle-trigger-operators/join",
+          "title": "看到 JOIN 就认定两边重分布吗",
+          "body": "连接的分布动作取决于具体策略、连接条件和输入分布。",
+          "boundary": "广播也有传输与内存成本，不等于免费。"
+        },
+        {
+          "id": "l5-shuffle-trigger-operators/distinct",
+          "title": "去重如何知道远处也有同一行",
+          "body": "全局唯一性需要覆盖不同分区的重复候选，不能只在每份独立判定。",
+          "boundary": "具体交换还取决于已有分布与优化。"
+        },
+        {
+          "id": "l5-shuffle-trigger-operators/topn",
+          "title": "ORDER BY LIMIT 不一定全量长链",
+          "body": "限制结果数量可能让优化器选择不同的排序/收集方案，但业务并列规则仍需定义。",
+          "boundary": "不要从代码强行推断固定 Shuffle 次数。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l5-reducebykey-vs-groupbykey": {
+      "title": "只求总量，别先收齐所有值",
+      "sections": [
+        {
+          "id": "l5-reducebykey-vs-groupbykey/goal",
+          "title": "只求每商品数量",
+          "body": "可规约的聚合可在局部先合并，避免为求和携带全部原始值集合。",
+          "boundary": "重复键少或值结构不同，实际收益需测量。"
+        },
+        {
+          "id": "l5-reducebykey-vs-groupbykey/combine",
+          "title": "局部合并后剩下什么",
+          "body": "局部规约减少中间值数量，最终仍需把同键各分区贡献汇合。",
+          "boundary": "不是“reduceByKey 完全没有 Shuffle”的保证。"
+        },
+        {
+          "id": "l5-reducebykey-vs-groupbykey/need-values",
+          "title": "如果确实要检查所有原始值",
+          "body": "是否可以规约取决于目标能否用有限状态合并表达，而不只是接口名字。",
+          "boundary": "确需集合时仍要评估热点键与状态大小。"
+        },
+        {
+          "id": "l5-reducebykey-vs-groupbykey/algebra",
+          "title": "减法能随意重组吗",
+          "body": "分布式规约会重组局部贡献，函数需满足相应结合/交换要求。",
+          "boundary": "浮点加法还可能有舍入差异，验收应采用合理数值约定。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#working-with-key-value-pairs"
+        }
+      ]
+    },
+    "l5-repartition-coalesce": {
+      "title": "什么时候重新分布，什么时候合并",
+      "sections": [
+        {
+          "id": "l5-repartition-coalesce/increase",
+          "title": "从两份增加到八份",
+          "body": "repartition 用于重新组织计算分区，可以增加或减少数量。",
+          "boundary": "交换成本与后续收益需一起评估。"
+        },
+        {
+          "id": "l5-repartition-coalesce/merge",
+          "title": "从很多份合并到少数份",
+          "body": "coalesce 默认减少分区时可避免某些完整重分布，但可能继承上游不均衡。",
+          "boundary": "是否有效还取决于上游、参数与物理优化。"
+        },
+        {
+          "id": "l5-repartition-coalesce/keyed",
+          "title": "按键组织不保证每键只一个文件",
+          "body": "按表达式重分布可满足某些后续分布需求，但不会自动生成业务汇总。",
+          "boundary": "AQE、分区数量与后续算子还会影响最终执行。"
+        },
+        {
+          "id": "l5-repartition-coalesce/choose",
+          "title": "小文件问题先量什么",
+          "body": "分区调节需服务于计算与交付目标，不能把“一个文件”当普遍最优。",
+          "boundary": "格式、目录分区和写入过程都会影响文件布局。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l5-comprehensive": {
+      "title": "准备练习：让汇合正确且可解释",
+      "sections": [
+        {
+          "id": "l5-comprehensive/contract",
+          "title": "先定键和值的含义",
+          "body": "先确认输入、键、值和聚合规则，再讨论执行分布。",
+          "boundary": "本任务采用可加总的整数数量。"
+        },
+        {
+          "id": "l5-comprehensive/local",
+          "title": "局部 8 和 9 还没合并",
+          "body": "局部规约应保留与最终合并兼容的状态。",
+          "boundary": "不要把局部计数直接当最终唯一结果。"
+        },
+        {
+          "id": "l5-comprehensive/invariance",
+          "title": "换分区数，正确答案会变吗",
+          "body": "正确的分布式聚合应在改变合理分区设置后保持业务语义。",
+          "boundary": "浮点、非结合规约与顺序依赖需要另定验收约定。"
+        },
+        {
+          "id": "l5-comprehensive/skew",
+          "title": "分区多了热点还在",
+          "body": "增加分区常能切分不同键，但不保证拆开一个热点键的全部最终状态。",
+          "boundary": "预聚合可减少内容，复杂热点治理仍需正确合并策略。"
+        },
+        {
+          "id": "l5-comprehensive/measure",
+          "title": "只报行数够不够",
+          "body": "负载证据需匹配真正的资源消耗，而非只选择容易统计的数字。",
+          "boundary": "本地验收的分区计数不代表生产内存或网络实测。"
+        },
+        {
+          "id": "l5-comprehensive/report",
+          "title": "交付计算与分布证据",
+          "body": "毕业任务应证明实现能应对变化，并如实说明已验证范围。",
+          "boundary": "它不是生产性能或防作弊认证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations"
+        }
+      ]
+    },
+    "l6-what-is-join": {
+      "title": "连接先保正确，再谈快慢",
+      "sections": [
+        {
+          "id": "l6-what-is-join/pairs",
+          "title": "一行订单匹配两行维表",
+          "body": "连接是产生匹配行对，不是自动查字典取唯一值。",
+          "boundary": "维表唯一性必须由约定或检查保证。"
+        },
+        {
+          "id": "l6-what-is-join/left",
+          "title": "缺少维度的订单要不要保留",
+          "body": "连接类型决定未匹配行的去向，先明确业务保留规则。",
+          "boundary": "连接后在 WHERE 过滤右侧列可能又排除未匹配行。"
+        },
+        {
+          "id": "l6-what-is-join/null",
+          "title": "NULL 键能靠普通等号匹配吗",
+          "body": "普通等值连接不把 NULL 与 NULL 当成 true；空安全比较需显式选择。",
+          "boundary": "业务是否允许缺失键互配需先定义，不能为增加匹配率随意改变。"
+        },
+        {
+          "id": "l6-what-is-join/check",
+          "title": "补标签前先查什么",
+          "body": "性能选型之前先验证连接键语义、类型、缺失与唯一性。",
+          "boundary": "先随意去重可能掩盖冲突，不等于定义了正确保留规则。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html"
+        }
+      ]
+    },
+    "l6-join-strategies-overview": {
+      "title": "同一个连接，几条执行路线",
+      "sections": [
+        {
+          "id": "l6-join-strategies-overview/layers",
+          "title": "INNER 与 Broadcast 是同一层吗",
+          "body": "逻辑连接类型决定结果，物理连接策略决定如何计算匹配。",
+          "boundary": "更换策略仍需保持结果与连接条件。"
+        },
+        {
+          "id": "l6-join-strategies-overview/equi",
+          "title": "只有大小关系还能套 Hash Join 吗",
+          "body": "等值与非等值条件会限制可选连接算法。",
+          "boundary": "不强行把不支持的条件改成另一种语义来套算法。"
+        },
+        {
+          "id": "l6-join-strategies-overview/tradeoff",
+          "title": "三种路线都没有零成本",
+          "body": "不同路线在交换、排序、构建状态和内存方面有不同权衡。",
+          "boundary": "不能把某策略当作所有场景的固定最优。"
+        },
+        {
+          "id": "l6-join-strategies-overview/aqe",
+          "title": "跑起来后路线可能调整",
+          "body": "AQE 可基于运行统计调整部分连接实现，比较时注明是否开启及最终状态。",
+          "boundary": "不是所有查询都会转换，也不是转换必保证更快。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l6-broadcast-hash-join": {
+      "title": "小表广播，先问装得下吗",
+      "sections": [
+        {
+          "id": "l6-broadcast-hash-join/build",
+          "title": "广播复制的是哪一类工作",
+          "body": "BHJ 在适用的等值连接中广播构建侧，让另一侧分区据此匹配。",
+          "boundary": "能构建哪一侧还受连接类型等适用条件限制。"
+        },
+        {
+          "id": "l6-broadcast-hash-join/memory",
+          "title": "磁盘 5 MiB 就必然安全吗",
+          "body": "广播容量要考虑实际构建关系、结构膨胀、并发与节点内存，而非只看磁盘文件。",
+          "boundary": "小样本或计划估计不能替代运行验证。"
+        },
+        {
+          "id": "l6-broadcast-hash-join/shuffle",
+          "title": "BHJ 出现后聚合还可能交换吗",
+          "body": "广播路线可能避免某些连接侧重分布，但不消除全查询其他交换。",
+          "boundary": "需要区分 BroadcastExchange 与 ShuffleExchange。"
+        },
+        {
+          "id": "l6-broadcast-hash-join/verify",
+          "title": "Hint 写上后如何证明采用",
+          "body": "广播提示表达选型倾向，实际采用和安全性仍需核对计划、语义和指标。",
+          "boundary": "不同连接条件或类型可能不支持所想的算法。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l6-sort-merge-join": {
+      "title": "有序相遇，排序与分布都要看",
+      "sections": [
+        {
+          "id": "l6-sort-merge-join/route",
+          "title": "为什么名字里有 Sort 和 Merge",
+          "body": "SMJ 利用键有序的输入合并匹配，必要的分布和排序需由计划满足。",
+          "boundary": "实际支持条件还取决于键类型、连接类型与实现。"
+        },
+        {
+          "id": "l6-sort-merge-join/reuse",
+          "title": "输入已经有合适分布与顺序",
+          "body": "必要时补充分布与顺序，已满足时可能复用；计划是检查额外工作的依据。",
+          "boundary": "不要把存在 SMJ 直接翻译成固定交换/排序次数。"
+        },
+        {
+          "id": "l6-sort-merge-join/memory",
+          "title": "SMJ 就没有内存压力吗",
+          "body": "SMJ 的资源问题常需结合排序、spill、键分布和任务大小判断。",
+          "boundary": "算法名不是 OOM 或 spill 的豁免证。"
+        },
+        {
+          "id": "l6-sort-merge-join/duplicates",
+          "title": "换成 SMJ 能消除重复维表吗",
+          "body": "连接正确性先由逻辑条件和数据基数决定，换物理策略不应悄悄改变结果。",
+          "boundary": "重复冲突的正确保留规则需要业务定义。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l6-shuffle-hash-join": {
+      "title": "按分区建哈希，也要装得下",
+      "sections": [
+        {
+          "id": "l6-shuffle-hash-join/local-build",
+          "title": "每份自己建一张匹配结构",
+          "body": "SHJ 在满足分布的分区中建立构建侧匹配结构。",
+          "boundary": "不等于所有 JOIN 都能用，也不意味着无交换。"
+        },
+        {
+          "id": "l6-shuffle-hash-join/partition-memory",
+          "title": "总体不大，一份特别大",
+          "body": "局部分区建哈希需要关注最大工作集，而不仅是总量或平均值。",
+          "boundary": "并发任务与其他算子也会占用节点资源。"
+        },
+        {
+          "id": "l6-shuffle-hash-join/fallback",
+          "title": "关了广播会必选 SHJ 吗",
+          "body": "排除某候选策略不等于保证选择指定另一策略。",
+          "boundary": "显式 hint、AQE 与其他配置还需分别考虑。"
+        },
+        {
+          "id": "l6-shuffle-hash-join/measure",
+          "title": "少了排序就一定更快吗",
+          "body": "物理策略比较应结合数据分布、资源与代表性运行，不能只删去一个成本项。",
+          "boundary": "确保结果语义和实验条件一致。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l6-how-spark-chooses": {
+      "title": "统计、配置、适用条件一起决定路线",
+      "sections": [
+        {
+          "id": "l6-how-spark-chooses/stats",
+          "title": "文件小，不代表统计准确",
+          "body": "选择依赖可用统计与配置，统计缺失或陈旧会影响候选成本判断。",
+          "boundary": "实测内存与统计体积仍不是同一个量。"
+        },
+        {
+          "id": "l6-how-spark-chooses/threshold",
+          "title": "低于阈值就保证某节点吗",
+          "body": "阈值只是策略选择因素之一，算法还需满足连接条件与支持范围。",
+          "boundary": "AQE 的运行统计与最终计划可能进一步改变路线。"
+        },
+        {
+          "id": "l6-how-spark-chooses/adaptive",
+          "title": "运行统计让初始假设变化",
+          "body": "AQE 能根据运行信息调整部分策略，应把是否转换和收益分别验证。",
+          "boundary": "并非所有计划变化都改善最终端到端耗时。"
+        },
+        {
+          "id": "l6-how-spark-chooses/controls",
+          "title": "保持可比条件",
+          "body": "计划比较与性能归因需要控制输入、缓存、资源和配置。",
+          "boundary": "记录限制比承诺固定加速倍数更可靠。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l6-broadcast-hint-and-control": {
+      "title": "给建议，也要核对执行",
+      "sections": [
+        {
+          "id": "l6-broadcast-hint-and-control/syntax",
+          "title": "把广播建议加在关系上",
+          "body": "hint 表达选型倾向，不替代语义、容量和结果验证。",
+          "boundary": "即使实际广播，也可能存在下游其他交换。"
+        },
+        {
+          "id": "l6-broadcast-hint-and-control/disable",
+          "title": "-1 控制的是哪一层",
+          "body": "自动广播阈值与显式广播提示、自适应控制是不同层次。",
+          "boundary": "具体配置与版本行为应按实际运行验证。"
+        },
+        {
+          "id": "l6-broadcast-hint-and-control/unsupported",
+          "title": "有提示也要支持条件",
+          "body": "hint 可能因条件不适用等原因未按预期采用，先核对适用性与计划。",
+          "boundary": "不同 hint 与版本可能有优先规则，应记录实际行为。"
+        },
+        {
+          "id": "l6-broadcast-hint-and-control/unsafe",
+          "title": "强制广播后更慢或内存紧张",
+          "body": "要分别验证 hint 是否采用、结果是否正确、资源与耗时是否改善。",
+          "boundary": "保留回退路径，不把一次试验当普遍最优。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-hints.html"
+        }
+      ]
+    },
+    "l6-join-data-skew": {
+      "title": "一个键拖住了整条连接",
+      "sections": [
+        {
+          "id": "l6-join-data-skew/tail",
+          "title": "平均很快，最后一个很慢",
+          "body": "倾斜诊断要看任务分布与键/字节/匹配对，而不是只看全局平均。",
+          "boundary": "长尾也可能来自硬件、GC 或其他因素，应结合证据。"
+        },
+        {
+          "id": "l6-join-data-skew/more-partitions",
+          "title": "分区翻倍，热键会自动均分吗",
+          "body": "增加分区常能分散不同键，但不保证拆开一个热点键的全部工作。",
+          "boundary": "AQE 等机制可处理部分倾斜，仍需看适用性与最终执行。"
+        },
+        {
+          "id": "l6-join-data-skew/salting",
+          "title": "加盐不是随便改键",
+          "body": "salting 必须保证原匹配语义，正确扩展需要的另一侧并避免多算或漏算。",
+          "boundary": "复杂连接类型和聚合还原有额外约束，不应盲目套模板。"
+        },
+        {
+          "id": "l6-join-data-skew/cardinality",
+          "title": "慢是因为数据坏了吗",
+          "body": "基数异常可能同时造成错误结果和性能问题，先验证数据约定。",
+          "boundary": "不要随意 dropDuplicates 来隐藏冲突。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l6-comprehensive": {
+      "title": "准备练习：交付不丢不重的补维汇总",
+      "sections": [
+        {
+          "id": "l6-comprehensive/contract",
+          "title": "先定补维规则",
+          "body": "先把保留规则与缺失处理写清，才能验证连接没有丢行。",
+          "boundary": "NULL 键是否互配必须另行约定。"
+        },
+        {
+          "id": "l6-comprehensive/dimension",
+          "title": "维表发生键冲突",
+          "body": "对违反唯一性约定的维表显式失败，避免静默放大或任意保留。",
+          "boundary": "允许什么重复需由任务约定，本任务明确拒绝重复非空键。"
+        },
+        {
+          "id": "l6-comprehensive/unmatched",
+          "title": "有一张订单没找到维度",
+          "body": "缺失标签应按约定处理，不能为了更整齐的报表丢掉事实或错误归属。",
+          "boundary": "NULL、未匹配和显式标签 unknown 可能合并到同一报告组，需在契约中说明。"
+        },
+        {
+          "id": "l6-comprehensive/null-key",
+          "title": "两个缺失用户号是否应该互配",
+          "body": "NULL 键语义是正确性约定的一部分，不应为了匹配率随意改变。",
+          "boundary": "若业务另需空安全相等，应显式设计并核对基数。"
+        },
+        {
+          "id": "l6-comprehensive/strategy",
+          "title": "结果对了，再验证广播建议",
+          "body": "正确连接与可审查策略证据共同构成实作交付。",
+          "boundary": "本机小规模结果不等于生产内存或性能认证。"
+        },
+        {
+          "id": "l6-comprehensive/accept",
+          "title": "换输入后还能交付吗",
+          "body": "毕业任务应验证输入变化、空输入和契约异常，并记录未验证的运行边界。",
+          "boundary": "结果验收不是防作弊或生产能力认证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
         }
       ]
     }

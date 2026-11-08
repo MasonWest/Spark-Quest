@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "lessons": {
     "l2-comprehensive": {
       "id": "l2-graduation-v1",
@@ -130,6 +130,204 @@
           "body": "读取并登记本次输入 → 内层 SELECT DISTINCT 整行 → WHERE 正金额 → 按城市聚合 → HAVING 城市达标 → 输出约定字段 → 写入隔离目标 → 读回并重跑验收。"
         }
       ]
+    },
+    "l4-comprehensive": {
+      "id": "l4-graduation-v1",
+      "title": "独立实作：用结果与计划证明一次改写",
+      "estimatedMinutes": 45,
+      "brief": "你接手了一条带多余重分布的地区统计。实现等价查询、保存前后实际计划，并给出有边界的诊断，不能用“节点少了”代替完整论证。",
+      "contract": [
+        "输入为 task.json 的小型教学订单，字段 id、region、amount、note；只统计正金额，输出 region string、cnt long、total long。",
+        "实现 build_report(orders)，不要把原始数据 collect 到 Python 或写死报表；原有无业务需要的随机重分布是待检验假设。",
+        "验收器在受控条件、关闭 AQE 后建立含额外 repartition 的基线，对照你的结果与实际计划；候选应减少基线中的冗余交换。",
+        "输入、空输入和全无效输入都要满足结果契约。每次运行保存实际版本、前后计划和独立验收结果。",
+        "在 diagnosis() 写出改动依据、正确性验证、仍待验证的成本假设与回退；文字论证需要人工核对。",
+        "本任务交付计划与诊断证据，不是 Parquet 文件写出考核，也不提供生产加速保证。"
+      ],
+      "downloads": [
+        {
+          "label": "任务数据 task.json",
+          "href": "/practice/l4-graduation/task.json"
+        },
+        {
+          "label": "代码骨架 starter.py",
+          "href": "/practice/l4-graduation/starter.py"
+        },
+        {
+          "label": "独立验收 verify.py",
+          "href": "/practice/l4-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l4-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载参考实现 reference.py",
+        "href": "/practice/l4-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "结果等价",
+          "body": "原输入、变化输入、空输入和无效输入按独立期望校验。"
+        },
+        {
+          "title": "相对计划",
+          "body": "受控基线与候选实际计划对照，检查冗余交换并保存原始文本。"
+        },
+        {
+          "title": "可审查结论",
+          "body": "记录版本与诊断草稿；自动检查不替代人工判断论证。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先写业务不变量",
+          "body": "明确有效行、分组与两个指标。任何执行改动都不能改变它们。"
+        },
+        {
+          "title": "定位额外分布",
+          "body": "基线中先随机分份再按键聚合，核对哪段分布没有业务要求；不要为了删节点删掉聚合。"
+        },
+        {
+          "title": "保留证据链",
+          "body": "构造等价查询 → 核对逐组结果 → 保存基线/候选计划 → 区分结构变化与实测收益 → 写清适用边界。"
+        }
+      ],
+      "validationNote": "本任务自动检查通过时输出 PASS 且 artifacts=PASS。诊断文字标记 manual_review=required，仍需人工核对；这不是生产性能认证。本任务交付计划/分区/连接证据，不考核 Parquet 写出。"
+    },
+    "l5-comprehensive": {
+      "id": "l5-graduation-v1",
+      "title": "独立实作：换分区也不改总量",
+      "estimatedMinutes": 45,
+      "brief": "实现一份 Pair RDD 按键整数总量，面对新键、负调整、热点与空输入，检查不同分区数下的结果，并留下分布证据。",
+      "contract": [
+        "输入 task.json 是 (key, qty) 事件；qty 为整数，正、负、零调整都贡献一次，不做事件去重。",
+        "实现 build_totals(sc, rows, partitions)，返回 Pair RDD，每键一条整数总量，输出计算分区数应遵循传入参数。",
+        "验收会用不同数据和 2/4 分区重复运行，业务总量必须保持；总量为零的真实键仍应保留。",
+        "空输入输出空键集合，不为满足分区数伪造键或行。不能写死样例总量、键或 task 数。",
+        "保存输入各分区行数与实际版本作为证据。该计数不代表字节、CPU 或生产均衡证明。",
+        "diagnosis() 解释局部合并、最终汇合、分区不变性与未测边界；论证质量仍需人工核对。"
+      ],
+      "downloads": [
+        {
+          "label": "任务数据 task.json",
+          "href": "/practice/l5-graduation/task.json"
+        },
+        {
+          "label": "代码骨架 starter.py",
+          "href": "/practice/l5-graduation/starter.py"
+        },
+        {
+          "label": "独立验收 verify.py",
+          "href": "/practice/l5-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l5-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载参考实现 reference.py",
+        "href": "/practice/l5-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "按键语义",
+          "body": "新键、负调整、零总量、热点和空输入对照独立 Python 总量。"
+        },
+        {
+          "title": "分区不变性",
+          "body": "同一业务数据在请求的两种输出分区数下保持正确指标。"
+        },
+        {
+          "title": "分布证据",
+          "body": "保存实际分区行数、版本与诊断草稿，不冒充性能测量。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先定义规约",
+          "body": "这里是整数加法净总量，不能把负调整当异常删掉，也不能用任意去重丢贡献。"
+        },
+        {
+          "title": "比较两种工作",
+          "body": "考虑哪些值可先在局部合并，最后还必须合并什么；分区位置不改变键的相等定义。"
+        },
+        {
+          "title": "实现与验收骨架",
+          "body": "建立指定分区的 Pair RDD → 按键用加法规约并指定输出分区 → 校验新数据/空输入 → 比较不同分区数 → 记录负载证据和限制。"
+        }
+      ],
+      "validationNote": "本任务自动检查通过时输出 PASS 且 artifacts=PASS。诊断文字标记 manual_review=required，仍需人工核对；这不是生产性能认证。本任务交付计划/分区/连接证据，不考核 Parquet 写出。"
+    },
+    "l6-comprehensive": {
+      "id": "l6-graduation-v1",
+      "title": "独立实作：补维不丢单，汇总不放大",
+      "estimatedMinutes": 60,
+      "brief": "给正金额订单补地区。缺失用户也要保留，冲突维表必须明确拒绝；在正确结果之上记录实际连接计划。",
+      "contract": [
+        "输入 task.json 包含订单与用户地区维表。仅 amount>0 的事实行有效；本任务按每条事实行计数，不自动按 id 去重。",
+        "普通等值 LEFT JOIN，订单在左侧。NULL 用户键不互配；未匹配或 NULL 地区统一为 unknown，空字符串地区保持原值。",
+        "维表非空 user_id 必须唯一，连完全相同的重复键也需 ValueError。不可任取标签或静默把金额放大；维表 NULL 键不参与匹配。",
+        "实现 build_enriched_report(orders, dimension)，输出 region string、cnt long、total long，逐组金额与笔数都要正确。",
+        "验收会更换用户、加入未知/NULL、空订单、空地区及冲突键。保留实际计划作为策略证据，不强行承诺固定算法或性能收益。",
+        "在 diagnosis() 解释唯一性、缺失保留、当前选型与容量假设；自动检查不替代人工评审或生产负载验证。"
+      ],
+      "downloads": [
+        {
+          "label": "任务数据 task.json",
+          "href": "/practice/l6-graduation/task.json"
+        },
+        {
+          "label": "代码骨架 starter.py",
+          "href": "/practice/l6-graduation/starter.py"
+        },
+        {
+          "label": "独立验收 verify.py",
+          "href": "/practice/l6-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l6-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载参考实现 reference.py",
+        "href": "/practice/l6-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "连接基数",
+          "body": "逐组验证已匹配、未匹配与 NULL 键贡献，避免丢失或放大。"
+        },
+        {
+          "title": "契约异常",
+          "body": "重复非空维表键必须明确 ValueError，不能靠任意去重掩盖。"
+        },
+        {
+          "title": "策略证据",
+          "body": "保存当前实际计划、版本与诊断草稿；解释采用与收益的区别。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先查契约",
+          "body": "先明确哪些事实有效、哪些维表键必须唯一。结果错误常在这里发生，不是先调 hint。"
+        },
+        {
+          "title": "再查未匹配",
+          "body": "使用保留事实的连接语义，普通 NULL 键不互配，只有缺失或 NULL 标签按约定归 unknown。"
+        },
+        {
+          "title": "实现与验收骨架",
+          "body": "检查维表重复非空键 → 筛有效事实 → 左侧等值连接 → 明确未知地区 → 按地区计数求和 → 校验新输入与异常 → 保存实际计划和诊断。"
+        }
+      ],
+      "validationNote": "本任务自动检查通过时输出 PASS 且 artifacts=PASS。诊断文字标记 manual_review=required，仍需人工核对；这不是生产性能认证。本任务交付计划/分区/连接证据，不考核 Parquet 写出。"
     }
   }
 }

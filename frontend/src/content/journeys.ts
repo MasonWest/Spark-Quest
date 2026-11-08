@@ -19,7 +19,13 @@ export interface JourneyLesson {
   source: string; next: string; tasks: JourneyTask[];
   project?: { downloads: { label: string; href: string }[]; solution: { label: string; href: string } };
 }
-const files = import.meta.glob<{ default: JourneyLesson }>("./lessons/*.json", { eager: true });
-export const journeys: Record<string, JourneyLesson> = Object.fromEntries(
-  Object.values(files).map(file => [file.default.slug, file.default])
-);
+export interface JourneyMetadata {
+  slug: string; version: number; title: string; tasks: { id: string }[]; legacyTaskIds?: string[];
+}
+import index from "./journeyIndex.json";
+export const journeyIndex: Record<string, JourneyMetadata> = index;
+const files = import.meta.glob<{ default: JourneyLesson }>("./lessons/*.json");
+export async function loadJourney(slug: string): Promise<JourneyLesson | null> {
+  const loader = files[`./lessons/${slug}.json`];
+  return loader ? (await loader()).default : null;
+}

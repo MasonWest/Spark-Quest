@@ -47,7 +47,7 @@ from ..services import (
 )
 from ..badge_service import evaluate_badges, increment_user_stats
 from .quizzes import _parse_options, _sample_quiz_questions
-from ..l2_question_bank import questions_for_phase
+from ..reviewed_question_bank import questions_for_phase
 
 router = APIRouter(prefix="/api")
 
