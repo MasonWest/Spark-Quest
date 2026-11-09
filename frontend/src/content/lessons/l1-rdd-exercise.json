@@ -1,11 +1,11 @@
 {
   "slug": "l1-rdd-exercise",
-  "version": 1,
+  "version": 2,
   "title": "准备练习：把文本变成可核对的词频",
   "mission": "六步是可选热身，独立任务会换文本、空行与分区数。",
   "correction": "分词规则必须明确；RDD collect 只用于已知小教学结果，分区调节不应改变计数，血缘也不提供外部写入认证。",
   "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
-  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "next": "下一章 L2 把元素集合换成带列名、类型的表；继续沿用不可变查询和有界结果回收。先完成独立词频任务，卡在按键合并时回看卡片步骤。",
   "tasks": [
     {
       "id": "l1-rdd-exercise/contract",
@@ -100,6 +100,52 @@
       }
     },
     {
+      "id": "l1-rdd-exercise/bridge-key-value",
+      "title": "把词装进“键、值”小卡片",
+      "intro": "词频要回答每个词出现几次。先把每次出现写成 (词, 1)：词是用来找同类的键，1 是本次出现贡献的值。这种二元组组成的 RDD 常叫 Pair RDD。",
+      "code": "tokens = sc.parallelize(['Spark', 'SQL', 'spark'])\npairs = tokens.map(lambda w: (w.lower(), 1))",
+      "prompt": "小写归一之后，三张卡片是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b0",
+          "options": [
+            {
+              "id": "b1",
+              "text": "('spark',2)、('sql',1)",
+              "feedback": "这是之后按键求和的结果。"
+            },
+            {
+              "id": "b2",
+              "text": "只剩一个 spark",
+              "feedback": "不能丢掉重复出现的贡献。"
+            },
+            {
+              "id": "b0",
+              "text": "('spark',1)、('sql',1)、('spark',1)",
+              "feedback": "对，还只是逐词制卡，没有合并。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l1-rdd-exercise/bridge-key-value"
+      ],
+      "insight": "map 在这里为每个词生成一张卡片，不合并重复键。键决定按什么归类，值记录每次贡献；接下来才能按键合并。",
+      "ability": "把词装进“键、值”小卡片",
+      "reading": {
+        "id": "l1-rdd-exercise/bridge-key-value/reading",
+        "title": "把词装进“键、值”小卡片",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "map 在这里为每个词生成一张卡片，不合并重复键。键决定按什么归类，值记录每次贡献；接下来才能按键合并。",
+        "boundary": "这一步用小词列表建立 RDD 来观察形状，完整实现先由 flatMap 从行生成词。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
       "id": "l1-rdd-exercise/normalize",
       "knowledgeIds": [
         "l1-rdd-exercise/normalize"
@@ -174,6 +220,52 @@
           ]
         },
         "insight": "小写归一与去标点不同，结果必须遵守任务约定。"
+      }
+    },
+    {
+      "id": "l1-rdd-exercise/bridge-reduce-key",
+      "title": "同名卡片怎样汇成一个次数",
+      "intro": "reduceByKey 的意思是“按键归类，再用给定函数合并值”。lambda a,b:a+b 把同词的两个计数相加，直到每个词得到一份总量。",
+      "code": "pairs: ('spark',1), ('sql',1), ('spark',1)\npairs.reduceByKey(lambda a,b: a+b)",
+      "prompt": "结果中 spark 和 sql 的计数应分别是多少？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "spark=2，sql=1",
+              "feedback": "对，只合并相同键的值。"
+            },
+            {
+              "id": "b2",
+              "text": "spark=3，sql=3",
+              "feedback": "不能把不同词混在一起。"
+            },
+            {
+              "id": "b0",
+              "text": "都是 1",
+              "feedback": "重复出现也贡献一次。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l1-rdd-exercise/bridge-reduce-key"
+      ],
+      "insight": "按键求和不是对原始词去重：两个 spark 贡献相加。数据可能跨分区，Spark 负责把同键贡献汇合；L5 再展开局部合并和 Shuffle 的代价。",
+      "ability": "同名卡片怎样汇成一个次数",
+      "reading": {
+        "id": "l1-rdd-exercise/bridge-reduce-key/reading",
+        "title": "同名卡片怎样汇成一个次数",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "按键求和不是对原始词去重：两个 spark 贡献相加。数据可能跨分区，Spark 负责把同键贡献汇合；L5 再展开局部合并和 Shuffle 的代价。",
+        "boundary": "这里使用整数加法；不能把任意不可重组的函数都当作安全规约。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
       }
     },
     {

@@ -1,6 +1,6 @@
 {
   "slug": "l1-action",
-  "version": 1,
+  "version": 2,
   "title": "什么时候真的请求结果",
   "mission": "选 count、take 或 collect，分清结果规模和副作用。",
   "correction": "action 不只把数据交给 Driver，也可能保存或执行分区逻辑；一次 action 不保证严格一个 job，外部写入也不自动 exactly-once。",
@@ -136,7 +136,7 @@
         "l1-action/foreach"
       ],
       "title": "闭包里追加，Driver 列表会跟着变吗",
-      "intro": "在分布式任务里运行函数。",
+      "intro": "闭包是函数连同它引用的外部变量。这里 lambda 引用了 seen；发送给任务的是序列化后的函数与所需状态，不是一个跨进程共享列表。",
       "code": "seen=[]\nrdd.foreach(lambda x: seen.append(x))",
       "prompt": "能把它当 Driver 收集接口吗？",
       "fields": [
@@ -171,7 +171,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【为什么 Spark 需要它】",
-        "connection": "任务闭包的副作用不等于可靠的 Driver 汇总；外部副作用还可能受重试影响。",
+        "connection": "Driver 的 seen 与任务使用的状态不能当成同一份共享结果。foreach 执行函数但不把各任务列表合并返回；有界预览用 take，计数用 count。外部副作用还需考虑重试。",
         "boundary": "不要把本地偶然表现外推为集群共享状态或 exactly-once 保证。",
         "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
       }

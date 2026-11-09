@@ -1,11 +1,11 @@
 {
   "slug": "l2-comprehensive",
-  "version": 2,
+  "version": 3,
   "title": "章末挑战：交付一份地区日报",
   "mission": "换一批订单，独立串起流程。输入 6 行，只汇总正金额；输出各地区订单数 cnt、总额 total 和 total_k。预期结果先自己推导，完整参考解法完成后再看。",
   "correction": "本挑战的新增列 total_k 在聚合后生成，避免先算 amount_k 又在聚合时丢弃。CSV 推断和元数据获取可能提前执行；show 抽样不等于全量验收。输出 Parquet 不承诺保存排名，展示时应重新排序。",
   "source": "https://spark.apache.org/docs/3.5.6/sql-getting-started.html",
-  "next": "L2 的读、查、改、算、写已串起来。可以下载本地任务亲手运行，再进入 Spark SQL；互动完成并不代替独立编程验证。",
+  "next": "下一章 L3 用 SQL 重写熟悉的筛选与汇总。NULL、去重、分组与单位约定继续有效，变化的是表达方式。",
   "project": {
     "downloads": [
       {

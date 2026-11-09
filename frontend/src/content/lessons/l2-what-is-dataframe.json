@@ -1,8 +1,8 @@
 {
   "slug": "l2-what-is-dataframe",
-  "version": 2,
+  "version": 3,
   "title": "动手理解 · DataFrame",
-  "mission": "从四条订单开始，理解列、Schema 与惰性变换。",
+  "mission": "L1 已认识分份数据和惰性转换；这一章改用带列名与类型的表来处理订单。先观察筛选结果，再逐步补齐 Schema。",
   "correction": "",
   "source": "https://spark.apache.org/docs/3.5.6/sql-getting-started.html",
   "next": "下一步用课后测验验证这些判断。",

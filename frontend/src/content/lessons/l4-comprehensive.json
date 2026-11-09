@@ -1,11 +1,11 @@
 {
   "slug": "l4-comprehensive",
-  "version": 1,
+  "version": 2,
   "title": "准备练习：给优化建议配证据",
   "mission": "先用这六步热身，独立任务要运行自己的查询并保存计划。",
   "correction": "优化成功必须同时满足语义正确、计划证据与代表性运行验证；教学计划和合成指标不是真实基准报告。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
-  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "next": "下一章 L5 具体推演 Exchange 背后的数据交接。现在记住计划不等于耗时，后面再用分区和键解释交接原因。",
   "tasks": [
     {
       "id": "l4-comprehensive/contract",

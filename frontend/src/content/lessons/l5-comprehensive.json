@@ -1,11 +1,11 @@
 {
   "slug": "l5-comprehensive",
-  "version": 1,
+  "version": 2,
   "title": "准备练习：让汇合正确且可解释",
   "mission": "独立任务会换输入与分区数，检查结果和负载证据。",
   "correction": "分区调节不能改变指标语义；合成分布不等于生产热点，局部小样本不证明性能收益。",
   "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html#shuffle-operations",
-  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "next": "下一章 L6 用分区与汇合模型理解连接策略。先分清同键贡献怎么到一起，再比较复制、排序与建查找结构的代价。",
   "tasks": [
     {
       "id": "l5-comprehensive/contract",

@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "items": [
     {
       "id": "l1-action/collect-transfer-delayed-v1",
@@ -1250,6 +1250,31 @@
       ],
       "correctOptionId": "d0",
       "explanation": "结果正确与条件可比是归因基础，重复与资源指标帮助解释变化。"
+    },
+    {
+      "id": "l7-executor-memory/memory-reclaim-delayed-v1",
+      "slug": "l7-executor-memory",
+      "taskId": "l7-executor-memory/bridge-execution-reclaim",
+      "knowledgeId": "l7-executor-memory/bridge-execution-reclaim",
+      "title": "隔天再看保护线",
+      "code": "M=300，R=120，S=210，E=0\n只靠空闲和逐出保护线外缓存腾空间",
+      "prompt": "这张简化容量图中，最多能给执行腾出多少？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "90"
+        },
+        {
+          "id": "d1",
+          "text": "180"
+        },
+        {
+          "id": "d2",
+          "text": "300"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "空闲90，加上可回收缓存210-120=90，共180；不能以执行需求为由继续逐出保护线内缓存。不是单task必获该配额的保证。"
     },
     {
       "id": "l7-executor-memory/memory-transfer-delayed-v1",

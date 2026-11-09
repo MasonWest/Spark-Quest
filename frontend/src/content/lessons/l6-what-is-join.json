@@ -1,19 +1,65 @@
 {
   "slug": "l6-what-is-join",
-  "version": 1,
+  "version": 2,
   "title": "连接先保正确，再谈快慢",
-  "mission": "从行对、未匹配和重复维表开始。",
+  "mission": "L3 已按键匹配订单与用户，L5 已推演同键汇合。这章先重建两张表和行对，再比较完成匹配的不同路线。",
   "correction": "JOIN 输出由连接类型、条件和匹配基数决定；同名键不保证同一含义，物理策略改变不应改变业务语义。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html",
   "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
   "tasks": [
+    {
+      "id": "l6-what-is-join/bridge-fact-dimension",
+      "title": "先认清两张表各记什么",
+      "intro": "订单表记录一次次购买事件，这里称事实表；用户表记录用户的地区等属性，这里称维表。连接键是两表用来判断对应关系的字段，本例为 user_id。",
+      "code": "订单：o1 / u1 / 50元\n用户：u1 / north\n目标：给订单补上地区",
+      "prompt": "这条订单该从哪里取得地区？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b0",
+          "options": [
+            {
+              "id": "b1",
+              "text": "按两张表的行号相同配对",
+              "feedback": "行序没有定义用户对应关系。"
+            },
+            {
+              "id": "b2",
+              "text": "把金额 50 当作用户编号",
+              "feedback": "金额不是这里的连接键。"
+            },
+            {
+              "id": "b0",
+              "text": "按 user_id=u1 找用户属性",
+              "feedback": "对，按约定键找对应属性。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l6-what-is-join/bridge-fact-dimension"
+      ],
+      "insight": "“补维”就是给事件补上属性。事实表与维表是本业务里的角色，不保证某张表总是大或总是小，也不自动保证维表键唯一。",
+      "ability": "先认清两张表各记什么",
+      "reading": {
+        "id": "l6-what-is-join/bridge-fact-dimension/reading",
+        "title": "先认清两张表各记什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "“补维”就是给事件补上属性。事实表与维表是本业务里的角色，不保证某张表总是大或总是小，也不自动保证维表键唯一。",
+        "boundary": "先建立键的含义，再决定未匹配行与重复匹配如何处理。L6 在 L3 的匹配基础上研究执行策略。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
     {
       "id": "l6-what-is-join/pairs",
       "knowledgeIds": [
         "l6-what-is-join/pairs"
       ],
       "title": "一行订单匹配两行维表",
-      "intro": "订单 u1/50，用户表同键两条记录。",
+      "intro": "订单 o1 的用户是 u1、金额 50。用户属性表中 u1 同时有 north、south 两条记录；按 user_id 相等匹配，因此同一订单能产生两个行对。",
       "code": "# INNER JOIN ON user_id",
       "prompt": "连接后求金额总和是什么？",
       "fields": [
@@ -48,9 +94,42 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "连接是产生匹配行对，不是自动查字典取唯一值。",
+        "connection": "连接会为每个满足条件的行对输出一行。此例得到 o1/u1/50/north 和 o1/u1/50/south，两行再求金额得到 100。“匹配基数”就是这种一对一、一对多或多对多的数量关系。",
         "boundary": "维表唯一性必须由约定或检查保证。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      },
+      "table": {
+        "caption": "连接前：一条事实，两条同键属性",
+        "columns": [
+          "来源",
+          "订单",
+          "user_id",
+          "金额",
+          "地区"
+        ],
+        "rows": [
+          [
+            "订单",
+            "o1",
+            "u1",
+            50,
+            "—"
+          ],
+          [
+            "用户",
+            "—",
+            "u1",
+            "—",
+            "north"
+          ],
+          [
+            "用户",
+            "—",
+            "u1",
+            "—",
+            "south"
+          ]
+        ]
       }
     },
     {

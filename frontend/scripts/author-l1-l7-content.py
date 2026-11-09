@@ -159,6 +159,8 @@ for index,t in enumerate(t for l in lessons.values() for t in l['tasks']):
     others.insert(index%3,correct);f['options']=others
 GUIDES['version']=max(GUIDES['version'],4);DELAYED['version']=max(DELAYED['version'],4)
 DELAYED['items'].sort(key=lambda x:(x['slug'],x['id']))
+from concept_progression import apply as apply_concept_bridges
+apply_concept_bridges(lessons, GUIDES, DELAYED)
 outputs={ROOT/'lessons'/f'{slug}.json':l for slug,l in lessons.items()};outputs[ROOT/'standardGuides.json']=GUIDES;outputs[ROOT/'delayedChecks.json']=DELAYED
 for path,data in outputs.items():
     text=json.dumps(data,ensure_ascii=False,indent=2)+'\n'

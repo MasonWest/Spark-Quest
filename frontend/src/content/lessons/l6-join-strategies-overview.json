@@ -1,6 +1,6 @@
 {
   "slug": "l6-join-strategies-overview",
-  "version": 1,
+  "version": 2,
   "title": "同一个连接，几条执行路线",
   "mission": "把逻辑语义与物理策略分开，再看适用条件。",
   "correction": "BHJ、SMJ、SHJ 等策略受连接条件、类型、统计、配置与 AQE 影响；不是所有 JOIN 都能使用同一算法。",
@@ -50,6 +50,52 @@
         "endMarker": "【一个直观的心智模型】",
         "connection": "逻辑连接类型决定结果，物理连接策略决定如何计算匹配。",
         "boundary": "更换策略仍需保持结果与连接条件。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
+    {
+      "id": "l6-join-strategies-overview/bridge-hash-lookup",
+      "title": "哈希匹配先建立什么",
+      "intro": "可以先把一侧按 user_id 做成“用键找记录”的索引，再让另一侧逐条查找。建立这份结构的一侧叫构建侧；来查找的一侧叫探测侧。哈希负责定位候选，仍要比较键。",
+      "code": "# 教学索引，方括号表示同键可有多行\nu1 → [north, south]\n订单 o1/u1/50 来查 u1",
+      "prompt": "找到两个 u1 属性时，匹配应怎样处理？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "保留两个匹配，不能靠结构消除重复",
+              "feedback": "对，执行结构仍要遵守原匹配语义。"
+            },
+            {
+              "id": "b2",
+              "text": "不再比较键，所有记录都匹配",
+              "feedback": "哈希定位不能替代相等判断。"
+            },
+            {
+              "id": "b0",
+              "text": "任取一个，哈希会自动去重",
+              "feedback": "索引不定义任取或去重规则。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l6-join-strategies-overview/bridge-hash-lookup"
+      ],
+      "insight": "哈希匹配是组织查找的方式，不改变 JOIN 的行对规则。BHJ 与 SHJ 都会使用构建结构，区别之一是数据怎样到达参与匹配的位置。",
+      "ability": "哈希匹配先建立什么",
+      "reading": {
+        "id": "l6-join-strategies-overview/bridge-hash-lookup/reading",
+        "title": "哈希匹配先建立什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "哈希匹配是组织查找的方式，不改变 JOIN 的行对规则。BHJ 与 SHJ 都会使用构建结构，区别之一是数据怎样到达参与匹配的位置。",
+        "boundary": "这不是实际 Spark 哈希实现，也不假定不同键永远没有碰撞。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       }
     },

@@ -1,6 +1,6 @@
 {
   "slug": "l4-logical-vs-physical",
-  "version": 1,
+  "version": 2,
   "title": "同一需求，执行路线可以不同",
   "mission": "分开看要算什么与怎样计算。",
   "correction": "逻辑计划也有解析、分析和优化阶段；物理计划不是源码逐行翻译，AQE 还可能在运行后调整。",
@@ -59,7 +59,7 @@
         "l4-logical-vs-physical/route"
       ],
       "title": "同样连接，为什么路线不同",
-      "intro": "同一等值连接，维表规模与统计发生变化。",
+      "intro": "L3 已学按键匹配。这里的维表是补用户属性的表。BroadcastHashJoin、SortMergeJoin 是实现同一匹配需求的两条路线；本步只辨认“结果含义”和“执行路线”，L6 再拆算法。",
       "code": "# 简化教学对照\n方案 A: BroadcastHashJoin\n方案 B: SortMergeJoin",
       "prompt": "两种节点说明什么？",
       "fields": [
@@ -94,7 +94,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "比较计划时先确认语义，再解释物理选型及其条件。",
+        "connection": "INNER/LEFT 等逻辑类型约定哪些匹配与未匹配行保留；BroadcastHashJoin、SortMergeJoin 等物理节点描述如何计算。现在无需背算法细节，先知道同一含义可能由不同路线完成。",
         "boundary": "不要只凭算子名字宣称结果相同或某个一定更快。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       },

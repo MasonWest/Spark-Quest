@@ -1,8 +1,8 @@
 {
   "slug": "l5-what-is-partition",
-  "version": 1,
+  "version": 2,
   "title": "一张表怎样分成可调度的小份",
-  "mission": "区分逻辑数据、计算分区、运行任务和输出目录。",
+  "mission": "回到 L1 的数据分份，并接上 L4 的交接节点：这一章用具体数值推演为什么要汇合、如何重分发、成本在哪里。",
   "correction": "计算分区不是物理机器或文件目录；一个分区可以为空，分区数也不等于同时运行任务数。",
   "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
   "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",

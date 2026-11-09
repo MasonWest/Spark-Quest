@@ -1,6 +1,6 @@
 {
   "slug": "l4-wholestage-codegen",
-  "version": 1,
+  "version": 2,
   "title": "融合算子，别把星号当奖章",
   "mission": "知道代码生成解决什么，遇到边界时再验证。",
   "correction": "WholeStageCodegen 不是将所有算子或 Python 逻辑融合；星号编号不是调度 Stage ID，也不是性能等级。",
@@ -136,7 +136,7 @@
         "l4-wholestage-codegen/tungsten"
       ],
       "title": "紧凑布局不是内存无限",
-      "intro": "运行时采用更紧凑的内部表示。",
+      "intro": "spill 指某些算子在内存不足等条件下，把中间计算数据暂存到磁盘继续处理。紧凑布局可降低部分占用，但数据量、单份工作集和并发仍影响是否 spill。",
       "code": "# 教学情境：内部表示改进；大连接仍发生 spill。",
       "prompt": "哪个判断正确？",
       "fields": [
@@ -171,7 +171,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "紧凑内部表示和执行优化可以降低部分开销，但不消除算子状态与资源容量约束。",
+        "connection": "减少每条记录开销不等于内存无限。spill 与缓存块逐出是不同事件；本课先认识临时落盘，L7 将区分执行内存和缓存使用的存储内存。",
         "boundary": "调优仍需关注实际内存、spill、GC 与任务分布。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       }

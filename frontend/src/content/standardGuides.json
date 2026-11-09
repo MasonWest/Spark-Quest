@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -556,6 +556,12 @@
       "title": "把订单与用户正确配对",
       "sections": [
         {
+          "id": "l3-joins-intro/bridge-fact-dimension",
+          "title": "先认清两张表各记什么",
+          "body": "“补维”就是给事件补上属性。事实表与维表是本业务里的角色，不保证某张表总是大或总是小，也不自动保证维表键唯一。",
+          "boundary": "先建立键的含义，再决定未匹配行与重复匹配如何处理。L6 在 L3 的匹配基础上研究执行策略。"
+        },
+        {
           "id": "l3-joins-intro/inner",
           "title": "找不到用户的订单去哪了",
           "body": "INNER JOIN 按 ON 条件产生匹配的行对，任何一边未匹配的行不进入结果。",
@@ -708,6 +714,12 @@
       "title": "日报变慢，先找一条证据",
       "sections": [
         {
+          "id": "l4-why-explain/bridge-plan-map",
+          "title": "把前面的查询换成一张路线图",
+          "body": "计划可以理解为查询的执行路线。它与用户代码有关，但不必逐行对应；物理计划说明采用哪些操作，不直接给出各操作实测耗时。",
+          "boundary": "这是一条简化示意，不是完整 Spark explain 输出。Exchange 等交接节点先认用途，L5 再推演机制。"
+        },
+        {
           "id": "l4-why-explain/evidence",
           "title": "只有总耗时，先别开药方",
           "body": "诊断从需求、执行计划和指标出发。先描述问题，再决定改什么。",
@@ -751,7 +763,7 @@
         {
           "id": "l4-logical-vs-physical/route",
           "title": "同样连接，为什么路线不同",
-          "body": "比较计划时先确认语义，再解释物理选型及其条件。",
+          "body": "INNER/LEFT 等逻辑类型约定哪些匹配与未匹配行保留；BroadcastHashJoin、SortMergeJoin 等物理节点描述如何计算。现在无需背算法细节，先知道同一含义可能由不同路线完成。",
           "boundary": "不要只凭算子名字宣称结果相同或某个一定更快。"
         },
         {
@@ -792,7 +804,7 @@
         {
           "id": "l4-explain-api/cost",
           "title": "sizeInBytes 是实测内存吗",
-          "body": "cost 可展示可用的统计估计；缺失、陈旧和膨胀都会影响选型判断。",
+          "body": "计划估计帮助选择路线，却不是运行峰值内存：实际构建结构、并发和对象开销仍需测量。不要把 sizeInBytes、文件字节数与可用内存当成同一口径。",
           "boundary": "不要仅凭压缩文件大小或一个估计值承诺广播内存安全。"
         },
         {
@@ -821,19 +833,19 @@
         {
           "id": "l4-read-plan/exchange",
           "title": "看到交换，先分清哪一种",
-          "body": "BroadcastExchange 与 ShuffleExchange 解决不同数据分布要求，不能只数 Exchange 字样。",
+          "body": "名字都有 Exchange 不代表动作相同。按键汇合与复制小关系是不同路线，不能只数这个单词就给出固定 Shuffle 次数。",
           "boundary": "存在广播也不代表整个查询完全没有其他交换。"
         },
         {
           "id": "l4-read-plan/markers",
           "title": "星号编号不是 Stage 编号",
-          "body": "计划中的代码生成标记与运行时 Job/Stage/Task 标识要分开。",
+          "body": "计划中的 *(N) 是 WholeStageCodegen 分组线索，不是调度 Stage 编号。生成代码的分组与运行中的 Job/Stage/Task 属于不同视角。",
           "boundary": "输出标记因版本与模式而异，不能写成固定映射。"
         },
         {
           "id": "l4-read-plan/adaptive",
           "title": "初始计划还不是最终证据",
-          "body": "启用 AQE 时，初始计划与最终运行计划可能不同。",
+          "body": "把“计划执行前的选择”和“运行后的实际路线”分开。AQE 不保证每条查询都改变，也不会修复错误的业务规则；核对同一目标查询完成后的证据。",
           "boundary": "action 类型也可能改变实际执行查询，核对的是同一目标查询与条件。"
         }
       ],
@@ -897,7 +909,7 @@
         {
           "id": "l4-wholestage-codegen/tungsten",
           "title": "紧凑布局不是内存无限",
-          "body": "紧凑内部表示和执行优化可以降低部分开销，但不消除算子状态与资源容量约束。",
+          "body": "减少每条记录开销不等于内存无限。spill 与缓存块逐出是不同事件；本课先认识临时落盘，L7 将区分执行内存和缓存使用的存储内存。",
           "boundary": "调优仍需关注实际内存、spill、GC 与任务分布。"
         },
         {
@@ -1224,7 +1236,7 @@
         {
           "id": "l5-shuffle-trigger-operators/join",
           "title": "看到 JOIN 就认定两边重分布吗",
-          "body": "连接的分布动作取决于具体策略、连接条件和输入分布。",
+          "body": "JOIN 的具体路线受连接条件、已有分布和策略影响，不能仅凭出现 JOIN 就断定两侧各做一次 Shuffle。复制小关系与两侧按键汇合也不是相同动作。",
           "boundary": "广播也有传输与内存成本，不等于免费。"
         },
         {
@@ -1368,9 +1380,15 @@
       "title": "连接先保正确，再谈快慢",
       "sections": [
         {
+          "id": "l6-what-is-join/bridge-fact-dimension",
+          "title": "先认清两张表各记什么",
+          "body": "“补维”就是给事件补上属性。事实表与维表是本业务里的角色，不保证某张表总是大或总是小，也不自动保证维表键唯一。",
+          "boundary": "先建立键的含义，再决定未匹配行与重复匹配如何处理。L6 在 L3 的匹配基础上研究执行策略。"
+        },
+        {
           "id": "l6-what-is-join/pairs",
           "title": "一行订单匹配两行维表",
-          "body": "连接是产生匹配行对，不是自动查字典取唯一值。",
+          "body": "连接会为每个满足条件的行对输出一行。此例得到 o1/u1/50/north 和 o1/u1/50/south，两行再求金额得到 100。“匹配基数”就是这种一对一、一对多或多对多的数量关系。",
           "boundary": "维表唯一性必须由约定或检查保证。"
         },
         {
@@ -1409,6 +1427,12 @@
           "boundary": "更换策略仍需保持结果与连接条件。"
         },
         {
+          "id": "l6-join-strategies-overview/bridge-hash-lookup",
+          "title": "哈希匹配先建立什么",
+          "body": "哈希匹配是组织查找的方式，不改变 JOIN 的行对规则。BHJ 与 SHJ 都会使用构建结构，区别之一是数据怎样到达参与匹配的位置。",
+          "boundary": "这不是实际 Spark 哈希实现，也不假定不同键永远没有碰撞。"
+        },
+        {
           "id": "l6-join-strategies-overview/equi",
           "title": "只有大小关系还能套 Hash Join 吗",
           "body": "等值与非等值条件会限制可选连接算法。",
@@ -1437,6 +1461,12 @@
     "l6-broadcast-hash-join": {
       "title": "小表广播，先问装得下吗",
       "sections": [
+        {
+          "id": "l6-broadcast-hash-join/bridge-broadcast-route",
+          "title": "广播是复制小关系，不是搬来所有订单",
+          "body": "Broadcast 是分发方式，Hash Join 是匹配方式，组合成广播哈希连接。构建结构仍有内存成本，是否适用要看连接类型、条件与容量。",
+          "boundary": "这不保证 Driver 无任何工作，也不承诺后续聚合没有 Shuffle。"
+        },
         {
           "id": "l6-broadcast-hash-join/build",
           "title": "广播复制的是哪一类工作",
@@ -1627,7 +1657,7 @@
         {
           "id": "l6-join-data-skew/salting",
           "title": "加盐不是随便改键",
-          "body": "salting 必须保证原匹配语义，正确扩展需要的另一侧并避免多算或漏算。",
+          "body": "salting 是改写数据组织的方法，有膨胀与复杂度成本。只改一侧键可能漏匹配，随意复制又可能多计；先验证逐组指标和基数，再测是否缓解长尾。",
           "boundary": "复杂连接类型和聚合还原有额外约束，不应盲目套模板。"
         },
         {
@@ -1695,6 +1725,12 @@
       "title": "把一批数字交给分布式计算",
       "sections": [
         {
+          "id": "l1-what-is-rdd/bridge-data-parts",
+          "title": "先看数据怎样分成几份",
+          "body": "把“元素”“分区”“机器”分开：四个数可分为两份，两份可由同一台机器处理。接下来才看 parallelize 如何建立这个描述。",
+          "boundary": "示意分法不承诺 Spark 自动采用相同的具体布局；本章假设你能读懂基础 Python 列表与函数。"
+        },
+        {
           "id": "l1-what-is-rdd/parts",
           "title": "四份数据，不是四台机器",
           "body": "RDD 用分区表示可分布式处理的元素集合；分区数和可用并行资源分开理解。",
@@ -1703,13 +1739,13 @@
         {
           "id": "l1-what-is-rdd/immutable",
           "title": "加一后，原来的数字变了吗",
-          "body": "RDD 转换返回新查询对象，Python 变量重新绑定也不等于就地修改原数据。",
+          "body": "map 描述一个新 RDD，不把旧定义就地改掉。原查询仍表示2、4、6，新查询表示3、5、7；变量赋值也不是把整份原数据永久改写。",
           "boundary": "元素内部可变对象与外部副作用不能被这个比喻当成安全修改接口。"
         },
         {
           "id": "l1-what-is-rdd/recover",
           "title": "丢掉一份缓存靠什么恢复",
-          "body": "血缘描述依赖与计算关系，可在条件满足时重算丢失分区。",
+          "body": "当所需上游仍可读取且计算能重做时，可以沿血缘重新计算丢失分区。血缘是重算依据，不是免费保存全部结果的备份；重算仍花时间与资源。",
           "boundary": "源数据不可再读、非确定逻辑或外部副作用会使恢复边界更复杂。"
         },
         {
@@ -1779,7 +1815,7 @@
         {
           "id": "l1-action/foreach",
           "title": "闭包里追加，Driver 列表会跟着变吗",
-          "body": "任务闭包的副作用不等于可靠的 Driver 汇总；外部副作用还可能受重试影响。",
+          "body": "Driver 的 seen 与任务使用的状态不能当成同一份共享结果。foreach 执行函数但不把各任务列表合并返回；有界预览用 take，计数用 count。外部副作用还需考虑重试。",
           "boundary": "不要把本地偶然表现外推为集群共享状态或 exactly-once 保证。"
         },
         {
@@ -1820,7 +1856,7 @@
         {
           "id": "l1-lazy-evaluation/recovery",
           "title": "重算不等于副作用只一次",
-          "body": "容错重算与外部副作用一致性是不同问题，不能把恢复机制当作 exactly-once。",
+          "body": "血缘记录如何重算数据，不是外部系统的事务日志。若任务重试再次写入，要由幂等键、目标系统事务或适合的提交协议控制重复；不能靠“可重算”推断只写一次。",
           "boundary": "本章练习不执行外部写入。"
         }
       ],
@@ -1843,7 +1879,7 @@
         {
           "id": "l1-why-dataframe-replaces-rdd/optimizer",
           "title": "Python 函数体会被当 SQL 代数随意重写吗",
-          "body": "结构化表达向优化器暴露的语义比任意 Python 函数体更明确。",
+          "body": "DataFrame/SQL 的列和关系表达向优化器暴露计算含义。任意 Python 函数体通常没有同样的可分析信息；不必现在掌握 Catalyst 的内部规则，也不能据此断言某接口总是更快。",
           "boundary": "这不提供任何接口在所有输入上固定更快的承诺。"
         },
         {
@@ -1882,10 +1918,22 @@
           "boundary": "空行的 split 结果为空，不要伪造空词。"
         },
         {
+          "id": "l1-rdd-exercise/bridge-key-value",
+          "title": "把词装进“键、值”小卡片",
+          "body": "map 在这里为每个词生成一张卡片，不合并重复键。键决定按什么归类，值记录每次贡献；接下来才能按键合并。",
+          "boundary": "这一步用小词列表建立 RDD 来观察形状，完整实现先由 flatMap 从行生成词。"
+        },
+        {
           "id": "l1-rdd-exercise/normalize",
           "title": "大小写归一后才比较词",
           "body": "先按约定归一，再按键计数；不能把每个显示形式当成不同业务键。",
           "boundary": "标点在本任务保留，因此 spark, 与 spark 仍不同。"
+        },
+        {
+          "id": "l1-rdd-exercise/bridge-reduce-key",
+          "title": "同名卡片怎样汇成一个次数",
+          "body": "按键求和不是对原始词去重：两个 spark 贡献相加。数据可能跨分区，Spark 负责把同键贡献汇合；L5 再展开局部合并和 Shuffle 的代价。",
+          "boundary": "这里使用整数加法；不能把任意不可重组的函数都当作安全规约。"
         },
         {
           "id": "l1-rdd-exercise/sum",
@@ -2011,9 +2059,45 @@
           "boundary": "本课不提供适合所有环境的固定内存比例处方。"
         },
         {
+          "id": "l7-executor-memory/bridge-memory-jobs",
+          "title": "先分两种用途，而非两根内存条",
+          "body": "Execution 服务当前计算，Storage 服务缓存等复用。统一内存管理让两种用途共享区域 M；这里讲 Executor JVM 的堆内示意，M 不是整个机器内存。",
+          "boundary": "并非一切 JVM 对象都由这两个池管理；堆外、Python 与其他开销需分别核对。"
+        },
+        {
+          "id": "l7-executor-memory/bridge-idle-borrow",
+          "title": "一边空闲，另一边可以多用",
+          "body": "两类用途可以利用对方空闲空间：没有执行工作时缓存也可增长。所谓动态借用首先是共享空闲容量，并不意味着能任意夺走对方已占用的数据。",
+          "boundary": "这是总体容量推演，不是对某个 task 一次申请必获 80 格的承诺；运行中还受任务公平性与块粒度影响。"
+        },
+        {
+          "id": "l7-executor-memory/bridge-execution-reclaim",
+          "title": "执行来要空间，先回收哪部分缓存",
+          "body": "执行有需要时，可逐出缓存超出保护区 R 的部分来回收空间。此例缓存从80降到60，尚未触及50保护线。存储级别约定缓存允许放在哪些介质：允许磁盘的块可能保留磁盘副本，未保留的分区以后需要时可重算。",
+          "boundary": "保护指不因这类执行内存回收而挤掉阈值内的缓存，不是永久保存承诺；主动解除持久化（unpersist）、进程丢失等另论。"
+        },
+        {
+          "id": "l7-executor-memory/bridge-protected-limit",
+          "title": "需要更多时，不能无限赶走缓存",
+          "body": "R 描述执行回收缓存的边界，不是缓存固定上限。若算子工作集仍超出可用空间，应观察 spill、任务工作集与并发；不是继续无限逐出，也不保证必定 OOM。",
+          "boundary": "这个上限只属于给定占用状态与简化假设，不是所有作业固定一半执行内存。"
+        },
+        {
+          "id": "l7-executor-memory/bridge-storage-cannot-evict",
+          "title": "反过来，缓存能赶走正在计算的数据吗",
+          "body": "回收不对称：存储可以利用执行的空闲空间，却不能逐出执行已占用空间。新缓存块可能无法放入内存，后续行为受存储级别等影响；R不是随时能强制获得的预留配额。",
+          "boundary": "这是新块额外需要40格的情境，不把总缓存目标40与新增40混淆。"
+        },
+        {
+          "id": "l7-executor-memory/bridge-fraction-meaning",
+          "title": "两个参数分别画哪条线",
+          "body": "M=(heap-300MiB)×fraction，R=M×storageFraction，是该版本常规堆内说明。提高R可能减少执行可回收空间，不能当作免费增内存；默认值应先保留，以实际工作集和指标验证。",
+          "boundary": "公式不是容器总内存预算；保留设置、测试配置、堆外和运行版本可能改变具体路径。"
+        },
+        {
           "id": "l7-executor-memory/eviction",
           "title": "缓存占用时就永不能执行了吗",
-          "body": "缓存有容量与逐出条件，执行/存储的具体管理规则不能用“完全独立”或“无限互借”概括。",
+          "body": "不能把规则概括为“完全独立”或“无限互借”。先定位进程、执行工作集、缓存实际占用和存储级别，再判断回收、spill或重算；Python内存问题不能单靠调整这个JVM池解决。",
           "boundary": "重用收益还受缓存命中、重算与并发影响。"
         },
         {
@@ -2027,6 +2111,10 @@
         {
           "title": "Spark 3.5.7 官方说明",
           "url": "https://spark.apache.org/docs/3.5.7/tuning.html"
+        },
+        {
+          "title": "统一内存管理：用途、共享与回收边界",
+          "url": "https://spark.apache.org/docs/3.5.7/tuning.html#memory-management-overview"
         }
       ]
     },

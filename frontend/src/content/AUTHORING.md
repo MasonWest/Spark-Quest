@@ -128,3 +128,12 @@ L4–L6 毕业任务下载 kit 分别使用 task.json，`lab-verifier-template.p
 L1任务明确空白分词、小写、标点保留、不去重；L7任务明确ASCII空格trim、NULL与空串语义。实际计划去掉Python UDF只证明受控结构变化，不能宣传固定加速。`diagnosis()`非空仅表示提交草稿，质量仍人工待审。完整验证边界和下一步内容工作见根目录 FINAL_CURRICULUM_REVIEW.md。
 
 下载工具包受字节摘要约束，`.gitattributes` 强制 LF，作者脚本写出也须指定 LF。构建会拒绝文本资产 CR，防止 Windows 正常而 Linux 发布误报漂移。
+
+
+## 概念递进修补层
+
+三个分章作者在基线输出前调用 `concept_progression.apply`。它显式定义26课的修订版本、14个新增步骤、术语解释和章首/章末桥接；以稳定bridge- ID合并，可重复运行。`concept_progression.py --check` 比对全层，分章作者 --check 必须同时保持通过。不要绕过修补层在JSON临时改字，再让旧作者覆盖。
+
+当前标准讲解v5、延迟库v5、毕业配置仍v5；各课版本独立。总计61课/274步、57个补救/延迟目标。旧任务题干、代码和答案身份保留，新版互动独立计进度，旧本机记录不删除，数据库正式成绩不重置。新内存规则未改动正式题库，课中与隔天检查不能冒充新增正式覆盖。
+
+容量题为明确简化的总体模型，不预测单Task的精确配额。`check-concept-examples.py` 分开检查模型数字与真实Spark的有限内存管理行为，不模拟真实缓存块逐出。见根目录 CONCEPT_PROGRESSION_REPAIR.md。

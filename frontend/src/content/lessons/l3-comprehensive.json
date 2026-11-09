@@ -1,11 +1,11 @@
 {
   "slug": "l3-comprehensive",
-  "version": 1,
+  "version": 2,
   "title": "准备练习：用 SQL 交付城市日报",
   "mission": "这六步是可选热身；独立毕业任务使用另一份输入，先在任务工作台自己实现。",
   "correction": "HAVING 与 WHERE 不可按同层条件互换；SQL 命令不能全部视为惰性。输出文件不承诺保留排名，不能只凭 show 的样本或总计验收。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html",
-  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "next": "下一章 L4 读执行路线。先确认自己能解释查询要什么结果；暂不要求认识所有物理节点。",
   "tasks": [
     {
       "id": "l3-comprehensive/read",

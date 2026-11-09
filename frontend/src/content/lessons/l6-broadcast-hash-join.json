@@ -1,12 +1,58 @@
 {
   "slug": "l6-broadcast-hash-join",
-  "version": 1,
+  "version": 2,
   "title": "小表广播，先问装得下吗",
   "mission": "理解构建侧复制、匹配要求与内存风险。",
   "correction": "广播不等于把事实表 collect 到 Python，也不保证消除整个查询所有 Shuffle；压缩文件大小不是哈希结构内存上限。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
   "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
   "tasks": [
+    {
+      "id": "l6-broadcast-hash-join/bridge-broadcast-route",
+      "title": "广播是复制小关系，不是搬来所有订单",
+      "intro": "上一课已认识按键查找结构。广播路线把适合构建的一侧发送到相关 Executor，让大表的各分区在执行端据此匹配。Executor 是运行任务的进程，不是分区本身。",
+      "code": "# 教学示意\n用户属性 → Executor A、Executor B\n订单分区 A → A 内匹配；订单分区 B → B 内匹配",
+      "prompt": "这个情境中主要被复制到执行端的是哪一侧？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "候选用户属性关系",
+              "feedback": "对，另一侧按其分区参与匹配。"
+            },
+            {
+              "id": "b2",
+              "text": "最终报表的列名",
+              "feedback": "列名不是用于查找的关系数据。"
+            },
+            {
+              "id": "b0",
+              "text": "全部订单汇到 Driver",
+              "feedback": "这不是所画的广播匹配路线。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l6-broadcast-hash-join/bridge-broadcast-route"
+      ],
+      "insight": "Broadcast 是分发方式，Hash Join 是匹配方式，组合成广播哈希连接。构建结构仍有内存成本，是否适用要看连接类型、条件与容量。",
+      "ability": "广播是复制小关系，不是搬来所有订单",
+      "reading": {
+        "id": "l6-broadcast-hash-join/bridge-broadcast-route/reading",
+        "title": "广播是复制小关系，不是搬来所有订单",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "Broadcast 是分发方式，Hash Join 是匹配方式，组合成广播哈希连接。构建结构仍有内存成本，是否适用要看连接类型、条件与容量。",
+        "boundary": "这不保证 Driver 无任何工作，也不承诺后续聚合没有 Shuffle。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
     {
       "id": "l6-broadcast-hash-join/build",
       "knowledgeIds": [

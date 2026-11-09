@@ -1,12 +1,58 @@
 {
   "slug": "l1-what-is-rdd",
-  "version": 1,
+  "version": 2,
   "title": "把一批数字交给分布式计算",
-  "mission": "先预测数据和分区，再理解不可变与恢复。",
+  "mission": "从 L0 的 Driver/执行端角色出发，先用数字和分份建立 RDD 模型，再讨论转换与执行。",
   "correction": "RDD 不是 Driver 上完整结果列表，也不自动全部驻留内存。血缘恢复依赖上游可用且可重算，不是免费备份或任意外部副作用重放保证。",
   "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
   "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
   "tasks": [
+    {
+      "id": "l1-what-is-rdd/bridge-data-parts",
+      "title": "先看数据怎样分成几份",
+      "intro": "RDD 可以先理解为：一批元素，加上“分成哪些份、怎样计算”的描述。每份叫分区。Driver 负责组织，执行端处理这些份；分区不是机器。",
+      "code": "# 教学分法，不模拟真实分区器\n分区 A：[2, 4]\n分区 B：[6, 8]",
+      "prompt": "这里整批数据有几个元素、几个分区？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b0",
+          "options": [
+            {
+              "id": "b1",
+              "text": "2 个元素、4 个分区",
+              "feedback": "把元素与份数弄反了。"
+            },
+            {
+              "id": "b2",
+              "text": "必须有 2 台机器",
+              "feedback": "分区不等于机器。"
+            },
+            {
+              "id": "b0",
+              "text": "4 个元素、2 个分区",
+              "feedback": "对，元素是数据，分区是这些数据的份。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l1-what-is-rdd/bridge-data-parts"
+      ],
+      "insight": "把“元素”“分区”“机器”分开：四个数可分为两份，两份可由同一台机器处理。接下来才看 parallelize 如何建立这个描述。",
+      "ability": "先看数据怎样分成几份",
+      "reading": {
+        "id": "l1-what-is-rdd/bridge-data-parts/reading",
+        "title": "先看数据怎样分成几份",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "把“元素”“分区”“机器”分开：四个数可分为两份，两份可由同一台机器处理。接下来才看 parallelize 如何建立这个描述。",
+        "boundary": "示意分法不承诺 Spark 自动采用相同的具体布局；本章假设你能读懂基础 Python 列表与函数。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
     {
       "id": "l1-what-is-rdd/parts",
       "knowledgeIds": [
@@ -59,7 +105,7 @@
         "l1-what-is-rdd/immutable"
       ],
       "title": "加一后，原来的数字变了吗",
-      "intro": "原 rdd 为 2、4、6。",
+      "intro": "原 rdd 表示2、4、6。map 是给每个元素应用加工函数；lambda x:x+1 表示输入一个数，输出它加一。下一课会专门拆解这些转换。",
       "code": "new = rdd.map(lambda x: x + 1)",
       "prompt": "两个查询各自请求结果时，应怎样理解？",
       "fields": [
@@ -94,7 +140,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【为什么 Spark 需要它】",
-        "connection": "RDD 转换返回新查询对象，Python 变量重新绑定也不等于就地修改原数据。",
+        "connection": "map 描述一个新 RDD，不把旧定义就地改掉。原查询仍表示2、4、6，新查询表示3、5、7；变量赋值也不是把整份原数据永久改写。",
         "boundary": "元素内部可变对象与外部副作用不能被这个比喻当成安全修改接口。",
         "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
       },
@@ -136,7 +182,7 @@
         "l1-what-is-rdd/recover"
       ],
       "title": "丢掉一份缓存靠什么恢复",
-      "intro": "上游文件仍可读取，转换可重算。",
+      "intro": "缓存是保留已经算过的数据，供之后复用。现在某份缓存丢失，但上游文件还在、加工函数可重算；血缘就是记录“从哪来、怎么算”的依赖关系。",
       "code": "# 教学情境：某缓存分区丢失。",
       "prompt": "Spark 可以依靠什么重建？",
       "fields": [
@@ -171,7 +217,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【为什么 Spark 需要它】",
-        "connection": "血缘描述依赖与计算关系，可在条件满足时重算丢失分区。",
+        "connection": "当所需上游仍可读取且计算能重做时，可以沿血缘重新计算丢失分区。血缘是重算依据，不是免费保存全部结果的备份；重算仍花时间与资源。",
         "boundary": "源数据不可再读、非确定逻辑或外部副作用会使恢复边界更复杂。",
         "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
       }

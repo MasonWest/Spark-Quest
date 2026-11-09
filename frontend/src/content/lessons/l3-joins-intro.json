@@ -1,12 +1,58 @@
 {
   "slug": "l3-joins-intro",
-  "version": 1,
+  "version": 2,
   "title": "把订单与用户正确配对",
   "mission": "先理解匹配、丢行和放大，再谈连接性能。",
   "correction": "多笔订单匹配一个唯一用户是正常明细粒度；右侧重复键才会额外放大订单。键类型不一致可能发生隐式转换或错误，不能断言必定全部不匹配。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html",
   "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
   "tasks": [
+    {
+      "id": "l3-joins-intro/bridge-fact-dimension",
+      "title": "先认清两张表各记什么",
+      "intro": "订单表记录一次次购买事件，这里称事实表；用户表记录用户的地区等属性，这里称维表。连接键是两表用来判断对应关系的字段，本例为 user_id。",
+      "code": "订单：o1 / u1 / 50元\n用户：u1 / north\n目标：给订单补上地区",
+      "prompt": "这条订单该从哪里取得地区？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b0",
+          "options": [
+            {
+              "id": "b1",
+              "text": "按两张表的行号相同配对",
+              "feedback": "行序没有定义用户对应关系。"
+            },
+            {
+              "id": "b2",
+              "text": "把金额 50 当作用户编号",
+              "feedback": "金额不是这里的连接键。"
+            },
+            {
+              "id": "b0",
+              "text": "按 user_id=u1 找用户属性",
+              "feedback": "对，按约定键找对应属性。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l3-joins-intro/bridge-fact-dimension"
+      ],
+      "insight": "“补维”就是给事件补上属性。事实表与维表是本业务里的角色，不保证某张表总是大或总是小，也不自动保证维表键唯一。",
+      "ability": "先认清两张表各记什么",
+      "reading": {
+        "id": "l3-joins-intro/bridge-fact-dimension/reading",
+        "title": "先认清两张表各记什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "“补维”就是给事件补上属性。事实表与维表是本业务里的角色，不保证某张表总是大或总是小，也不自动保证维表键唯一。",
+        "boundary": "先建立键的含义，再决定未匹配行与重复匹配如何处理。L6 在 L3 的匹配基础上研究执行策略。",
+        "caution": "这是保留的旧讲义，部分简化口径已经修订。请以当前标准讲解为准；旧示例的输入与本题不一定相同。"
+      }
+    },
     {
       "id": "l3-joins-intro/inner",
       "knowledgeIds": [

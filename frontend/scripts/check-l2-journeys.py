@@ -1,6 +1,6 @@
 from pathlib import Path
 from contextlib import closing
-import sqlite3,json
+import sqlite3,json,sys
 from playwright.sync_api import sync_playwright
 root=Path(__file__).resolve().parents[2]
 with closing(sqlite3.connect((root/'backend/spark_quest.db').as_uri()+'?mode=ro',uri=True)) as db:
@@ -22,6 +22,7 @@ with sync_playwright() as p:
   id=int(url.rsplit('/',1)[-1]);return route.fulfill(json=next(l for l in lessons.values() if l['id']==id))
  page.route('**/api/lessons/**',api)
  for slug,steps in answers.items():
+  if sys.argv[1:] and slug not in sys.argv[1:]:continue
   l=lessons[slug];url=f"http://127.0.0.1:4173/lesson/{l['id']}"
   page.goto(url)
   if slug in capstones:page.locator('#capstone-guided > summary').click()

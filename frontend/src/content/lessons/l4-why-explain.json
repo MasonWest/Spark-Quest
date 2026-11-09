@@ -1,12 +1,58 @@
 {
   "slug": "l4-why-explain",
-  "version": 1,
+  "version": 2,
   "title": "日报变慢，先找一条证据",
-  "mission": "别先猜内存或改参数。从查询计划提出可以验证的假设。",
+  "mission": "L2/L3 解决了“结果要什么”；这一章学习读“Spark准备怎么做”。先认路线，不要求现在掌握全部节点算法。",
   "correction": "explain 不是计时器，也不直接给出完整运行瓶颈。计划可能需要分析/元数据工作；实际读量、等待与最终 AQE 行为要结合执行指标。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-explain.html",
   "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
   "tasks": [
+    {
+      "id": "l4-why-explain/bridge-plan-map",
+      "title": "把前面的查询换成一张路线图",
+      "intro": "L2/L3 已经写过筛选和聚合。执行计划展示 Spark 准备如何完成它们：Scan 读输入，Filter 留下符合条件的行，Aggregate 做分组计算。先读动作含义，再认节点名字。",
+      "code": "# 简化教学路线，沿箭头读\nScan 读取订单 → Filter 留下正金额 → Aggregate 按地区求和",
+      "prompt": "哪一步落实“只统计正金额”？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "Filter",
+              "feedback": "对，它负责筛行。"
+            },
+            {
+              "id": "b2",
+              "text": "Aggregate",
+              "feedback": "聚合负责分组计算。"
+            },
+            {
+              "id": "b0",
+              "text": "Scan",
+              "feedback": "读取不自动实现这个业务条件。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l4-why-explain/bridge-plan-map"
+      ],
+      "insight": "计划可以理解为查询的执行路线。它与用户代码有关，但不必逐行对应；物理计划说明采用哪些操作，不直接给出各操作实测耗时。",
+      "ability": "把前面的查询换成一张路线图",
+      "reading": {
+        "id": "l4-why-explain/bridge-plan-map/reading",
+        "title": "把前面的查询换成一张路线图",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "计划可以理解为查询的执行路线。它与用户代码有关，但不必逐行对应；物理计划说明采用哪些操作，不直接给出各操作实测耗时。",
+        "boundary": "这是一条简化示意，不是完整 Spark explain 输出。Exchange 等交接节点先认用途，L5 再推演机制。",
+        "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
+      }
+    },
     {
       "id": "l4-why-explain/evidence",
       "knowledgeIds": [

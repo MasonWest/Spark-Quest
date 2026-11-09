@@ -1,7 +1,7 @@
 {
   "l1-action": {
     "slug": "l1-action",
-    "version": 1,
+    "version": 2,
     "title": "什么时候真的请求结果",
     "tasks": [
       {
@@ -20,7 +20,7 @@
   },
   "l1-lazy-evaluation": {
     "slug": "l1-lazy-evaluation",
-    "version": 1,
+    "version": 2,
     "title": "还没取结果，先把路线写清",
     "tasks": [
       {
@@ -39,7 +39,7 @@
   },
   "l1-rdd-exercise": {
     "slug": "l1-rdd-exercise",
-    "version": 1,
+    "version": 2,
     "title": "准备练习：把文本变成可核对的词频",
     "tasks": [
       {
@@ -49,7 +49,13 @@
         "id": "l1-rdd-exercise/split"
       },
       {
+        "id": "l1-rdd-exercise/bridge-key-value"
+      },
+      {
         "id": "l1-rdd-exercise/normalize"
+      },
+      {
+        "id": "l1-rdd-exercise/bridge-reduce-key"
       },
       {
         "id": "l1-rdd-exercise/sum"
@@ -83,9 +89,12 @@
   },
   "l1-what-is-rdd": {
     "slug": "l1-what-is-rdd",
-    "version": 1,
+    "version": 2,
     "title": "把一批数字交给分布式计算",
     "tasks": [
+      {
+        "id": "l1-what-is-rdd/bridge-data-parts"
+      },
       {
         "id": "l1-what-is-rdd/parts"
       },
@@ -102,7 +111,7 @@
   },
   "l1-why-dataframe-replaces-rdd": {
     "slug": "l1-why-dataframe-replaces-rdd",
-    "version": 1,
+    "version": 2,
     "title": "结构化问题，先选能表达语义的工具",
     "tasks": [
       {
@@ -121,7 +130,7 @@
   },
   "l2-comprehensive": {
     "slug": "l2-comprehensive",
-    "version": 2,
+    "version": 3,
     "title": "章末挑战：交付一份地区日报",
     "tasks": [
       {
@@ -304,7 +313,7 @@
   },
   "l2-what-is-dataframe": {
     "slug": "l2-what-is-dataframe",
-    "version": 2,
+    "version": 3,
     "title": "动手理解 · DataFrame",
     "tasks": [
       {
@@ -375,7 +384,7 @@
   },
   "l3-comprehensive": {
     "slug": "l3-comprehensive",
-    "version": 1,
+    "version": 2,
     "title": "准备练习：用 SQL 交付城市日报",
     "tasks": [
       {
@@ -438,9 +447,12 @@
   },
   "l3-joins-intro": {
     "slug": "l3-joins-intro",
-    "version": 1,
+    "version": 2,
     "title": "把订单与用户正确配对",
     "tasks": [
+      {
+        "id": "l3-joins-intro/bridge-fact-dimension"
+      },
       {
         "id": "l3-joins-intro/inner"
       },
@@ -514,7 +526,7 @@
   },
   "l3-what-is-spark-sql": {
     "slug": "l3-what-is-spark-sql",
-    "version": 1,
+    "version": 2,
     "title": "给同一批订单换一种提问方式",
     "tasks": [
       {
@@ -571,7 +583,7 @@
   },
   "l4-comprehensive": {
     "slug": "l4-comprehensive",
-    "version": 1,
+    "version": 2,
     "title": "准备练习：给优化建议配证据",
     "tasks": [
       {
@@ -615,7 +627,7 @@
   },
   "l4-explain-api": {
     "slug": "l4-explain-api",
-    "version": 1,
+    "version": 2,
     "title": "选对解释模式，不被长计划淹没",
     "tasks": [
       {
@@ -653,7 +665,7 @@
   },
   "l4-logical-vs-physical": {
     "slug": "l4-logical-vs-physical",
-    "version": 1,
+    "version": 2,
     "title": "同一需求，执行路线可以不同",
     "tasks": [
       {
@@ -672,7 +684,7 @@
   },
   "l4-read-plan": {
     "slug": "l4-read-plan",
-    "version": 1,
+    "version": 2,
     "title": "沿数据流读一棵执行树",
     "tasks": [
       {
@@ -691,7 +703,7 @@
   },
   "l4-wholestage-codegen": {
     "slug": "l4-wholestage-codegen",
-    "version": 1,
+    "version": 2,
     "title": "融合算子，别把星号当奖章",
     "tasks": [
       {
@@ -710,9 +722,12 @@
   },
   "l4-why-explain": {
     "slug": "l4-why-explain",
-    "version": 1,
+    "version": 2,
     "title": "日报变慢，先找一条证据",
     "tasks": [
+      {
+        "id": "l4-why-explain/bridge-plan-map"
+      },
       {
         "id": "l4-why-explain/evidence"
       },
@@ -729,7 +744,7 @@
   },
   "l5-comprehensive": {
     "slug": "l5-comprehensive",
-    "version": 1,
+    "version": 2,
     "title": "准备练习：让汇合正确且可解释",
     "tasks": [
       {
@@ -849,7 +864,7 @@
   },
   "l5-shuffle-trigger-operators": {
     "slug": "l5-shuffle-trigger-operators",
-    "version": 1,
+    "version": 2,
     "title": "用分布要求识别交换候选",
     "tasks": [
       {
@@ -868,7 +883,7 @@
   },
   "l5-what-is-partition": {
     "slug": "l5-what-is-partition",
-    "version": 1,
+    "version": 2,
     "title": "一张表怎样分成可调度的小份",
     "tasks": [
       {
@@ -909,9 +924,12 @@
   },
   "l6-broadcast-hash-join": {
     "slug": "l6-broadcast-hash-join",
-    "version": 1,
+    "version": 2,
     "title": "小表广播，先问装得下吗",
     "tasks": [
+      {
+        "id": "l6-broadcast-hash-join/bridge-broadcast-route"
+      },
       {
         "id": "l6-broadcast-hash-join/build"
       },
@@ -947,7 +965,7 @@
   },
   "l6-comprehensive": {
     "slug": "l6-comprehensive",
-    "version": 1,
+    "version": 2,
     "title": "准备练习：交付不丢不重的补维汇总",
     "tasks": [
       {
@@ -991,7 +1009,7 @@
   },
   "l6-join-data-skew": {
     "slug": "l6-join-data-skew",
-    "version": 1,
+    "version": 2,
     "title": "一个键拖住了整条连接",
     "tasks": [
       {
@@ -1010,11 +1028,14 @@
   },
   "l6-join-strategies-overview": {
     "slug": "l6-join-strategies-overview",
-    "version": 1,
+    "version": 2,
     "title": "同一个连接，几条执行路线",
     "tasks": [
       {
         "id": "l6-join-strategies-overview/layers"
+      },
+      {
+        "id": "l6-join-strategies-overview/bridge-hash-lookup"
       },
       {
         "id": "l6-join-strategies-overview/equi"
@@ -1067,9 +1088,12 @@
   },
   "l6-what-is-join": {
     "slug": "l6-what-is-join",
-    "version": 1,
+    "version": 2,
     "title": "连接先保正确，再谈快慢",
     "tasks": [
+      {
+        "id": "l6-what-is-join/bridge-fact-dimension"
+      },
       {
         "id": "l6-what-is-join/pairs"
       },
@@ -1149,7 +1173,7 @@
   },
   "l7-executor-memory": {
     "slug": "l7-executor-memory",
-    "version": 1,
+    "version": 2,
     "title": "先分清谁在内存紧张",
     "tasks": [
       {
@@ -1157,6 +1181,24 @@
       },
       {
         "id": "l7-executor-memory/scope"
+      },
+      {
+        "id": "l7-executor-memory/bridge-memory-jobs"
+      },
+      {
+        "id": "l7-executor-memory/bridge-idle-borrow"
+      },
+      {
+        "id": "l7-executor-memory/bridge-execution-reclaim"
+      },
+      {
+        "id": "l7-executor-memory/bridge-protected-limit"
+      },
+      {
+        "id": "l7-executor-memory/bridge-storage-cannot-evict"
+      },
+      {
+        "id": "l7-executor-memory/bridge-fraction-meaning"
       },
       {
         "id": "l7-executor-memory/eviction"
@@ -1244,7 +1286,7 @@
   },
   "l7-what-is-tuning": {
     "slug": "l7-what-is-tuning",
-    "version": 2,
+    "version": 3,
     "title": "慢作业诊室：先证据，后处方",
     "tasks": [
       {

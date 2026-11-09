@@ -1,11 +1,11 @@
 {
   "slug": "l6-comprehensive",
-  "version": 1,
+  "version": 2,
   "title": "准备练习：交付不丢不重的补维汇总",
   "mission": "独立任务会测试未匹配、NULL、维表重复与不同输入。",
   "correction": "章末目标先保证连接语义、唯一性与逐组金额，再记录实际策略证据。计划和小样本不提供生产加速认证。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
-  "next": "用自己的话解释判断，再进入下一课。章末可下载独立任务实作；互动记录不替代正式检验。",
+  "next": "下一章 L7 综合这些机制做诊断。正确行对与金额仍是底线，策略变化只是待验证实验，不是自动加速证明。",
   "tasks": [
     {
       "id": "l6-comprehensive/contract",

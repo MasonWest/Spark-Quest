@@ -1,8 +1,8 @@
 {
   "slug": "l3-what-is-spark-sql",
-  "version": 1,
+  "version": 2,
   "title": "给同一批订单换一种提问方式",
-  "mission": "用 SQL 完成已经熟悉的订单分析，分清名字、查询结果与执行命令。",
+  "mission": "L2 已用 DataFrame 做过筛选和汇总；这一章用 SQL 表达同类需求，复用行、列、NULL和分组概念。",
   "correction": "SQL 与 API 共享优化体系，但不能保证任意两种写法计划和耗时相同。SELECT 查询与 INSERT/DDL 命令执行时机不同；SQL 也能访问目录表和文件路径，不只临时视图。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html",
   "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",

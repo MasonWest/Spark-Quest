@@ -1,6 +1,6 @@
 {
   "slug": "l4-read-plan",
-  "version": 1,
+  "version": 2,
   "title": "沿数据流读一棵执行树",
   "mission": "先从叶子找来源，再识别过滤、交换、聚合与 AQE 边界。",
   "correction": "树的显示上下位置不等于 wall-clock 时间顺序；Exchange 类型不同，星号/编号不是 Spark UI Stage 编号。",
@@ -59,7 +59,7 @@
         "l4-read-plan/exchange"
       ],
       "title": "看到交换，先分清哪一种",
-      "intro": "计划中有 BroadcastExchange。",
+      "intro": "Exchange 表示数据交接。ShuffleExchange 通常为满足下游分布重新组织数据；BroadcastExchange 将一侧数据广播。先区分交接目的，L5 会用两份地区金额推演重分发。",
       "code": "# 教学片段\nBroadcastHashJoin\n+- Scan fact\n+- BroadcastExchange\n   +- Scan dim",
       "prompt": "它必定是两侧按键 Shuffle 吗？",
       "fields": [
@@ -94,7 +94,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "BroadcastExchange 与 ShuffleExchange 解决不同数据分布要求，不能只数 Exchange 字样。",
+        "connection": "名字都有 Exchange 不代表动作相同。按键汇合与复制小关系是不同路线，不能只数这个单词就给出固定 Shuffle 次数。",
         "boundary": "存在广播也不代表整个查询完全没有其他交换。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       }
@@ -105,7 +105,7 @@
         "l4-read-plan/markers"
       ],
       "title": "星号编号不是 Stage 编号",
-      "intro": "教学片段显示 *(2) HashAggregate。",
+      "intro": "Task 是处理某份数据的执行任务；Stage 是一组可共同推进的任务；Job 是一次计算请求触发的调度工作。此处先分清名字，后面的调度课再展开。",
       "code": "# 教学片段\n*(2) HashAggregate\n+- Exchange\n   +- *(1) HashAggregate",
       "prompt": "这里的 *(2) 能直接当作什么？",
       "fields": [
@@ -140,7 +140,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "计划中的代码生成标记与运行时 Job/Stage/Task 标识要分开。",
+        "connection": "计划中的 *(N) 是 WholeStageCodegen 分组线索，不是调度 Stage 编号。生成代码的分组与运行中的 Job/Stage/Task 属于不同视角。",
         "boundary": "输出标记因版本与模式而异，不能写成固定映射。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       },
@@ -182,7 +182,7 @@
         "l4-read-plan/adaptive"
       ],
       "title": "初始计划还不是最终证据",
-      "intro": "计划顶部显示 AdaptiveSparkPlan isFinalPlan=false。",
+      "intro": "AQE 是自适应查询执行：运行中拿到统计后，可调整适用的执行路线。isFinalPlan=false 表示当前所见还不是最终路线；L7 再研究条件和控制。",
       "code": "# 教学片段\nAdaptiveSparkPlan isFinalPlan=false",
       "prompt": "下一步应该？",
       "fields": [
@@ -217,7 +217,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "启用 AQE 时，初始计划与最终运行计划可能不同。",
+        "connection": "把“计划执行前的选择”和“运行后的实际路线”分开。AQE 不保证每条查询都改变，也不会修复错误的业务规则；核对同一目标查询完成后的证据。",
         "boundary": "action 类型也可能改变实际执行查询，核对的是同一目标查询与条件。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       }

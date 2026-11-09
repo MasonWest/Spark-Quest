@@ -1,6 +1,6 @@
 {
   "slug": "l5-shuffle-trigger-operators",
-  "version": 1,
+  "version": 2,
   "title": "用分布要求识别交换候选",
   "mission": "逐个问聚合、去重、连接和排序需要怎样的数据位置。",
   "correction": "算子名称是候选线索，不能替代物理计划；JOIN 策略、已有分布、LIMIT 优化和 AQE 都会影响交换。",
@@ -59,7 +59,7 @@
         "l5-shuffle-trigger-operators/join"
       ],
       "title": "看到 JOIN 就认定两边重分布吗",
-      "intro": "维表可广播，事实表来自多个分区。",
+      "intro": "事实表记录订单等事件，维表记录用户等属性。L3 已学按键匹配；现在只问匹配前是否需要重新分发，不要求先掌握 L6 的连接算法。",
       "code": "# 教学情境：候选 BroadcastHashJoin。",
       "prompt": "哪个说法更稳妥？",
       "fields": [
@@ -94,7 +94,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "连接的分布动作取决于具体策略、连接条件和输入分布。",
+        "connection": "JOIN 的具体路线受连接条件、已有分布和策略影响，不能仅凭出现 JOIN 就断定两侧各做一次 Shuffle。复制小关系与两侧按键汇合也不是相同动作。",
         "boundary": "广播也有传输与内存成本，不等于免费。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       },

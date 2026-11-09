@@ -1,6 +1,6 @@
 {
   "slug": "l4-explain-api",
-  "version": 1,
+  "version": 2,
   "title": "选对解释模式，不被长计划淹没",
   "mission": "根据问题选择 extended、formatted、cost 与 codegen。",
   "correction": "explain 通常不执行完整查询来返回数据，但会分析计划；cost 的统计可能缺失或估计不准。各模式与实际输出随版本变化。",
@@ -105,7 +105,7 @@
         "l4-explain-api/cost"
       ],
       "title": "sizeInBytes 是实测内存吗",
-      "intro": "cost 输出某关系 sizeInBytes=64 MiB。",
+      "intro": "sizeInBytes 是计划里的大小估计。广播指把一侧数据复制给参与匹配的执行端；哈希结构是按键查找的结构。这里只区分估计与实测，容量和算法在 L6 展开。",
       "code": "# 教学统计片段\nStatistics(sizeInBytes=64 MiB)",
       "prompt": "最稳妥的解读是？",
       "fields": [
@@ -140,7 +140,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "cost 可展示可用的统计估计；缺失、陈旧和膨胀都会影响选型判断。",
+        "connection": "计划估计帮助选择路线，却不是运行峰值内存：实际构建结构、并发和对象开销仍需测量。不要把 sizeInBytes、文件字节数与可用内存当成同一口径。",
         "boundary": "不要仅凭压缩文件大小或一个估计值承诺广播内存安全。",
         "caution": "这是保留的历史讲义。固定 Shuffle/Stage 数、固定选型和绝对性能结论请以当前标准讲解的条件与边界为准。"
       },

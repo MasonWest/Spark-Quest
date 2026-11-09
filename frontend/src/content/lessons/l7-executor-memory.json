@@ -1,6 +1,6 @@
 {
   "slug": "l7-executor-memory",
-  "version": 1,
+  "version": 2,
   "title": "先分清谁在内存紧张",
   "mission": "区分Driver、Executor JVM、Python进程与任务状态。",
   "correction": "OOM 不必都靠增加 executor heap 解决。Execution/Storage共享机制有具体规则，缓存并非永远不能逐出，Python/堆外与Driver也需单独看。",
@@ -131,12 +131,319 @@
       }
     },
     {
+      "id": "l7-executor-memory/bridge-memory-jobs",
+      "title": "先分两种用途，而非两根内存条",
+      "intro": "执行内存（Execution）用于排序、聚合、连接等计算中的工作状态；存储内存（Storage）用于缓存块等可复用数据。先辨认用途，才谈如何共享。",
+      "code": "A：排序时暂存待排序记录\nB：cache 后保留的一批数据块",
+      "prompt": "A、B 分别属于哪类用途？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "A 执行，B 存储",
+              "feedback": "对，两种用途再共同进入统一管理。"
+            },
+            {
+              "id": "b2",
+              "text": "都等于 Python 进程内存",
+              "feedback": "Python 进程需另看，不能直接等同。"
+            },
+            {
+              "id": "b0",
+              "text": "A 存储，B 执行",
+              "feedback": "把工作状态和缓存用途弄反了。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l7-executor-memory/bridge-memory-jobs"
+      ],
+      "insight": "Execution 服务当前计算，Storage 服务缓存等复用。统一内存管理让两种用途共享区域 M；这里讲 Executor JVM 的堆内示意，M 不是整个机器内存。",
+      "ability": "先分两种用途，而非两根内存条",
+      "reading": {
+        "id": "l7-executor-memory/bridge-memory-jobs/reading",
+        "title": "先分两种用途，而非两根内存条",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "Execution 服务当前计算，Storage 服务缓存等复用。统一内存管理让两种用途共享区域 M；这里讲 Executor JVM 的堆内示意，M 不是整个机器内存。",
+        "boundary": "并非一切 JVM 对象都由这两个池管理；堆外、Python 与其他开销需分别核对。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/bridge-idle-borrow",
+      "title": "一边空闲，另一边可以多用",
+      "intro": "把统一区域 M 暂画成 100 格，存储保护区 R=50 格。R 是保护阈值，不是一堵把空间永久切半的墙。先看完全没有缓存的情况。",
+      "code": "# 简化总体容量模型，单位为格\nM=100，R=50\n缓存实际占用 S=0\n执行总体希望使用 80",
+      "prompt": "仅从这张容量图看，执行会被固定卡在 50 吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "不会，空闲空间可供执行使用",
+              "feedback": "对，没有缓存时不必空留半池。"
+            },
+            {
+              "id": "b2",
+              "text": "必须先造出 50 格缓存",
+              "feedback": "不需要为占空间而缓存。"
+            },
+            {
+              "id": "b0",
+              "text": "会，50 是执行永久上限",
+              "feedback": "保护的是实际存在的缓存，不是空闲配额。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l7-executor-memory/bridge-idle-borrow"
+      ],
+      "insight": "两类用途可以利用对方空闲空间：没有执行工作时缓存也可增长。所谓动态借用首先是共享空闲容量，并不意味着能任意夺走对方已占用的数据。",
+      "ability": "一边空闲，另一边可以多用",
+      "reading": {
+        "id": "l7-executor-memory/bridge-idle-borrow/reading",
+        "title": "一边空闲，另一边可以多用",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "两类用途可以利用对方空闲空间：没有执行工作时缓存也可增长。所谓动态借用首先是共享空闲容量，并不意味着能任意夺走对方已占用的数据。",
+        "boundary": "这是总体容量推演，不是对某个 task 一次申请必获 80 格的承诺；运行中还受任务公平性与块粒度影响。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/bridge-execution-reclaim",
+      "title": "执行来要空间，先回收哪部分缓存",
+      "intro": "缓存曾在执行空闲时增长到 80 格。现在执行需要 40 格。逐出是把缓存块移出内存；它与把计算中间状态 spill 到磁盘不是同一件事。",
+      "code": "M=100，R=50\nS=80，E=0，空闲=20\n执行希望占 40\n# 简化容量图，不模拟块粒度",
+      "prompt": "下面哪种状态符合保护阈值且足以提供空间？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b0",
+          "options": [
+            {
+              "id": "b1",
+              "text": "E=40，S=80，不用改动",
+              "feedback": "两者合计120，超过M。"
+            },
+            {
+              "id": "b2",
+              "text": "S=80，所以执行永远不能开始",
+              "feedback": "超出R的缓存部分可以被执行回收。"
+            },
+            {
+              "id": "b0",
+              "text": "E=40，S=60，逐出20",
+              "feedback": "对，先用20空闲，再回收20超出保护线的缓存。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l7-executor-memory/bridge-execution-reclaim"
+      ],
+      "insight": "执行有需要时，可逐出缓存超出保护区 R 的部分来回收空间。此例缓存从80降到60，尚未触及50保护线。存储级别约定缓存允许放在哪些介质：允许磁盘的块可能保留磁盘副本，未保留的分区以后需要时可重算。",
+      "ability": "执行来要空间，先回收哪部分缓存",
+      "reading": {
+        "id": "l7-executor-memory/bridge-execution-reclaim/reading",
+        "title": "执行来要空间，先回收哪部分缓存",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "执行有需要时，可逐出缓存超出保护区 R 的部分来回收空间。此例缓存从80降到60，尚未触及50保护线。存储级别约定缓存允许放在哪些介质：允许磁盘的块可能保留磁盘副本，未保留的分区以后需要时可重算。",
+        "boundary": "保护指不因这类执行内存回收而挤掉阈值内的缓存，不是永久保存承诺；主动解除持久化（unpersist）、进程丢失等另论。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-executor-memory/memory-reclaim-transfer",
+        "knowledgeId": "l7-executor-memory/bridge-execution-reclaim",
+        "title": "换一张容量图再算一次",
+        "intro": "只看简化总体容量，不模拟任务公平性与块粒度。",
+        "code": "M=200，R=80，S=160，E=0\n执行目标100；当前空闲40",
+        "prompt": "要满足该执行目标，需要逐出多少缓存？",
+        "field": {
+          "id": "answer",
+          "label": "回收量",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "100",
+              "feedback": "漏算了已有40格空闲。"
+            },
+            {
+              "id": "r1",
+              "text": "60",
+              "feedback": "对，40空闲加60回收；剩余缓存100仍不低于R=80。"
+            },
+            {
+              "id": "r2",
+              "text": "160",
+              "feedback": "不能随意赶走全部缓存。"
+            }
+          ]
+        },
+        "insight": "先用空闲，再在R以上回收不足部分；R不是缓存上限。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/bridge-protected-limit",
+      "title": "需要更多时，不能无限赶走缓存",
+      "intro": "仍是同一个池：缓存80格，保护线50格。假设只通过空闲与合法逐出为执行腾空间，不改变配置、不主动 unpersist，也不计块粒度。",
+      "code": "M=100，R=50，S=80，E=0\n空闲20 + 最多回收(80-50)=30",
+      "prompt": "这轮容量推演最多可为执行腾出多少？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "50",
+              "feedback": "对，20+30=50。"
+            },
+            {
+              "id": "b2",
+              "text": "100",
+              "feedback": "缓存保护不是零。"
+            },
+            {
+              "id": "b0",
+              "text": "80",
+              "feedback": "不能把保护线以下的缓存也按此规则赶走。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l7-executor-memory/bridge-protected-limit"
+      ],
+      "insight": "R 描述执行回收缓存的边界，不是缓存固定上限。若算子工作集仍超出可用空间，应观察 spill、任务工作集与并发；不是继续无限逐出，也不保证必定 OOM。",
+      "ability": "需要更多时，不能无限赶走缓存",
+      "reading": {
+        "id": "l7-executor-memory/bridge-protected-limit/reading",
+        "title": "需要更多时，不能无限赶走缓存",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "R 描述执行回收缓存的边界，不是缓存固定上限。若算子工作集仍超出可用空间，应观察 spill、任务工作集与并发；不是继续无限逐出，也不保证必定 OOM。",
+        "boundary": "这个上限只属于给定占用状态与简化假设，不是所有作业固定一半执行内存。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/bridge-storage-cannot-evict",
+      "title": "反过来，缓存能赶走正在计算的数据吗",
+      "intro": "现在执行已使用70格，缓存20格，空闲10格。又来一个需要新增40格的缓存块。虽然R=50，存储也不能因此强制赶走已被执行使用的内存。",
+      "code": "M=100，R=50\nE=70，S=20，空闲=10\n新增缓存块需要40",
+      "prompt": "“R是50，所以必须抢30执行内存来装缓存”对吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b1",
+          "options": [
+            {
+              "id": "b1",
+              "text": "不对，存储不能逐出执行已用空间",
+              "feedback": "对，缓存需求可能不能在内存满足。"
+            },
+            {
+              "id": "b2",
+              "text": "对，缓存比结果正确更重要",
+              "feedback": "不能为缓存破坏执行。"
+            },
+            {
+              "id": "b0",
+              "text": "对，双方已占用空间都能随便抢",
+              "feedback": "共享空闲不等于对称强占。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l7-executor-memory/bridge-storage-cannot-evict"
+      ],
+      "insight": "回收不对称：存储可以利用执行的空闲空间，却不能逐出执行已占用空间。新缓存块可能无法放入内存，后续行为受存储级别等影响；R不是随时能强制获得的预留配额。",
+      "ability": "反过来，缓存能赶走正在计算的数据吗",
+      "reading": {
+        "id": "l7-executor-memory/bridge-storage-cannot-evict/reading",
+        "title": "反过来，缓存能赶走正在计算的数据吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "回收不对称：存储可以利用执行的空闲空间，却不能逐出执行已占用空间。新缓存块可能无法放入内存，后续行为受存储级别等影响；R不是随时能强制获得的预留配额。",
+        "boundary": "这是新块额外需要40格的情境，不把总缓存目标40与新增40混淆。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/bridge-fraction-meaning",
+      "title": "两个参数分别画哪条线",
+      "intro": "以 Spark 3.5.7 的常规堆内配置作示意：spark.memory.fraction 决定统一区域 M，spark.memory.storageFraction 决定其中的保护阈值 R。先会解释，不急着改默认值。",
+      "code": "JVM heap=2300 MiB\n扣除保留量300 MiB\nmemory.fraction=0.6 → M=1200 MiB\nstorageFraction=0.5 → R=600 MiB",
+      "prompt": "这里的600 MiB是什么意思？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "b2",
+          "options": [
+            {
+              "id": "b1",
+              "text": "缓存绝对不能超过600",
+              "feedback": "空闲时缓存可以超过R。"
+            },
+            {
+              "id": "b2",
+              "text": "M内缓存受执行回收保护的阈值",
+              "feedback": "对，它既不是固定缓存上限，也不是执行永久分界。"
+            },
+            {
+              "id": "b0",
+              "text": "Executor 总内存",
+              "feedback": "heap和M都比它大，Python等开销也不能归进这个数。"
+            }
+          ]
+        }
+      ],
+      "knowledgeIds": [
+        "l7-executor-memory/bridge-fraction-meaning"
+      ],
+      "insight": "M=(heap-300MiB)×fraction，R=M×storageFraction，是该版本常规堆内说明。提高R可能减少执行可回收空间，不能当作免费增内存；默认值应先保留，以实际工作集和指标验证。",
+      "ability": "两个参数分别画哪条线",
+      "reading": {
+        "id": "l7-executor-memory/bridge-fraction-meaning/reading",
+        "title": "两个参数分别画哪条线",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "M=(heap-300MiB)×fraction，R=M×storageFraction，是该版本常规堆内说明。提高R可能减少执行可回收空间，不能当作免费增内存；默认值应先保留，以实际工作集和指标验证。",
+        "boundary": "公式不是容器总内存预算；保留设置、测试配置、堆外和运行版本可能改变具体路径。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
       "id": "l7-executor-memory/eviction",
       "knowledgeIds": [
         "l7-executor-memory/eviction"
       ],
       "title": "缓存占用时就永不能执行了吗",
-      "intro": "使用共享管理的执行与存储区域。",
+      "intro": "回顾刚才的容量推演：双方能用空闲空间，执行可在保护线外回收缓存，存储不能逐出执行已用空间。现在回到实际诊断。",
       "code": "# 教学情境：缓存与计算争用资源。",
       "prompt": "哪句更稳妥？",
       "fields": [
@@ -171,7 +478,7 @@
         "sectionTitle": "先用人话理解",
         "startMarker": "【先用人话理解】",
         "endMarker": "【一个直观的心智模型】",
-        "connection": "缓存有容量与逐出条件，执行/存储的具体管理规则不能用“完全独立”或“无限互借”概括。",
+        "connection": "不能把规则概括为“完全独立”或“无限互借”。先定位进程、执行工作集、缓存实际占用和存储级别，再判断回收、spill或重算；Python内存问题不能单靠调整这个JVM池解决。",
         "boundary": "重用收益还受缓存命中、重算与并发影响。",
         "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
       }
