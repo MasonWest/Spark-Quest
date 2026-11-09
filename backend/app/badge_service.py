@@ -19,7 +19,7 @@ Rules
   rule in `routers/badges.py`, not a rule-engine concern.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Callable, Dict, List, Optional
 
@@ -53,6 +53,7 @@ class BadgeContext:
     """
 
     user_id: str
+    learning: dict = field(default_factory=dict)
 
     # user_stats
     total_quiz_correct: int = 0
@@ -133,6 +134,11 @@ BADGE_RULES: Dict[str, Callable[[BadgeContext], bool]] = {
     "QUANJING": _rule_quanjing,
     # LEVEL_<N> dispatched separately (needs DB lookup).
 }
+
+
+from .learning_achievements import DEFINITIONS
+for _code, _name, _desc, _group, _goal, _action, _icon in DEFINITIONS:
+    BADGE_RULES[_code] = lambda ctx, code=_code, goal=_goal: ctx.learning.get(code, 0) >= goal
 
 
 # ---------------------------------------------------------------------------
@@ -246,6 +252,8 @@ def build_context(
     ctx.current_streak = streak.current
     ctx.longest_streak = streak.longest
 
+    from .learning_achievements import progress
+    ctx.learning = progress(db, user_id, now)
     ctx.levels = _load_levels(db)
 
     # Event-derived facts. Both are only relevant for the submit that just

@@ -66,8 +66,8 @@
 }
 
 .badge-card.locked {
-  opacity: 0.62;
-  filter: grayscale(0.85);
+  opacity: 1;
+  background: #fafbf8;
 }
 
 .badge-card.secret {
@@ -128,3 +128,5 @@
   color: #b45309;
   font-weight: 600;
 }
+
+.aw-eyebrow{color:#698751;font-size:12px;font-weight:700;margin:18px 0 0}.aw-filters{display:flex;gap:8px;margin:24px 0}.aw-filters button{border:1px solid #dce3d5;border-radius:24px;padding:10px 18px;background:white;color:#586250;font-weight:700;cursor:pointer}.aw-filters button[aria-pressed=true]{background:#243f2c;color:white;border-color:#243f2c}.aw-progress{width:100%;display:flex;align-items:center;gap:6px;margin-top:auto}.aw-progress progress{flex:1;min-width:0;width:60%;height:8px;accent-color:#65a630}.aw-progress span{font-size:11px;white-space:nowrap;color:#56674b}.aw-action{font-size:12px;color:#4d8126;font-weight:700;padding:8px}.badges-page .badge-card-desc{margin:0}.badges-page .badge-card-img{background:transparent}.badges-page .badge-card{border-bottom-width:4px}.badges-page .badge-card.unlocked{background:#fffaf0}.badges-page .badge-group-hint{line-height:1.7;color:#6a7565}

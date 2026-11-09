@@ -19,7 +19,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import SessionLocal
-from ..models import DEFAULT_USER_ID, BadgeDefinition, UserBadge
+from ..models import DEFAULT_USER_ID, BadgeDefinition, UserBadge, LessonMastery, QuizAnswerLog
 from ..schemas import BadgeOut
 
 router = APIRouter(prefix="/api")
@@ -76,4 +76,31 @@ def list_badges(db: Session = Depends(get_db)) -> List[BadgeOut]:
         row[0]: (row[1].isoformat() if row[1] is not None else None) for row in rows
     }
 
-    return [build_badge_out(b, unlocked_ids, unlocked_at_map) for b in definitions]
+    from ..learning_achievements import CATALOG
+    from ..badge_service import build_context
+    ctx = build_context(db, DEFAULT_USER_ID)
+    values = ctx.learning
+    legacy = {**{f'QUIZ_{n}':(ctx.total_quiz_correct,n) for n in (100,500,1000)},
+              **{f'STREAK_{n}':(ctx.longest_streak,n) for n in (7,30,100)},
+              'REVIEW_50':(ctx.total_reviews_passed,50),'QUANJING':(ctx.mastered_count,ctx.total_lessons)}
+    mastered = db.scalars(select(LessonMastery).where(LessonMastery.status=='mastered').order_by(LessonMastery.next_review_at)).first()
+    review_action = f'/review/{mastered.lesson_id}' if mastered else '/map'
+    wrong = db.scalars(select(QuizAnswerLog).where(QuizAnswerLog.user_id==DEFAULT_USER_ID,QuizAnswerLog.source.in_(['quiz','review']),QuizAnswerLog.is_correct==0).order_by(QuizAnswerLog.submitted_at.desc())).first()
+    repair_action = (f'/review/{wrong.lesson_id}' if wrong.source=='review' else f'/lesson/{wrong.lesson_id}/quiz') if wrong else review_action
+    result = []
+    for b in definitions:
+        item = build_badge_out(b, unlocked_ids, unlocked_at_map)
+        if b.code in CATALOG and not (b.is_secret and not item.unlocked):
+            _, _, _, group, goal, action, _ = CATALOG[b.code]
+            item.progress = goal if item.unlocked else min(goal, values[b.code])
+            item.goal = goal
+            item.group = group
+            item.action = repair_action if b.code in ('OLD_PIT','REPAIR_CREW') else review_action if action=='/review' else action
+        elif not (b.is_secret and not item.unlocked):
+            pair = legacy.get(b.code)
+            if b.code.startswith('LEVEL_'):
+                pair = ctx.levels.get(int(b.code.split('_')[1]))
+            if pair and pair[1]>0:
+                item.progress = min(pair[0],pair[1]);item.goal=pair[1];item.action='/map'
+        result.append(item)
+    return result

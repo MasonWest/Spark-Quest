@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import type { Dashboard } from "../types";
+import type { Badge, Dashboard } from "../types";
 import { ProgressRing } from "../components/ui";
 import "./Home.css";
 import DelayedCheckLink from "../components/DelayedCheckLink";
+
+import AchievementGoal from "../components/AchievementGoal";
+import { nextAchievement } from "../components/achievementData";
 
 export default function Home() {
   const [data, setData] = useState<Dashboard | null>(null);
@@ -17,12 +20,15 @@ export default function Home() {
     }).then(setData).catch(e => { if (e.name !== "AbortError") setError(true); });
     return () => controller.abort();
   }, [attempt]);
+  const [achievement,setAchievement]=useState<Badge>();
+  useEffect(()=>{let active=true;fetch("/api/badges").then(r=>r.ok?r.json():[]).then(b=>{if(active)setAchievement(nextAchievement(b));}).catch(()=>{});return ()=>{active=false;};},[]);
   const lesson = data?.today_lesson;
   const level = data?.current_level;
   return <div className="home-page">
     <header className="home-topbar"><Link to="/" className="home-wordmark">spark quest<span> / 每天进步一点点</span></Link><span className="home-streak">🔥 {data?.streak_days ?? "—"}<small> 连续天数</small></span></header>
     <section className="home-welcome"><div><p className="home-eyebrow">LET’S SPARK SOMETHING</p><h1>{data?.studied_today ? "今天的你，又进步了！" : "准备好，点亮新技能！"}</h1><p>从一个小知识点开始，让 Spark 一点点变简单。</p></div><img className="home-mascot" src="/icons/spark.svg" alt="微笑的 Spark 火苗伙伴" /></section>
     <DelayedCheckLink />
+    {achievement&&<AchievementGoal badge={achievement}/>}
     {error ? <div className="home-panel" role="alert"><h2>暂时连不上学习服务</h2><p>请确认后端服务已启动，再试一次。</p><button className="btn-primary" onClick={() => setAttempt(x => x + 1)}>重新加载</button></div> : !data ? <div className="home-panel home-loading" role="status">正在准备你的学习旅程…</div> : <div className="home-grid">
       <div className="home-main">
         <section className="home-lesson-card">

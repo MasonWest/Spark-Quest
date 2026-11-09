@@ -10,6 +10,8 @@
 - 标准讲解/延迟库v6，毕业配置仍v5。七个独立毕业任务保留；L2/L3 Windows Parquet文件验收限制仍未解决，不能将本轮小数据查询/缓存实验当作它通过。
 - 前一轮递进修补见 [CONCEPT_PROGRESSION_REPAIR.md](CONCEPT_PROGRESSION_REPAIR.md)，更早全章快照见 [FINAL_CURRICULUM_REVIEW.md](FINAL_CURRICULUM_REVIEW.md)。以下早期说明均保留作历史记录，以新标准讲解为准。
 
+成就系统已升级为28枚永久成就与4枚本机练习成就，增加分类、进度、首页目标与实际行动入口；验证及数据保留见 [ACHIEVEMENTS_UPGRADE.md](ACHIEVEMENTS_UPGRADE.md)。
+
 ## 早期版本记录（历史）
 
 

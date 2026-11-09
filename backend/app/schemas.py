@@ -104,6 +104,11 @@ class BadgeOut(BaseModel):
     is_secret: bool = False
     unlocked: bool = False
     unlocked_at: Optional[str] = None
+    progress: Optional[int] = None
+    goal: Optional[int] = None
+    group: str = ''
+    action: str = ''
+
 
 
 class DashboardOut(BaseModel):

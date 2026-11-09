@@ -100,6 +100,12 @@ export interface Badge {
   is_secret: boolean;
   unlocked: boolean;
   unlocked_at: string | null;
+  progress?: number | null;
+  goal?: number | null;
+  group?: string;
+  action?: string;
+  scope?: 'local';
+
 }
 
 export const statusIcon: Record<LessonStatus, string> = {

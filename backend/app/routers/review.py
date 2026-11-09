@@ -263,6 +263,21 @@ def submit_review(lesson_id: int, payload: ReviewSubmitIn, db: Session = Depends
         review_submitted=True,
         debug_correct=debug_correct,
     )
+    # Phase 10.1: append one QuizAnswerLog fact row per graded question (same
+    # transaction as the reschedule above). source="review". Practice is written
+    # separately and touches nothing else.
+    for r in results:
+        db.add(QuizAnswerLog(
+            lesson_id=lesson_id,
+            question_id=r.question_id,
+            source="review",
+            selected_index=r.selected_index,
+            correct_index=r.correct_index,
+            is_correct=1 if r.is_correct else 0,
+            submitted_at=now,
+        ))
+
+    db.flush()  # Badge rules must see this submission's answer facts.
     new_badge_dicts = evaluate_badges(
         db,
         DEFAULT_USER_ID,
@@ -286,19 +301,6 @@ def submit_review(lesson_id: int, payload: ReviewSubmitIn, db: Session = Depends
         )
         for b in new_badge_dicts
     ]
-
-    # Phase 10.1: append one QuizAnswerLog fact row per graded question (same
-    # transaction as the reschedule above). source="review". Practice is written
-    # separately and touches nothing else.
-    for r in results:
-        db.add(QuizAnswerLog(
-            lesson_id=lesson_id,
-            question_id=r.question_id,
-            source="review",
-            selected_index=r.selected_index,
-            correct_index=r.correct_index,
-            is_correct=1 if r.is_correct else 0,
-        ))
 
     db.commit()
     db.refresh(mastery)

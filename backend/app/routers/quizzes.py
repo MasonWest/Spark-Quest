@@ -274,6 +274,23 @@ def submit_quiz(lesson_id: int, payload: QuizSubmitIn, db: Session = Depends(get
         quiz_submitted=True,
         debug_correct=debug_correct,
     )
+    # Phase 10.1: append one QuizAnswerLog fact row per graded question. This is
+    # the missing "fact layer" — every attempt's per-question outcome is now
+    # persisted (previously discarded after the HTTP response). Same transaction
+    # as the mastery write above. Practice is written separately and does NOT
+    # touch mastery / streak / badge (see routers/weak_questions.py).
+    for r in results:
+        db.add(QuizAnswerLog(
+            lesson_id=lesson_id,
+            question_id=r.question_id,
+            source="quiz",
+            selected_index=r.selected_index,
+            correct_index=r.correct_index,
+            is_correct=1 if r.is_correct else 0,
+            submitted_at=now,
+        ))
+
+    db.flush()  # Badge rules must see this submission's answer facts.
     new_badge_dicts = evaluate_badges(
         db,
         DEFAULT_USER_ID,
@@ -297,21 +314,6 @@ def submit_quiz(lesson_id: int, payload: QuizSubmitIn, db: Session = Depends(get
         )
         for b in new_badge_dicts
     ]
-
-    # Phase 10.1: append one QuizAnswerLog fact row per graded question. This is
-    # the missing "fact layer" — every attempt's per-question outcome is now
-    # persisted (previously discarded after the HTTP response). Same transaction
-    # as the mastery write above. Practice is written separately and does NOT
-    # touch mastery / streak / badge (see routers/weak_questions.py).
-    for r in results:
-        db.add(QuizAnswerLog(
-            lesson_id=lesson_id,
-            question_id=r.question_id,
-            source="quiz",
-            selected_index=r.selected_index,
-            correct_index=r.correct_index,
-            is_correct=1 if r.is_correct else 0,
-        ))
 
     db.commit()
     db.refresh(existing)

@@ -104,5 +104,9 @@ def seed_badges(db: Session) -> dict:
         _upsert(db, payload)
         inserted_or_updated += 1
 
+    from .learning_achievements import DEFINITIONS
+    for offset, (code, name, desc, group, goal, action, icon) in enumerate(DEFINITIONS):
+        _upsert(db, dict(code=code,name=name,description=desc,tier='special',image=f'/badges/learning-{icon}.svg',sort_order=200+offset,is_secret=False))
+        inserted_or_updated += 1
     db.commit()
     return {"total_upserted": inserted_or_updated}
