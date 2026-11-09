@@ -57,6 +57,10 @@ def init_db() -> None:
 
     migrate.run_migrations()
     _seed_course_data()
+    # New lessons must be present before question seeding. Existing DBs are
+    # upgraded with a backup; cold seeds already contain the canonical order.
+    from .course_extensions import install as install_course_extensions
+    install_course_extensions(engine, apply=True)
     _seed_quizzes()
     from .reviewed_question_bank import seed_reviewed_bank
     with Session(engine) as session:

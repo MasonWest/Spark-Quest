@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -2337,6 +2337,124 @@
         {
           "title": "Spark 3.5.7 官方说明",
           "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l3-window-topn": {
+      "title": "窗口：每组Top N与最新整行",
+      "sources": [
+        {
+          "title": "Spark3.5.7官方文档",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-window.html"
+        }
+      ],
+      "sections": [
+        {
+          "id": "l3-window-topn/keep-rows",
+          "title": "汇总一组，还是给每行补一列",
+          "body": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。",
+          "boundary": "窗口分组不是写目录partitionBy，也不承诺物理分区布局；本课先固定业务分组。加ORDER BY后的默认窗口帧可能改变聚合含义，本课不把它一概当整组总额。"
+        },
+        {
+          "id": "l3-window-topn/number",
+          "title": "每个城市从一号重新排",
+          "body": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。",
+          "boundary": "窗口内的排序用于计算序号，不等于最终结果展示全局有序；展示还需外层ORDER BY。"
+        },
+        {
+          "id": "l3-window-topn/stable",
+          "title": "最新时间相同，还得约定选谁",
+          "body": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。",
+          "boundary": "event_id的顺序是业务约定，不自动代表真实发生先后；缺少稳定键时不能承诺每次选中同一条。"
+        },
+        {
+          "id": "l3-window-topn/filter",
+          "title": "先生成序号，再筛第一行",
+          "body": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。",
+          "boundary": "不要依赖其他SQL方言的QUALIFY语法；本课不把CTE当物化保证。"
+        },
+        {
+          "id": "l3-window-topn/topn",
+          "title": "每组两单，不是全表两单",
+          "body": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。",
+          "boundary": "如果业务要求并列名次全部保留，先重新明确“N”指行数还是名次，不要继续套固定行数方案。"
+        },
+        {
+          "id": "l3-window-topn/rank",
+          "title": "同分算并列时，名次怎样走",
+          "body": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。",
+          "boundary": "排名的别名在示例中可自定；若在排名ORDER BY中加入唯一id，同分行便不再按该完整排序键并列。"
+        },
+        {
+          "id": "l3-window-topn/dense",
+          "title": "取前两档成绩，需要哪种名次",
+          "body": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。",
+          "boundary": "多列排序时“相同”指整个排序值组合相同，而不仅第一列。"
+        },
+        {
+          "id": "l3-window-topn/null-latest",
+          "title": "缺时间的事件，别默默选成最新",
+          "body": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。",
+          "boundary": "本题user_id非空；若允许NULL用户键，窗口会把它们放同一组，必须另行约定是否应排除或区分。"
+        }
+      ]
+    },
+    "l7-cache-lifecycle": {
+      "title": "缓存实践：从复用到释放",
+      "sources": [
+        {
+          "title": "Spark3.5.7官方文档",
+          "url": "https://spark.apache.org/docs/3.5.7/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.persist.html"
+        }
+      ],
+      "sections": [
+        {
+          "id": "l7-cache-lifecycle/worth",
+          "title": "先圈出真正会被重复用的结果",
+          "body": "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。",
+          "boundary": "两份语义不同的清洗不能仅因变量名相同就视为同一个可复用结果。"
+        },
+        {
+          "id": "l7-cache-lifecycle/level",
+          "title": "明确这次说的是DataFrame缓存",
+          "body": "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。",
+          "boundary": "不要据名字推断任意Python对象的布局；RDD与DataFrame以及不同版本的默认值分别核对。"
+        },
+        {
+          "id": "l7-cache-lifecycle/materialize",
+          "title": "登记缓存，不等于已经把数据装满",
+          "body": "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。",
+          "boundary": "count本身有成本，不能为了缓存再无条件多跑一次；应把预热计入整体实验。"
+        },
+        {
+          "id": "l7-cache-lifecycle/observe",
+          "title": "设置成功与真正复用要看两种证据",
+          "body": "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。",
+          "boundary": "小报告collect用于教学核对，不是允许收集海量明细；具体计划包装可能随版本变化。"
+        },
+        {
+          "id": "l7-cache-lifecycle/scope",
+          "title": "别把缓存当成永久快照或新查询的保证",
+          "body": "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。",
+          "boundary": "本课不假定缓存如何响应所有外部源变更；生产需另定输入版本与刷新规则。"
+        },
+        {
+          "id": "l7-cache-lifecycle/release",
+          "title": "两份报告做完，把缓存还回去",
+          "body": "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。",
+          "boundary": "不能把缓存块释放等同于JVM立刻把全部内存还给操作系统，其他查询共享同一缓存关系时也要协调释放时机。"
+        },
+        {
+          "id": "l7-cache-lifecycle/finally",
+          "title": "中途报错，也要走到清理步骤",
+          "body": "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。",
+          "boundary": "进程崩溃或清理本身失败仍需运行环境处理，finally不是一切故障的绝对保证。"
+        },
+        {
+          "id": "l7-cache-lifecycle/fair-test",
+          "title": "比较方案，预热与冷启动要算同一本账",
+          "body": "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。",
+          "boundary": "本课不提供固定倍数的性能保证；正式报告的缓存冷热条件应可复核。"
         }
       ]
     }

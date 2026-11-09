@@ -1,0 +1,402 @@
+{
+  "slug": "l3-window-topn",
+  "version": 1,
+  "title": "窗口：每组Top N与最新整行",
+  "mission": "从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。",
+  "correction": "",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-window.html",
+  "next": "下一课JOIN会给已选记录补用户属性。窗口负责组内计算与选行，连接负责跨表匹配，二者都要验证输出粒度。",
+  "tasks": [
+    {
+      "id": "l3-window-topn/keep-rows",
+      "title": "汇总一组，还是给每行补一列",
+      "intro": "上一课GROUP BY把每个城市收成一行。现在运营要保留每张订单，同时带上所属城市总额。窗口计算在相关行之间计算，再把结果附到各行。",
+      "code": "-- 输入：north/30、north/20、south/8\nSELECT city, amount,\n SUM(amount) OVER (PARTITION BY city) AS city_total\nFROM orders",
+      "prompt": "没有其他筛选时，这段结果有几行？",
+      "knowledgeIds": [
+        "l3-window-topn/keep-rows"
+      ],
+      "ability": "汇总一组，还是给每行补一列",
+      "insight": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "2行，每城市一行",
+              "feedback": "那是GROUP BY城市的输出形状。"
+            },
+            {
+              "id": "o1",
+              "text": "3行，保留三张订单",
+              "feedback": "对，north两行各带50，south一行带8。"
+            },
+            {
+              "id": "o2",
+              "text": "1行，全表总额",
+              "feedback": "窗口没有把全表收成一行。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/keep-rows/reading",
+        "title": "汇总一组，还是给每行补一列",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。",
+        "boundary": "窗口分组不是写目录partitionBy，也不承诺物理分区布局；本课先固定业务分组。加ORDER BY后的默认窗口帧可能改变聚合含义，本课不把它一概当整组总额。"
+      }
+    },
+    {
+      "id": "l3-window-topn/number",
+      "title": "每个城市从一号重新排",
+      "intro": "ROW_NUMBER给组内每行一个连续序号。先按city分组，再按金额降序、订单号升序明确顺序。",
+      "code": "-- north: a/70,b/40；south: c/90\nROW_NUMBER() OVER (\n PARTITION BY city ORDER BY amount DESC, id ASC\n) AS rn",
+      "prompt": "订单a、b、c的rn分别是？",
+      "knowledgeIds": [
+        "l3-window-topn/number"
+      ],
+      "ability": "每个城市从一号重新排",
+      "insight": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o1",
+              "text": "1、1、1",
+              "feedback": "同组不同行的ROW_NUMBER不相同。"
+            },
+            {
+              "id": "o2",
+              "text": "1、2、1",
+              "feedback": "对，south独立从1开始。"
+            },
+            {
+              "id": "o0",
+              "text": "1、2、3",
+              "feedback": "漏掉了按城市重新编号。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/number/reading",
+        "title": "每个城市从一号重新排",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。",
+        "boundary": "窗口内的排序用于计算序号，不等于最终结果展示全局有序；展示还需外层ORDER BY。"
+      }
+    },
+    {
+      "id": "l3-window-topn/stable",
+      "title": "最新时间相同，还得约定选谁",
+      "intro": "L2已知道dropDuplicates不保证保留最新整行。现在按用户保留一条最新事件：event_id唯一且非空，时间相同时约定event_id降序选较大者。",
+      "code": "-- u1: e10/time=5/status=old；e11/time=5/status=new\nROW_NUMBER() OVER (PARTITION BY user_id\n ORDER BY event_time DESC NULLS LAST, event_id DESC) AS rn",
+      "prompt": "u1保留rn=1，按这个约定选谁？",
+      "knowledgeIds": [
+        "l3-window-topn/stable"
+      ],
+      "ability": "最新时间相同，还得约定选谁",
+      "insight": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "把两行status拼接",
+              "feedback": "窗口选行不自动合并业务字段。"
+            },
+            {
+              "id": "o0",
+              "text": "e11，按完整排序规则",
+              "feedback": "对，时间并列由唯一event_id打破。"
+            },
+            {
+              "id": "o1",
+              "text": "任意一行，规则没有作用",
+              "feedback": "最后一个排序键已明确。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/stable/reading",
+        "title": "最新时间相同，还得约定选谁",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。",
+        "boundary": "event_id的顺序是业务约定，不自动代表真实发生先后；缺少稳定键时不能承诺每次选中同一条。"
+      },
+      "remediation": {
+        "id": "l3-window-topn/transfer",
+        "knowledgeId": "l3-window-topn/stable",
+        "title": "换一份材料再判断",
+        "intro": "复用本步规则，不沿用上一份答案。",
+        "code": "u2同一时间有e20、e21；event_id唯一\n约定时间降序、event_id降序选1条",
+        "prompt": "按此约定保留哪条？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "e20",
+              "feedback": "回到本步的阶段与规则，再核对新材料。"
+            },
+            {
+              "id": "r1",
+              "text": "e21",
+              "feedback": "并列时间由明确的唯一排序键决定，ROW_NUMBER选中整行。"
+            },
+            {
+              "id": "r2",
+              "text": "都随机",
+              "feedback": "回到本步的阶段与规则，再核对新材料。"
+            }
+          ]
+        },
+        "insight": "并列时间由明确的唯一排序键决定，ROW_NUMBER选中整行。"
+      }
+    },
+    {
+      "id": "l3-window-topn/filter",
+      "title": "先生成序号，再筛第一行",
+      "intro": "序号要先计算出来。用CTE（给子查询起一个临时名字）分两层表达：内层编号，外层过滤。",
+      "code": "WITH numbered AS (\n SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id\n  ORDER BY event_time DESC NULLS LAST,event_id DESC) AS rn\n FROM events\n)\nSELECT * FROM numbered WHERE rn = 1",
+      "prompt": "为什么不在同一层SELECT的WHERE里直接用rn？",
+      "knowledgeIds": [
+        "l3-window-topn/filter"
+      ],
+      "ability": "先生成序号，再筛第一行",
+      "insight": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "WHERE只能比较字符串",
+              "feedback": "WHERE支持多种条件。"
+            },
+            {
+              "id": "o1",
+              "text": "同层WHERE不能依赖尚未算出的窗口结果",
+              "feedback": "对，用子查询把计算阶段分开。"
+            },
+            {
+              "id": "o2",
+              "text": "窗口禁止后续过滤",
+              "feedback": "外层过滤正是这里需要的。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/filter/reading",
+        "title": "先生成序号，再筛第一行",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。",
+        "boundary": "不要依赖其他SQL方言的QUALIFY语法；本课不把CTE当物化保证。"
+      }
+    },
+    {
+      "id": "l3-window-topn/topn",
+      "title": "每组两单，不是全表两单",
+      "intro": "运营要每城市金额最高的至多两张订单；不足两张则保留实际存在的订单，不补假行。",
+      "code": "-- north:70,40,10；south:90\n-- 已按city分组、amount DESC和唯一id编号\nSELECT * FROM numbered WHERE rn <= 2",
+      "prompt": "两个城市合计输出几张订单？",
+      "knowledgeIds": [
+        "l3-window-topn/topn"
+      ],
+      "ability": "每组两单，不是全表两单",
+      "insight": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o1",
+              "text": "4张，每组必须补满",
+              "feedback": "不足不补造订单。"
+            },
+            {
+              "id": "o2",
+              "text": "3张，north两张、south一张",
+              "feedback": "对，分别按组筛选已有序号。"
+            },
+            {
+              "id": "o0",
+              "text": "2张，等同LIMIT 2",
+              "feedback": "LIMIT 2只限制整份结果，不等同每组Top2。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/topn/reading",
+        "title": "每组两单，不是全表两单",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。",
+        "boundary": "如果业务要求并列名次全部保留，先重新明确“N”指行数还是名次，不要继续套固定行数方案。"
+      }
+    },
+    {
+      "id": "l3-window-topn/rank",
+      "title": "同分算并列时，名次怎样走",
+      "intro": "三名选手分数100、100、90。现在按分数相同视为并列，排名窗口只按score降序，不添加唯一id打破业务并列。",
+      "code": "RANK() OVER (PARTITION BY team ORDER BY score DESC)\n-- 同队分数：100、100、90",
+      "prompt": "三人的RANK是哪组？",
+      "knowledgeIds": [
+        "l3-window-topn/rank"
+      ],
+      "ability": "同分算并列时，名次怎样走",
+      "insight": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "1、1、2",
+              "feedback": "这是DENSE_RANK的连续档位。"
+            },
+            {
+              "id": "o0",
+              "text": "1、1、3",
+              "feedback": "对，并列占用两个位置，下一名跳到3。"
+            },
+            {
+              "id": "o1",
+              "text": "1、2、3",
+              "feedback": "这是逐行序号，不是同分并列名次。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/rank/reading",
+        "title": "同分算并列时，名次怎样走",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。",
+        "boundary": "排名的别名在示例中可自定；若在排名ORDER BY中加入唯一id，同分行便不再按该完整排序键并列。"
+      }
+    },
+    {
+      "id": "l3-window-topn/dense",
+      "title": "取前两档成绩，需要哪种名次",
+      "intro": "仍是100、100、90。业务要前两种不同分数的所有人，不能为了凑两行丢掉一个并列者。",
+      "code": "DENSE_RANK() OVER (PARTITION BY team ORDER BY score DESC) AS tier\n-- 外层WHERE tier <= 2",
+      "prompt": "会保留几人？",
+      "knowledgeIds": [
+        "l3-window-topn/dense"
+      ],
+      "ability": "取前两档成绩，需要哪种名次",
+      "insight": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o2",
+          "options": [
+            {
+              "id": "o0",
+              "text": "2人，名次就是行数",
+              "feedback": "这里限制的是分数档位。"
+            },
+            {
+              "id": "o1",
+              "text": "1人，只保留第一个100",
+              "feedback": "相同分数两人都应保留。"
+            },
+            {
+              "id": "o2",
+              "text": "3人，100和90都是前两档",
+              "feedback": "对，档位1、1、2均达标。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/dense/reading",
+        "title": "取前两档成绩，需要哪种名次",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。",
+        "boundary": "多列排序时“相同”指整个排序值组合相同，而不仅第一列。"
+      }
+    },
+    {
+      "id": "l3-window-topn/null-latest",
+      "title": "缺时间的事件，别默默选成最新",
+      "intro": "新用户u9有e1/time=NULL、e2/time=7。约定已知时间优先，全部时间未知时再用唯一event_id降序决定。",
+      "code": "ORDER BY event_time DESC NULLS LAST, event_id DESC\n-- 选每用户ROW_NUMBER=1",
+      "prompt": "u9应选哪条？",
+      "knowledgeIds": [
+        "l3-window-topn/null-latest"
+      ],
+      "ability": "缺时间的事件，别默默选成最新",
+      "insight": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "e2，因为已知时间按约定优先",
+              "feedback": "对，缺失时间规则明确写入排序。"
+            },
+            {
+              "id": "o2",
+              "text": "不保留任何u9事件",
+              "feedback": "仍有符合选行契约的记录。"
+            },
+            {
+              "id": "o0",
+              "text": "e1，因为NULL总是最新",
+              "feedback": "NULL不是一个自动更大的业务时间。"
+            }
+          ]
+        }
+      ],
+      "reading": {
+        "id": "l3-window-topn/null-latest/reading",
+        "title": "缺时间的事件，别默默选成最新",
+        "sectionTitle": "本课模型",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。",
+        "boundary": "本题user_id非空；若允许NULL用户键，窗口会把它们放同一组，必须另行约定是否应排除或区分。"
+      }
+    }
+  ]
+}

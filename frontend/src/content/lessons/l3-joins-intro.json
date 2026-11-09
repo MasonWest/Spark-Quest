@@ -1,8 +1,8 @@
 {
   "slug": "l3-joins-intro",
-  "version": 2,
+  "version": 3,
   "title": "把订单与用户正确配对",
-  "mission": "先理解匹配、丢行和放大，再谈连接性能。",
+  "mission": "刚才窗口已练过组内编号与选行；现在跨表补字段，先认清订单和用户属性，再检查连接是否放大或丢失记录。",
   "correction": "多笔订单匹配一个唯一用户是正常明细粒度；右侧重复键才会额外放大订单。键类型不一致可能发生隐式转换或错误，不能断言必定全部不匹配。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-join.html",
   "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",

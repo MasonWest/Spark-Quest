@@ -137,3 +137,10 @@ L1任务明确空白分词、小写、标点保留、不去重；L7任务明确A
 当前标准讲解v5、延迟库v5、毕业配置仍v5；各课版本独立。总计61课/274步、57个补救/延迟目标。旧任务题干、代码和答案身份保留，新版互动独立计进度，旧本机记录不删除，数据库正式成绩不重置。新内存规则未改动正式题库，课中与隔天检查不能冒充新增正式覆盖。
 
 容量题为明确简化的总体模型，不预测单Task的精确配额。`check-concept-examples.py` 分开检查模型数字与真实Spark的有限内存管理行为，不模拟真实缓存块逐出。见根目录 CONCEPT_PROGRESSION_REPAIR.md。
+
+
+## 两个正式扩展课
+
+`extension_lessons.py`显式维护L3窗口与L7缓存各8步，`author-extension-lessons.py --check`比较lesson、标准讲解/延迟、course_seed插入位置、course_extensions描述和20题源。标准讲解/延迟v6，毕业配置仍v5。分章作者在递进修补之后调用apply_continuity；原作者不能删除或重排不属于自己的新延迟材料。
+
+新增后为68课/1291题，互动63课/290步、59补救/延迟。既有库由course_extensions启动升级：备份后追加新课与题、仅顺延旧课order_index，旧ID/内容/学习表不改；新课文本漂移需显式迁移。已有掌握保留，新增课不伪造完成。详情见根目录 EXTENSION_LESSONS.md。

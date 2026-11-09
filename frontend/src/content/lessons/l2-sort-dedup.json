@@ -1,11 +1,11 @@
 {
   "slug": "l2-sort-dedup",
-  "version": 3,
+  "version": 4,
   "title": "排好名次，再说什么叫重复",
   "mission": "运营要找大额订单，还要清理重复数据。排序与去重各有规则，不能靠写在一起就猜它会保留谁。",
   "correction": "dropDuplicates(subset) 不保证保留输入中首次出现、最新或最大的行；先 orderBy 再 dropDuplicates 也不能保证这个规则。要每个用户的最大金额可先 groupBy 聚合；要整行按规则取一条，后续用带明确排序的窗口函数。",
   "source": "https://spark.apache.org/docs/3.5.6/api/python/reference/pyspark.sql/api/pyspark.sql.DataFrame.dropDuplicates.html",
-  "next": "你已分清排序与判重。下一课把多笔订单汇总成各地区的销售成绩。",
+  "next": "在L3的聚合课后，窗口与每组Top N会具体练习如何按完整排序规则保留最新整行；目前先分清去重与选行。",
   "tasks": [
     {
       "id": "step-936a1f3bda",

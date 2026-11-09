@@ -48,8 +48,8 @@
     "hash": "d499b7e5bc4ae21b6b889db3ac711e7a379dc0bdeca2fe35625a9f0069427882"
   },
   "l2-sort-dedup": {
-    "version": 3,
-    "hash": "31936102d963c2b0c9696df08913f4e909e4f64053bbe06622e33b51edbc0c27"
+    "version": 4,
+    "hash": "85d4754de0551f4b98f711ca40973afad5578d0e6256b0fcae990b6a397740de"
   },
   "l2-what-is-dataframe": {
     "version": 3,
@@ -72,12 +72,12 @@
     "hash": "857d8903f067dd11f5d063748c5179087b2cd526636c1976d66e9e9550502a49"
   },
   "l3-groupby-having": {
-    "version": 1,
-    "hash": "42fdd4680a59f751d787970654bc40128b338e0c239587a9670786dae8d7066f"
+    "version": 2,
+    "hash": "3493f927f599ef31add5bdbf3b139ddaff953ee72ed081bb87b5c1c06da822e5"
   },
   "l3-joins-intro": {
-    "version": 2,
-    "hash": "37d6b4551d86bff3c1bf467183be2884fa065ec5f21ea9e75671819bd44fb42e"
+    "version": 3,
+    "hash": "4a54a243c209511d04275d395ae523c38e54813ea1398453485ee470784d5640"
   },
   "l3-select-basics": {
     "version": 1,
@@ -98,6 +98,10 @@
   "l3-where-order-limit": {
     "version": 1,
     "hash": "43fb8239086e2b6919a785544c3bd340f7e30df73ed82b18a944584c00dc3fa7"
+  },
+  "l3-window-topn": {
+    "version": 1,
+    "hash": "fd69c6d4eda2ba9275a075630da6a8a226677e346e6f36c5d2d384705426b132"
   },
   "l4-catalyst-rules": {
     "version": 1,
@@ -215,21 +219,25 @@
     "version": 1,
     "hash": "d3c2ef7d4618f856ae151bd545a2af647feb3ec25d947f7b87f3182d67b9393c"
   },
+  "l7-cache-lifecycle": {
+    "version": 1,
+    "hash": "7015004f86a70e3379ae139b1ea7f5847f223ae5ee06f7d7e36065f4b1df986c"
+  },
   "l7-comprehensive": {
     "version": 1,
     "hash": "38f04614381594371cf0c09bf5f1070a45e08897971c4da4b9238aea086bb624"
   },
   "l7-executor-memory": {
-    "version": 2,
-    "hash": "9cd714fd3dbdf8a937dcfc3dcdc1c297af93a0a77d05c50937bddcf5df60c590"
+    "version": 3,
+    "hash": "94f48b20cbdff303eda71808f59d402769678f3ca9233726eff719d9320c6d91"
   },
   "l7-read-less-data": {
     "version": 1,
     "hash": "7abe588e3210620263e4de55433b59d1a20b0b7871466facdccf73e6f2dc9a4d"
   },
   "l7-shuffle-partitions": {
-    "version": 1,
-    "hash": "bcbf28706be1abe62d5807b92a18fa9d9f5ad0d0d9ebbbe01824a0e3b8e7d02e"
+    "version": 2,
+    "hash": "ee656639dcbb93c68b186485084028d20f41f76e50f71b6753ba56b37981a714"
   },
   "l7-skew-tuning": {
     "version": 1,
@@ -244,12 +252,12 @@
     "hash": "6e702ba1a59ccedd2c94ac378cdb6796908db7cf2ccac08d00defb5dd75b7fd4"
   },
   "delayed-checks": {
-    "version": 5,
-    "hash": "d00b21ea593f0005ff477e04bdab5db1725e0f50516f4381ecb53c13eaf7546f"
+    "version": 6,
+    "hash": "c15b4589b62a6f49074ceadf4d34e295dc6bd319f2af68b459cdc127fdcb824d"
   },
   "standard-guides": {
-    "version": 5,
-    "hash": "ccba8de6207d957001eec7e8bac800588c835d95cdc9150f04089387e0daac0f"
+    "version": 6,
+    "hash": "65823f3adbdcf57e9b2ac4d3ce49c1550e05803583cf885797ad6e30bca00755"
   },
   "capstones": {
     "version": 5,

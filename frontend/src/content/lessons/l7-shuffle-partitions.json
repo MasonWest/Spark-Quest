@@ -1,8 +1,8 @@
 {
   "slug": "l7-shuffle-partitions",
-  "version": 1,
+  "version": 2,
   "title": "用任务分布选下一次实验",
-  "mission": "根据太碎、太大或热点，选择可验证的单一改动。",
+  "mission": "上一课已完成缓存的建立、观察与释放；这一课保持缓存冷热条件可比，再根据任务大小、热点和并发选择分区实验。",
   "correction": "Shuffle配置不是全应用task数，AQE可能合并；增加分区不保证拆散热键或降低所有成本。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
   "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",

@@ -1448,12 +1448,121 @@
           }
         },
         {
+          "slug": "l3-window-topn",
+          "title": "窗口函数：每组Top N与最新整行",
+          "description": "从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。",
+          "objective": "完成本课八步推演，能解释关键规则，并在新材料上选择与实现正确流程。",
+          "estimated_minutes": 18,
+          "prerequisites": "l3-groupby-having",
+          "content": {
+            "explanation": "【先用人话理解】\n\n从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。\n\n【一个直观的心智模型】\n\n汇总一组，还是给每行补一列：OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。\n\n每个城市从一号重新排：PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。\n\n最新时间相同，还得约定选谁：“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。\n\n先生成序号，再筛第一行：CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。\n\n每组两单，不是全表两单：ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。\n\n同分算并列时，名次怎样走：RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。\n\n取前两档成绩，需要哪种名次：固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。\n\n缺时间的事件，别默默选成最新：把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。\n\n【边界与验证】\n\n窗口分组不是写目录partitionBy，也不承诺物理分区布局；本课先固定业务分组。加ORDER BY后的默认窗口帧可能改变聚合含义，本课不把它一概当整组总额。\n窗口内的排序用于计算序号，不等于最终结果展示全局有序；展示还需外层ORDER BY。\nevent_id的顺序是业务约定，不自动代表真实发生先后；缺少稳定键时不能承诺每次选中同一条。\n不要依赖其他SQL方言的QUALIFY语法；本课不把CTE当物化保证。\n如果业务要求并列名次全部保留，先重新明确“N”指行数还是名次，不要继续套固定行数方案。\n排名的别名在示例中可自定；若在排名ORDER BY中加入唯一id，同分行便不再按该完整排序键并列。\n多列排序时“相同”指整个排序值组合相同，而不仅第一列。\n本题user_id非空；若允许NULL用户键，窗口会把它们放同一组，必须另行约定是否应排除或区分。",
+            "examples": [
+              {
+                "title": "汇总一组，还是给每行补一列",
+                "code": "-- 输入：north/30、north/20、south/8\nSELECT city, amount,\n SUM(amount) OVER (PARTITION BY city) AS city_total\nFROM orders",
+                "note": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。"
+              },
+              {
+                "title": "每个城市从一号重新排",
+                "code": "-- north: a/70,b/40；south: c/90\nROW_NUMBER() OVER (\n PARTITION BY city ORDER BY amount DESC, id ASC\n) AS rn",
+                "note": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。"
+              },
+              {
+                "title": "最新时间相同，还得约定选谁",
+                "code": "-- u1: e10/time=5/status=old；e11/time=5/status=new\nROW_NUMBER() OVER (PARTITION BY user_id\n ORDER BY event_time DESC NULLS LAST, event_id DESC) AS rn",
+                "note": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。"
+              },
+              {
+                "title": "先生成序号，再筛第一行",
+                "code": "WITH numbered AS (\n SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id\n  ORDER BY event_time DESC NULLS LAST,event_id DESC) AS rn\n FROM events\n)\nSELECT * FROM numbered WHERE rn = 1",
+                "note": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。"
+              },
+              {
+                "title": "每组两单，不是全表两单",
+                "code": "-- north:70,40,10；south:90\n-- 已按city分组、amount DESC和唯一id编号\nSELECT * FROM numbered WHERE rn <= 2",
+                "note": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。"
+              },
+              {
+                "title": "同分算并列时，名次怎样走",
+                "code": "RANK() OVER (PARTITION BY team ORDER BY score DESC)\n-- 同队分数：100、100、90",
+                "note": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。"
+              },
+              {
+                "title": "取前两档成绩，需要哪种名次",
+                "code": "DENSE_RANK() OVER (PARTITION BY team ORDER BY score DESC) AS tier\n-- 外层WHERE tier <= 2",
+                "note": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。"
+              },
+              {
+                "title": "缺时间的事件，别默默选成最新",
+                "code": "ORDER BY event_time DESC NULLS LAST, event_id DESC\n-- 选每用户ROW_NUMBER=1",
+                "note": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。"
+              }
+            ],
+            "key_points": [
+              "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。",
+              "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。",
+              "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。",
+              "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。",
+              "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。",
+              "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。",
+              "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。",
+              "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。"
+            ],
+            "common_mistakes": [
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "窗口分组不是写目录partitionBy，也不承诺物理分区布局；本课先固定业务分组。加ORDER BY后的默认窗口帧可能改变聚合含义，本课不把它一概当整组总额。",
+                "fix": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "窗口内的排序用于计算序号，不等于最终结果展示全局有序；展示还需外层ORDER BY。",
+                "fix": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "event_id的顺序是业务约定，不自动代表真实发生先后；缺少稳定键时不能承诺每次选中同一条。",
+                "fix": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "不要依赖其他SQL方言的QUALIFY语法；本课不把CTE当物化保证。",
+                "fix": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "如果业务要求并列名次全部保留，先重新明确“N”指行数还是名次，不要继续套固定行数方案。",
+                "fix": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "排名的别名在示例中可自定；若在排名ORDER BY中加入唯一id，同分行便不再按该完整排序键并列。",
+                "fix": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "多列排序时“相同”指整个排序值组合相同，而不仅第一列。",
+                "fix": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "本题user_id非空；若允许NULL用户键，窗口会把它们放同一组，必须另行约定是否应排除或区分。",
+                "fix": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。"
+              }
+            ],
+            "review": "从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。",
+            "problem": "按真实规则推演，再用换材料练习验证。",
+            "preview": "下一课JOIN会给已选记录补用户属性。窗口负责组内计算与选行，连接负责跨表匹配，二者都要验证输出粒度。"
+          },
+          "order_index": 5
+        },
+        {
           "title": "多表关联（JOIN）入门",
           "slug": "l3-joins-intro",
           "description": "INNER JOIN 基础与「连接键」直觉，为 Level 6 铺垫（类型/广播/调优留 L6）。",
           "objective": "学完本课，你应该能够：理解 JOIN 是「按连接键把两表行配对」；写出基本的 INNER JOIN（ON a.key=b.key）；并知道 JOIN 通常要按连接键重分区（Shuffle）、连接键类型必须一致——深入的各种 JOIN 类型与调优留给 Level 6。",
           "estimated_minutes": 15,
-          "order_index": 5,
+          "order_index": 6,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\n真实数据很少在一张表里：订单在 orders 表，用户在 users 表，你想「每个用户的订单总额」就得把两表按 user_id 拼起来。JOIN 就是干这个的——按一个「连接键」把两张表的行配对。\n\n【一个直观的心智模型】\n\n想象两张分拣台各抱一摞货（订单摞、用户摞），每摞货上都贴了「user_id」标签。JOIN 就是按 user_id 这个标签，把「同一 user_id 的订单」和「同一 user_id 的用户」并到同一行——像把两个花名册按学号拼成一张总表。本课只讲最基础的 INNER JOIN：两边都有这个键的才留下。\n\n⚠️ 比喻的边界（很重要）：\n① JOIN 通常要一次 Shuffle：两摞货按 key 重新分发到同一工人（按 key 重分区），数据在空中飞，代价大；但若其中一侧是小表，Spark 可走广播连接免掉这次 Shuffle（Level 6 展开）。\n② 连接键选错 / 出现重复键，会产生「行数爆炸」（笛卡尔式膨胀）——一个用户有 100 个订单，拼完就多 100 行。这是后续性能与正确性的大坑。\n③ 本课只讲 INNER JOIN 基础语法与「连接键」直觉；LEFT / RIGHT / FULL / CROSS 各种类型、广播 Join、倾斜调优全部留给 Level 6 专门讲，那里才展开。\n\n【正式的技术定义】\n\nJOIN 按连接条件（通常 ON a.key = b.key）把两表的行组合；INNER JOIN 只保留两表都匹配上的行。SQL 通过 spark.sql 执行，返回 DataFrame。连接类型、执行策略（Broadcast / Shuffle）是 Level 6 主题。\n\n【写下代码后，Spark 内部发生了什么】（留白给 Level 6）\n\n本课只需知道：JOIN 通常触发一次 Shuffle（按连接键重分区），把相同 key 的行送到同一节点配对；具体怎么分发、什么时候广播，Level 6 再深挖。",
@@ -1509,7 +1618,7 @@
           "description": "SQL 内置函数与 UDF 的取舍，埋 Level 7 性能伏笔。",
           "objective": "学完本课，你应该能够：列举常用内置函数（字符串/日期/数学）并知道它们在 F 下；理解 UDF 的用法与「为什么慢」（JVM↔Python 序列化往返、失去 Catalyst 优化）；建立「能不用 UDF 就不用」的原则，为 Level 7 埋线。",
           "estimated_minutes": 15,
-          "order_index": 6,
+          "order_index": 7,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\nSQL 里算「字符串截取、日期加减、四舍五入」不用自己写循环——Spark 自带一大堆内置函数（upper、substr、datediff、round…），开箱即用。但偶尔你要的逻辑内置没有，就得自己写函数，这叫 UDF（用户自定义函数）。\n\n【一个直观的心智模型】\n\n内置函数像工厂里现成的标准工具——工人（Executor）闭眼会用，而且 Catalyst 还能提前优化（比如把计算下推、代码生成）。UDF 则像你从外面带了个「私人定制工具」：工人不认识它，得先把数据「打包」送到工具那（序列化到 Python/JVM 边界）跑完再送回来，慢，而且 Catalyst 没法优化它。所以能不用 UDF 就不用。\n\n⚠️ 比喻的边界（很重要）：\n① 内置函数走 Catalyst 原生优化（代码生成 / Tungsten），又快又省；优先用它们。\n② UDF 把数据在 JVM↔Python 之间序列化往返，打破流水线、失去 Catalyst 优化——能不用就不用；真要用，优先 pandas UDF（向量化）也比行级 Python UDF 强得多。\n③ 这一课的「UDF 慢」只是埋个伏笔：为什么慢、怎么选、怎么用广播/向量化救场，是 Level 7 性能优化要系统讲的。\n\n【正式的技术定义】\n\nSpark SQL 内置函数位于 pyspark.sql.functions（F），覆盖字符串/日期/数学/聚合/窗口等。UDF 用 F.udf / pandas_udf 注册自定义逻辑；UDF 以行为单位在 Executor 上调 Python，开销高于原生函数。\n\n【写下代码后，Spark 内部发生了什么】\n\n内置函数被 Catalyst 翻译成物理计划的原生算子（Whole-Stage Codegen）；UDF 则在每个匹配行触发一次跨语言调用（序列化/反序列化），成为流水线瓶颈。",
@@ -1565,7 +1674,7 @@
           "description": "CREATE TABLE ... USING / LOCATION；明确不接入 Hive Metastore（既定约束）。",
           "objective": "学完本课，你应该能够：用 CREATE TABLE ... USING parquet LOCATION 把文件直接当表查；理解本路线不接入 Hive Metastore（表是 session 内/文件级）；并说清写出（INSERT OVERWRITE/INTO）与 Level 2 write 的对应关系及小文件坑。",
           "estimated_minutes": 12,
-          "order_index": 7,
+          "order_index": 8,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\n除了把内存里的 DataFrame 注册成视图，你也能「反过来」——直接告诉 Spark：「这份 Parquet/CSV 文件，就是一张表」，然后就能用 SQL 查它，不用先 read 再注册。相当于给仓库里的货直接贴了张标准货架标签。\n\n【一个直观的心智模型】\n\n之前是「先收货（read）再挂牌（createOrReplaceTempView）」；这课是「直接给货架贴标签（CREATE TABLE ... USING parquet / 或 read 后注册）」——殊途同归，都是让 SQL 能按名字找到那批货。区别只是你从「文件」还是从「已读入的 DataFrame」出发。\n\n⚠️ 比喻的边界（很重要）：\n① 本路线明确不接入 Hive Metastore（既有约束）：所以这里的「表」要么是 session 内的临时视图，要么是「文件级」的表（CREATE TABLE 指向路径），不是跨集群永久的 Hive 表。要永久表得接 Hive，本路线不做。\n② 写出的小文件问题：partitionBy 落盘每 Task 一个文件，易产生海量小文件——这是性能坑，接 Level 2 write + Level 7。\n③ SaveMode（overwrite/append/error/ignore）与 Level 2 write 完全一致，SQL 里用 INSERT OVERWRITE / INSERT INTO 对应。\n\n【正式的技术定义】\n\nSpark SQL 可将文件（Parquet/CSV/JSON）注册为表（CREATE TABLE ... USING format LOCATION path，或 DataFrame 注册视图）；读取即按格式解析。Hive 集成（enableHiveSupport）不在本路线范围。写出用 INSERT INTO / INSERT OVERWRITE TABLE。\n\n【写下代码后，Spark 内部发生了什么】\n\nCREATE TABLE ... LOCATION 只是把「路径+格式」记进 catalog，不移动数据；查询时按格式读取，Catalyst 正常优化（谓词下推等）。",
@@ -1621,7 +1730,7 @@
           "description": "用 SQL 走完一次完整分析：读 CSV → 注册 → 多步 SQL → 写出。",
           "objective": "学完本课，你应该能够：独立把 Level 3 所学的「读入 / 注册视图 / WHERE / GROUP BY+HAVING / ORDER BY / 写出」串成一次完整的 SQL 分析任务，并随时说清「spark.sql 返回 DataFrame（惰性）」「哪一步是 Action」「HAVING 与 WHERE 的区别」。",
           "estimated_minutes": 20,
-          "order_index": 8,
+          "order_index": 9,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\n这一课给你一个「用 SQL 做分析」的迷你任务，把 Level 3 全部零件揉进实战：读 CSV → 注册视图 → 多步 SQL（过滤/聚合/可能 JOIN）→ 写出 Parquet。它逼你把「这条 SQL 在 Catalyst 眼里和等价 DataFrame 代码是同一件事」「哪一步是 Action」想清楚，是这一章的收束。\n\n输入 orders.csv（user_id, city, amount, ts），目标：\n1) 读入并确认 Schema；\n2) 注册为视图 orders；\n3) 过滤 amount>0；\n4) 按 city 聚合总销售额，只留 total>1000（HAVING）；\n5) 按 total 降序，写出 Parquet（按 city 分区）。\n\n【一个直观的心智模型】\n\n把这次分析想成「在仓库里跑一趟拣货流水线」：读 CSV 是「收货上架」，注册视图是「给这批货挂个工牌名字」，WHERE 是「流水线入口的筛子」，GROUP BY+HAVING 是「按城市分拣并只留大单」，ORDER BY 是「按金额重新排队」，最后的写出是「装车发货」——只有装车这一步（Action）货才真的离开仓库，前面全是「计划这张单怎么跑」。\n\n⚠️ 比喻的边界（很重要）：\n\n① 这里的「写出 Parquet」是落盘 Action，和 Level 2 的 df.write 等价；别以为 SQL 的 INSERT OVERWRITE 不算 Action——它照样触发一次完整作业。\n② 自测题里的「HAVING 与 WHERE 区别」是高频考点：WHERE 在分组前过滤单行，HAVING 在分组后过滤聚合结果，二者位置不能互换。\n③ spark.sql 返回的始终是惰性 DataFrame，哪怕你写的是「SELECT ...」，没接 Action（show / 写出）就不会真正算。\n\n【正式的技术定义】\n\n一次完整的 Spark SQL 分析 = read（创建 DataFrame）→ createOrReplaceTempView（注册 session 内视图）→ 一系列 SELECT（WHERE / GROUP BY / HAVING / ORDER BY，均为 Transformation）→ 写出（INSERT OVERWRITE TABLE / write，为 Action）。所有 SELECT 节点在 Catalyst 中被编译为逻辑计划，直到 Action 出现才物化执行。\n\n【写下代码后，Spark 内部发生了什么】\n\n整条 SQL 被 Catalyst 编译成逻辑计划（Project / Filter / Aggregate / Sort / Write），除了最后的 Write（Action）会真正执行，前面都是惰性节点；GROUP BY 与 ORDER BY 各触发一次 Shuffle。由于 SQL 与 DataFrame API 共享 Catalyst，这条 SQL 和等价 API 代码的物理执行计划是一致的。",
@@ -3450,12 +3559,121 @@
           }
         },
         {
+          "slug": "l7-cache-lifecycle",
+          "title": "缓存实践：物化、复用与释放",
+          "description": "上一课理解了执行与存储内存的共享边界；这一课把模型变成DataFrame的缓存生命周期，再进入分区实验。",
+          "objective": "完成本课八步推演，能解释关键规则，并在新材料上选择与实现正确流程。",
+          "estimated_minutes": 18,
+          "prerequisites": "l7-executor-memory",
+          "content": {
+            "explanation": "【先用人话理解】\n\n上一课理解了执行与存储内存的共享边界；这一课把模型变成DataFrame的缓存生命周期，再进入分区实验。\n\n【一个直观的心智模型】\n\n先圈出真正会被重复用的结果：persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。\n\n明确这次说的是DataFrame缓存：3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。\n\n登记缓存，不等于已经把数据装满：count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。\n\n设置成功与真正复用要看两种证据：常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。\n\n别把缓存当成永久快照或新查询的保证：复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。\n\n两份报告做完，把缓存还回去：unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。\n\n中途报错，也要走到清理步骤：让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。\n\n比较方案，预热与冷启动要算同一本账：接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。\n\n【边界与验证】\n\n两份语义不同的清洗不能仅因变量名相同就视为同一个可复用结果。\n不要据名字推断任意Python对象的布局；RDD与DataFrame以及不同版本的默认值分别核对。\ncount本身有成本，不能为了缓存再无条件多跑一次；应把预热计入整体实验。\n小报告collect用于教学核对，不是允许收集海量明细；具体计划包装可能随版本变化。\n本课不假定缓存如何响应所有外部源变更；生产需另定输入版本与刷新规则。\n不能把缓存块释放等同于JVM立刻把全部内存还给操作系统，其他查询共享同一缓存关系时也要协调释放时机。\n进程崩溃或清理本身失败仍需运行环境处理，finally不是一切故障的绝对保证。\n本课不提供固定倍数的性能保证；正式报告的缓存冷热条件应可复核。",
+            "examples": [
+              {
+                "title": "先圈出真正会被重复用的结果",
+                "code": "raw → expensive_clean → clean\nclean → report_A\nclean → report_B",
+                "note": "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。"
+              },
+              {
+                "title": "明确这次说的是DataFrame缓存",
+                "code": "from pyspark import StorageLevel\ncached = clean.persist(StorageLevel.MEMORY_AND_DISK_DESER)\n# 另一选择：clean.cache() 使用DataFrame默认级别",
+                "note": "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。"
+              },
+              {
+                "title": "登记缓存，不等于已经把数据装满",
+                "code": "cached = clean.persist(StorageLevel.MEMORY_AND_DISK_DESER)\n# 还没有action\n# 可在需要时：cached.count()",
+                "note": "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。"
+              },
+              {
+                "title": "设置成功与真正复用要看两种证据",
+                "code": "print(cached.storageLevel)\ncached.count()\nreport = cached.groupBy(\"region\").count()\nreport.collect()  # 本课只有极小教学报告\nreport.explain()",
+                "note": "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。"
+              },
+              {
+                "title": "别把缓存当成永久快照或新查询的保证",
+                "code": "cached = expensive_clean(raw).persist(...)\nother = raw.filter(\"amount > 999\")\n# 同源不等于同一个缓存结果",
+                "note": "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。"
+              },
+              {
+                "title": "两份报告做完，把缓存还回去",
+                "code": "cached.unpersist(blocking=True)\n# blocking=True：等待缓存块删除完成\n# 以后仍可按有效来源重新计算cached",
+                "note": "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。"
+              },
+              {
+                "title": "中途报错，也要走到清理步骤",
+                "code": "cached = clean.persist(StorageLevel.MEMORY_AND_DISK_DESER)\ntry:\n    make_report_a(cached)\n    make_report_b(cached)\nfinally:\n    cached.unpersist(blocking=True)",
+                "note": "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。"
+              },
+              {
+                "title": "比较方案，预热与冷启动要算同一本账",
+                "code": "完整对照范围：\n读取/清洗 → 缓存登记与物化 → A/B报告 → 释放\n固定输入、资源与结果；记录冷热状态",
+                "note": "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。"
+              }
+            ],
+            "key_points": [
+              "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。",
+              "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。",
+              "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。",
+              "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。",
+              "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。",
+              "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。",
+              "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。",
+              "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。"
+            ],
+            "common_mistakes": [
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "两份语义不同的清洗不能仅因变量名相同就视为同一个可复用结果。",
+                "fix": "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "不要据名字推断任意Python对象的布局；RDD与DataFrame以及不同版本的默认值分别核对。",
+                "fix": "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "count本身有成本，不能为了缓存再无条件多跑一次；应把预热计入整体实验。",
+                "fix": "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "小报告collect用于教学核对，不是允许收集海量明细；具体计划包装可能随版本变化。",
+                "fix": "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "本课不假定缓存如何响应所有外部源变更；生产需另定输入版本与刷新规则。",
+                "fix": "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "不能把缓存块释放等同于JVM立刻把全部内存还给操作系统，其他查询共享同一缓存关系时也要协调释放时机。",
+                "fix": "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "进程崩溃或清理本身失败仍需运行环境处理，finally不是一切故障的绝对保证。",
+                "fix": "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。"
+              },
+              {
+                "mistake": "忽略本步适用边界",
+                "why": "本课不提供固定倍数的性能保证；正式报告的缓存冷热条件应可复核。",
+                "fix": "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。"
+              }
+            ],
+            "review": "上一课理解了执行与存储内存的共享边界；这一课把模型变成DataFrame的缓存生命周期，再进入分区实验。",
+            "problem": "按真实规则推演，再用换材料练习验证。",
+            "preview": "下一课调Shuffle分区时，继续记录缓存冷热状态。先区分复用是否有效，再比较每份工作的大小和并发，避免把两个变量混在一起。"
+          },
+          "order_index": 3
+        },
+        {
           "title": "Shuffle 分区数怎么定",
           "slug": "l7-shuffle-partitions",
           "description": "掌握 spark.sql.shuffle.partitions 的作用与取舍；理解太少（并行度不足/spill/OOM）与太多（调度开销/小文件）的两侧代价；给出「按数据量估起点 + 实测收敛」的思路。",
           "objective": "学完本课，你应该能够：说清 spark.sql.shuffle.partitions 决定什么（shuffle 之后的分区数，即后续 Task 数）；列举太少与太多各自的代价；用「按 shuffle 数据量估起点、让单个分区落在百 MB 量级」的思路定初始值，再靠实测收敛；知道它同时决定输出文件数（小文件副作用）；并明确不给万能数值、AQE 的自动合并属于下一课。",
           "estimated_minutes": 14,
-          "order_index": 3,
+          "order_index": 4,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\nShuffle 之后数据要重新切成 N 份，这个 N 就是 `spark.sql.shuffle.partitions`（默认 200）。它是你最常动、也最容易乱动的旋钮：N 太小，一个 Task 扛太多数据（慢、spill、甚至 OOM）；N 太大，光是派活收活的管理开销就吃掉了收益，还会产出一地小文件。\n\n【一个直观的心智模型】\n\n把 Shuffle 想成「一批货要过 N 条车道」（复用 L5 的空中飞货）：\n- **车道太少**：所有车挤在两三条道上，每条道堵死，别的道空着——工人忙的忙死、闲的闲死，还可能把车（内存）压垮；\n- **车道太多**：几百条道每条只过几辆车，可每条道都要配收费员（Task 调度）和出货单（输出文件），管理成本比运输本身还高。\n\n合理的目标是：**每条车道上的货量适中、车道数又能让工人都忙起来**。\n\n⚠️ 比喻的边界（很重要）：\n① **没有万能值**：它取决于 shuffle 数据量、单条记录大小、集群并行能力。本课只给「估起点」的思路（让单个分区落在**百 MB 量级**），最终必须实测收敛。\n② 这个参数影响**所有** shuffle 类操作的后续分区数，改它是全局影响——不是针对某一个 join 的精细调节（那要靠 broadcast 或 hint，见 L6）。\n③ 它同时决定**输出文件数**：分区多 → 文件多 → 小文件问题（复用 L2 write 与 L5 的坑）。\n④ 分区数不是越多越并行：集群核数才是并行上限，车道再多、工人只有 8 个，也只能同时开 8 条（复用 L5 分区与并行度）。\n⑤ ⚠️ **版本提示**：Spark 3.2+ 默认开启 AQE。开启时本参数是 shuffle 后的**初始**分区数（上界），运行时 AQE 会按真实数据量合并掉一部分——你设 400，实际可能只跑出几十个 Task。做教学演示想看到「经典」行为，可显式 `spark.conf.set('spark.sql.adaptive.enabled','false')`（第 6 课展开）。\n\n【正式的技术定义】\n\n`spark.sql.shuffle.partitions` 控制 Shuffle 类操作（join / groupBy / distinct / orderBy 等）之后生成的目标分区数，其默认值（常见为 200）只是通用起点。取值过少会导致：并行度不足、单 Task 数据量大、spill 到磁盘、OOM 风险上升；取值过多会导致：Task 调度与启动开销累积、输出小文件增多、聚合类操作的元数据膨胀。合理的定法：先估算参与 Shuffle 的数据量，让单分区数据量落在百 MB 量级作为起点，再结合集群并行能力与实测耗时收敛。\n\n【写下代码后，Spark 内部发生了什么】\n\n你写 `spark.conf.set('spark.sql.shuffle.partitions', 400)` 再跑 `df.groupBy('city').count()`：\n1. Shuffle 时，各 map 端按 `city` 哈希成 400 份写出；\n2. reduce 端起 400 个 Task，各拉取属于自己的那一小块；\n3. 若原本 200 分区时每个 Task 要处理 1 GB（会 spill），改成 400 后降到约 500 MB，可能就不 spill 了 → 变快；\n4. 但如果你调到 4000，每个 Task 只处理 25 MB，调度 4000 个 Task 的开销与 4000 个输出文件反而让整体变慢；\n5. 所以动作是：估起点 → 跑 → 看 Spark UI（Task 耗时与 spill）→ 收敛。",
@@ -3517,7 +3735,7 @@
           "description": "掌握 spark.sql.autoBroadcastJoinThreshold 的取舍（默认阈值的概念、调大/调小/禁用的场景与代价）；知道先修统计信息比调阈值更优先。",
           "objective": "学完本课，你应该能够：说清 spark.sql.autoBroadcastJoinThreshold 是什么（判断「多大算小」的阈值）；列举调大 / 调小 / 禁用三类场景及各自代价；理解阈值比的是**统计估计的大小**而非真实大小，因此「先修统计信息（ANALYZE）」通常比调阈值更优先；知道广播的账单是「每个 Executor 各存一份完整副本」；并明确具体配置配方不在本课范围。",
           "estimated_minutes": 13,
-          "order_index": 4,
+          "order_index": 5,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\nL6 只告诉你「存在一把尺子决定多大算小」，没说这把尺子怎么调。它叫 `spark.sql.autoBroadcastJoinThreshold`。但先说结论：**多数时候你不该先动它**——因为尺子量的是「估计值」，估计本身错了，你把刻度调来调去只是在错误的读数上做微调。\n\n【一个直观的心智模型】\n\n把阈值想成**秤上的刻度**：\n- 秤上放着一张表，Spark 看读数决定「这张算轻还是算重」；轻 → 广播（复印小册子，复用 L6）；重 → 老实走 Sort-Merge Join；\n- 刻度调大：更多表被判为「轻」，但每辆车上都要多载一份副本（每个 Executor 内存各一份）；\n- 刻度调小或关掉（-1）：更保守，明明很轻的表也走 SMJ，白白付两次 Shuffle 的钱。\n\n关键在于：**秤的读数准不准**。一张表经过复杂变换后，Spark 可能压根估不出它的重量，只能按「很重」处理——这时候你要做的不是把刻度调到无限大，而是**先给它补一张准确的磅单**（统计信息）。\n\n⚠️ 比喻的边界（很重要）：\n① 阈值比的是**统计估计的大小**，不是真实大小（复用 L6 第 6 课）。估计缺失时，再怎么调阈值都可能判错。\n② 广播的账单不是「一次传输」，而是**每个 Executor 各存一份完整副本**——同时广播多张表，或广播的表其实不小，内存会被吃光（L6 第 7 课的反噬）。\n③ 禁用广播（-1）不是「更稳」：它会让所有 join 走 Shuffle，小维表场景直接慢一大截。\n④ 具体配多少字节、怎么配，没有通用答案——取决于 Executor 内存与并发作业数，别抄别人的配置。\n⑤ ⚠️ Spark 3.2+ 默认开启 AQE，运行时会根据真实大小把 Sort-Merge Join 改成 Broadcast Hash Join——所以静态 `explain` 里看到的 SortMergeJoin 未必是最终执行的策略（第 6 课展开）。\n\n【正式的技术定义】\n\n`spark.sql.autoBroadcastJoinThreshold` 是 Spark 判断「某侧是否小到可以广播」的大小阈值（设为 -1 表示禁用自动广播）。判断依据是该侧数据的**统计大小估计**（Spark 3.x 的默认阈值为 10MB）。\n- **调大**：让更大的表也能走 Broadcast Hash Join，省掉大表那次 Shuffle；代价是广播块占用每个 Executor 的内存（Storage Memory）与网络分发开销。\n- **调小 / 禁用**：更保守，避免内存压力；代价是本可广播的小表也走 Sort-Merge Join，多付两侧 Shuffle。\n- **更优先的手段**：先通过统计信息收集（如 `ANALYZE TABLE ... COMPUTE STATISTICS`）让估计变准，再谈调阈值。\n\n【写下代码后，Spark 内部发生了什么】\n\n维表明明很小，`explain` 却显示 SortMergeJoin：\n1. 先看这一步——Spark 有没有这张表的统计信息？没有的话，它只能按保守估计当成大表；\n2. 补统计信息：`spark.sql('ANALYZE TABLE dim COMPUTE STATISTICS')`，再 explain，可能**不用调阈值**就自动广播了；\n3. 若统计已准、表确实略超阈值且 Executor 内存充裕，才考虑适度调大阈值；\n4. 调完再 explain 确认真的出现 BroadcastExchange（hint 与阈值都要复核，复用 L6 的规矩）；\n5. 同时盯住 Spark UI：广播块大小、Executor 内存占用有没有异常。",
@@ -3578,7 +3796,7 @@
           "description": "理解自适应查询执行（AQE）的动机（规划期估计不可靠）与三大能力：动态合并小分区、运行时切换 JOIN 策略、自动处理倾斜 join。",
           "objective": "学完本课，你应该能够：说清 AQE 存在的动机（规划期靠估计、运行时才有真相）；列举三大能力（动态合并小分区 / 运行时切换 JOIN 策略 / 自动处理倾斜 join）；知道 AQE 以 Shuffle 作为「观察点」，因此并非万能；理解开关只讲概念、具体配方与全部子开关不在本课范围；并知道开启后仍要用 explain 与 Spark UI 验证实际效果。",
           "estimated_minutes": 14,
-          "order_index": 5,
+          "order_index": 6,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\n前面所有优化（Catalyst 改写、选 JOIN 策略、定分区数）都发生在**出发之前**——Spark 只能靠统计信息**猜**数据有多大。猜错了就白优化：以为是大表走了 SMJ，其实它小得能广播；以为是 200 个 Task 刚好，结果 180 个只跑了 3 秒。\n\nAQE（Adaptive Query Execution，自适应查询执行）的思路是：**别在出发前把路线定死，边跑边看路况，发现堵车就改道**。\n\n【一个直观的心智模型】\n\n把执行计划想成导航给的路线：\n- 传统方式：出发前根据历史路况（统计信息）规划一整条路线，之后一路走到底，堵死也不改；\n- AQE：导航**边开边看实时路况**——\n  - 发现很多车道几乎没车（大量小分区）→ 把车道合并，减少收费员（**动态合并分区**）；\n  - 发现原本以为很大的那张表其实很小（Shuffle 后看到真实大小）→ 立刻改走广播（**运行时切换 JOIN 策略**）；\n  - 发现某条车道堵死了（某个分区特别大）→ 把这一条拆成多条匝道分流（**自动处理倾斜 join**）。\n\n⚠️ 比喻的边界（很重要）：\n⓪ ⚠️ **版本提示（重要）**：AQE **自 Spark 3.2.0 起默认开启**（三大能力自 3.0 引入；3.0 / 3.1 需手动打开总开关）。所以在较新的 Spark 上，你多半不需要「开启」它，而是要**确认它的效果**——直接做后面的验证即可。\n① AQE 的观察点是 **Shuffle**：它要等 shuffle 写出后才知道每个分区真实多大。没有 shuffle 的地方，它看不到真相。\n② 它不是万能药：合并分区解决不了「根本没读对数据」的问题，倾斜处理也有适用条件（例如需要能拆分的处理方式）。\n③ 「边跑边改」意味着**最终计划可能和 explain 出来的不完全一样**：开了 AQE 后，要看 Spark UI 里的实际执行图，而不是只信静态计划。\n④ 具体开关与其子配置项只讲概念，不给配方——不同版本支持的能力与默认值不同，照抄配置容易踩坑。\n\n【正式的技术定义】\n\nAdaptive Query Execution（AQE，自适应查询执行）是 Spark 在**运行时**依据真实 Shuffle 统计信息重新优化剩余执行计划的机制。它把一次查询拆成多个阶段执行，每完成一个 Shuffle 就获得真实的分区大小统计，据此进行三类典型优化：\n- **动态合并 Shuffle 分区**：把大量过小的分区合并成少量合适大小的分区，降低调度开销；\n- **动态切换 JOIN 策略**：运行时发现一侧实际很小，把原计划的 Sort-Merge Join 改为 Broadcast Hash Join；\n- **动态优化倾斜 JOIN**：识别出异常大的分区，将其拆分并由多个 Task 并行处理（配合第 7 课）。\n开启 AQE 后，静态 `explain()` 结果可能与实际执行计划不同，应以 Spark UI 的实际执行图为准。\n\n**版本事实**：三大能力（合并分区 / 切换 JOIN 策略 / 倾斜处理）自 Spark 3.0 引入；总开关 `spark.sql.adaptive.enabled` **自 3.2.0 起默认为 true**；子开关 `spark.sql.adaptive.coalescePartitions.enabled`（合并分区）与 `spark.sql.adaptive.skewJoin.enabled`（倾斜处理）默认同样为 true（自 3.0.0）。\n\n【写下代码后，Spark 内部发生了什么】\n\n你开启 AQE 后跑 `big.join(dim, 'city_id').groupBy('k').count()`：\n1. 规划阶段先按统计估计给出初始计划（可能仍写成 SortMergeJoin）；\n2. 当某个 Shuffle 完成，Spark 拿到各分区的**真实**大小；\n3. 若发现 dim 侧实际很小 → 把后续 join 换成 Broadcast Hash Join（省掉大表 Shuffle）；\n4. 若发现大量分区只有几 MB → 合并它们，减少 Task 数；\n5. 若发现某分区异常巨大 → 按倾斜策略拆分处理；\n6. 最终你在 Spark UI 看到的 stage 数与 Task 分布，可能和一开始 `explain()` 的估计完全不同——这就是「运行时自我修正」。",
@@ -3640,7 +3858,7 @@
           "description": "能诊断倾斜（Spark UI 的 Task 耗时/Shuffle Read 分布），并按优先级选择手段：AQE 倾斜处理 → 隔离大 key → salting 加盐（完整写法）→ 广播绕过 → 过滤异常 key。",
           "objective": "学完本课，你应该能够：用 Spark UI 诊断倾斜（Task 耗时最大值远大于中位数、Shuffle Read 分布不均）；按优先级选择五种手段（AQE 自动处理 / 隔离大 key 单独处理 / salting 加盐 / 广播绕过 / 过滤异常 key）；写出 salting 的完整写法（一侧加盐、另一侧膨胀）并说清它的数据膨胀代价；知道改 key 有语义风险、必须验证结果正确性；并明确具体倾斜开关的配方不在本课范围。",
           "estimated_minutes": 15,
-          "order_index": 6,
+          "order_index": 7,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\nL6 你已经知道倾斜是什么：某些 key 的记录特别多，同 key 必须到同一分区（复用 L6「某把椅子挤满 90% 的人」），于是那个 Task 扛下绝大多数数据，整体被它拖住。这一课讲的是**怎么治**。\n\n治疗有优先级，别一上来就加盐——加盐要把另一侧数据放大 N 倍，是最重的一味药。\n\n【一个直观的心智模型】\n\n把 Shuffle 想成收费站（复用上一课的车道比喻）：某条车道堵了 500 辆车，其他车道各 3 辆。**交警（你）有五招**：\n1. **让系统自动分流（AQE）**：让 Spark 自己把堵死的车道拆成几条匝道——**注意 AQE 的倾斜处理自 Spark 3.0 起默认开启**，所以这一步通常是「先确认它有没有生效」（看 Spark UI 里那个巨大分区有没有被拆开），而不是「去打开它」；最省事，优先试；\n2. **把大货车单独引走（隔离大 key）**：把那几个巨型 key 的数据单独拎出来，用不同方式处理，剩下的走常规路线；\n3. **发多张通行证（salting 加盐）**：给堵死那条的每辆车随机分一张 0~N-1 的通行证，让它们分散到 N 条匝道；对面车道要配合——把对应 key 的数据复制 N 份，每张通行证各一份；\n4. **干脆不收费（广播绕过）**：如果一侧够小，广播它，大表根本不用按 key 重排，堵点自然消失；\n5. **劝返异常车辆（过滤异常 key）**：那些 null / 未知 / 默认值造成的巨型 key，很多时候本来就不该进结果——先过滤掉。\n\n⚠️ 比喻的边界（很重要）：\n① **加盐是有代价的**：另一侧要膨胀 N 倍，key 一多就得不偿失——它只适合「少数巨型 key」。\n② **改 key 有语义风险**：加盐后两侧必须严格对应（一侧加后缀、另一侧复制膨胀），写错了结果会多或少行，**必须验证结果正确性**（比如对比加盐前后的 count）。\n③ 广播绕过只在一侧**真的够小**时有效，否则就是把账单从网络转到内存（L6 的反噬）。\n④ 具体的倾斜开关与其参数配方不在本课范围（不同版本支持不同），本课给的是**手段与优先级**。但有一条版本事实必须知道：`spark.sql.adaptive.skewJoin.enabled` 默认 **true**（自 Spark 3.0），所以在 Spark 3.x 上「先看 AQE 有没有兜住」才是第一步，手工加盐往往是后面才需要考虑的。\n\n【正式的技术定义】\n\n数据倾斜（Data Skew）的处理手段，按代价从低到高：\n- **AQE 自动倾斜处理**：运行时识别异常大的分区并拆分，交由多个 Task 并行处理（第 6 课）；\n- **隔离大 key**：先统计 key 分布找出巨型 key，把它们过滤出来单独处理，其余数据走常规路径，最后合并结果；\n- **Salting（加盐）**：给大 key 侧加上随机前缀 `key_0 ~ key_{N-1}` 将其打散到 N 个分区，另一侧对应地把该 key 的记录复制 N 份以匹配；代价是另一侧数据膨胀，只适合少数大 key；\n- **广播绕过**：一侧足够小时改用 Broadcast Hash Join，大表不按 key 重排，倾斜无从产生；\n- **过滤异常 key**：若倾斜源于 null / 默认值 / 脏数据且业务上不需要，直接过滤。\n诊断手段：Spark UI 中 Task 耗时最大值远大于中位数、Shuffle Read 大小分布不均，即为倾斜信号。\n\n【写下代码后，Spark 内部发生了什么】\n\n你怀疑 join 倾斜，按优先级推进：\n1. **先确认**：UI 里 199 个 Task 20 秒完成、1 个跑了 40 分钟 → 确认倾斜；再用 `df.groupBy('key').count().orderBy(F.desc('count')).show(10)` 找出是哪些 key；\n2. **优先试 AQE 自动处理**：开启后重跑，看 UI 里那个巨大分区有没有被拆开；\n3. **不行就隔离大 key**：把 top-N 巨型 key 单独 filter 出来处理，其余走原逻辑，最后 union；\n4. **再不行才加盐**：大 key 侧 `concat(key, '_', floor(rand()*N))`，另一侧把该 key 记录 explode 成 N 份同样加后缀，join 后核对 count 与预期一致；\n5. **最省事的旁路**：若一侧其实很小，直接 `F.broadcast()`，大表不重排 → 倾斜消失。",
@@ -3706,7 +3924,7 @@
           "description": "掌握减量三层次：少读（列裁剪/分区裁剪/谓词下推/列式格式/bucketing 概念）、少传（提前过滤聚合/map-side combine/广播）、少算（内置函数替代 UDF、慎用 cache 的取舍）。",
           "objective": "学完本课，你应该能够：按「少读 / 少传 / 少算」三层次系统性地减少工作量；举例说明列裁剪、分区裁剪、谓词下推、列式格式（Parquet/ORC）与分桶（bucketing）概念各自省在哪；说清 map-side combine 与广播如何减少传输；解释为什么内置函数优于 UDF（复用 L3），以及 cache/persist 的真实取舍；并明确不展开文件格式压缩参数配方，小文件问题点出即可。",
           "estimated_minutes": 14,
-          "order_index": 7,
+          "order_index": 8,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\n前面几课都在讲「怎么让已有的工作跑得更快」。但最有效的一招永远是：**让根本不必要的工作不要发生**。一份 200 列的表你只用 3 列，一年数据你只要一天——把这两件事做对，比后面所有参数加起来都管用。\n\n【一个直观的心智模型】\n\n复用 L4 的「滤网瞬移到河口（谓词下推）」与 L5 的「车间本地先捆小包再空运（map-side combine）」，三层减量分别是：\n- **少读**：仓库发货时就只装你要的那 3 列、只取你要的那一天的货（列裁剪 + 分区裁剪 + 谓词下推），并用整齐的标准化箱子（Parquet 这类列式格式）存放；\n- **少传**：能在本车间先捆成小包就别散着空运（map-side combine），能让小册子飞就别让大表飞（广播，复用 L6）；\n- **少算**：用流水线上的标准加工臂（内置函数），别临时外聘手艺人（UDF，复用 L3）；同一个结果要被多次复用时才缓存（cache），否则重算可能更便宜。\n\n⚠️ 比喻的边界（很重要）：\n① **下推取决于数据源**：Parquet/ORC 这类列式格式能真正少读字节，CSV 能做的有限（复用 L4 Catalyst 优化规则的边界）。\n② **cache 不是免费的**：它占 Storage Memory，可能被逐出（第 3 课），而且重算有时比读缓存更快——只缓存「会被多次复用且计算代价高」的数据。\n③ **分桶（bucketing）是写入侧的布局约定**：它让「按同一 key 反复 join」省去一次 Shuffle，但要提前按桶写出，属于建模决策而不是随手能开的开关。\n④ 减量的副作用也要看：过度分区裁剪会产生大量小目录/小文件；列裁剪省 I/O 但对已缓存的数据无效。\n\n【正式的技术定义】\n\n减量（Data Reduction）优先于调速，分三个层次：\n- **少读**：列裁剪（只读需要的列）、分区裁剪（只读命中的分区目录）、谓词下推（把过滤条件下推到数据源）、列式存储（Parquet/ORC 按列读取与压缩）、分桶（bucketing，按 key 预先分桶写出以便后续 join 免 Shuffle）；\n- **少传**：先过滤再 join / 先聚合再 join（减少参与 Shuffle 的数据量）、map-side combine（本地预聚合）、广播小表避免大表 Shuffle；\n- **少算**：用内置函数替代 UDF（避免跨 JVM 序列化与优化器失明，复用 L3）、避免重复计算（复用中间结果或用缓存）、谨慎使用 `cache`/`persist`（只在多次复用且重算更贵时使用）。\n\n【写下代码后，Spark 内部发生了什么】\n\n你写 `spark.read.parquet('fact').select('id','amount').filter('dt = 2026-01-01').groupBy('id').sum('amount')`：\n1. Catalyst 把 `select` 变成列裁剪、把 `filter` 下推到 Parquet 读取层——磁盘上只扫 `dt=2026-01-01` 这个分区的两列；\n2. 读进来的数据直接以 Tungsten 紧凑字节参与计算（第 2 课）；\n3. `groupBy` 的预聚合在 map 端先把同 key 的 amount 累加成小包（map-side combine），Shuffle 只飞小包；\n4. 全程用的是内置函数，Catalyst 能全程优化，没有跨 JVM 的对象还原（L3 UDF 的反面）；\n5. 对比「先读全表 200 列、join 完再过滤」的写法，这里省掉的是**数量级**的 I/O 与传输——这才是调优里最大的杠杆。",
@@ -3767,7 +3985,7 @@
           "description": "给一个慢作业场景，按「度量 → 定位瓶颈 → 按优先级改（少读 > 少传 > 少算 > 调旋钮）→ 复测」输出方案；能说清每步的理由与代价。",
           "objective": "学完本课，你应该能够：拿到一个慢作业，按「度量 → 定位瓶颈类别 → 按优先级给方案（少读 > 少传 > 少算 > 调旋钮）→ 改一处测一次」输出完整诊断；说清每条建议的理由与代价；知道何时该用 AQE / 广播 / 加盐 / 调分区数，何时该回去改 SQL 写法；并明确本课只验证「会诊断、知道优先级、能给方向」，不要求背参数值。",
           "estimated_minutes": 15,
-          "order_index": 8,
+          "order_index": 9,
           "prerequisites": "",
           "content": {
             "explanation": "【先用人话理解】\n\nLevel 7 到这儿就齐了。回头看，我们给了你一张**检查单**：先看清楚慢在哪，再按「少读 → 少传 → 少算 → 最后才拧旋钮」的顺序下手。记住这个顺序——**能在数据量上解决的问题，就别去动参数**；能调参数解决的，也别一上来就加盐改 key。\n\n【一个直观的心智模型】\n\n把九课的道具串成一张**调优检查单**（问诊流程）：\n1. **量**：`explain()` 看计划（零成本）+ Spark UI 看运行时（哪个 Stage 慢、Task 均不均、有没有 spill）；\n2. **归类**：是读太多 / 传太多 / 内存不够 / 倾斜 / CPU 开销 中的哪一类（第 1 课）；\n3. **按优先级下手**：\n   - **少读**（第 8 课）：列裁剪、分区裁剪、谓词下推、列式格式、分桶；\n   - **少传**：先过滤先聚合、map-side combine、广播小表（L6）、调广播阈值（第 5 课）；\n   - **少算**：内置函数替 UDF、慎用 cache（第 8 课）；\n   - **调旋钮**：shuffle 分区数（第 4 课）、确认 AQE 效果（第 6 课）；\n   - **处理倾斜**（第 7 课）：AQE → 隔离大 key → 加盐 → 广播绕过 → 过滤异常 key；\n4. **改一处、测一次**（第 1 课）：记录耗时，有改善就保留并回到第 1 步，没改善就回滚换路。\n\n⚠️ 比喻的边界（很重要）：\n① 这张检查单是**诊断清单**，不是配置清单——本课不要求你背任何参数值，只要求你能说出「为什么动它、动了会付什么代价」。\n② 优先级不是死的：如果你已经确认瓶颈就是 shuffle 并行度，那调分区数就是当下最优；优先级指的是**同等条件下先试代价更小的手段**。\n③ 改 SQL 写法（少读少传）的收益通常远大于调参数，**参数调优是最后一道工序，不是第一步**。\n④ 任何改动都要复测：Spark 的估算是估计，你的直觉更是估计——只有耗时数字说了算。\n\n【正式的技术定义】\n\nSpark 性能诊断的标准化流程：\n（1）用 `explain()` 与 Spark UI 做度量，定位最慢的 Stage 与瓶颈类别；\n（2）按优先级施加改动：数据减量（列/行/分区裁剪、列式格式、分桶）→ 传输减量（提前过滤聚合、map-side combine、广播）→ 计算减量（内置函数替代 UDF、避免重复计算、审慎缓存）→ 参数调节（shuffle 分区数、广播阈值、AQE）→ 倾斜专项处理（AQE 自动 / 隔离大 key / salting / 广播绕过 / 过滤异常 key）；\n（3）每次只改一处，复测对比耗时，保留改善项并重新度量，无改善则回滚；\n（4）涉及改 key（如 salting）时必须验证结果语义一致。\n该流程强调「度量驱动 + 最小改动 + 优先级」，而非参数堆叠。\n\n【写下代码后，Spark 内部发生了什么】\n\n假设 `fact`（50 亿行、200 列）join `dim`（10 万行）再 groupBy 聚合，跑了 40 分钟：\n1. **量**：explain 发现计划里是两个 Exchange + SortMergeJoin（dim 没被广播，估计问题）；UI 里某 Stage 的 Task 最大耗时是中位数的 50 倍（倾斜）；\n2. **归优先级**：\n   - 先做**少读**：`select` 只留 5 列 + `filter` 分区裁剪 → I/O 骤降；\n   - 再做**少传**：补 `ANALYZE` 让 dim 的大小估计变准（或直接 `F.broadcast(dim)`）→ 大表免 Shuffle；\n   - 再**调旋钮**：按 shuffle 数据量重估分区数，或开 AQE 让运行时合并/切换；\n   - 最后**治倾斜**：查 key 分布，若是 null 造成就过滤；若是真实大 key 就 AQE 或隔离处理；\n3. **每步复测**：改完一处就记一次耗时，看改善来自哪一步；\n4. 最后确认：结果行数与加盐前（若用过）一致，语义未变。\n走完这一轮，这个作业你已经能讲清楚「它为什么慢、我动了什么、省掉了什么」。",

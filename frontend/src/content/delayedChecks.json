@@ -1,5 +1,5 @@
 {
-  "version": 5,
+  "version": 6,
   "items": [
     {
       "id": "l1-action/collect-transfer-delayed-v1",
@@ -500,6 +500,31 @@
       ],
       "correctOptionId": "d0",
       "explanation": "IS NULL 对未知时间得到 true，因此只保留那行；它与 ts = NULL 不同。"
+    },
+    {
+      "id": "l3-window-topn/transfer-delayed-v1",
+      "slug": "l3-window-topn",
+      "taskId": "l3-window-topn/stable",
+      "knowledgeId": "l3-window-topn/stable",
+      "title": "窗口：每组Top N与最新整行 · 隔天换材料",
+      "code": "u8: e1/time=NULL、e2/time=4\n已知时间优先，event_id打破剩余并列",
+      "prompt": "哪种排序符合约定？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "time DESC NULLS LAST,event_id DESC"
+        },
+        {
+          "id": "d1",
+          "text": "只按user_id"
+        },
+        {
+          "id": "d2",
+          "text": "先dropDuplicates再猜最新"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "并列时间由明确的唯一排序键决定，ROW_NUMBER选中整行。"
     },
     {
       "id": "l4-catalyst-rules/push-transfer-delayed-v1",
@@ -1225,6 +1250,31 @@
       ],
       "correctOptionId": "d1",
       "explanation": "阈值、提示、容量与实际收益分别核对，不能混为一个开关。"
+    },
+    {
+      "id": "l7-cache-lifecycle/transfer-delayed-v1",
+      "slug": "l7-cache-lifecycle",
+      "taskId": "l7-cache-lifecycle/materialize",
+      "knowledgeId": "l7-cache-lifecycle/materialize",
+      "title": "缓存实践：从复用到释放 · 隔天换材料",
+      "code": "base.persist(StorageLevel.MEMORY_AND_DISK_DESER)\nprint(base.storageLevel)\n# 无action",
+      "prompt": "哪种结论有证据？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "全部数据已缓存"
+        },
+        {
+          "id": "d1",
+          "text": "所有复用必提速"
+        },
+        {
+          "id": "d2",
+          "text": "只确认登记级别，实际块还需执行与观察"
+        }
+      ],
+      "correctOptionId": "d2",
+      "explanation": "登记策略和请求部分结果都不证明所有分区已物化；实际块与复用计划需另查。"
     },
     {
       "id": "l7-comprehensive/experiment-transfer-delayed-v1",

@@ -52,7 +52,7 @@ def delayed(t, key, title, code, prompt, choices, correct, explanation):
                                 correctOptionId=f'd{correct}', explanation=explanation))
 
 
-DELAYED['items'] = [i for i in DELAYED['items'] if not i['slug'].startswith('l3-')]
+DELAYED['items'] = [i for i in DELAYED['items'] if not i['slug'].startswith('l3-') or i['slug']=='l3-window-topn']
 lesson('l3-what-is-spark-sql', '给同一批订单换一种提问方式', '用 SQL 完成已经熟悉的订单分析，分清名字、查询结果与执行命令。',
        'SQL 与 API 共享优化体系，但不能保证任意两种写法计划和耗时相同。SELECT 查询与 INSERT/DDL 命令执行时机不同；SQL 也能访问目录表和文件路径，不只临时视图。')
 task('name', 'Python 变量还不是 SQL 表名', 'orders 是一个 DataFrame 变量，当前会话还没有注册同名关系。',
@@ -305,7 +305,7 @@ for index, t in enumerate(t for l in lessons.values() for t in l['tasks']):
         wrong = [o for o in field['options'] if o['id'] != field['correctOptionId']]
         wrong.insert((index + 1) % 3, answer)
         field['options'] = wrong
-for index, item in enumerate(i for i in DELAYED['items'] if i['slug'].startswith('l3-')):
+for index, item in enumerate(i for i in DELAYED['items'] if i['slug'].startswith('l3-') and i['slug']!='l3-window-topn'):
     answer = next(o for o in item['options'] if o['id'] == item['correctOptionId'])
     wrong = [o for o in item['options'] if o['id'] != item['correctOptionId']]
     wrong.insert((index + 2) % 3, answer)
@@ -316,6 +316,8 @@ DELAYED['version'] = max(DELAYED['version'], 2)
 DELAYED['items'].sort(key=lambda item:(item['slug'],item['id']))
 from concept_progression import apply as apply_concept_bridges
 apply_concept_bridges(lessons, GUIDES, DELAYED)
+from extension_lessons import apply_continuity
+apply_continuity(lessons, GUIDES, DELAYED)
 outputs = {ROOT / 'lessons' / f'{slug}.json': data for slug, data in lessons.items()}
 outputs[ROOT / 'standardGuides.json'] = GUIDES
 outputs[ROOT / 'delayedChecks.json'] = DELAYED

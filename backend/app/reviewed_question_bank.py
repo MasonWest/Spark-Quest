@@ -9,7 +9,7 @@ BANK_PATH = Path(__file__).with_name('l3_l6_reviewed_bank.json')
 
 
 def extra_catalog():
-    paths=[BANK_PATH,Path(__file__).with_name('l1_l7_reviewed_bank.json')]
+    paths=[BANK_PATH,Path(__file__).with_name('l1_l7_reviewed_bank.json'),Path(__file__).with_name('extension_reviewed_bank.json')]
     return [entry for path in paths for entry in json.loads(path.read_text(encoding='utf-8'))['lessons']]
 
 
@@ -23,7 +23,12 @@ def has_reviewed_bank(slug):
 
 def seed_reviewed_bank(db):
     inserted = l2_question_bank.seed_reviewed_bank(db)
-    for entry in extra_catalog():
+    return inserted + seed_catalog_entries(db, extra_catalog())
+
+
+def seed_catalog_entries(db, entries):
+    inserted = 0
+    for entry in entries:
         lesson = db.scalar(select(Lesson).where(Lesson.slug == entry['lesson_slug']))
         if lesson is None:
             continue

@@ -5,7 +5,7 @@ import sys
 ROOT=Path(__file__).resolve().parents[1]/'src/content'
 GUIDES=json.loads((ROOT/'standardGuides.json').read_text(encoding='utf-8'))
 DELAYED=json.loads((ROOT/'delayedChecks.json').read_text(encoding='utf-8'))
-DELAYED['items']=[i for i in DELAYED['items'] if not i['slug'].startswith(('l1-','l7-'))]
+DELAYED['items']=[i for i in DELAYED['items'] if not i['slug'].startswith(('l1-','l7-')) or i['slug']=='l7-cache-lifecycle']
 course=json.loads((ROOT.parents[2]/'backend/app/course_seed.json').read_text(encoding='utf-8'))
 originals={l['slug']:l['content']['explanation'] for level in course['levels'] for l in level['lessons']}
 BASE='https://spark.apache.org/docs/3.5.7/'
@@ -161,6 +161,8 @@ GUIDES['version']=max(GUIDES['version'],4);DELAYED['version']=max(DELAYED['versi
 DELAYED['items'].sort(key=lambda x:(x['slug'],x['id']))
 from concept_progression import apply as apply_concept_bridges
 apply_concept_bridges(lessons, GUIDES, DELAYED)
+from extension_lessons import apply_continuity
+apply_continuity(lessons, GUIDES, DELAYED)
 outputs={ROOT/'lessons'/f'{slug}.json':l for slug,l in lessons.items()};outputs[ROOT/'standardGuides.json']=GUIDES;outputs[ROOT/'delayedChecks.json']=DELAYED
 for path,data in outputs.items():
     text=json.dumps(data,ensure_ascii=False,indent=2)+'\n'

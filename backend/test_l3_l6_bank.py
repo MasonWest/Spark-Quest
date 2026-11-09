@@ -11,7 +11,7 @@ from app.models import CourseLevel, Lesson, QuizQuestion, QuizAnswerLog, LessonM
 from app.reviewed_question_bank import extra_catalog as all_extra_catalog, seed_reviewed_bank, questions_for_phase
 
 def extra_catalog():
-    return [entry for entry in all_extra_catalog() if entry["lesson_slug"].startswith(("l3-","l4-","l5-","l6-"))]
+    return [entry for entry in all_extra_catalog() if entry["lesson_slug"] not in ("l3-window-topn","l7-cache-lifecycle") and entry["lesson_slug"].startswith(("l3-","l4-","l5-","l6-"))]
 from app.routers import quizzes, review
 from app.schemas import QuizSubmitIn, ReviewSubmitIn
 

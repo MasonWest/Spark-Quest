@@ -6,7 +6,7 @@ from playwright.sync_api import sync_playwright
 root=Path(__file__).resolve().parents[2]
 bank=json.loads((root/'backend/app/l2_reviewed_bank.json').read_text(encoding='utf-8'))
 if '--all' in sys.argv:
- for name in ['l3_l6_reviewed_bank.json','l1_l7_reviewed_bank.json']:bank['lessons'] += json.loads((root/'backend/app'/name).read_text(encoding='utf-8'))['lessons']
+ for name in ['l3_l6_reviewed_bank.json','l1_l7_reviewed_bank.json','extension_reviewed_bank.json']:bank['lessons'] += json.loads((root/'backend/app'/name).read_text(encoding='utf-8'))['lessons']
 with closing(sqlite3.connect((root/'backend/spark_quest.db').as_uri()+'?mode=ro',uri=True)) as db:
  ids=dict(db.execute('SELECT slug,id FROM lessons'))
  qids={(slug,prompt):qid for slug,prompt,qid in db.execute('SELECT l.slug,q.prompt,q.id FROM quizzes q JOIN lessons l ON l.id=q.lesson_id')}
@@ -14,6 +14,7 @@ with sync_playwright() as p:
  b=p.chromium.launch();page=b.new_page(viewport={'width':390,'height':844});errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
  for entry in bank['lessons']:
   slug=entry['lesson_slug'];lid=ids[slug]
+  if [s for s in sys.argv[1:] if s!='--all'] and slug not in sys.argv[1:]:continue
   for phase in ['assessment','review']:
    selected=[q for q in entry['questions'] if (q['purpose']=='assessment')==(phase=='assessment')]
    payload={'lesson_id':lid,'lesson_title':slug,'questions':[{'id':qids[(slug,q['prompt'])],'type':q['type'],'prompt':q['prompt'],'options':q['options'],'dimension':q['dimension']} for q in selected]}

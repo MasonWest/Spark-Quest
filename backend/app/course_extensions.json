@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "lessons": [
+    {
+      "after": "l3-groupby-having",
+      "lesson": {
+        "slug": "l3-window-topn",
+        "title": "窗口函数：每组Top N与最新整行",
+        "description": "从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。",
+        "objective": "完成本课八步推演，能解释关键规则，并在新材料上选择与实现正确流程。",
+        "estimated_minutes": 18,
+        "prerequisites": "l3-groupby-having",
+        "content": {
+          "explanation": "【先用人话理解】\n\n从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。\n\n【一个直观的心智模型】\n\n汇总一组，还是给每行补一列：OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。\n\n每个城市从一号重新排：PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。\n\n最新时间相同，还得约定选谁：“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。\n\n先生成序号，再筛第一行：CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。\n\n每组两单，不是全表两单：ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。\n\n同分算并列时，名次怎样走：RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。\n\n取前两档成绩，需要哪种名次：固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。\n\n缺时间的事件，别默默选成最新：把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。\n\n【边界与验证】\n\n窗口分组不是写目录partitionBy，也不承诺物理分区布局；本课先固定业务分组。加ORDER BY后的默认窗口帧可能改变聚合含义，本课不把它一概当整组总额。\n窗口内的排序用于计算序号，不等于最终结果展示全局有序；展示还需外层ORDER BY。\nevent_id的顺序是业务约定，不自动代表真实发生先后；缺少稳定键时不能承诺每次选中同一条。\n不要依赖其他SQL方言的QUALIFY语法；本课不把CTE当物化保证。\n如果业务要求并列名次全部保留，先重新明确“N”指行数还是名次，不要继续套固定行数方案。\n排名的别名在示例中可自定；若在排名ORDER BY中加入唯一id，同分行便不再按该完整排序键并列。\n多列排序时“相同”指整个排序值组合相同，而不仅第一列。\n本题user_id非空；若允许NULL用户键，窗口会把它们放同一组，必须另行约定是否应排除或区分。",
+          "examples": [
+            {
+              "title": "汇总一组，还是给每行补一列",
+              "code": "-- 输入：north/30、north/20、south/8\nSELECT city, amount,\n SUM(amount) OVER (PARTITION BY city) AS city_total\nFROM orders",
+              "note": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。"
+            },
+            {
+              "title": "每个城市从一号重新排",
+              "code": "-- north: a/70,b/40；south: c/90\nROW_NUMBER() OVER (\n PARTITION BY city ORDER BY amount DESC, id ASC\n) AS rn",
+              "note": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。"
+            },
+            {
+              "title": "最新时间相同，还得约定选谁",
+              "code": "-- u1: e10/time=5/status=old；e11/time=5/status=new\nROW_NUMBER() OVER (PARTITION BY user_id\n ORDER BY event_time DESC NULLS LAST, event_id DESC) AS rn",
+              "note": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。"
+            },
+            {
+              "title": "先生成序号，再筛第一行",
+              "code": "WITH numbered AS (\n SELECT *, ROW_NUMBER() OVER (PARTITION BY user_id\n  ORDER BY event_time DESC NULLS LAST,event_id DESC) AS rn\n FROM events\n)\nSELECT * FROM numbered WHERE rn = 1",
+              "note": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。"
+            },
+            {
+              "title": "每组两单，不是全表两单",
+              "code": "-- north:70,40,10；south:90\n-- 已按city分组、amount DESC和唯一id编号\nSELECT * FROM numbered WHERE rn <= 2",
+              "note": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。"
+            },
+            {
+              "title": "同分算并列时，名次怎样走",
+              "code": "RANK() OVER (PARTITION BY team ORDER BY score DESC)\n-- 同队分数：100、100、90",
+              "note": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。"
+            },
+            {
+              "title": "取前两档成绩，需要哪种名次",
+              "code": "DENSE_RANK() OVER (PARTITION BY team ORDER BY score DESC) AS tier\n-- 外层WHERE tier <= 2",
+              "note": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。"
+            },
+            {
+              "title": "缺时间的事件，别默默选成最新",
+              "code": "ORDER BY event_time DESC NULLS LAST, event_id DESC\n-- 选每用户ROW_NUMBER=1",
+              "note": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。"
+            }
+          ],
+          "key_points": [
+            "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。",
+            "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。",
+            "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。",
+            "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。",
+            "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。",
+            "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。",
+            "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。",
+            "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。"
+          ],
+          "common_mistakes": [
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "窗口分组不是写目录partitionBy，也不承诺物理分区布局；本课先固定业务分组。加ORDER BY后的默认窗口帧可能改变聚合含义，本课不把它一概当整组总额。",
+              "fix": "OVER定义窗口；PARTITION BY city把同城行作为逻辑计算组。这里没有窗口ORDER BY，SUM覆盖整个城市组，原订单行仍保留。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "窗口内的排序用于计算序号，不等于最终结果展示全局有序；展示还需外层ORDER BY。",
+              "fix": "PARTITION BY回答“在哪组里比”，ORDER BY回答“按什么顺序比”。ROW_NUMBER从1开始，每个组独立编号。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "event_id的顺序是业务约定，不自动代表真实发生先后；缺少稳定键时不能承诺每次选中同一条。",
+              "fix": "“最新”先定义时间口径，并给并列补充稳定且唯一的排序键。用ROW_NUMBER选整行，才能保留同一条记录上的字段；不能分别MAX每列拼出不存在的行。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "不要依赖其他SQL方言的QUALIFY语法；本课不把CTE当物化保证。",
+              "fix": "CTE只组织查询表达，不自动缓存或保存数据。先计算窗口列，再让外层WHERE筛选；这里使用Spark3.5.7支持的两层写法。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "如果业务要求并列名次全部保留，先重新明确“N”指行数还是名次，不要继续套固定行数方案。",
+              "fix": "ROW_NUMBER配rn<=N表达每组至多N行，并列也要按已定义的次序取舍。全表ORDER BY/LIMIT与每组TopN是不同问题。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "排名的别名在示例中可自定；若在排名ORDER BY中加入唯一id，同分行便不再按该完整排序键并列。",
+              "fix": "RANK把相同排序值视为并列，并在其后跳过相应位置；DENSE_RANK也并列，但下一档不跳号。按这些名次筛选<=N时，行数可能超过N。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "多列排序时“相同”指整个排序值组合相同，而不仅第一列。",
+              "fix": "固定行数用有完整次序的ROW_NUMBER；保留前N档不同排序值可用DENSE_RANK；竞赛式并列名次可用RANK。先说清业务再选函数。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "本题user_id非空；若允许NULL用户键，窗口会把它们放同一组，必须另行约定是否应排除或区分。",
+              "fix": "把缺失与并列规则写进窗口，换数据才能继续成立。选行后再做JOIN补属性，仍要检查维表键唯一，不能让已选一行在连接后再次放大。"
+            }
+          ],
+          "review": "从上一课聚合出发：同样按组计算，这次保留每张明细，并为后续JOIN准备明确的记录粒度。",
+          "problem": "按真实规则推演，再用换材料练习验证。",
+          "preview": "下一课JOIN会给已选记录补用户属性。窗口负责组内计算与选行，连接负责跨表匹配，二者都要验证输出粒度。"
+        }
+      }
+    },
+    {
+      "after": "l7-executor-memory",
+      "lesson": {
+        "slug": "l7-cache-lifecycle",
+        "title": "缓存实践：物化、复用与释放",
+        "description": "上一课理解了执行与存储内存的共享边界；这一课把模型变成DataFrame的缓存生命周期，再进入分区实验。",
+        "objective": "完成本课八步推演，能解释关键规则，并在新材料上选择与实现正确流程。",
+        "estimated_minutes": 18,
+        "prerequisites": "l7-executor-memory",
+        "content": {
+          "explanation": "【先用人话理解】\n\n上一课理解了执行与存储内存的共享边界；这一课把模型变成DataFrame的缓存生命周期，再进入分区实验。\n\n【一个直观的心智模型】\n\n先圈出真正会被重复用的结果：persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。\n\n明确这次说的是DataFrame缓存：3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。\n\n登记缓存，不等于已经把数据装满：count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。\n\n设置成功与真正复用要看两种证据：常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。\n\n别把缓存当成永久快照或新查询的保证：复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。\n\n两份报告做完，把缓存还回去：unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。\n\n中途报错，也要走到清理步骤：让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。\n\n比较方案，预热与冷启动要算同一本账：接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。\n\n【边界与验证】\n\n两份语义不同的清洗不能仅因变量名相同就视为同一个可复用结果。\n不要据名字推断任意Python对象的布局；RDD与DataFrame以及不同版本的默认值分别核对。\ncount本身有成本，不能为了缓存再无条件多跑一次；应把预热计入整体实验。\n小报告collect用于教学核对，不是允许收集海量明细；具体计划包装可能随版本变化。\n本课不假定缓存如何响应所有外部源变更；生产需另定输入版本与刷新规则。\n不能把缓存块释放等同于JVM立刻把全部内存还给操作系统，其他查询共享同一缓存关系时也要协调释放时机。\n进程崩溃或清理本身失败仍需运行环境处理，finally不是一切故障的绝对保证。\n本课不提供固定倍数的性能保证；正式报告的缓存冷热条件应可复核。",
+          "examples": [
+            {
+              "title": "先圈出真正会被重复用的结果",
+              "code": "raw → expensive_clean → clean\nclean → report_A\nclean → report_B",
+              "note": "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。"
+            },
+            {
+              "title": "明确这次说的是DataFrame缓存",
+              "code": "from pyspark import StorageLevel\ncached = clean.persist(StorageLevel.MEMORY_AND_DISK_DESER)\n# 另一选择：clean.cache() 使用DataFrame默认级别",
+              "note": "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。"
+            },
+            {
+              "title": "登记缓存，不等于已经把数据装满",
+              "code": "cached = clean.persist(StorageLevel.MEMORY_AND_DISK_DESER)\n# 还没有action\n# 可在需要时：cached.count()",
+              "note": "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。"
+            },
+            {
+              "title": "设置成功与真正复用要看两种证据",
+              "code": "print(cached.storageLevel)\ncached.count()\nreport = cached.groupBy(\"region\").count()\nreport.collect()  # 本课只有极小教学报告\nreport.explain()",
+              "note": "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。"
+            },
+            {
+              "title": "别把缓存当成永久快照或新查询的保证",
+              "code": "cached = expensive_clean(raw).persist(...)\nother = raw.filter(\"amount > 999\")\n# 同源不等于同一个缓存结果",
+              "note": "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。"
+            },
+            {
+              "title": "两份报告做完，把缓存还回去",
+              "code": "cached.unpersist(blocking=True)\n# blocking=True：等待缓存块删除完成\n# 以后仍可按有效来源重新计算cached",
+              "note": "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。"
+            },
+            {
+              "title": "中途报错，也要走到清理步骤",
+              "code": "cached = clean.persist(StorageLevel.MEMORY_AND_DISK_DESER)\ntry:\n    make_report_a(cached)\n    make_report_b(cached)\nfinally:\n    cached.unpersist(blocking=True)",
+              "note": "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。"
+            },
+            {
+              "title": "比较方案，预热与冷启动要算同一本账",
+              "code": "完整对照范围：\n读取/清洗 → 缓存登记与物化 → A/B报告 → 释放\n固定输入、资源与结果；记录冷热状态",
+              "note": "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。"
+            }
+          ],
+          "key_points": [
+            "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。",
+            "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。",
+            "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。",
+            "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。",
+            "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。",
+            "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。",
+            "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。",
+            "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。"
+          ],
+          "common_mistakes": [
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "两份语义不同的清洗不能仅因变量名相同就视为同一个可复用结果。",
+              "fix": "persist是让计算结果可复用的策略，先看是否重复使用、重算多贵、缓存多大。它不把任何慢作业自动变快，也不替代输入与结果契约。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "不要据名字推断任意Python对象的布局；RDD与DataFrame以及不同版本的默认值分别核对。",
+              "fix": "3.5.7的DataFrame cache/persist默认MEMORY_AND_DISK_DESER；persist可以显式选级别。级别描述允许的存储方式，实际缓存状态还要观察。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "count本身有成本，不能为了缓存再无条件多跑一次；应把预热计入整体实验。",
+              "fix": "count会请求全量计数，常用于驱动物化；take只请求有限结果，不能据此认定所有分区都已填充。是否仍完整缓存还受逐出、失败和容量影响。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "小报告collect用于教学核对，不是允许收集海量明细；具体计划包装可能随版本变化。",
+              "fix": "常见计划会显示InMemoryTableScan等缓存线索，Storage页展示缓存占用；这些仍不是固定提速证明。检查目标查询和版本，并在同条件下测量整体成本。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "本课不假定缓存如何响应所有外部源变更；生产需另定输入版本与刷新规则。",
+              "fix": "复用逻辑必须保持正确，缓存也不替代数据版本或快照契约。需要稳定交付时，应设计正式数据产物，而非依赖缓存永远存在。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "不能把缓存块释放等同于JVM立刻把全部内存还给操作系统，其他查询共享同一缓存关系时也要协调释放时机。",
+              "fix": "unpersist默认blocking=False；需要等待块移除的受控实验可使用True。之后再次执行仍可能重算，原数据可用性与逻辑规则依旧重要。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "进程崩溃或清理本身失败仍需运行环境处理，finally不是一切故障的绝对保证。",
+              "fix": "让缓存创建、复用与释放处于明确的作用域，异常也要清理；不要吞掉原异常假装交付成功。本课小任务由该作用域拥有缓存，不随意释放其他任务共享资源。"
+            },
+            {
+              "mistake": "忽略本步适用边界",
+              "why": "本课不提供固定倍数的性能保证；正式报告的缓存冷热条件应可复核。",
+              "fix": "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。"
+            }
+          ],
+          "review": "上一课理解了执行与存储内存的共享边界；这一课把模型变成DataFrame的缓存生命周期，再进入分区实验。",
+          "problem": "按真实规则推演，再用换材料练习验证。",
+          "preview": "下一课调Shuffle分区时，继续记录缓存冷热状态。先区分复用是否有效，再比较每份工作的大小和并发，避免把两个变量混在一起。"
+        }
+      }
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 {
   "slug": "l7-executor-memory",
-  "version": 2,
+  "version": 3,
   "title": "先分清谁在内存紧张",
   "mission": "区分Driver、Executor JVM、Python进程与任务状态。",
   "correction": "OOM 不必都靠增加 executor heap 解决。Execution/Storage共享机制有具体规则，缓存并非永远不能逐出，Python/堆外与Driver也需单独看。",
   "source": "https://spark.apache.org/docs/3.5.7/tuning.html",
-  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "next": "下一课缓存实践把M/R与逐出模型落到persist、物化、观察、复用和unpersist；先学会管理缓存生命周期，再调分区。",
   "tasks": [
     {
       "id": "l7-executor-memory/driver",

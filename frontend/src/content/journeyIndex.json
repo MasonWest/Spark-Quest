@@ -288,7 +288,7 @@
   },
   "l2-sort-dedup": {
     "slug": "l2-sort-dedup",
-    "version": 3,
+    "version": 4,
     "title": "排好名次，再说什么叫重复",
     "tasks": [
       {
@@ -428,7 +428,7 @@
   },
   "l3-groupby-having": {
     "slug": "l3-groupby-having",
-    "version": 1,
+    "version": 2,
     "title": "先筛订单，还是筛城市日报",
     "tasks": [
       {
@@ -447,7 +447,7 @@
   },
   "l3-joins-intro": {
     "slug": "l3-joins-intro",
-    "version": 2,
+    "version": 3,
     "title": "把订单与用户正确配对",
     "tasks": [
       {
@@ -559,6 +559,37 @@
       },
       {
         "id": "l3-where-order-limit/ties"
+      }
+    ]
+  },
+  "l3-window-topn": {
+    "slug": "l3-window-topn",
+    "version": 1,
+    "title": "窗口：每组Top N与最新整行",
+    "tasks": [
+      {
+        "id": "l3-window-topn/keep-rows"
+      },
+      {
+        "id": "l3-window-topn/number"
+      },
+      {
+        "id": "l3-window-topn/stable"
+      },
+      {
+        "id": "l3-window-topn/filter"
+      },
+      {
+        "id": "l3-window-topn/topn"
+      },
+      {
+        "id": "l3-window-topn/rank"
+      },
+      {
+        "id": "l3-window-topn/dense"
+      },
+      {
+        "id": "l3-window-topn/null-latest"
       }
     ]
   },
@@ -1146,6 +1177,37 @@
       }
     ]
   },
+  "l7-cache-lifecycle": {
+    "slug": "l7-cache-lifecycle",
+    "version": 1,
+    "title": "缓存实践：从复用到释放",
+    "tasks": [
+      {
+        "id": "l7-cache-lifecycle/worth"
+      },
+      {
+        "id": "l7-cache-lifecycle/level"
+      },
+      {
+        "id": "l7-cache-lifecycle/materialize"
+      },
+      {
+        "id": "l7-cache-lifecycle/observe"
+      },
+      {
+        "id": "l7-cache-lifecycle/scope"
+      },
+      {
+        "id": "l7-cache-lifecycle/release"
+      },
+      {
+        "id": "l7-cache-lifecycle/finally"
+      },
+      {
+        "id": "l7-cache-lifecycle/fair-test"
+      }
+    ]
+  },
   "l7-comprehensive": {
     "slug": "l7-comprehensive",
     "version": 1,
@@ -1173,7 +1235,7 @@
   },
   "l7-executor-memory": {
     "slug": "l7-executor-memory",
-    "version": 2,
+    "version": 3,
     "title": "先分清谁在内存紧张",
     "tasks": [
       {
@@ -1229,7 +1291,7 @@
   },
   "l7-shuffle-partitions": {
     "slug": "l7-shuffle-partitions",
-    "version": 1,
+    "version": 2,
     "title": "用任务分布选下一次实验",
     "tasks": [
       {

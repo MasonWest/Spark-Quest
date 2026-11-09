@@ -10,7 +10,7 @@ with closing(sqlite3.connect((root/'backend/spark_quest.db').as_uri()+'?mode=ro'
  lessons={r['slug']:dict(r) for r in db.execute('SELECT * FROM lessons')}
 capstones=json.loads((root/'frontend/src/content/capstones.json').read_text(encoding='utf-8'))['lessons']
 guides=json.loads((root/'frontend/src/content/standardGuides.json').read_text(encoding='utf-8'))['lessons']
-for d in lessons.values():d['content']=json.loads(d['content']);d.update(status='available',mastery_score=None,level_title='L2',next_lesson=None)
+for d in lessons.values():d['content']=json.loads(d['content']);d.update(status='available',mastery_score=None,level_title=d['slug'].split('-')[0].upper(),next_lesson=None)
 def normalize(text):return re.sub(r'[\W_①-⑳]','',text)
 with sync_playwright() as p:
  b=p.chromium.launch();page=b.new_page(viewport={'width':390,'height':844});errors=[]

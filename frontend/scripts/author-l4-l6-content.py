@@ -252,6 +252,8 @@ GUIDES['version']=max(GUIDES['version'],3);DELAYED['version']=max(DELAYED['versi
 DELAYED['items'].sort(key=lambda item:(item['slug'],item['id']))
 from concept_progression import apply as apply_concept_bridges
 apply_concept_bridges(lessons, GUIDES, DELAYED)
+from extension_lessons import apply_continuity
+apply_continuity(lessons, GUIDES, DELAYED)
 outputs={ROOT/'lessons'/f'{slug}.json':data for slug,data in lessons.items()}
 outputs[ROOT/'standardGuides.json']=GUIDES;outputs[ROOT/'delayedChecks.json']=DELAYED
 for path,data in outputs.items():

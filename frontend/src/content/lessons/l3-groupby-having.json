@@ -1,11 +1,11 @@
 {
   "slug": "l3-groupby-having",
-  "version": 1,
+  "version": 2,
   "title": "先筛订单，还是筛城市日报",
   "mission": "用一组数值分清 WHERE、GROUP BY 和 HAVING 的职责。",
   "correction": "WHERE 在聚合前，HAVING 在聚合后。GROUP BY 的物理交换与预聚合依赖计划，不能固定说必然某次数 Shuffle 或某种 Combine。",
   "source": "https://spark.apache.org/docs/3.5.7/sql-ref-syntax-qry-select-having.html",
-  "next": "先用自己的话解释本课的判断，再进入下一课。正式测验沿用原有规则。",
+  "next": "下一课窗口继续按组计算，但保留每条明细；先对比GROUP BY收拢行与OVER为每行补信息，再处理每组Top N。",
   "tasks": [
     {
       "id": "l3-groupby-having/stage",

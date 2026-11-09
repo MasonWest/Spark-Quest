@@ -1,0 +1,335 @@
+{
+  "version": 1,
+  "lessons": [
+    {
+      "lesson_slug": "l3-window-topn",
+      "questions": [
+        {
+          "key": "l3-window-topn/shape/assessment-v1",
+          "knowledge_id": "l3-window-topn/shape",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：三条订单执行SUM(amount) OVER(PARTITION BY city)，无其他筛选，输出几行？",
+          "options": [
+            "3行",
+            "每城市只留一行",
+            "全表只剩一行",
+            "只有总额没有明细"
+          ],
+          "correct_index": 0,
+          "explanation": "窗口在组内计算并把值附给明细，不像GROUP BY收拢为每组一行。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-window-topn/shape/review-v1",
+          "knowledge_id": "l3-window-topn/shape",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：五条订单用窗口补上每城总额，原行数怎样？",
+          "options": [
+            "每城市只留一行",
+            "5行",
+            "全表只剩一行",
+            "只有总额没有明细"
+          ],
+          "correct_index": 1,
+          "explanation": "窗口在组内计算并把值附给明细，不像GROUP BY收拢为每组一行。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l3-window-topn/stable/assessment-v1",
+          "knowledge_id": "l3-window-topn/stable",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：时间并列时要求稳定选最新整行，应补什么？",
+          "options": [
+            "任取一行再宣称最新",
+            "明确唯一且稳定的并列排序键",
+            "分别MAX各列拼成结果",
+            "依赖dropDuplicates保留首行"
+          ],
+          "correct_index": 1,
+          "explanation": "完整排序规则决定选哪条整行，业务键的次序需明确约定。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-window-topn/stable/review-v1",
+          "knowledge_id": "l3-window-topn/stable",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：单按更新时间无法区分两行，要稳定选一条应怎样？",
+          "options": [
+            "任取一行再宣称最新",
+            "分别MAX各列拼成结果",
+            "时间后加约定的唯一event_id排序",
+            "依赖dropDuplicates保留首行"
+          ],
+          "correct_index": 2,
+          "explanation": "完整排序规则决定选哪条整行，业务键的次序需明确约定。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l3-window-topn/filter/assessment-v1",
+          "knowledge_id": "l3-window-topn/filter",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：Spark3.5.7中，如何筛每用户窗口序号为1？",
+          "options": [
+            "同层WHERE直接依赖窗口别名",
+            "只用全表LIMIT 1",
+            "内层计算rn，外层WHERE rn=1",
+            "用HAVING替代所有窗口计算"
+          ],
+          "correct_index": 2,
+          "explanation": "外层才能使用内层窗口结果，CTE不自动物化。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-window-topn/filter/review-v1",
+          "knowledge_id": "l3-window-topn/filter",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：先算ROW_NUMBER，再保留第一条，查询分层怎样写？",
+          "options": [
+            "同层WHERE直接依赖窗口别名",
+            "只用全表LIMIT 1",
+            "用HAVING替代所有窗口计算",
+            "CTE编号，外层按rn过滤"
+          ],
+          "correct_index": 3,
+          "explanation": "外层才能使用内层窗口结果，CTE不自动物化。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l3-window-topn/topn/assessment-v1",
+          "knowledge_id": "l3-window-topn/topn",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：north三单、south一单，每城至多Top2，共几单？",
+          "options": [
+            "全表只留2条",
+            "必须补成4条",
+            "所有明细均不筛",
+            "3单"
+          ],
+          "correct_index": 3,
+          "explanation": "ROW_NUMBER分组重启，rn<=2保留每组至多两条，少于两条不造行。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-window-topn/topn/remediation-v1",
+          "knowledge_id": "l3-window-topn/topn",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：A四单、B一单，每组至多两条，共几条？",
+          "options": [
+            "3条",
+            "全表只留2条",
+            "必须补成4条",
+            "所有明细均不筛"
+          ],
+          "correct_index": 0,
+          "explanation": "ROW_NUMBER分组重启，rn<=2保留每组至多两条，少于两条不造行。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l3-window-topn/ties/assessment-v1",
+          "knowledge_id": "l3-window-topn/ties",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：100、100、90按分数DENSE_RANK取前两档，保留几人？",
+          "options": [
+            "3人",
+            "固定2行",
+            "只保留第一名",
+            "固定只保留一个并列者"
+          ],
+          "correct_index": 0,
+          "explanation": "DENSE_RANK按不同排序值连续分档，并列可使输出行数超过N。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l3-window-topn/ties/remediation-v1",
+          "knowledge_id": "l3-window-topn/ties",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "窗口：每组Top N与最新整行：9、9、8按值DENSE_RANK<=2，保留几行？",
+          "options": [
+            "固定2行",
+            "3行",
+            "只保留第一名",
+            "固定只保留一个并列者"
+          ],
+          "correct_index": 1,
+          "explanation": "DENSE_RANK按不同排序值连续分档，并列可使输出行数超过N。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l7-cache-lifecycle",
+      "questions": [
+        {
+          "key": "l7-cache-lifecycle/intent/assessment-v1",
+          "knowledge_id": "l7-cache-lifecycle/intent",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：persist后只读storageLevel，确认了什么？",
+          "options": [
+            "所有分区已经物化",
+            "生产性能已固定提升",
+            "登记了持久化策略",
+            "数据已永久写出"
+          ],
+          "correct_index": 2,
+          "explanation": "持久化登记与实际物化分开，执行与观察才提供进一步证据。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l7-cache-lifecycle/intent/review-v1",
+          "knowledge_id": "l7-cache-lifecycle/intent",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：没有action，只调用DataFrame.cache后能确认什么？",
+          "options": [
+            "所有分区已经物化",
+            "生产性能已固定提升",
+            "数据已永久写出",
+            "请求了默认缓存策略"
+          ],
+          "correct_index": 3,
+          "explanation": "持久化登记与实际物化分开，执行与观察才提供进一步证据。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l7-cache-lifecycle/level/assessment-v1",
+          "knowledge_id": "l7-cache-lifecycle/level",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：Spark3.5.7 DataFrame.cache默认级别是什么？",
+          "options": [
+            "MEMORY_ONLY且与RDD始终相同",
+            "所有块只存Driver列表",
+            "永久外部数据表",
+            "MEMORY_AND_DISK_DESER"
+          ],
+          "correct_index": 3,
+          "explanation": "DataFrame默认级别与RDD不可混用；允许内存/磁盘不保证全驻内存。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l7-cache-lifecycle/level/review-v1",
+          "knowledge_id": "l7-cache-lifecycle/level",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：3.5.7 DataFrame.persist()未传级别时默认是哪项？",
+          "options": [
+            "MEMORY_AND_DISK_DESER",
+            "MEMORY_ONLY且与RDD始终相同",
+            "所有块只存Driver列表",
+            "永久外部数据表"
+          ],
+          "correct_index": 0,
+          "explanation": "DataFrame默认级别与RDD不可混用；允许内存/磁盘不保证全驻内存。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l7-cache-lifecycle/evidence/assessment-v1",
+          "knowledge_id": "l7-cache-lifecycle/evidence",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：如何判断登记的缓存真的被目标查询采用？",
+          "options": [
+            "核对实际缓存块和目标执行计划",
+            "只看变量名含cached",
+            "只看storageLevel非空",
+            "只看原始文件路径相同"
+          ],
+          "correct_index": 0,
+          "explanation": "策略、实际数据和目标查询采用情况分别验证，计划不是性能保证。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l7-cache-lifecycle/evidence/review-v1",
+          "knowledge_id": "l7-cache-lifecycle/evidence",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：同源新查询一定复用已缓存结果吗，应怎样确认？",
+          "options": [
+            "只看变量名含cached",
+            "核对复用关系、块占用与计划",
+            "只看storageLevel非空",
+            "只看原始文件路径相同"
+          ],
+          "correct_index": 1,
+          "explanation": "策略、实际数据和目标查询采用情况分别验证，计划不是性能保证。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l7-cache-lifecycle/release/assessment-v1",
+          "knowledge_id": "l7-cache-lifecycle/release",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：cached.unpersist(blocking=True)主要做什么？",
+          "options": [
+            "删除原始数据文件",
+            "释放缓存并等待块删除",
+            "把缓存永久写成业务产物",
+            "阻止以后按来源重算"
+          ],
+          "correct_index": 1,
+          "explanation": "unpersist不删除查询定义或源数据，也不等于JVM立刻归还全部OS内存。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l7-cache-lifecycle/release/remediation-v1",
+          "knowledge_id": "l7-cache-lifecycle/release",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：小型受控实验结束，怎样等待自己拥有的缓存块释放？",
+          "options": [
+            "删除原始数据文件",
+            "把缓存永久写成业务产物",
+            "调用unpersist(blocking=True)",
+            "阻止以后按来源重算"
+          ],
+          "correct_index": 2,
+          "explanation": "unpersist不删除查询定义或源数据，也不等于JVM立刻归还全部OS内存。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l7-cache-lifecycle/scope/assessment-v1",
+          "knowledge_id": "l7-cache-lifecycle/scope",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：报告B抛错，如何保证走到缓存清理路径？",
+          "options": [
+            "只在成功路径释放就足够",
+            "吞掉异常宣称交付成功",
+            "用finally清理本段拥有的缓存",
+            "任何cache都无需成本核对"
+          ],
+          "correct_index": 2,
+          "explanation": "明确资源生命周期，清理不修复业务错误，也不自动保证缓存收益。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l7-cache-lifecycle/scope/remediation-v1",
+          "knowledge_id": "l7-cache-lifecycle/scope",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "缓存实践：从复用到释放：异常时也需要释放本段缓存，结构应怎样组织？",
+          "options": [
+            "只在成功路径释放就足够",
+            "吞掉异常宣称交付成功",
+            "任何cache都无需成本核对",
+            "将本段unpersist放进finally"
+          ],
+          "correct_index": 3,
+          "explanation": "明确资源生命周期，清理不修复业务错误，也不自动保证缓存收益。",
+          "dimension": "transfer"
+        }
+      ]
+    }
+  ]
+}
