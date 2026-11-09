@@ -8,7 +8,10 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from app.database import Base
 from app.models import CourseLevel, Lesson, QuizQuestion, QuizAnswerLog, LessonMastery, DEFAULT_USER_ID
-from app.reviewed_question_bank import extra_catalog, seed_reviewed_bank, questions_for_phase
+from app.reviewed_question_bank import extra_catalog as all_extra_catalog, seed_reviewed_bank, questions_for_phase
+
+def extra_catalog():
+    return [entry for entry in all_extra_catalog() if entry["lesson_slug"].startswith(("l3-","l4-","l5-","l6-"))]
 from app.routers import quizzes, review
 from app.schemas import QuizSubmitIn, ReviewSubmitIn
 

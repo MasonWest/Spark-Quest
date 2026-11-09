@@ -1,6 +1,6 @@
 {
   "slug": "l7-what-is-tuning",
-  "version": 1,
+  "version": 2,
   "title": "慢作业诊室：先证据，后处方",
   "mission": "同事说作业用了六分钟，要你立刻给一个提速参数。你将逐轮拿到证据，决定下一步查什么、试什么，以及何时该拒绝一个更快的结果。",
   "correction": "本课所有耗时和指标都是人为构造的教学案例，并非当前用户作业的实测。诊断线索不是单一原因的证明；涉及的 groupByKey/reduceByKey 是 RDD API，SQL AQE 的开关不能直接当作这段 RDD 代码的修复。",
@@ -41,7 +41,48 @@
       "ability": "在证据不足时选择测量而非盲调",
       "knowledgeIds": [
         "tuning.evidence-first"
-      ]
+      ],
+      "reading": {
+        "id": "insufficient-evidence/reading",
+        "title": "六分钟，够开处方吗？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "只有总耗时不足以开处方。先确认需求、输入、资源、执行计划和运行指标，形成可检验假设。",
+        "boundary": "六分钟只是给定教学情境，不能当成任何资源瓶颈证明。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-what-is-tuning/evidence-transfer",
+        "knowledgeId": "tuning.evidence-first",
+        "title": "秒数不是诊断结论",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 教学情境：同一日报从 40s 变 100s，尚无输入和资源对照。",
+        "prompt": "先做什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r0",
+              "text": "收集可比输入、计划与指标",
+              "feedback": "对，先让假设可检验。"
+            },
+            {
+              "id": "r1",
+              "text": "直接把所有内存翻倍",
+              "feedback": "尚未定位瓶颈。"
+            },
+            {
+              "id": "r2",
+              "text": "宣布网络必坏",
+              "feedback": "没有足够网络证据。"
+            }
+          ]
+        },
+        "insight": "总耗时需要与输入、资源和执行证据一起解释。"
+      }
     },
     {
       "id": "locate-critical-stage",
@@ -77,7 +118,17 @@
       "ability": "用阶段和任务指标缩小诊断范围",
       "knowledgeIds": [
         "tuning.stage-task-evidence"
-      ]
+      ],
+      "reading": {
+        "id": "locate-critical-stage/reading",
+        "title": "补充证据：时间花在了哪里？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先从实际关键路径与阶段指标定位工作，再看任务分布、读量、交换、spill 和异常。",
+        "boundary": "阶段占比与示意指标不是跨版本固定调度映射。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
     },
     {
       "id": "hypothesis-not-proof",
@@ -135,7 +186,17 @@
       "ability": "把拖尾现象转换为可验证的假设",
       "knowledgeIds": [
         "tuning.skew-hypothesis"
-      ]
+      ],
+      "reading": {
+        "id": "hypothesis-not-proof/reading",
+        "title": "一个任务慢，先别把怀疑当结论",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "最大任务远慢于中位数是长尾线索，还需检查键、字节、GC、硬件与匹配基数等证据。",
+        "boundary": "线索不是单独的病因证明，不能直接删除热点业务数据。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
     },
     {
       "id": "choose-equivalent-trial",
@@ -172,7 +233,17 @@
       "knowledgeIds": [
         "tuning.equivalent-trial",
         "tuning.partial-combine"
-      ]
+      ],
+      "reading": {
+        "id": "choose-equivalent-trial/reading",
+        "title": "终于看到代码：目标只是整数求和",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "只需整数求和时可使用支持局部合并的表达，并以新输入对照结果与实际计划。",
+        "boundary": "减少中间内容不自动消除最终汇合或保证固定提速倍数。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
     },
     {
       "id": "reject-fast-wrong",
@@ -209,7 +280,17 @@
       "knowledgeIds": [
         "tuning.correctness",
         "tuning.controlled-measurement"
-      ]
+      ],
+      "reading": {
+        "id": "reject-fast-wrong/reading",
+        "title": "更快的结果，哪个可以交付？",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "优化前后必须保持正确业务结果和可比条件。更快的错误结果不能作为成功交付。",
+        "boundary": "只看总额也可能漏掉逐组错误，诊断结论需匹配验证粒度。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
     },
     {
       "id": "transfer-to-new-symptoms",
@@ -245,7 +326,17 @@
       "ability": "将诊断流程迁移到不同症状",
       "knowledgeIds": [
         "tuning.transfer"
-      ]
+      ],
+      "reading": {
+        "id": "transfer-to-new-symptoms/reading",
+        "title": "换一份病例，不要沿用同一张处方",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "新症状要重新获取证据与假设，不能沿用上一题的参数处方；记录单一改动、指标、限制与回退。",
+        "boundary": "本地合成病例不能替代真实工作负载的调优验证。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
     }
   ]
 }

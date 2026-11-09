@@ -1,6 +1,156 @@
 {
-  "version": 3,
+  "version": 4,
   "items": [
+    {
+      "id": "l1-action/collect-transfer-delayed-v1",
+      "slug": "l1-action",
+      "taskId": "l1-action/collect",
+      "knowledgeId": "l1-action/collect",
+      "title": "只看三条，不必收全部",
+      "code": "只需记录数，不需要记录内容。",
+      "prompt": "更直接的 action 是？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "collect 全部"
+        },
+        {
+          "id": "d1",
+          "text": "count"
+        },
+        {
+          "id": "d2",
+          "text": "map"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "按目标限制 Driver 接收规模；计数不需要收集全部记录内容。"
+    },
+    {
+      "id": "l1-lazy-evaluation/branch-transfer-delayed-v1",
+      "slug": "l1-lazy-evaluation",
+      "taskId": "l1-lazy-evaluation/branches",
+      "knowledgeId": "l1-lazy-evaluation/branches",
+      "title": "定义不等于必跑",
+      "code": "定义两个不同下游，只 collect 其中一个。",
+      "prompt": "怎样推断工作范围？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "把所有变量都当结果请求"
+        },
+        {
+          "id": "d1",
+          "text": "沿 action 的依赖检查"
+        },
+        {
+          "id": "d2",
+          "text": "只按源码行号"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "惰性执行应按结果请求的依赖理解，而不是按所有变量逐个求值。"
+    },
+    {
+      "id": "l1-rdd-exercise/word-transfer-delayed-v1",
+      "slug": "l1-rdd-exercise",
+      "taskId": "l1-rdd-exercise/normalize",
+      "knowledgeId": "l1-rdd-exercise/normalize",
+      "title": "相等规则决定分组",
+      "code": "输入 \"Hi hi!\"，小写但保留标点。",
+      "prompt": "会得到哪两个键？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "hi 与 hi!"
+        },
+        {
+          "id": "d1",
+          "text": "只有 hi"
+        },
+        {
+          "id": "d2",
+          "text": "空键"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "小写归一与去标点不同，结果必须遵守任务约定。"
+    },
+    {
+      "id": "l1-transformation/flatmap-transfer-delayed-v1",
+      "slug": "l1-transformation",
+      "taskId": "l1-transformation/flatmap",
+      "knowledgeId": "l1-transformation/flatmap",
+      "title": "拆分不等于计数",
+      "code": "输入 \"x y\"、空行，用 flatMap(lambda s:s.split())。",
+      "prompt": "输出几个词？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "3"
+        },
+        {
+          "id": "d1",
+          "text": "2"
+        },
+        {
+          "id": "d2",
+          "text": "0"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "flatMap 展开函数输出，不自动去重或聚合。"
+    },
+    {
+      "id": "l1-what-is-rdd/immutable-transfer-delayed-v1",
+      "slug": "l1-what-is-rdd",
+      "taskId": "l1-what-is-rdd/immutable",
+      "knowledgeId": "l1-what-is-rdd/immutable",
+      "title": "旧查询仍然存在",
+      "code": "x=sc.parallelize([5,8]); y=x.filter(lambda n:n>5)",
+      "prompt": "x 的原始逻辑内容是？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "只有 8"
+        },
+        {
+          "id": "d1",
+          "text": "5、8"
+        },
+        {
+          "id": "d2",
+          "text": "空"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "转换生成新 RDD，不把原查询就地改成结果。"
+    },
+    {
+      "id": "l1-why-dataframe-replaces-rdd/optimizer-transfer-delayed-v1",
+      "slug": "l1-why-dataframe-replaces-rdd",
+      "taskId": "l1-why-dataframe-replaces-rdd/optimizer",
+      "knowledgeId": "l1-why-dataframe-replaces-rdd/optimizer",
+      "title": "同需求的两种表达",
+      "code": "结构化聚合可以用列/键表达，也可手写对象处理。",
+      "prompt": "选择时首先考虑？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "需求、结构和可验证执行"
+        },
+        {
+          "id": "d1",
+          "text": "固定 RDD 永远更快"
+        },
+        {
+          "id": "d2",
+          "text": "固定 SQL 永远更快"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "表达能力与暴露的语义影响可优化性，性能仍需具体测量。"
+    },
     {
       "id": "aggregate.avg-null-delayed-v1",
       "slug": "l2-groupby-agg",
@@ -1025,6 +1175,231 @@
       ],
       "correctOptionId": "d1",
       "explanation": "左连接保留未匹配的左行，右侧字段可能为空。"
+    },
+    {
+      "id": "l7-aqe/aqe-transfer-delayed-v1",
+      "slug": "l7-aqe",
+      "taskId": "l7-aqe/final",
+      "knowledgeId": "l7-aqe/final",
+      "title": "开启不等于生效",
+      "code": "# 某子开关为true，总开关与版本未检查。",
+      "prompt": "能认定功能实际生效吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，需完整核对"
+        },
+        {
+          "id": "d2",
+          "text": "必定关闭全部SQL"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "配置、适用条件与实际采用是不同证据。"
+    },
+    {
+      "id": "l7-broadcast-threshold/broadcast-transfer-delayed-v1",
+      "slug": "l7-broadcast-threshold",
+      "taskId": "l7-broadcast-threshold/memory",
+      "knowledgeId": "l7-broadcast-threshold/memory",
+      "title": "采用与安全分开",
+      "code": "# 关闭自动阈值但代码仍有显式broadcast。",
+      "prompt": "能保证所有广播关闭吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，控制层次需分开"
+        },
+        {
+          "id": "d2",
+          "text": "自动变CROSS"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "阈值、提示、容量与实际收益分别核对，不能混为一个开关。"
+    },
+    {
+      "id": "l7-comprehensive/experiment-transfer-delayed-v1",
+      "slug": "l7-comprehensive",
+      "taskId": "l7-comprehensive/compare",
+      "knowledgeId": "l7-comprehensive/compare",
+      "title": "对照条件要可比",
+      "code": "# 同条件结果一致，单次运行快了少许。",
+      "prompt": "还应做什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "重复测量并看资源/波动"
+        },
+        {
+          "id": "d1",
+          "text": "固定宣布生产成功"
+        },
+        {
+          "id": "d2",
+          "text": "删除回退方案"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "结果正确与条件可比是归因基础，重复与资源指标帮助解释变化。"
+    },
+    {
+      "id": "l7-executor-memory/memory-transfer-delayed-v1",
+      "slug": "l7-executor-memory",
+      "taskId": "l7-executor-memory/scope",
+      "knowledgeId": "l7-executor-memory/scope",
+      "title": "先找失败位置",
+      "code": "# 单个task工作集巨大且spill显著。",
+      "prompt": "还需核对什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "最大分区、算子状态与并发"
+        },
+        {
+          "id": "d1",
+          "text": "只看整表平均"
+        },
+        {
+          "id": "d2",
+          "text": "变量名"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "内存诊断先定位进程和任务工作集，不把所有OOM归成一个参数。"
+    },
+    {
+      "id": "l7-read-less-data/read-transfer-delayed-v1",
+      "slug": "l7-read-less-data",
+      "taskId": "l7-read-less-data/pushdown",
+      "knowledgeId": "l7-read-less-data/pushdown",
+      "title": "少读的证据要具体",
+      "code": "# 某条件无法被当前数据源下推。",
+      "prompt": "是否可以为了少读直接删条件？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "可以"
+        },
+        {
+          "id": "d1",
+          "text": "不可以，业务语义仍要执行"
+        },
+        {
+          "id": "d2",
+          "text": "只要更快就行"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "减少工作应通过合法优化并验证收益，不能通过删业务条件实现。"
+    },
+    {
+      "id": "l7-shuffle-partitions/partition-transfer-delayed-v1",
+      "slug": "l7-shuffle-partitions",
+      "taskId": "l7-shuffle-partitions/hot",
+      "knowledgeId": "l7-shuffle-partitions/hot",
+      "title": "分区参数不是处方",
+      "code": "# task普遍很短而数量极多。",
+      "prompt": "值得测试的方向是？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "评估减少过碎任务"
+        },
+        {
+          "id": "d1",
+          "text": "删除全部数据"
+        },
+        {
+          "id": "d2",
+          "text": "保证再增百倍就好"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "不同症状要选择不同实验，不能把增加分区当万能解。"
+    },
+    {
+      "id": "l7-skew-tuning/weighted-transfer-delayed-v1",
+      "slug": "l7-skew-tuning",
+      "taskId": "l7-skew-tuning/weighted",
+      "knowledgeId": "l7-skew-tuning/weighted",
+      "title": "先保留可合并状态",
+      "code": "# 两组局部均值相同，但样本数不同。",
+      "prompt": "一般方法还应保留什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "sum与非空count"
+        },
+        {
+          "id": "d1",
+          "text": "只保留一个均值"
+        },
+        {
+          "id": "d2",
+          "text": "只保留分区号"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "可合并状态必须足以还原业务指标，均值合并需要正确分母。"
+    },
+    {
+      "id": "l7-tungsten-encoding/serializer-transfer-delayed-v1",
+      "slug": "l7-tungsten-encoding",
+      "taskId": "l7-tungsten-encoding/boundary",
+      "knowledgeId": "l7-tungsten-encoding/boundary",
+      "title": "一个开关没有覆盖全部边界",
+      "code": "# 内置表达式替代 Python UDF，结果一致。",
+      "prompt": "下一步验证什么？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "计划边界与代表性资源/耗时"
+        },
+        {
+          "id": "d1",
+          "text": "只看名字更短"
+        },
+        {
+          "id": "d2",
+          "text": "固定宣称快十倍"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "执行边界和实际收益要分别验证，不能只凭配置或接口名。"
+    },
+    {
+      "id": "l7-what-is-tuning/evidence-transfer-delayed-v1",
+      "slug": "l7-what-is-tuning",
+      "taskId": "insufficient-evidence",
+      "knowledgeId": "tuning.evidence-first",
+      "title": "秒数不是诊断结论",
+      "code": "# 新病例：同一脚本不同数据量，耗时翻倍。",
+      "prompt": "能仅凭此证明算法退化吗？",
+      "options": [
+        {
+          "id": "d0",
+          "text": "能"
+        },
+        {
+          "id": "d1",
+          "text": "不能，先控制或记录条件"
+        },
+        {
+          "id": "d2",
+          "text": "只能改广播阈值"
+        }
+      ],
+      "correctOptionId": "d1",
+      "explanation": "总耗时需要与输入、资源和执行证据一起解释。"
     }
   ]
 }

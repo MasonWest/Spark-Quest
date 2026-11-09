@@ -1,0 +1,226 @@
+{
+  "slug": "l7-executor-memory",
+  "version": 1,
+  "title": "先分清谁在内存紧张",
+  "mission": "区分Driver、Executor JVM、Python进程与任务状态。",
+  "correction": "OOM 不必都靠增加 executor heap 解决。Execution/Storage共享机制有具体规则，缓存并非永远不能逐出，Python/堆外与Driver也需单独看。",
+  "source": "https://spark.apache.org/docs/3.5.7/tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-executor-memory/driver",
+      "knowledgeIds": [
+        "l7-executor-memory/driver"
+      ],
+      "title": "collect 后 Driver 失败",
+      "intro": "大量明细 collect 到 Driver，Executor 未报告同样错误。",
+      "code": "# 教学日志：Driver 内存异常。",
+      "prompt": "先排查什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "结果回传规模和 Driver 容量",
+              "feedback": "对，先看失败位置。"
+            },
+            {
+              "id": "o1",
+              "text": "只提高所有 Executor heap 即可保证解决",
+              "feedback": "问题不必位于 Executor。"
+            },
+            {
+              "id": "o2",
+              "text": "只改输出列别名",
+              "feedback": "别名不缩小收集规模。"
+            }
+          ]
+        }
+      ],
+      "insight": "先定位失败进程和工作，再区分结果规模、任务状态、缓存与并发。",
+      "ability": "collect 后 Driver 失败",
+      "reading": {
+        "id": "l7-executor-memory/driver/reading",
+        "title": "collect 后 Driver 失败",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先定位失败进程和工作，再区分结果规模、任务状态、缓存与并发。",
+        "boundary": "不能凭 OOM 三个字推导唯一参数。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/scope",
+      "knowledgeIds": [
+        "l7-executor-memory/scope"
+      ],
+      "title": "Python 进程与 JVM heap 是一回事吗",
+      "intro": "任务带 Python 执行，节点进程内存上升。",
+      "code": "# 合成证据：需核对具体进程与资源限制。",
+      "prompt": "更可靠的下一步？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "所有内存都等于 JVM heap",
+              "feedback": "不是同一个统计口径。"
+            },
+            {
+              "id": "o0",
+              "text": "区分 JVM、Python/其他开销和节点限制",
+              "feedback": "对，资源分账要准确。"
+            },
+            {
+              "id": "o2",
+              "text": "只看一个磁盘文件大小",
+              "feedback": "文件大小不代表运行峰值。"
+            }
+          ]
+        }
+      ],
+      "insight": "Python工作进程、JVM堆与其他开销需按实际部署和版本核对，避免把所有压力归为同一内存池。",
+      "ability": "Python 进程与 JVM heap 是一回事吗",
+      "reading": {
+        "id": "l7-executor-memory/scope/reading",
+        "title": "Python 进程与 JVM heap 是一回事吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "Python工作进程、JVM堆与其他开销需按实际部署和版本核对，避免把所有压力归为同一内存池。",
+        "boundary": "本课不提供适合所有环境的固定内存比例处方。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-executor-memory/memory-transfer",
+        "knowledgeId": "l7-executor-memory/scope",
+        "title": "先找失败位置",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# UI 指向 Driver 结果收集失败。",
+        "prompt": "第一处应核对？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r0",
+              "text": "Driver接收规模与容量",
+              "feedback": "对，失败位置是线索。"
+            },
+            {
+              "id": "r1",
+              "text": "盲目改Executor存储比例",
+              "feedback": "可能没针对实际问题。"
+            },
+            {
+              "id": "r2",
+              "text": "只增Shuffle分区到无限",
+              "feedback": "不提供无限资源。"
+            }
+          ]
+        },
+        "insight": "内存诊断先定位进程和任务工作集，不把所有OOM归成一个参数。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/eviction",
+      "knowledgeIds": [
+        "l7-executor-memory/eviction"
+      ],
+      "title": "缓存占用时就永不能执行了吗",
+      "intro": "使用共享管理的执行与存储区域。",
+      "code": "# 教学情境：缓存与计算争用资源。",
+      "prompt": "哪句更稳妥？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "缓存永远不可被逐出",
+              "feedback": "缓存行为要按级别和管理规则理解。"
+            },
+            {
+              "id": "o2",
+              "text": "一旦cache就必OOM",
+              "feedback": "是否失败取决于负载和资源。"
+            },
+            {
+              "id": "o1",
+              "text": "核对存储级别、逐出与实际执行规则",
+              "feedback": "对，共享机制不等于无限容量。"
+            }
+          ]
+        }
+      ],
+      "insight": "缓存有容量与逐出条件，执行/存储的具体管理规则不能用“完全独立”或“无限互借”概括。",
+      "ability": "缓存占用时就永不能执行了吗",
+      "reading": {
+        "id": "l7-executor-memory/eviction/reading",
+        "title": "缓存占用时就永不能执行了吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "缓存有容量与逐出条件，执行/存储的具体管理规则不能用“完全独立”或“无限互借”概括。",
+        "boundary": "重用收益还受缓存命中、重算与并发影响。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-executor-memory/cache-cost",
+      "knowledgeIds": [
+        "l7-executor-memory/cache-cost"
+      ],
+      "title": "缓存什么时候在模型里划算",
+      "intro": "合成模型：不缓存每次5单位；预热10，之后每次读取1；使用4次。",
+      "code": "# 明确成本模型，不是实测秒数。",
+      "prompt": "两个模型总成本分别是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "不缓存20，缓存14",
+              "feedback": "对，预热和所有读取都要计入。"
+            },
+            {
+              "id": "o1",
+              "text": "不缓存5，缓存1",
+              "feedback": "漏了重复次数和预热。"
+            },
+            {
+              "id": "o2",
+              "text": "不缓存20，缓存40",
+              "feedback": "没有按给定模型算。"
+            }
+          ]
+        }
+      ],
+      "insight": "缓存经济性需考虑预热、重复使用与读缓存成本，不能只看单次命中。",
+      "ability": "缓存什么时候在模型里划算",
+      "reading": {
+        "id": "l7-executor-memory/cache-cost/reading",
+        "title": "缓存什么时候在模型里划算",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "缓存经济性需考虑预热、重复使用与读缓存成本，不能只看单次命中。",
+        "boundary": "合成成本只训练核算，实际内存与耗时仍需测量。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

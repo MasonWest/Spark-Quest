@@ -1,0 +1,226 @@
+{
+  "slug": "l7-read-less-data",
+  "version": 1,
+  "title": "少做无用功，也要守住语义",
+  "mission": "从字段、行、交换、重复计算中选择一项有证据的改动。",
+  "correction": "缓存列式数据仍可只扫描所需列；下推/目录裁剪取决于源与条件，先聚合再JOIN也必须证明粒度等价。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-read-less-data/columns",
+      "knowledgeIds": [
+        "l7-read-less-data/columns"
+      ],
+      "title": "缓存之后，选列就完全没意义了吗",
+      "intro": "使用Spark SQL列式缓存，下游只用三列。",
+      "code": "# 参考官方列式缓存机制。",
+      "prompt": "可靠认识是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "缓存后一律全列读取",
+              "feedback": "不能这么绝对概括。"
+            },
+            {
+              "id": "o2",
+              "text": "缓存会自动保证永不重算",
+              "feedback": "缓存仍有容量与逐出等条件。"
+            },
+            {
+              "id": "o1",
+              "text": "仍应核对所需列扫描与执行收益",
+              "feedback": "对，缓存也不取消字段需求。"
+            }
+          ]
+        }
+      ],
+      "insight": "Spark SQL列式缓存可按所需列扫描；减少无用字段与缓存复用是不同层次。",
+      "ability": "缓存之后，选列就完全没意义了吗",
+      "reading": {
+        "id": "l7-read-less-data/columns/reading",
+        "title": "缓存之后，选列就完全没意义了吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "Spark SQL列式缓存可按所需列扫描；减少无用字段与缓存复用是不同层次。",
+        "boundary": "具体收益要看源、缓存和算子路径。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-read-less-data/pushdown",
+      "knowledgeIds": [
+        "l7-read-less-data/pushdown"
+      ],
+      "title": "下推有痕迹还要读残余条件",
+      "intro": "扫描只下推一部分条件，物理计划仍有Filter。",
+      "code": "# 教学片段：PushedFilters + residual Filter。",
+      "prompt": "应怎样处理？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "核对已下推与残余语义",
+              "feedback": "对，二者可能共同完成过滤。"
+            },
+            {
+              "id": "o0",
+              "text": "认定所有业务过滤都在源端完成",
+              "feedback": "标记不证明所有条件。"
+            },
+            {
+              "id": "o2",
+              "text": "删掉所有Filter",
+              "feedback": "可能删掉必要规则。"
+            }
+          ]
+        }
+      ],
+      "insight": "数据源能力与具体表达式决定下推，残余过滤仍可能必需。",
+      "ability": "下推有痕迹还要读残余条件",
+      "reading": {
+        "id": "l7-read-less-data/pushdown/reading",
+        "title": "下推有痕迹还要读残余条件",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "数据源能力与具体表达式决定下推，残余过滤仍可能必需。",
+        "boundary": "下推存在不直接证明实际读字节下降多少。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-read-less-data/read-transfer",
+        "knowledgeId": "l7-read-less-data/pushdown",
+        "title": "少读的证据要具体",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 仅有ReadSchema缩小，没有代表性IO测量。",
+        "prompt": "结论应是什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r0",
+              "text": "结构线索已观察，收益待测",
+              "feedback": "对，证据与结论范围匹配。"
+            },
+            {
+              "id": "r1",
+              "text": "生产一定快十倍",
+              "feedback": "没有这样的测量。"
+            },
+            {
+              "id": "r2",
+              "text": "所有缓存都无效",
+              "feedback": "没有这种推论。"
+            }
+          ]
+        },
+        "insight": "减少工作应通过合法优化并验证收益，不能通过删业务条件实现。"
+      }
+    },
+    {
+      "id": "l7-read-less-data/preaggregate",
+      "knowledgeIds": [
+        "l7-read-less-data/preaggregate"
+      ],
+      "title": "先聚合再连接总等价吗",
+      "intro": "维表重复键可能放大结果，准备把聚合移到连接前。",
+      "code": "# 关注连接粒度、过滤与匹配基数。",
+      "prompt": "首先需要什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只看数据量更小",
+              "feedback": "更少数据不能证明等价。"
+            },
+            {
+              "id": "o0",
+              "text": "证明改写语义与指标等价",
+              "feedback": "对，移动聚合可能改变粒度。"
+            },
+            {
+              "id": "o2",
+              "text": "无条件认为更快更正确",
+              "feedback": "要看需求和关系。"
+            }
+          ]
+        }
+      ],
+      "insight": "提前聚合可减少某些工作，但只有在粒度、过滤和匹配规则允许时才能保持结果。",
+      "ability": "先聚合再连接总等价吗",
+      "reading": {
+        "id": "l7-read-less-data/preaggregate/reading",
+        "title": "先聚合再连接总等价吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "提前聚合可减少某些工作，但只有在粒度、过滤和匹配规则允许时才能保持结果。",
+        "boundary": "外连接、重复键和非可加指标尤其要验证。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-read-less-data/reuse",
+      "knowledgeIds": [
+        "l7-read-less-data/reuse"
+      ],
+      "title": "一次性小计算也要缓存吗",
+      "intro": "只用一次，原计算很便宜，缓存成本不明。",
+      "code": "# 目标是整体资源和耗时。",
+      "prompt": "更合理的做法？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "所有中间结果都缓存",
+              "feedback": "会制造不必要开销。"
+            },
+            {
+              "id": "o2",
+              "text": "缓存保证无内存开销",
+              "feedback": "缓存占资源也有管理成本。"
+            },
+            {
+              "id": "o1",
+              "text": "先比较复用次数、预热、容量和重算成本",
+              "feedback": "对，按实际复用需求选择。"
+            }
+          ]
+        }
+      ],
+      "insight": "缓存是有代价的复用策略，不能把cache当作所有慢作业的默认第一步。",
+      "ability": "一次性小计算也要缓存吗",
+      "reading": {
+        "id": "l7-read-less-data/reuse/reading",
+        "title": "一次性小计算也要缓存吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "缓存是有代价的复用策略，不能把cache当作所有慢作业的默认第一步。",
+        "boundary": "没有复用或便宜重算时，收益可能不足。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

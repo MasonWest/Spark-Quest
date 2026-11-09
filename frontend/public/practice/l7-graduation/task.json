@@ -1,0 +1,35 @@
+{
+  "task": "tuning",
+  "schema": "id string, region string, amount long",
+  "orders": [
+    [
+      "a",
+      " North ",
+      30
+    ],
+    [
+      "b",
+      "NORTH",
+      20
+    ],
+    [
+      "c",
+      null,
+      10
+    ],
+    [
+      "d",
+      "",
+      8
+    ],
+    [
+      "e",
+      "south",
+      -4
+    ]
+  ],
+  "observation": {
+    "source": "synthetic teaching scenario, not a measured benchmark",
+    "symptom": "Python boundary appears in baseline plan; speedup is unknown"
+  }
+}

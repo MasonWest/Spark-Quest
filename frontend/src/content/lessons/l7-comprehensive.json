@@ -1,0 +1,318 @@
+{
+  "slug": "l7-comprehensive",
+  "version": 1,
+  "title": "准备练习：让每项建议都能被复核",
+  "mission": "独立任务要求正确结果、实际计划与有回退的诊断，不是填写参数清单。",
+  "correction": "本地小样本、合成症状和计划变化不等于生产收益；诊断文字质量仍需人工核对。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-comprehensive/contract",
+      "knowledgeIds": [
+        "l7-comprehensive/contract"
+      ],
+      "title": "先锁定要守住的结果",
+      "intro": "准备比较原实现与改写。",
+      "code": "# 输出粒度、正金额规则、NULL地区口径已约定。",
+      "prompt": "第一条验收是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "逐组结果与类型保持约定",
+              "feedback": "对，正确性先于性能。"
+            },
+            {
+              "id": "o1",
+              "text": "代码更短",
+              "feedback": "短代码也可能错。"
+            },
+            {
+              "id": "o2",
+              "text": "参数更大",
+              "feedback": "参数不是目标。"
+            }
+          ]
+        }
+      ],
+      "insight": "调优实验先定义业务不变量，再解释哪些工作可能被消除。",
+      "ability": "先锁定要守住的结果",
+      "reading": {
+        "id": "l7-comprehensive/contract/reading",
+        "title": "先锁定要守住的结果",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "调优实验先定义业务不变量，再解释哪些工作可能被消除。",
+        "boundary": "总计正确也可能掩盖逐组错分。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-comprehensive/symptom",
+      "knowledgeIds": [
+        "l7-comprehensive/symptom"
+      ],
+      "title": "看见Python边界，假设还需实测",
+      "intro": "简单地区清洗使用普通Python UDF，内置表达式可能等价。",
+      "code": "# 教学情境：未做生产测量。",
+      "prompt": "更合适的提案是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "保证省十倍时间",
+              "feedback": "没有固定倍数证据。"
+            },
+            {
+              "id": "o0",
+              "text": "保持语义替换为内置，核对计划与代表性指标",
+              "feedback": "对，单一可回退的实验。"
+            },
+            {
+              "id": "o2",
+              "text": "直接删清洗步骤",
+              "feedback": "会改变结果。"
+            }
+          ]
+        }
+      ],
+      "insight": "将可表达的逻辑换成内置是可检验假设，采用与收益需要分别验证。",
+      "ability": "看见Python边界，假设还需实测",
+      "reading": {
+        "id": "l7-comprehensive/symptom/reading",
+        "title": "看见Python边界，假设还需实测",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "将可表达的逻辑换成内置是可检验假设，采用与收益需要分别验证。",
+        "boundary": "不要在小样本计时上作生产保证。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-comprehensive/compare",
+      "knowledgeIds": [
+        "l7-comprehensive/compare"
+      ],
+      "title": "一次改六个参数，收益从哪来",
+      "intro": "结果相同但同时改了多项设置，只有一次耗时。",
+      "code": "# 合成试验记录不充分。",
+      "prompt": "应如何改进实验？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "只保留最漂亮数字",
+              "feedback": "选择性报告不可复核。"
+            },
+            {
+              "id": "o2",
+              "text": "宣称所有改动都有效",
+              "feedback": "无法分辨各项贡献。"
+            },
+            {
+              "id": "o1",
+              "text": "控制条件、尽量单一改动并保留前后证据",
+              "feedback": "对，减少混杂因素。"
+            }
+          ]
+        }
+      ],
+      "insight": "诊断与调优需要可重复实验，明确数据、配置、缓存和资源条件。",
+      "ability": "一次改六个参数，收益从哪来",
+      "reading": {
+        "id": "l7-comprehensive/compare/reading",
+        "title": "一次改六个参数，收益从哪来",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "诊断与调优需要可重复实验，明确数据、配置、缓存和资源条件。",
+        "boundary": "必要组合改动也应说明交互与验证计划。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-comprehensive/experiment-transfer",
+        "knowledgeId": "l7-comprehensive/compare",
+        "title": "对照条件要可比",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 原方案冷缓存，新方案热缓存，输入量也不同。",
+        "prompt": "能直接报告代码加速倍数吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能",
+              "feedback": "无法可靠归因。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，条件混杂",
+              "feedback": "对，先控制或记录变量。"
+            },
+            {
+              "id": "r2",
+              "text": "只看代码行数",
+              "feedback": "行数不证明性能。"
+            }
+          ]
+        },
+        "insight": "结果正确与条件可比是归因基础，重复与资源指标帮助解释变化。"
+      }
+    },
+    {
+      "id": "l7-comprehensive/rollback",
+      "knowledgeIds": [
+        "l7-comprehensive/rollback"
+      ],
+      "title": "没有收益，也要算有效实验",
+      "intro": "改写结果正确但代表性运行指标变差。",
+      "code": "# 有清晰基线。",
+      "prompt": "该怎么交付？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "回退或拒绝改动，保留证据与新假设",
+              "feedback": "对，负结果同样有信息。"
+            },
+            {
+              "id": "o1",
+              "text": "隐去失败数字",
+              "feedback": "会破坏可审查性。"
+            },
+            {
+              "id": "o2",
+              "text": "只因节点少就保留",
+              "feedback": "节点少不保证总成本更低。"
+            }
+          ]
+        }
+      ],
+      "insight": "实验可以否定假设，回退和清楚记录比参数堆叠更可靠。",
+      "ability": "没有收益，也要算有效实验",
+      "reading": {
+        "id": "l7-comprehensive/rollback/reading",
+        "title": "没有收益，也要算有效实验",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "实验可以否定假设，回退和清楚记录比参数堆叠更可靠。",
+        "boundary": "不要通过改变业务口径伪造收益。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-comprehensive/scope",
+      "knowledgeIds": [
+        "l7-comprehensive/scope"
+      ],
+      "title": "哪种PASS真的经过验证",
+      "intro": "自动脚本检查了查询结果与计划，诊断自由文本仅保存。",
+      "code": "# manual_review=required。",
+      "prompt": "正确报告是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "所有能力与生产性能都已认证",
+              "feedback": "超出了自动证据。"
+            },
+            {
+              "id": "o0",
+              "text": "自动检查过，文字论证仍待人工复核",
+              "feedback": "对，清楚划分验收边界。"
+            },
+            {
+              "id": "o2",
+              "text": "文字非空就自动证明推理正确",
+              "feedback": "非空只证明提交了草稿。"
+            }
+          ]
+        }
+      ],
+      "insight": "自动化检查覆盖明确的结果与结构；自由诊断的合理性不能被非空检查冒充评分。",
+      "ability": "哪种PASS真的经过验证",
+      "reading": {
+        "id": "l7-comprehensive/scope/reading",
+        "title": "哪种PASS真的经过验证",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "自动化检查覆盖明确的结果与结构；自由诊断的合理性不能被非空检查冒充评分。",
+        "boundary": "学习效果仍需真实使用与独立情境验证。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-comprehensive/next",
+      "knowledgeIds": [
+        "l7-comprehensive/next"
+      ],
+      "title": "换数据也要成立",
+      "intro": "验收会换地区、空输入、空值与无效金额。",
+      "code": "# 正确性与边界检查。",
+      "prompt": "可靠实现应？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "写死原样例总额",
+              "feedback": "无法适应变化。"
+            },
+            {
+              "id": "o2",
+              "text": "只在看过答案的输入运行",
+              "feedback": "熟悉答案不是新的独立证据。"
+            },
+            {
+              "id": "o0",
+              "text": "按传入数据与契约计算",
+              "feedback": "对，新材料检验规则。"
+            }
+          ]
+        }
+      ],
+      "insight": "最终交付同时给出可运行实现、明确限制与下一步验证计划。",
+      "ability": "换数据也要成立",
+      "reading": {
+        "id": "l7-comprehensive/next/reading",
+        "title": "换数据也要成立",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "最终交付同时给出可运行实现、明确限制与下一步验证计划。",
+        "boundary": "本地验证不覆盖所有版本或大规模资源场景。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

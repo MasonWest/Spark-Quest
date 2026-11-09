@@ -1,0 +1,13 @@
+{
+  "task": "rdd",
+  "lines": [
+    "Spark spark makes progress",
+    "Learn Spark",
+    "",
+    "word, word"
+  ],
+  "partitions": [
+    2,
+    4
+  ]
+}

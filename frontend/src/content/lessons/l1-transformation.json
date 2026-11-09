@@ -1,0 +1,226 @@
+{
+  "slug": "l1-transformation",
+  "version": 1,
+  "title": "先写加工规则，再预测结果",
+  "mission": "在 map、filter 与 flatMap 中选对数据形状。",
+  "correction": "RDD 转换描述新计算，不等于 Catalyst 能理解任意 Python 函数体；记录增减不决定窄/宽依赖。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l1-transformation/map",
+      "knowledgeIds": [
+        "l1-transformation/map"
+      ],
+      "title": "每个数字变一个数字",
+      "intro": "输入 1、3、5。",
+      "code": "rdd.map(lambda x:x*x)",
+      "prompt": "请求结果后是哪组？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "1、3、5",
+              "feedback": "没有应用平方规则。"
+            },
+            {
+              "id": "o0",
+              "text": "1、9、25",
+              "feedback": "对，每元素独立平方。"
+            },
+            {
+              "id": "o2",
+              "text": "只有 25",
+              "feedback": "map 不只保留最后一个。"
+            }
+          ]
+        }
+      ],
+      "insight": "map 为每个输入元素产生一个输出元素，结果内容由函数决定。",
+      "ability": "每个数字变一个数字",
+      "reading": {
+        "id": "l1-transformation/map/reading",
+        "title": "每个数字变一个数字",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "map 为每个输入元素产生一个输出元素，结果内容由函数决定。",
+        "boundary": "它本身不保证全局排序或跨分区汇总。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-transformation/flatmap",
+      "knowledgeIds": [
+        "l1-transformation/flatmap"
+      ],
+      "title": "一行有两个词，会得到几层",
+      "intro": "输入两行：\"red blue\"、\"red\"。",
+      "code": "rdd.map(lambda line: line.split())\nrdd.flatMap(lambda line: line.split())",
+      "prompt": "两种输出形状有什么差别？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "都只有一个字符串",
+              "feedback": "函数返回值决定形状。"
+            },
+            {
+              "id": "o2",
+              "text": "flatMap 自动统计词频",
+              "feedback": "还需要按词计数。"
+            },
+            {
+              "id": "o1",
+              "text": "map 得到词列表元素；flatMap 展平成词元素",
+              "feedback": "对，展开与聚合是不同操作。"
+            }
+          ]
+        }
+      ],
+      "insight": "flatMap 允许每个输入产生零到多个输出，并将这层结果展开。",
+      "ability": "一行有两个词，会得到几层",
+      "reading": {
+        "id": "l1-transformation/flatmap/reading",
+        "title": "一行有两个词，会得到几层",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "flatMap 允许每个输入产生零到多个输出，并将这层结果展开。",
+        "boundary": "本课按空白分词，不自动处理标点、词形或业务字典。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l1-transformation/flatmap-transfer",
+        "knowledgeId": "l1-transformation/flatmap",
+        "title": "拆分不等于计数",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "输入 \"a b\"、\"b c\"，flatMap(split)。",
+        "prompt": "会得到什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r0",
+              "text": "四个词元素，还没统计重复",
+              "feedback": "对，b 出现两次仍是两条。"
+            },
+            {
+              "id": "r1",
+              "text": "三个去重词",
+              "feedback": "flatMap 不自动去重。"
+            },
+            {
+              "id": "r2",
+              "text": "一个计数 4",
+              "feedback": "计数需要另行 action 或聚合。"
+            }
+          ]
+        },
+        "insight": "flatMap 展开函数输出，不自动去重或聚合。"
+      }
+    },
+    {
+      "id": "l1-transformation/filter",
+      "knowledgeIds": [
+        "l1-transformation/filter"
+      ],
+      "title": "保留条件，不改数值",
+      "intro": "输入 -2、0、4、7。",
+      "code": "rdd.filter(lambda x:x>0)",
+      "prompt": "结果应是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "4、7",
+              "feedback": "对，只保留严格正数。"
+            },
+            {
+              "id": "o1",
+              "text": "0、4、7",
+              "feedback": "零不满足 >0。"
+            },
+            {
+              "id": "o2",
+              "text": "2、0、4、7",
+              "feedback": "filter 不把负数变正。"
+            }
+          ]
+        }
+      ],
+      "insight": "filter 保留谓词成立的元素，不能与数值变换混淆。",
+      "ability": "保留条件，不改数值",
+      "reading": {
+        "id": "l1-transformation/filter/reading",
+        "title": "保留条件，不改数值",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "filter 保留谓词成立的元素，不能与数值变换混淆。",
+        "boundary": "输出变少也不意味着分区数按同样比例减少。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-transformation/chain",
+      "knowledgeIds": [
+        "l1-transformation/chain"
+      ],
+      "title": "步骤多就等于多次完整作业吗",
+      "intro": "只定义 map 与 filter，尚未请求结果。",
+      "code": "b=rdd.map(lambda x:x+1).filter(lambda x:x>3)",
+      "prompt": "应怎样理解？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "每个转换必独立跑一次完整 job",
+              "feedback": "运行划分要看实际依赖与执行。"
+            },
+            {
+              "id": "o0",
+              "text": "先定义计算链，实际执行与调度不按源码步骤固定计数",
+              "feedback": "对，别把转换调用数当 job 数。"
+            },
+            {
+              "id": "o2",
+              "text": "原始数据被永久改写",
+              "feedback": "转换不是就地修改。"
+            }
+          ]
+        }
+      ],
+      "insight": "转换链可推迟实际求值，并按依赖执行；不要把它等同于 SQL 优化器任意理解 Python 逻辑。",
+      "ability": "步骤多就等于多次完整作业吗",
+      "reading": {
+        "id": "l1-transformation/chain/reading",
+        "title": "步骤多就等于多次完整作业吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "转换链可推迟实际求值，并按依赖执行；不要把它等同于 SQL 优化器任意理解 Python 逻辑。",
+        "boundary": "某些操作可能需要辅助工作，不能把整个程序简化成 action 前绝对零开销。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "slug": "l7-skew-tuning",
+  "version": 1,
+  "title": "长尾的治疗也要保留业务事实",
+  "mission": "从热点、异常与匹配规模定位，再正确拆分和还原。",
+  "correction": "长尾是线索不是唯一病因；删除NULL须业务允许，salting需配套匹配/还原，不能只对比总行数就认证语义。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-skew-tuning/diagnose",
+      "knowledgeIds": [
+        "l7-skew-tuning/diagnose"
+      ],
+      "title": "最大值很高先定性吗",
+      "intro": "大多数task两秒，一个九十秒。",
+      "code": "# 合成症状，尚未看字节/键/GC/机器。",
+      "prompt": "先做什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "立刻删除最慢键",
+              "feedback": "可能丢业务事实。"
+            },
+            {
+              "id": "o0",
+              "text": "核对负载与运行证据，不只凭耗时定病因",
+              "feedback": "对，长尾有多种原因。"
+            },
+            {
+              "id": "o2",
+              "text": "只看平均即验收",
+              "feedback": "平均会掩盖问题。"
+            }
+          ]
+        }
+      ],
+      "insight": "将长尾与键、字节、spill、匹配基数和其他异常一起核对。",
+      "ability": "最大值很高先定性吗",
+      "reading": {
+        "id": "l7-skew-tuning/diagnose/reading",
+        "title": "最大值很高先定性吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "将长尾与键、字节、spill、匹配基数和其他异常一起核对。",
+        "boundary": "合成症状不是生产基准或唯一诊断。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-skew-tuning/weighted",
+      "knowledgeIds": [
+        "l7-skew-tuning/weighted"
+      ],
+      "title": "拆开后能直接平均均值吗",
+      "intro": "一份count=1、avg=100；另一份count=9、avg=0。",
+      "code": "# 合并同一组的平均值。",
+      "prompt": "全局平均应是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "50",
+              "feedback": "直接平均各份均值忽略权重。"
+            },
+            {
+              "id": "o2",
+              "text": "100",
+              "feedback": "漏掉另一份九个值。"
+            },
+            {
+              "id": "o1",
+              "text": "10",
+              "feedback": "对，sum=100、count=10。"
+            }
+          ]
+        }
+      ],
+      "insight": "拆分聚合必须保留可正确合并的状态，AVG可用sum/count还原，不能一般地平均局部均值。",
+      "ability": "拆开后能直接平均均值吗",
+      "reading": {
+        "id": "l7-skew-tuning/weighted/reading",
+        "title": "拆开后能直接平均均值吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "拆分聚合必须保留可正确合并的状态，AVG可用sum/count还原，不能一般地平均局部均值。",
+        "boundary": "NULL与分母约定也要保持一致。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-skew-tuning/weighted-transfer",
+        "knowledgeId": "l7-skew-tuning/weighted",
+        "title": "先保留可合并状态",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# A: sum=40,count=2；B: sum=60,count=6。",
+        "prompt": "合并平均值是？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "15",
+              "feedback": "这是把20和10直接平均。"
+            },
+            {
+              "id": "r1",
+              "text": "12.5",
+              "feedback": "对，100/8。"
+            },
+            {
+              "id": "r2",
+              "text": "20",
+              "feedback": "漏了B的贡献。"
+            }
+          ]
+        },
+        "insight": "可合并状态必须足以还原业务指标，均值合并需要正确分母。"
+      }
+    },
+    {
+      "id": "l7-skew-tuning/salt",
+      "knowledgeIds": [
+        "l7-skew-tuning/salt"
+      ],
+      "title": "单边加盐会有什么风险",
+      "intro": "事实改键，维表没有相应扩展。",
+      "code": "# 为拆热键准备改写。",
+      "prompt": "应先保证什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "匹配与还原规则不漏不重",
+              "feedback": "对，保留原逻辑关系。"
+            },
+            {
+              "id": "o1",
+              "text": "只要更快就可随意改键",
+              "feedback": "速度不能代替正确性。"
+            },
+            {
+              "id": "o2",
+              "text": "只比较最终总行数就够",
+              "feedback": "相同行数也可能错误配对。"
+            }
+          ]
+        }
+      ],
+      "insight": "salting需要一致的匹配策略与结果还原，并验证逐组指标与业务粒度。",
+      "ability": "单边加盐会有什么风险",
+      "reading": {
+        "id": "l7-skew-tuning/salt/reading",
+        "title": "单边加盐会有什么风险",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "salting需要一致的匹配策略与结果还原，并验证逐组指标与业务粒度。",
+        "boundary": "它有膨胀和复杂度成本，不是所有长尾的首选。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-skew-tuning/null",
+      "knowledgeIds": [
+        "l7-skew-tuning/null"
+      ],
+      "title": "未知键是否能直接删",
+      "intro": "热点来自NULL，但业务要求保留未知用户贡献。",
+      "code": "# 合法事实中有缺失键。",
+      "prompt": "可为加速直接过滤吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "可以，NULL永远无用",
+              "feedback": "缺失不等于无业务价值。"
+            },
+            {
+              "id": "o1",
+              "text": "不可以，先遵守业务缺失口径",
+              "feedback": "对，不能靠丢事实优化。"
+            },
+            {
+              "id": "o2",
+              "text": "只改成INNER即可",
+              "feedback": "可能同样丢掉事实。"
+            }
+          ]
+        }
+      ],
+      "insight": "异常/缺失键处理必须与业务约定一致，优化不得悄悄改变指标分母。",
+      "ability": "未知键是否能直接删",
+      "reading": {
+        "id": "l7-skew-tuning/null/reading",
+        "title": "未知键是否能直接删",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "异常/缺失键处理必须与业务约定一致，优化不得悄悄改变指标分母。",
+        "boundary": "若业务允许排除，也应记录规则与数量。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,226 @@
+{
+  "slug": "l7-broadcast-threshold",
+  "version": 1,
+  "title": "不是把阈值抬高就叫优化",
+  "mission": "对照统计、构建容量、实际采用与收益。",
+  "correction": "自动阈值、显式提示与AQE控制分开；压缩文件不等于哈希内存，关闭自动广播也不指定唯一回退策略。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-broadcast-threshold/stats",
+      "knowledgeIds": [
+        "l7-broadcast-threshold/stats"
+      ],
+      "title": "估计大，文件小，先查统计",
+      "intro": "计划估计与新文件规模明显不同。",
+      "code": "# 合成观察：尚未核对统计时效。",
+      "prompt": "先做什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "直接把所有阈值设无限",
+              "feedback": "可能引入内存风险。"
+            },
+            {
+              "id": "o2",
+              "text": "只看文件名",
+              "feedback": "名称不是规模证据。"
+            },
+            {
+              "id": "o0",
+              "text": "核对数据来源、统计和实际构建规模",
+              "feedback": "对，先修正选择依据。"
+            }
+          ]
+        }
+      ],
+      "insight": "策略判断受可用统计影响，先核对估计与实际工作集再试参数。",
+      "ability": "估计大，文件小，先查统计",
+      "reading": {
+        "id": "l7-broadcast-threshold/stats/reading",
+        "title": "估计大，文件小，先查统计",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "策略判断受可用统计影响，先核对估计与实际工作集再试参数。",
+        "boundary": "不是所有临时来源都可用同样的ANALYZE命令补统计。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-broadcast-threshold/memory",
+      "knowledgeIds": [
+        "l7-broadcast-threshold/memory"
+      ],
+      "title": "小压缩文件也可能占大内存",
+      "intro": "维表压缩体积小，但构建结构和并发未知。",
+      "code": "# 同时有多条查询。",
+      "prompt": "可直接保证广播安全吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "不行，需看展开、构建、并发和节点余量",
+              "feedback": "对，核对真实容量。"
+            },
+            {
+              "id": "o0",
+              "text": "可以，文件体积就是内存",
+              "feedback": "不是同一口径。"
+            },
+            {
+              "id": "o2",
+              "text": "只看总磁盘空间",
+              "feedback": "磁盘总量不替代内存预算。"
+            }
+          ]
+        }
+      ],
+      "insight": "广播容量与实际构建关系、并发和节点内存有关，而不是单看压缩文件。",
+      "ability": "小压缩文件也可能占大内存",
+      "reading": {
+        "id": "l7-broadcast-threshold/memory/reading",
+        "title": "小压缩文件也可能占大内存",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "广播容量与实际构建关系、并发和节点内存有关，而不是单看压缩文件。",
+        "boundary": "计划统计也不是运行内存上限。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-broadcast-threshold/broadcast-transfer",
+        "knowledgeId": "l7-broadcast-threshold/memory",
+        "title": "采用与安全分开",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 计划已出现BroadcastHashJoin。",
+        "prompt": "还需验证什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r0",
+              "text": "容量、结果与代表性指标",
+              "feedback": "对，采用不等于安全或收益。"
+            },
+            {
+              "id": "r1",
+              "text": "固定宣称快十倍",
+              "feedback": "没有固定倍数。"
+            },
+            {
+              "id": "r2",
+              "text": "删除所有正确性断言",
+              "feedback": "正确性不能省。"
+            }
+          ]
+        },
+        "insight": "阈值、提示、容量与实际收益分别核对，不能混为一个开关。"
+      }
+    },
+    {
+      "id": "l7-broadcast-threshold/support",
+      "knowledgeIds": [
+        "l7-broadcast-threshold/support"
+      ],
+      "title": "没有等值键仍要看算法支持",
+      "intro": "连接是范围条件，给了广播提示。",
+      "code": "# 提示不改变业务条件。",
+      "prompt": "能无条件认定采用BHJ吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能",
+              "feedback": "哈希算法有适用条件。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，广播可能走其他适用路线",
+              "feedback": "对，看实际物理节点。"
+            },
+            {
+              "id": "o2",
+              "text": "必须改成等号才能算正确",
+              "feedback": "不能为选型改变业务语义。"
+            }
+          ]
+        }
+      ],
+      "insight": "广播建议与具体连接算法不同，连接条件和类型仍约束实现。",
+      "ability": "没有等值键仍要看算法支持",
+      "reading": {
+        "id": "l7-broadcast-threshold/support/reading",
+        "title": "没有等值键仍要看算法支持",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "广播建议与具体连接算法不同，连接条件和类型仍约束实现。",
+        "boundary": "先保证正确保留规则和匹配基数。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-broadcast-threshold/rollback",
+      "knowledgeIds": [
+        "l7-broadcast-threshold/rollback"
+      ],
+      "title": "阈值变大后更慢",
+      "intro": "计划改了，构建等待和内存压力也上升。",
+      "code": "# 合成对比：结果相同，资源变差。",
+      "prompt": "合理做法？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "保留因为参数更大",
+              "feedback": "参数变大不是目标。"
+            },
+            {
+              "id": "o2",
+              "text": "只报告节点变了",
+              "feedback": "计划变化不等于成功。"
+            },
+            {
+              "id": "o1",
+              "text": "回退并复查容量与替代路线",
+              "feedback": "对，保留可审查回退。"
+            }
+          ]
+        }
+      ],
+      "insight": "优化以正确结果和目标指标评价，实施、容量与收益分开验收。",
+      "ability": "阈值变大后更慢",
+      "reading": {
+        "id": "l7-broadcast-threshold/rollback/reading",
+        "title": "阈值变大后更慢",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "优化以正确结果和目标指标评价，实施、容量与收益分开验收。",
+        "boundary": "同条件重复试验减少偶然波动影响。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

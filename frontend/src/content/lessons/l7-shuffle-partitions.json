@@ -1,0 +1,226 @@
+{
+  "slug": "l7-shuffle-partitions",
+  "version": 1,
+  "title": "用任务分布选下一次实验",
+  "mission": "根据太碎、太大或热点，选择可验证的单一改动。",
+  "correction": "Shuffle配置不是全应用task数，AQE可能合并；增加分区不保证拆散热键或降低所有成本。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-shuffle-partitions/tiny",
+      "knowledgeIds": [
+        "l7-shuffle-partitions/tiny"
+      ],
+      "title": "小任务一大堆，慢在管理",
+      "intro": "合成指标显示多数task极短，调度管理占比较高。",
+      "code": "# 输入不大，计算份过碎。",
+      "prompt": "更合理的实验？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "继续无条件增十倍",
+              "feedback": "可能加重管理开销。"
+            },
+            {
+              "id": "o0",
+              "text": "评估减少过碎份并对照指标",
+              "feedback": "对，任务粒度要与规模匹配。"
+            },
+            {
+              "id": "o2",
+              "text": "只看函数名",
+              "feedback": "名称不是负载证据。"
+            }
+          ]
+        }
+      ],
+      "insight": "分区过多和过少有不同成本，按任务粒度与资源进行对照实验。",
+      "ability": "小任务一大堆，慢在管理",
+      "reading": {
+        "id": "l7-shuffle-partitions/tiny/reading",
+        "title": "小任务一大堆，慢在管理",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "分区过多和过少有不同成本，按任务粒度与资源进行对照实验。",
+        "boundary": "没有通用最优常数。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-shuffle-partitions/hot",
+      "knowledgeIds": [
+        "l7-shuffle-partitions/hot"
+      ],
+      "title": "平均小，最大却很大",
+      "intro": "一键占大部分数据，最大task远大于中位数。",
+      "code": "# 合成热点分布。",
+      "prompt": "仅把分区数翻倍能保证解决吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，热键自动均分",
+              "feedback": "同键路由仍可能集中。"
+            },
+            {
+              "id": "o2",
+              "text": "会自动删掉热点",
+              "feedback": "不会自动改变业务数据。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，需查键/字节分布和实际路径",
+              "feedback": "对，先确认热点如何形成工作。"
+            }
+          ]
+        }
+      ],
+      "insight": "数量调节不等于拆解单个热键，最大任务工作集常比平均值更关键。",
+      "ability": "平均小，最大却很大",
+      "reading": {
+        "id": "l7-shuffle-partitions/hot/reading",
+        "title": "平均小，最大却很大",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "数量调节不等于拆解单个热键，最大任务工作集常比平均值更关键。",
+        "boundary": "长尾还可能有其他原因，不能仅凭耗时分布定性。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-shuffle-partitions/partition-transfer",
+        "knowledgeId": "l7-shuffle-partitions/hot",
+        "title": "分区参数不是处方",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 一个键占80%，按键重分布。",
+        "prompt": "加总分区能保证该键均匀拆开吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能",
+              "feedback": "同键位置仍有约束。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，仍需针对热点",
+              "feedback": "对，先核对键与运行分布。"
+            },
+            {
+              "id": "r2",
+              "text": "金额会自动除以分区数",
+              "feedback": "不能改变业务金额。"
+            }
+          ]
+        },
+        "insight": "不同症状要选择不同实验，不能把增加分区当万能解。"
+      }
+    },
+    {
+      "id": "l7-shuffle-partitions/aqe",
+      "knowledgeIds": [
+        "l7-shuffle-partitions/aqe"
+      ],
+      "title": "设置值与最终任务数",
+      "intro": "设置shuffle分区200且开启AQE。",
+      "code": "# 核对执行后计划。",
+      "prompt": "应保留哪个认识？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "最终可能调整，需要实际核对",
+              "feedback": "对，观察最终执行。"
+            },
+            {
+              "id": "o0",
+              "text": "所有阶段永远200task",
+              "feedback": "配置不代表所有阶段。"
+            },
+            {
+              "id": "o2",
+              "text": "代表200行结果",
+              "feedback": "参数不是业务行数。"
+            }
+          ]
+        }
+      ],
+      "insight": "把初始配置、算子分布与最终AQE划分分开记录。",
+      "ability": "设置值与最终任务数",
+      "reading": {
+        "id": "l7-shuffle-partitions/aqe/reading",
+        "title": "设置值与最终任务数",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "把初始配置、算子分布与最终AQE划分分开记录。",
+        "boundary": "不同版本和查询适用性会改变实际行为。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-shuffle-partitions/capacity",
+      "knowledgeIds": [
+        "l7-shuffle-partitions/capacity"
+      ],
+      "title": "大份与并发一起看",
+      "intro": "每个task状态很大，同时运行多个task。",
+      "code": "# 合成指标：内存峰值与spill上升。",
+      "prompt": "实验前还需核对？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只看整表平均大小",
+              "feedback": "平均可能掩盖风险。"
+            },
+            {
+              "id": "o0",
+              "text": "最大分区、算子状态和并发容量",
+              "feedback": "对，任务与节点容量共同约束。"
+            },
+            {
+              "id": "o2",
+              "text": "先宣称参数越大越快",
+              "feedback": "没有这种保证。"
+            }
+          ]
+        }
+      ],
+      "insight": "调整粒度既可能降低单份状态，也可能改变并发与管理开销，需同条件测量。",
+      "ability": "大份与并发一起看",
+      "reading": {
+        "id": "l7-shuffle-partitions/capacity/reading",
+        "title": "大份与并发一起看",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "调整粒度既可能降低单份状态，也可能改变并发与管理开销，需同条件测量。",
+        "boundary": "结果必须保持等价。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

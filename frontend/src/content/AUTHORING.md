@@ -117,3 +117,14 @@ L3 38 步/9 补救/9 延迟的原文与代码均经结构检查及浏览器回�
 L4–L6 毕业任务下载 kit 分别使用 task.json，`lab-verifier-template.py` 为三份独立 verify.py 的共同源。任务目标是计划、分区或连接证据，不伪装成 Parquet 读写认证；自动 PASS 与人工诊断 review 明确分开。不要随意改已发布下载资产；内容摘要同时锁定配置和资产。
 
 正式题源 `backend/app/l3_l6_reviewed_bank.json` 由显式作者脚本产生，36 课各 5 assessment +3 review +2 remediation；服务端两种五题组隔离。180 组目标两份材料不等于360个新概念，答案长度/位置指标不等于教学质量证明。原题保留历史，并未重新认证所有旧文本。
+
+
+## L1/L7 与全七章复核
+
+`author-l1-l7-content.py --check` 比对显式15课/66步内容；`author-l1-l7-labs.py --check` 比对两个新工具包及五份共用验收器。当前标准讲义/延迟题为v4，毕业配置为v5，互动61课/260步。L7样板六步主内容逐项保留，增加辅助内容后v2独立记录，不迁移伪造掌握。
+
+`backend/author_reviewed_l1_l7.py --check` 维护150题，原题追加保留，通用 `install_reviewed_bank.py` 默认只预览；`--apply` 先备份再安装。`audit_preservation.py <backup>` 只读逐行比对旧题与全部非题目表。题池边界用独立SQLite内存库测试，不写用户库。
+
+L1任务明确空白分词、小写、标点保留、不去重；L7任务明确ASCII空格trim、NULL与空串语义。实际计划去掉Python UDF只证明受控结构变化，不能宣传固定加速。`diagnosis()`非空仅表示提交草稿，质量仍人工待审。完整验证边界和下一步内容工作见根目录 FINAL_CURRICULUM_REVIEW.md。
+
+下载工具包受字节摘要约束，`.gitattributes` 强制 LF，作者脚本写出也须指定 LF。构建会拒绝文本资产 CR，防止 Windows 正常而 Linux 发布误报漂移。

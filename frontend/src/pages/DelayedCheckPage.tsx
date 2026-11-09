@@ -23,7 +23,7 @@ export default function DelayedCheckPage() {
   return <main className="container"><Link to="/">← 返回首页</Link><section className="dfj-root"><div className="dfj-body">
     <p className="dfj-kicker">隔天验证 · 本机练习</p>
     {initial.error && <p role="alert">{initial.error}</p>}
-    {!item ? <><h1 ref={heading} tabIndex={-1}>{initial.error ? "暂时无法读取验证安排" : queue.length ? "这一轮验证结束了" : "暂时没有到期的验证"}</h1><p>{queue.length ? "答对的情境已收起；答错的知识点至少 24 小时后再试。这一轮结果只用于观察记忆，不代表已掌握。" : "先完成相关互动步骤，离开题目至少 24 小时后再来。目前覆盖 L2–L6 的重点知识点，记录保存在当前浏览器。"}</p><Link className="btn-primary" to="/map">继续学习 →</Link></> : <>
+    {!item ? <><h1 ref={heading} tabIndex={-1}>{initial.error ? "暂时无法读取验证安排" : queue.length ? "这一轮验证结束了" : "暂时没有到期的验证"}</h1><p>{queue.length ? "答对的情境已收起；答错的知识点至少 24 小时后再试。这一轮结果只用于观察记忆，不代表已掌握。" : "先完成相关互动步骤，离开题目至少 24 小时后再来。目前覆盖 L1–L7 的重点知识点，记录保存在当前浏览器。"}</p><Link className="btn-primary" to="/map">继续学习 →</Link></> : <>
       <p>第 {index + 1} 题 / 共 {queue.length} 题 · {journeyIndex[item.slug].title}</p>
       <h1 ref={heading} tabIndex={-1}>{item.title}</h1><p>先独立判断，提交后再看解释。</p>
       <pre className="dfj-code"><code>{item.code}</code></pre><p><strong>{item.prompt}</strong></p>

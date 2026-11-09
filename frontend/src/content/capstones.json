@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 5,
   "lessons": {
     "l2-comprehensive": {
       "id": "l2-graduation-v1",
@@ -328,6 +328,137 @@
         }
       ],
       "validationNote": "本任务自动检查通过时输出 PASS 且 artifacts=PASS。诊断文字标记 manual_review=required，仍需人工核对；这不是生产性能认证。本任务交付计划/分区/连接证据，不考核 Parquet 写出。"
+    },
+    "l1-rdd-exercise": {
+      "id": "l1-graduation-v1",
+      "title": "独立实作：从文本得到可靠词频",
+      "estimatedMinutes": 35,
+      "brief": "把多行短文本转换为词频。先手算一个预期，再自己编写 RDD 链，面对新词、空行和不同分区数验收。",
+      "contract": [
+        "实现 build_counts(sc, lines, partitions)，返回 Pair RDD；每个词一行整数次数，输出分区数采用传入参数。",
+        "按 Python str.split() 的空白规则拆词，再 lower()；标点保留，所以 word 与 word, 是不同的词。每次出现都计数，不对原文或词去重。",
+        "空行、纯空白行不生成空词；空输入返回空键集合。不可写死词、次数或结果行数。",
+        "验收使用新词、大小写、制表空白、标点和空输入，在 2/4 分区下分别核对独立预期。",
+        "不要先将整个 RDD collect 到 Driver 再统计；diagnosis() 说明转换、动作、分区和有界回收的区别，代码策略及论证质量需人工复核。"
+      ],
+      "downloads": [
+        {
+          "label": "任务数据 task.json",
+          "href": "/practice/l1-graduation/task.json"
+        },
+        {
+          "label": "代码骨架 starter.py",
+          "href": "/practice/l1-graduation/starter.py"
+        },
+        {
+          "label": "独立验收 verify.py",
+          "href": "/practice/l1-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l1-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载参考实现 reference.py",
+        "href": "/practice/l1-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "词频语义",
+          "body": "独立 Counter 核对出现次数、大小写和标点。"
+        },
+        {
+          "title": "边界与分区",
+          "body": "新词、空白和空输入在两种分区数下检查。"
+        },
+        {
+          "title": "独立解释",
+          "body": "保存词频证据与诊断草稿，人工核对是否理解惰性与 Driver 边界。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先手算规则",
+          "body": "给 Spark spark 和 word, word 分别手算，确定大小写与标点规则。"
+        },
+        {
+          "title": "把一行变多个元素",
+          "body": "想清楚拆词该产生列表还是多个 RDD 元素，再建立 (词,1)。"
+        },
+        {
+          "title": "处理顺序骨架",
+          "body": "parallelize → flatMap 拆词 → map 小写键值 → 按键加法并指定分区。不要去重每次出现。"
+        }
+      ],
+      "validationNote": "自动 PASS 表示小型教学数据的程序检查通过。诊断质量仍标记 manual_review=required；真实优化收益需另做公平测量。本任务不考核 Parquet 写出。"
+    },
+    "l7-comprehensive": {
+      "id": "l7-graduation-v1",
+      "title": "独立实作：证明一次有边界的优化",
+      "estimatedMinutes": 60,
+      "brief": "一份地区报表为简单文本清洗使用了 Python UDF。保留业务语义，改用内置表达式，再保存真实前后计划；用证据区分结构变化和性能收益。",
+      "contract": [
+        "实现 build_report(orders)，只统计 amount>0，输出 region string、cnt long、total long，每地区一行。",
+        "地区仅去掉两端 ASCII 空格再转小写；NULL 变 unknown，空字符串仍是空字符串。制表符不属于这里约定的 trim 字符。",
+        "不得硬编码地区或总额，不把明细 collect 到 Python。用等价的 Spark 内置表达式替换基线普通 Python UDF。",
+        "验收独立核对新地区、NULL、空串、空格、无效金额、空输入；保存当前 Spark 版本和实际前后计划，候选不能保留 Python UDF 边界。",
+        "task.json 的症状为合成教学设定。实际运行只证明本数据结果与计划结构，不自动证明提速、容量安全、AQE 收益或生产可用。",
+        "diagnosis() 写出假设、保持的语义、现有证据、下一轮测量和回退。文字与调优决策需要人工复核。"
+      ],
+      "downloads": [
+        {
+          "label": "任务数据 task.json",
+          "href": "/practice/l7-graduation/task.json"
+        },
+        {
+          "label": "代码骨架 starter.py",
+          "href": "/practice/l7-graduation/starter.py"
+        },
+        {
+          "label": "独立验收 verify.py",
+          "href": "/practice/l7-graduation/verify.py"
+        },
+        {
+          "label": "运行说明 README.txt",
+          "href": "/practice/l7-graduation/README.txt"
+        }
+      ],
+      "solution": {
+        "label": "下载参考实现 reference.py",
+        "href": "/practice/l7-graduation/reference.py"
+      },
+      "command": "python verify.py --solution starter.py",
+      "checks": [
+        {
+          "title": "结果契约",
+          "body": "独立 Python 预期核对逐地区笔数、金额与清洗边界。"
+        },
+        {
+          "title": "实际计划",
+          "body": "受控基线含 Python 边界，候选移除该边界并保存文本。"
+        },
+        {
+          "title": "审慎结论",
+          "body": "记录实际版本和人工待审诊断，计划变化不冒充性能测量。"
+        }
+      ],
+      "hints": [
+        {
+          "title": "先固定结果",
+          "body": "先核对 NULL、空串、正金额和清洗后的分组，再谈更快。"
+        },
+        {
+          "title": "寻找等价表达式",
+          "body": "把简单清洗拆为 trim、lower 和 coalesce；检查 Python strip 默认规则是否太宽。"
+        },
+        {
+          "title": "证据链骨架",
+          "body": "核对逐组结果 → 保存前后实际计划 → 检查 Python 边界 → 明确未测性能 → 设计公平重复实验与回退。"
+        }
+      ],
+      "validationNote": "自动 PASS 表示小型教学数据的程序检查通过。诊断质量仍标记 manual_review=required；真实优化收益需另做公平测量。本任务不考核 Parquet 写出。"
     }
   }
 }

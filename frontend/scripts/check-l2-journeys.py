@@ -27,7 +27,7 @@ with sync_playwright() as p:
   if slug in capstones:page.locator('#capstone-guided > summary').click()
   page.locator('.lj-mission').wait_for()
   if slug not in capstones:assert page.locator('.dfj-reference').first.get_attribute('open') is None
-  if slug.startswith(('l2-','l3-','l4-','l5-','l6-')):
+  if slug.startswith(('l1-','l2-','l3-','l4-','l5-','l6-','l7-')):
    assert page.locator('#lesson-reference').get_attribute('open') is None
    assert page.locator('#lesson-original').get_attribute('open') is None
   elif content[slug]['correction']:assert page.get_by_text('原文勘误 · 阅读时以此为准').is_visible()

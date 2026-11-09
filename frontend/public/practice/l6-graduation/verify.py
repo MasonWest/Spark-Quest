@@ -1,4 +1,4 @@
-"""Self-contained L4/L5/L6 lab verifier, copied into each download kit.
+"""Self-contained learning lab verifier, copied into each download kit.
 Only uses small provided teaching fixtures, never the app DB. No Spark file
 write is substituted: these labs deliver plan/partition/join evidence, not Parquet.
 """
@@ -81,7 +81,49 @@ def main():
                .config('spark.driver.host','127.0.0.1').config('spark.driver.bindAddress','127.0.0.1')
                .config('spark.sql.shuffle.partitions','2').config('spark.sql.adaptive.enabled','false').getOrCreate())
         spark.sparkContext.setLogLevel('ERROR');result['spark_version']=spark.version;result['aqe']=False
-        if task['task']=='plan':
+        if task['task']=='rdd':
+            from collections import Counter
+            evidence=[]
+            cases=[task['lines'],['New new NEW','word, word','\t  '],[],['', '  ', '\t'],['A a','b A','b! b!']]
+            for index,lines in enumerate(cases):
+                expected=dict(Counter(word.lower() for line in lines for word in line.split()))
+                for partitions in task['partitions']:
+                    stage=f'rdd-case-{index}-n{partitions}'
+                    counts=student.build_counts(spark.sparkContext,lines,partitions)
+                    assert counts.getNumPartitions()==partitions,'Use requested output partition count'
+                    pairs=counts.take(len(expected)+1)
+                    assert len(pairs)==len(expected) and len({k for k,v in pairs})==len(pairs),'Missing/duplicate output words'
+                    assert dict(pairs)==expected,'Whitespace tokenization, lower-case and every occurrence must agree'
+                    assert all(isinstance(v,int) and not isinstance(v,bool) for k,v in pairs),'Counts must be integers'
+                    evidence.append(dict(case=index,partitions=partitions,counts=sorted(pairs)))
+                    passed(stage)
+            (output/'wordcount-evidence.json').write_text(json.dumps(evidence,indent=2)+'\n',encoding='utf-8')
+        elif task['task']=='tuning':
+            normalize=lambda value:'unknown' if value is None else value.strip(' ').lower()
+            cases=[task['orders'],[['x',' NEW ',17],['y','new',23],['z',None,7],['e','',9]],[],
+                   [['n',None,None],['z','none',0],['m','none',-1]],
+                   [['x','   ',3],['y','UNKNOWN',4],['z','\tA\t',5]]]
+            for index,rows in enumerate(cases):
+                stage=f'tuning-result-{index}'
+                frame=spark.createDataFrame([tuple(r) for r in rows],task['schema'])
+                report=student.build_report(frame)
+                check_report(report,grouped([(normalize(r[1]),r[2]) for r in rows]));passed(stage)
+            stage='python-boundary-evidence'
+            frame=spark.createDataFrame([tuple(r) for r in task['orders']],task['schema'])
+            python_normalize=F.udf(normalize,'string')
+            baseline=(frame.filter(F.col('amount')>0).withColumn('region',python_normalize('region'))
+                      .groupBy('region').agg(F.count('*').alias('cnt'),F.sum('amount').alias('total')))
+            candidate=student.build_report(frame)
+            check_report(baseline,grouped([(normalize(r[1]),r[2]) for r in task['orders']]))
+            before,after=plan_text(baseline),plan_text(candidate)
+            (output/'plan-before.txt').write_text(before,encoding='utf-8')
+            (output/'plan-after.txt').write_text(after,encoding='utf-8')
+            has_python=lambda text:any(node in text for node in ('BatchEvalPython','ArrowEvalPython','PythonUDF'))
+            assert has_python(before),'Controlled baseline Python node missing: review runtime assumptions'
+            assert not has_python(after),'Candidate still crosses Python UDF boundary; use equivalent built-ins'
+            result['measurement_limit']='Equivalent results and Python boundary removal only; no speedup measurement'
+            passed(stage)
+        elif task['task']=='plan':
             cases=[task['orders'],[['x','new',17,'x'],['y','new',23,'y'],['z','other',-1,'x']],[],[['n','none',None,'x'],['z','none',0,'x']]]
             for index,rows in enumerate(cases):
                 stage=f'plan-result-{index}'

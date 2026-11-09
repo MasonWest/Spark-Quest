@@ -1,0 +1,318 @@
+{
+  "slug": "l1-rdd-exercise",
+  "version": 1,
+  "title": "准备练习：把文本变成可核对的词频",
+  "mission": "六步是可选热身，独立任务会换文本、空行与分区数。",
+  "correction": "分词规则必须明确；RDD collect 只用于已知小教学结果，分区调节不应改变计数，血缘也不提供外部写入认证。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l1-rdd-exercise/contract",
+      "knowledgeIds": [
+        "l1-rdd-exercise/contract"
+      ],
+      "title": "先说什么算一个词",
+      "intro": "输入中有大小写、多个空格和标点。",
+      "code": "# 本任务：空白切词，小写；标点保留。",
+      "prompt": "最先需要做什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "直接剥掉所有字符",
+              "feedback": "会破坏原始信息。"
+            },
+            {
+              "id": "o2",
+              "text": "把每行当唯一词",
+              "feedback": "与本任务分词规则不同。"
+            },
+            {
+              "id": "o0",
+              "text": "明确分词/归一与计数约定",
+              "feedback": "对，预期结果取决于规则。"
+            }
+          ]
+        }
+      ],
+      "insight": "独立实作先定义词与相等规则，再选择变换和聚合。",
+      "ability": "先说什么算一个词",
+      "reading": {
+        "id": "l1-rdd-exercise/contract/reading",
+        "title": "先说什么算一个词",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "独立实作先定义词与相等规则，再选择变换和聚合。",
+        "boundary": "本任务不是完整自然语言处理或语言分词系统。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-rdd-exercise/split",
+      "knowledgeIds": [
+        "l1-rdd-exercise/split"
+      ],
+      "title": "两行拆成哪些词",
+      "intro": "输入 \"Spark SQL\"、\"spark\"。",
+      "code": "lines.flatMap(lambda s:s.split())",
+      "prompt": "归一前有几条词元素？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "3",
+              "feedback": "对，展开后有三条。"
+            },
+            {
+              "id": "o0",
+              "text": "2",
+              "feedback": "第一行包含两个词。"
+            },
+            {
+              "id": "o2",
+              "text": "1",
+              "feedback": "不能把整个输入当一个词。"
+            }
+          ]
+        }
+      ],
+      "insight": "展开与归一、聚合分开，让每步的中间形状可解释。",
+      "ability": "两行拆成哪些词",
+      "reading": {
+        "id": "l1-rdd-exercise/split/reading",
+        "title": "两行拆成哪些词",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "展开与归一、聚合分开，让每步的中间形状可解释。",
+        "boundary": "空行的 split 结果为空，不要伪造空词。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-rdd-exercise/normalize",
+      "knowledgeIds": [
+        "l1-rdd-exercise/normalize"
+      ],
+      "title": "大小写归一后才比较词",
+      "intro": "词元素 Spark、SQL、spark。",
+      "code": "tokens.map(lambda w:(w.lower(),1))",
+      "prompt": "最终 spark 的计数应？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "1",
+              "feedback": "两个大小写形式按约定归一。"
+            },
+            {
+              "id": "o1",
+              "text": "2",
+              "feedback": "对，Spark 与 spark 同组。"
+            },
+            {
+              "id": "o2",
+              "text": "3",
+              "feedback": "SQL 属于另一组。"
+            }
+          ]
+        }
+      ],
+      "insight": "先按约定归一，再按键计数；不能把每个显示形式当成不同业务键。",
+      "ability": "大小写归一后才比较词",
+      "reading": {
+        "id": "l1-rdd-exercise/normalize/reading",
+        "title": "大小写归一后才比较词",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "先按约定归一，再按键计数；不能把每个显示形式当成不同业务键。",
+        "boundary": "标点在本任务保留，因此 spark, 与 spark 仍不同。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l1-rdd-exercise/word-transfer",
+        "knowledgeId": "l1-rdd-exercise/normalize",
+        "title": "相等规则决定分组",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "输入 \"A a\"，空白切词再小写计数。",
+        "prompt": "a 应计几次？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "1",
+              "feedback": "大小写归一后两次都贡献。"
+            },
+            {
+              "id": "r1",
+              "text": "2",
+              "feedback": "对，不能任意去重。"
+            },
+            {
+              "id": "r2",
+              "text": "0",
+              "feedback": "不是空输入。"
+            }
+          ]
+        },
+        "insight": "小写归一与去标点不同，结果必须遵守任务约定。"
+      }
+    },
+    {
+      "id": "l1-rdd-exercise/sum",
+      "knowledgeIds": [
+        "l1-rdd-exercise/sum"
+      ],
+      "title": "每次出现都贡献一次",
+      "intro": "同一词在不同分区出现。",
+      "code": "pairs.reduceByKey(lambda a,b:a+b)",
+      "prompt": "这一步要保留什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "只保留首次出现",
+              "feedback": "那是计唯一词，不是词频。"
+            },
+            {
+              "id": "o2",
+              "text": "只取最后一个分区",
+              "feedback": "会丢掉其他贡献。"
+            },
+            {
+              "id": "o0",
+              "text": "每次合法出现的贡献",
+              "feedback": "对，词频不是存在性去重。"
+            }
+          ]
+        }
+      ],
+      "insight": "可加总计数可以局部合并，最后仍需全局汇合同键贡献。",
+      "ability": "每次出现都贡献一次",
+      "reading": {
+        "id": "l1-rdd-exercise/sum/reading",
+        "title": "每次出现都贡献一次",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "可加总计数可以局部合并，最后仍需全局汇合同键贡献。",
+        "boundary": "分布式规约要符合函数的代数要求。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-rdd-exercise/empty",
+      "knowledgeIds": [
+        "l1-rdd-exercise/empty"
+      ],
+      "title": "只有空行时输出什么",
+      "intro": "输入是空字符串和空白字符串。",
+      "code": "flatMap(lambda s:s.split())",
+      "prompt": "词频结果应该？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "空键集合",
+              "feedback": "对，没有词就不造词。"
+            },
+            {
+              "id": "o1",
+              "text": "一条空词计数 2",
+              "feedback": "空白分词不会产生空词。"
+            },
+            {
+              "id": "o2",
+              "text": "原样例词频",
+              "feedback": "不能写死原样例结果。"
+            }
+          ]
+        }
+      ],
+      "insight": "空输入与空白输入都应符合真实分词语义，不用固定行数凑结果。",
+      "ability": "只有空行时输出什么",
+      "reading": {
+        "id": "l1-rdd-exercise/empty/reading",
+        "title": "只有空行时输出什么",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "空输入与空白输入都应符合真实分词语义，不用固定行数凑结果。",
+        "boundary": "仍可存在空计算分区，它不是业务词。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-rdd-exercise/accept",
+      "knowledgeIds": [
+        "l1-rdd-exercise/accept"
+      ],
+      "title": "换分区也要数得对",
+      "intro": "相同文本分别在 2 和 4 个分区运行。",
+      "code": "# 验收：新文本、标点、空行、分区变化。",
+      "prompt": "必须保持什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "每次任务耗时完全相同",
+              "feedback": "运行时间受环境和调度影响。"
+            },
+            {
+              "id": "o0",
+              "text": "每词计数",
+              "feedback": "对，业务指标不应被分区设置改变。"
+            },
+            {
+              "id": "o2",
+              "text": "每个词所在机器相同",
+              "feedback": "位置可以变化。"
+            }
+          ]
+        }
+      ],
+      "insight": "毕业验收比较计数与规则，不把熟悉样例或固定任务位置当作独立能力证据。",
+      "ability": "换分区也要数得对",
+      "reading": {
+        "id": "l1-rdd-exercise/accept/reading",
+        "title": "换分区也要数得对",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【任务】",
+        "connection": "毕业验收比较计数与规则，不把熟悉样例或固定任务位置当作独立能力证据。",
+        "boundary": "本地小样本通过不证明大规模 Driver 容量或性能。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

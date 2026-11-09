@@ -1,0 +1,226 @@
+{
+  "slug": "l7-aqe",
+  "version": 1,
+  "title": "看到最终路线，再解释自适应",
+  "mission": "确认配置、输入统计与执行后的变化，不背万能开关。",
+  "correction": "AQE有版本与适用条件；子开关为true不等于总开关或全部优化生效。初始计划未final不能当最终证据。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-aqe/check",
+      "knowledgeIds": [
+        "l7-aqe/check"
+      ],
+      "title": "先确认实际配置",
+      "intro": "同事说“新版本默认开了”，但应用可覆盖设置。",
+      "code": "spark.conf.get(\"spark.sql.adaptive.enabled\")",
+      "prompt": "该怎样做？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "核对当前会话配置与实际效果",
+              "feedback": "对，默认与当前值不同。"
+            },
+            {
+              "id": "o1",
+              "text": "只背一个默认值",
+              "feedback": "默认不能代替应用状态。"
+            },
+            {
+              "id": "o2",
+              "text": "认为所有子功能都必应用",
+              "feedback": "有适用条件。"
+            }
+          ]
+        }
+      ],
+      "insight": "先查实际配置与版本，再看执行后是否有相关调整。",
+      "ability": "先确认实际配置",
+      "reading": {
+        "id": "l7-aqe/check/reading",
+        "title": "先确认实际配置",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "先查实际配置与版本，再看执行后是否有相关调整。",
+        "boundary": "本课以3.5.7文档为语义参考，实跑版本另记。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-aqe/final",
+      "knowledgeIds": [
+        "l7-aqe/final"
+      ],
+      "title": "false不表示失败",
+      "intro": "计划显示 AdaptiveSparkPlan isFinalPlan=false。",
+      "code": "# 查询尚未按代表输入完成执行。",
+      "prompt": "下一步？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "把初始图当最终事实",
+              "feedback": "状态已经提示不是最终。"
+            },
+            {
+              "id": "o1",
+              "text": "执行所需结果后结合最终计划与指标",
+              "feedback": "对，记录前后变化。"
+            },
+            {
+              "id": "o2",
+              "text": "认定优化器已坏",
+              "feedback": "不是这样的错误声明。"
+            }
+          ]
+        }
+      ],
+      "insight": "AQE初始计划可能与执行后不同，应核对同一目标查询的最终证据。",
+      "ability": "false不表示失败",
+      "reading": {
+        "id": "l7-aqe/final/reading",
+        "title": "false不表示失败",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "AQE初始计划可能与执行后不同，应核对同一目标查询的最终证据。",
+        "boundary": "action本身也可能改变实际执行的查询，注意比较对象。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-aqe/aqe-transfer",
+        "knowledgeId": "l7-aqe/final",
+        "title": "开启不等于生效",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 总开关为true，但某查询不满足特定转换条件。",
+        "prompt": "该认定什么？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "所有转换必发生",
+              "feedback": "开关不是转换保证。"
+            },
+            {
+              "id": "r1",
+              "text": "需核对适用性和最终计划",
+              "feedback": "对，确认实际变化。"
+            },
+            {
+              "id": "r2",
+              "text": "必须认为数据为空",
+              "feedback": "不是业务结果声明。"
+            }
+          ]
+        },
+        "insight": "配置、适用条件与实际采用是不同证据。"
+      }
+    },
+    {
+      "id": "l7-aqe/coalesce",
+      "knowledgeIds": [
+        "l7-aqe/coalesce"
+      ],
+      "title": "很多小分区被合并",
+      "intro": "执行后的Shuffle任务数减少，结果一致。",
+      "code": "# 合成观察：需核对是否为AQE合并。",
+      "prompt": "合理解释是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "必定丢掉数据",
+              "feedback": "任务数不等于业务行数。"
+            },
+            {
+              "id": "o2",
+              "text": "所有查询固定减少一半",
+              "feedback": "没有固定比例。"
+            },
+            {
+              "id": "o1",
+              "text": "可能为自适应合并，结合最终计划确认",
+              "feedback": "对，变化还需证据定位。"
+            }
+          ]
+        }
+      ],
+      "insight": "合并小分区可降低某些管理成本，但要核对实际调整与工作负载。",
+      "ability": "很多小分区被合并",
+      "reading": {
+        "id": "l7-aqe/coalesce/reading",
+        "title": "很多小分区被合并",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "合并小分区可降低某些管理成本，但要核对实际调整与工作负载。",
+        "boundary": "结果、资源和耗时分别验收。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-aqe/limits",
+      "knowledgeIds": [
+        "l7-aqe/limits"
+      ],
+      "title": "AQE会修复错误JOIN吗",
+      "intro": "维表重复导致金额翻倍，已开AQE。",
+      "code": "# 语义错误与执行优化分开。",
+      "prompt": "应怎样处理？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "先修维表约定或连接规则",
+              "feedback": "对，先保证结果。"
+            },
+            {
+              "id": "o0",
+              "text": "等待AQE自动改业务规则",
+              "feedback": "物理自适应不替代正确语义。"
+            },
+            {
+              "id": "o2",
+              "text": "只提高参数",
+              "feedback": "参数不能定义唯一性。"
+            }
+          ]
+        }
+      ],
+      "insight": "自适应优化应保持原查询语义，不能替代业务质量与基数验证。",
+      "ability": "AQE会修复错误JOIN吗",
+      "reading": {
+        "id": "l7-aqe/limits/reading",
+        "title": "AQE会修复错误JOIN吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "自适应优化应保持原查询语义，不能替代业务质量与基数验证。",
+        "boundary": "有错语义即使更快，也不是成功。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

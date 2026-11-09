@@ -90,8 +90,8 @@ if (oldDelayed) requireThat(delayed.version > oldDelayed.version || (delayed.ver
 next['delayed-checks'] = { version: delayed.version, hash: delayedHash };
 const guides = JSON.parse(fs.readFileSync(path.join(root, 'src/content/standardGuides.json'), 'utf8'));
 requireThat(Number.isInteger(guides.version) && guides.version > 0, 'invalid standard guide version');
-const guidedSlugs = Object.keys(next).filter(slug => /^l[2-6]-/.test(slug));
-requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover L2 through L6');
+const guidedSlugs = Object.keys(next).filter(slug => /^l[1-7]-/.test(slug));
+requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover L1 through L7');
 for (const [slug, guide] of Object.entries(guides.lessons)) {
   const lesson = JSON.parse(fs.readFileSync(path.join(dir, `${slug}.json`), 'utf8'));
   requireThat(text(guide.title) && Array.isArray(guide.sections), `${slug}: invalid guide`);
@@ -118,7 +118,9 @@ for (const [slug, c] of Object.entries(capstones.lessons)) {
     requireThat(text(asset.label) && typeof asset.href === 'string' && asset.href.startsWith('/practice/'), `${slug}: invalid asset`);
     const dest = path.resolve(root, 'public', asset.href.slice(1));
     requireThat(dest.startsWith(path.join(root, 'public') + path.sep) && fs.existsSync(dest), `${slug}: unsafe/missing asset`);
-    capstoneAssets[asset.href] = crypto.createHash('sha256').update(fs.readFileSync(dest)).digest('hex');
+    const bytes = fs.readFileSync(dest);
+    if (/\.(py|txt|json|csv)$/.test(dest)) requireThat(!bytes.includes(13), `${slug}: kit must use LF for portable release digest: ${asset.href}`);
+    capstoneAssets[asset.href] = crypto.createHash('sha256').update(bytes).digest('hex');
   }
 }
 const capstoneHash = crypto.createHash('sha256').update(JSON.stringify({capstones, capstoneAssets})).digest('hex');

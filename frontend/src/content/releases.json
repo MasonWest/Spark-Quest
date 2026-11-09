@@ -1,4 +1,28 @@
 {
+  "l1-action": {
+    "version": 1,
+    "hash": "59c8fd3b6faef5115c48da51c8e6ace58abfc24af3e1acf6e6c38c782d06d7af"
+  },
+  "l1-lazy-evaluation": {
+    "version": 1,
+    "hash": "adf95f45ec4349b0631192471f2fa9fae2e72f1cc4fc0c5d8418ecfbd24eae83"
+  },
+  "l1-rdd-exercise": {
+    "version": 1,
+    "hash": "2c0028c342690b1b9810e7296f13d1ddf421b5a8a6ff868b0d24373d19cca32d"
+  },
+  "l1-transformation": {
+    "version": 1,
+    "hash": "6d40aa1c9904c1fc6c1093b10a387625740986acfccb4cbacaf55d6d79a1af36"
+  },
+  "l1-what-is-rdd": {
+    "version": 1,
+    "hash": "360afbc1b0bdc8fa11cde01a11a3a356c2ff9933726392a42c4b3b8714a851c8"
+  },
+  "l1-why-dataframe-replaces-rdd": {
+    "version": 1,
+    "hash": "799b17db6fab2449f1b33fde77392e0cd37d4ef71f741ab238322d60ae8417dc"
+  },
   "l2-comprehensive": {
     "version": 2,
     "hash": "31ff8eedeec84c733535fd0ffd32ba211b0c9fdf30122285b8cca2b6821877d5"
@@ -183,20 +207,52 @@
     "version": 1,
     "hash": "355734a691599d8f27ceb57e56be3fb2153d2ae27ae1671f2889e940e4f22d7d"
   },
-  "l7-what-is-tuning": {
+  "l7-aqe": {
     "version": 1,
-    "hash": "53938e41562f72a6269e99106ef74523506a402800f23c9f18322bbcc265ce77"
+    "hash": "faf6cc9f66ed531ef354435ed60deb2c838b9ea78cbe7164855a75108f3bbe7c"
+  },
+  "l7-broadcast-threshold": {
+    "version": 1,
+    "hash": "d3c2ef7d4618f856ae151bd545a2af647feb3ec25d947f7b87f3182d67b9393c"
+  },
+  "l7-comprehensive": {
+    "version": 1,
+    "hash": "38f04614381594371cf0c09bf5f1070a45e08897971c4da4b9238aea086bb624"
+  },
+  "l7-executor-memory": {
+    "version": 1,
+    "hash": "102f8cc4445acf268c0a33e8fcb2f469f328240d4b3cd1901ab02200c40ea5b0"
+  },
+  "l7-read-less-data": {
+    "version": 1,
+    "hash": "7abe588e3210620263e4de55433b59d1a20b0b7871466facdccf73e6f2dc9a4d"
+  },
+  "l7-shuffle-partitions": {
+    "version": 1,
+    "hash": "bcbf28706be1abe62d5807b92a18fa9d9f5ad0d0d9ebbbe01824a0e3b8e7d02e"
+  },
+  "l7-skew-tuning": {
+    "version": 1,
+    "hash": "5720069096a630ddf623411102e615758770079557a1d06f5b16247b384b900b"
+  },
+  "l7-tungsten-encoding": {
+    "version": 1,
+    "hash": "2db006ca94ff7fd19f379ed67a7f4d1d9924182acb8c50be3c5d004af9498b9c"
+  },
+  "l7-what-is-tuning": {
+    "version": 2,
+    "hash": "10f04a979242240c62a9e924c547dc100d6a9b27e3a628d61dfaf3c4184a0c59"
   },
   "delayed-checks": {
-    "version": 3,
-    "hash": "90b4d6bd4899d6c7a4185ea61f426816a8c366e94641cc675c54f4898f2ac0ea"
+    "version": 4,
+    "hash": "f43b0fcfbdf7d1e6915e5ef5f1d5610c01c670c5f71a6a14a21cfa994e391643"
   },
   "standard-guides": {
-    "version": 3,
-    "hash": "73ace0a79aa1db7d2b58e4e809b7ad68948964b50c2de768addc8ca79b8a90fe"
+    "version": 4,
+    "hash": "b69f3b10c8867582fe7827a878a7fb660e1f1220a4f55957a0f1132cc899674f"
   },
   "capstones": {
-    "version": 3,
-    "hash": "988fb8481929e43dd80fa88b3a066f388cc64c4bfd84aad3c3486e1839846305"
+    "version": 5,
+    "hash": "258cc2c40cd4d7aee51ecb64a68fda9eba445c305880671067447d2599fb3921"
   }
 }

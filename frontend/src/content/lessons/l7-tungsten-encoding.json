@@ -1,0 +1,226 @@
+{
+  "slug": "l7-tungsten-encoding",
+  "version": 1,
+  "title": "对象少一些，不代表所有成本消失",
+  "mission": "从行宽、表示与 Python 边界分析工作量。",
+  "correction": "内部紧凑表示、代码生成与序列化不是一个开关；JVM序列化设置不能被当成全部PySpark对象和UDF的通用优化。",
+  "source": "https://spark.apache.org/docs/3.5.7/tuning.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l7-tungsten-encoding/width",
+      "knowledgeIds": [
+        "l7-tungsten-encoding/width"
+      ],
+      "title": "同样一千行，体积可以不同",
+      "intro": "A 是两列整数，B 含长文本与数组。",
+      "code": "# 合成数据形状：行数相同。",
+      "prompt": "仅比较行数能判断内存/传输量吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，所有行同样大",
+              "feedback": "行宽和结构不同。"
+            },
+            {
+              "id": "o2",
+              "text": "看变量名就够",
+              "feedback": "名称不反映工作集。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，需看表示、字段宽度和结构",
+              "feedback": "对，记录数不是全部负载。"
+            }
+          ]
+        }
+      ],
+      "insight": "数据表示和字段宽度会影响序列化、内存与传输成本，应观察真实字节与处理指标。",
+      "ability": "同样一千行，体积可以不同",
+      "reading": {
+        "id": "l7-tungsten-encoding/width/reading",
+        "title": "同样一千行，体积可以不同",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "数据表示和字段宽度会影响序列化、内存与传输成本，应观察真实字节与处理指标。",
+        "boundary": "更紧凑表示不保证任何工作负载固定提升。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-tungsten-encoding/boundary",
+      "knowledgeIds": [
+        "l7-tungsten-encoding/boundary"
+      ],
+      "title": "换序列化配置能优化所有 Python 逻辑吗",
+      "intro": "作业含普通 Python UDF 和 JVM 执行路径。",
+      "code": "# 教学情境：准备仅修改 JVM serializer。",
+      "prompt": "应怎样判断？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "分清 JVM 与 Python 数据边界，按路径验证",
+              "feedback": "对，先确认设置作用于哪里。"
+            },
+            {
+              "id": "o0",
+              "text": "保证所有 Python 调用都变快",
+              "feedback": "不能无条件这样外推。"
+            },
+            {
+              "id": "o2",
+              "text": "会自动改写业务函数",
+              "feedback": "序列化设置不提供业务逻辑重写。"
+            }
+          ]
+        }
+      ],
+      "insight": "序列化、内部行表示与 Python 执行边界是不同问题；设置收益需按执行路径实测。",
+      "ability": "换序列化配置能优化所有 Python 逻辑吗",
+      "reading": {
+        "id": "l7-tungsten-encoding/boundary/reading",
+        "title": "换序列化配置能优化所有 Python 逻辑吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "序列化、内部行表示与 Python 执行边界是不同问题；设置收益需按执行路径实测。",
+        "boundary": "本课不给出跨版本通用倍数或一键配方。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l7-tungsten-encoding/serializer-transfer",
+        "knowledgeId": "l7-tungsten-encoding/boundary",
+        "title": "一个开关没有覆盖全部边界",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "# 普通 Python UDF 的执行开销尚未测量。",
+        "prompt": "改 JVM 序列化后能直接宣布解决吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "能",
+              "feedback": "不能假定覆盖所有开销。"
+            },
+            {
+              "id": "r1",
+              "text": "不能，需看具体路径与指标",
+              "feedback": "对，先确认作用范围。"
+            },
+            {
+              "id": "r2",
+              "text": "自动不用 Python",
+              "feedback": "没有替换函数体。"
+            }
+          ]
+        },
+        "insight": "执行边界和实际收益要分别验证，不能只凭配置或接口名。"
+      }
+    },
+    {
+      "id": "l7-tungsten-encoding/builtin",
+      "knowledgeIds": [
+        "l7-tungsten-encoding/builtin"
+      ],
+      "title": "简单大写需要定制工具吗",
+      "intro": "只做 trim 后 upper，没有额外业务规则。",
+      "code": "UPPER(TRIM(name))",
+      "prompt": "更合适的起点是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "先把全表 collect 到 Python",
+              "feedback": "会增加 Driver 规模风险。"
+            },
+            {
+              "id": "o0",
+              "text": "先采用能表达需求的内置函数并验证",
+              "feedback": "对，避免不必要边界。"
+            },
+            {
+              "id": "o2",
+              "text": "必需写复杂 UDF",
+              "feedback": "内置已可表达该需求。"
+            }
+          ]
+        }
+      ],
+      "insight": "优先选能清楚表达需求的内置函数，再对照语义与指标。",
+      "ability": "简单大写需要定制工具吗",
+      "reading": {
+        "id": "l7-tungsten-encoding/builtin/reading",
+        "title": "简单大写需要定制工具吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "优先选能清楚表达需求的内置函数，再对照语义与指标。",
+        "boundary": "有真实自定义需求时仍可考虑适合的 UDF 类型。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l7-tungsten-encoding/capacity",
+      "knowledgeIds": [
+        "l7-tungsten-encoding/capacity"
+      ],
+      "title": "紧凑结构也可能 spill",
+      "intro": "任务处理的状态很大，仍有落盘和 GC 压力。",
+      "code": "# 合成指标：compact 表示已用，工作集仍大。",
+      "prompt": "应怎样评价？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "紧凑表示证明指标有误",
+              "feedback": "表示优化不取消容量限制。"
+            },
+            {
+              "id": "o2",
+              "text": "认为内存无限",
+              "feedback": "没有无限资源保证。"
+            },
+            {
+              "id": "o1",
+              "text": "继续查状态大小、并发与任务分布",
+              "feedback": "对，按资源证据诊断。"
+            }
+          ]
+        }
+      ],
+      "insight": "表示优化降低某类开销，不消除工作集和并发容量约束。",
+      "ability": "紧凑结构也可能 spill",
+      "reading": {
+        "id": "l7-tungsten-encoding/capacity/reading",
+        "title": "紧凑结构也可能 spill",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【一个直观的心智模型】",
+        "connection": "表示优化降低某类开销，不消除工作集和并发容量约束。",
+        "boundary": "区分估计大小、存储大小与运行峰值内存。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}

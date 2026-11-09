@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -1682,6 +1682,567 @@
           "title": "换输入后还能交付吗",
           "body": "毕业任务应验证输入变化、空输入和契约异常，并记录未验证的运行边界。",
           "boundary": "结果验收不是防作弊或生产能力认证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l1-what-is-rdd": {
+      "title": "把一批数字交给分布式计算",
+      "sections": [
+        {
+          "id": "l1-what-is-rdd/parts",
+          "title": "四份数据，不是四台机器",
+          "body": "RDD 用分区表示可分布式处理的元素集合；分区数和可用并行资源分开理解。",
+          "boundary": "本课的小样本由本地列表创建，不表示大规模数据必须先收集到 Driver。"
+        },
+        {
+          "id": "l1-what-is-rdd/immutable",
+          "title": "加一后，原来的数字变了吗",
+          "body": "RDD 转换返回新查询对象，Python 变量重新绑定也不等于就地修改原数据。",
+          "boundary": "元素内部可变对象与外部副作用不能被这个比喻当成安全修改接口。"
+        },
+        {
+          "id": "l1-what-is-rdd/recover",
+          "title": "丢掉一份缓存靠什么恢复",
+          "body": "血缘描述依赖与计算关系，可在条件满足时重算丢失分区。",
+          "boundary": "源数据不可再读、非确定逻辑或外部副作用会使恢复边界更复杂。"
+        },
+        {
+          "id": "l1-what-is-rdd/storage",
+          "title": "创建 RDD 就全部缓存了吗",
+          "body": "RDD 抽象、执行与缓存策略分开理解；持久化也受容量和存储级别影响。",
+          "boundary": "不要将“内存计算”理解为完全没有磁盘或重算。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l1-transformation": {
+      "title": "先写加工规则，再预测结果",
+      "sections": [
+        {
+          "id": "l1-transformation/map",
+          "title": "每个数字变一个数字",
+          "body": "map 为每个输入元素产生一个输出元素，结果内容由函数决定。",
+          "boundary": "它本身不保证全局排序或跨分区汇总。"
+        },
+        {
+          "id": "l1-transformation/flatmap",
+          "title": "一行有两个词，会得到几层",
+          "body": "flatMap 允许每个输入产生零到多个输出，并将这层结果展开。",
+          "boundary": "本课按空白分词，不自动处理标点、词形或业务字典。"
+        },
+        {
+          "id": "l1-transformation/filter",
+          "title": "保留条件，不改数值",
+          "body": "filter 保留谓词成立的元素，不能与数值变换混淆。",
+          "boundary": "输出变少也不意味着分区数按同样比例减少。"
+        },
+        {
+          "id": "l1-transformation/chain",
+          "title": "步骤多就等于多次完整作业吗",
+          "body": "转换链可推迟实际求值，并按依赖执行；不要把它等同于 SQL 优化器任意理解 Python 逻辑。",
+          "boundary": "某些操作可能需要辅助工作，不能把整个程序简化成 action 前绝对零开销。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l1-action": {
+      "title": "什么时候真的请求结果",
+      "sections": [
+        {
+          "id": "l1-action/count",
+          "title": "只想知道有几条",
+          "body": "count 返回计数，collect 将全部结果收集到 Driver；选接口先看所需结果规模。",
+          "boundary": "count 仍可能需要执行上游工作，不等于免费元数据查询。"
+        },
+        {
+          "id": "l1-action/collect",
+          "title": "十亿条结果能直接搬到 Driver 吗",
+          "body": "collect 适用于已知很小的教学结果或有界产物，不应无条件搬运海量明细。",
+          "boundary": "take 限制返回量，但上游成本仍由查询决定，也不代表均匀随机抽样。"
+        },
+        {
+          "id": "l1-action/foreach",
+          "title": "闭包里追加，Driver 列表会跟着变吗",
+          "body": "任务闭包的副作用不等于可靠的 Driver 汇总；外部副作用还可能受重试影响。",
+          "boundary": "不要把本地偶然表现外推为集群共享状态或 exactly-once 保证。"
+        },
+        {
+          "id": "l1-action/again",
+          "title": "count 之后已经自动缓存了吗",
+          "body": "请求结果和保存可复用状态是两回事，多次 action 可能重复部分工作。",
+          "boundary": "持久化也可能因逐出、失败或未物化而不能避免全部重算。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l1-lazy-evaluation": {
+      "title": "还没取结果，先把路线写清",
+      "sections": [
+        {
+          "id": "l1-lazy-evaluation/predict",
+          "title": "定义平方后还没请求它",
+          "body": "惰性变换描述依赖与计算，结果请求才驱动所需计算路径。",
+          "boundary": "创建对象和分析输入等工作仍可能发生在 Driver，不能说整个程序零成本。"
+        },
+        {
+          "id": "l1-lazy-evaluation/branches",
+          "title": "没用到的支路也必须跑吗",
+          "body": "执行从 action 的依赖出发，不是按变量定义顺序把所有潜在结果都做完。",
+          "boundary": "实际缓存、共享上游与调度行为应结合执行记录。"
+        },
+        {
+          "id": "l1-lazy-evaluation/persist",
+          "title": "cache 写下了，数据就全部热了吗",
+          "body": "持久化标记与实际物化分区不同，需要结合 action 和存储情况核对。",
+          "boundary": "缓存可能被逐出，存储级别和容量会影响复用。"
+        },
+        {
+          "id": "l1-lazy-evaluation/recovery",
+          "title": "重算不等于副作用只一次",
+          "body": "容错重算与外部副作用一致性是不同问题，不能把恢复机制当作 exactly-once。",
+          "boundary": "本章练习不执行外部写入。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l1-why-dataframe-replaces-rdd": {
+      "title": "结构化问题，先选能表达语义的工具",
+      "sections": [
+        {
+          "id": "l1-why-dataframe-replaces-rdd/schema",
+          "title": "金额是哪一列，类型是什么",
+          "body": "结构化数据适合使用 DataFrame/SQL 表达列、类型和关系，优化器可据此分析查询。",
+          "boundary": "输入质量、NULL 和业务规则仍需显式验证。"
+        },
+        {
+          "id": "l1-why-dataframe-replaces-rdd/optimizer",
+          "title": "Python 函数体会被当 SQL 代数随意重写吗",
+          "body": "结构化表达向优化器暴露的语义比任意 Python 函数体更明确。",
+          "boundary": "这不提供任何接口在所有输入上固定更快的承诺。"
+        },
+        {
+          "id": "l1-why-dataframe-replaces-rdd/still-rdd",
+          "title": "RDD 什么时候仍有意义",
+          "body": "DataFrame 是结构化任务常用入口，RDD 仍服务特定低层处理；避免绝对接口排名。",
+          "boundary": "选低层控制也意味着更多类型、资源和语义责任。"
+        },
+        {
+          "id": "l1-why-dataframe-replaces-rdd/bridge",
+          "title": "转换时类型不能靠猜",
+          "body": "从对象集合转结构化数据时明确 Schema，并验证真实输入和业务规则。",
+          "boundary": "类型推断不是无限可靠的业务校验，文件读取还受解析策略影响。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    },
+    "l1-rdd-exercise": {
+      "title": "准备练习：把文本变成可核对的词频",
+      "sections": [
+        {
+          "id": "l1-rdd-exercise/contract",
+          "title": "先说什么算一个词",
+          "body": "独立实作先定义词与相等规则，再选择变换和聚合。",
+          "boundary": "本任务不是完整自然语言处理或语言分词系统。"
+        },
+        {
+          "id": "l1-rdd-exercise/split",
+          "title": "两行拆成哪些词",
+          "body": "展开与归一、聚合分开，让每步的中间形状可解释。",
+          "boundary": "空行的 split 结果为空，不要伪造空词。"
+        },
+        {
+          "id": "l1-rdd-exercise/normalize",
+          "title": "大小写归一后才比较词",
+          "body": "先按约定归一，再按键计数；不能把每个显示形式当成不同业务键。",
+          "boundary": "标点在本任务保留，因此 spark, 与 spark 仍不同。"
+        },
+        {
+          "id": "l1-rdd-exercise/sum",
+          "title": "每次出现都贡献一次",
+          "body": "可加总计数可以局部合并，最后仍需全局汇合同键贡献。",
+          "boundary": "分布式规约要符合函数的代数要求。"
+        },
+        {
+          "id": "l1-rdd-exercise/empty",
+          "title": "只有空行时输出什么",
+          "body": "空输入与空白输入都应符合真实分词语义，不用固定行数凑结果。",
+          "boundary": "仍可存在空计算分区，它不是业务词。"
+        },
+        {
+          "id": "l1-rdd-exercise/accept",
+          "title": "换分区也要数得对",
+          "body": "毕业验收比较计数与规则，不把熟悉样例或固定任务位置当作独立能力证据。",
+          "boundary": "本地小样本通过不证明大规模 Driver 容量或性能。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html"
+        }
+      ]
+    },
+    "l7-what-is-tuning": {
+      "title": "慢作业诊室：先证据，后处方",
+      "sections": [
+        {
+          "id": "insufficient-evidence",
+          "title": "六分钟，够开处方吗？",
+          "body": "只有总耗时不足以开处方。先确认需求、输入、资源、执行计划和运行指标，形成可检验假设。",
+          "boundary": "六分钟只是给定教学情境，不能当成任何资源瓶颈证明。"
+        },
+        {
+          "id": "locate-critical-stage",
+          "title": "补充证据：时间花在了哪里？",
+          "body": "先从实际关键路径与阶段指标定位工作，再看任务分布、读量、交换、spill 和异常。",
+          "boundary": "阶段占比与示意指标不是跨版本固定调度映射。"
+        },
+        {
+          "id": "hypothesis-not-proof",
+          "title": "一个任务慢，先别把怀疑当结论",
+          "body": "最大任务远慢于中位数是长尾线索，还需检查键、字节、GC、硬件与匹配基数等证据。",
+          "boundary": "线索不是单独的病因证明，不能直接删除热点业务数据。"
+        },
+        {
+          "id": "choose-equivalent-trial",
+          "title": "终于看到代码：目标只是整数求和",
+          "body": "只需整数求和时可使用支持局部合并的表达，并以新输入对照结果与实际计划。",
+          "boundary": "减少中间内容不自动消除最终汇合或保证固定提速倍数。"
+        },
+        {
+          "id": "reject-fast-wrong",
+          "title": "更快的结果，哪个可以交付？",
+          "body": "优化前后必须保持正确业务结果和可比条件。更快的错误结果不能作为成功交付。",
+          "boundary": "只看总额也可能漏掉逐组错误，诊断结论需匹配验证粒度。"
+        },
+        {
+          "id": "transfer-to-new-symptoms",
+          "title": "换一份病例，不要沿用同一张处方",
+          "body": "新症状要重新获取证据与假设，不能沿用上一题的参数处方；记录单一改动、指标、限制与回退。",
+          "boundary": "本地合成病例不能替代真实工作负载的调优验证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 性能调优官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l7-tungsten-encoding": {
+      "title": "对象少一些，不代表所有成本消失",
+      "sections": [
+        {
+          "id": "l7-tungsten-encoding/width",
+          "title": "同样一千行，体积可以不同",
+          "body": "数据表示和字段宽度会影响序列化、内存与传输成本，应观察真实字节与处理指标。",
+          "boundary": "更紧凑表示不保证任何工作负载固定提升。"
+        },
+        {
+          "id": "l7-tungsten-encoding/boundary",
+          "title": "换序列化配置能优化所有 Python 逻辑吗",
+          "body": "序列化、内部行表示与 Python 执行边界是不同问题；设置收益需按执行路径实测。",
+          "boundary": "本课不给出跨版本通用倍数或一键配方。"
+        },
+        {
+          "id": "l7-tungsten-encoding/builtin",
+          "title": "简单大写需要定制工具吗",
+          "body": "优先选能清楚表达需求的内置函数，再对照语义与指标。",
+          "boundary": "有真实自定义需求时仍可考虑适合的 UDF 类型。"
+        },
+        {
+          "id": "l7-tungsten-encoding/capacity",
+          "title": "紧凑结构也可能 spill",
+          "body": "表示优化降低某类开销，不消除工作集和并发容量约束。",
+          "boundary": "区分估计大小、存储大小与运行峰值内存。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/tuning.html"
+        }
+      ]
+    },
+    "l7-executor-memory": {
+      "title": "先分清谁在内存紧张",
+      "sections": [
+        {
+          "id": "l7-executor-memory/driver",
+          "title": "collect 后 Driver 失败",
+          "body": "先定位失败进程和工作，再区分结果规模、任务状态、缓存与并发。",
+          "boundary": "不能凭 OOM 三个字推导唯一参数。"
+        },
+        {
+          "id": "l7-executor-memory/scope",
+          "title": "Python 进程与 JVM heap 是一回事吗",
+          "body": "Python工作进程、JVM堆与其他开销需按实际部署和版本核对，避免把所有压力归为同一内存池。",
+          "boundary": "本课不提供适合所有环境的固定内存比例处方。"
+        },
+        {
+          "id": "l7-executor-memory/eviction",
+          "title": "缓存占用时就永不能执行了吗",
+          "body": "缓存有容量与逐出条件，执行/存储的具体管理规则不能用“完全独立”或“无限互借”概括。",
+          "boundary": "重用收益还受缓存命中、重算与并发影响。"
+        },
+        {
+          "id": "l7-executor-memory/cache-cost",
+          "title": "缓存什么时候在模型里划算",
+          "body": "缓存经济性需考虑预热、重复使用与读缓存成本，不能只看单次命中。",
+          "boundary": "合成成本只训练核算，实际内存与耗时仍需测量。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/tuning.html"
+        }
+      ]
+    },
+    "l7-shuffle-partitions": {
+      "title": "用任务分布选下一次实验",
+      "sections": [
+        {
+          "id": "l7-shuffle-partitions/tiny",
+          "title": "小任务一大堆，慢在管理",
+          "body": "分区过多和过少有不同成本，按任务粒度与资源进行对照实验。",
+          "boundary": "没有通用最优常数。"
+        },
+        {
+          "id": "l7-shuffle-partitions/hot",
+          "title": "平均小，最大却很大",
+          "body": "数量调节不等于拆解单个热键，最大任务工作集常比平均值更关键。",
+          "boundary": "长尾还可能有其他原因，不能仅凭耗时分布定性。"
+        },
+        {
+          "id": "l7-shuffle-partitions/aqe",
+          "title": "设置值与最终任务数",
+          "body": "把初始配置、算子分布与最终AQE划分分开记录。",
+          "boundary": "不同版本和查询适用性会改变实际行为。"
+        },
+        {
+          "id": "l7-shuffle-partitions/capacity",
+          "title": "大份与并发一起看",
+          "body": "调整粒度既可能降低单份状态，也可能改变并发与管理开销，需同条件测量。",
+          "boundary": "结果必须保持等价。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l7-broadcast-threshold": {
+      "title": "不是把阈值抬高就叫优化",
+      "sections": [
+        {
+          "id": "l7-broadcast-threshold/stats",
+          "title": "估计大，文件小，先查统计",
+          "body": "策略判断受可用统计影响，先核对估计与实际工作集再试参数。",
+          "boundary": "不是所有临时来源都可用同样的ANALYZE命令补统计。"
+        },
+        {
+          "id": "l7-broadcast-threshold/memory",
+          "title": "小压缩文件也可能占大内存",
+          "body": "广播容量与实际构建关系、并发和节点内存有关，而不是单看压缩文件。",
+          "boundary": "计划统计也不是运行内存上限。"
+        },
+        {
+          "id": "l7-broadcast-threshold/support",
+          "title": "没有等值键仍要看算法支持",
+          "body": "广播建议与具体连接算法不同，连接条件和类型仍约束实现。",
+          "boundary": "先保证正确保留规则和匹配基数。"
+        },
+        {
+          "id": "l7-broadcast-threshold/rollback",
+          "title": "阈值变大后更慢",
+          "body": "优化以正确结果和目标指标评价，实施、容量与收益分开验收。",
+          "boundary": "同条件重复试验减少偶然波动影响。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l7-aqe": {
+      "title": "看到最终路线，再解释自适应",
+      "sections": [
+        {
+          "id": "l7-aqe/check",
+          "title": "先确认实际配置",
+          "body": "先查实际配置与版本，再看执行后是否有相关调整。",
+          "boundary": "本课以3.5.7文档为语义参考，实跑版本另记。"
+        },
+        {
+          "id": "l7-aqe/final",
+          "title": "false不表示失败",
+          "body": "AQE初始计划可能与执行后不同，应核对同一目标查询的最终证据。",
+          "boundary": "action本身也可能改变实际执行的查询，注意比较对象。"
+        },
+        {
+          "id": "l7-aqe/coalesce",
+          "title": "很多小分区被合并",
+          "body": "合并小分区可降低某些管理成本，但要核对实际调整与工作负载。",
+          "boundary": "结果、资源和耗时分别验收。"
+        },
+        {
+          "id": "l7-aqe/limits",
+          "title": "AQE会修复错误JOIN吗",
+          "body": "自适应优化应保持原查询语义，不能替代业务质量与基数验证。",
+          "boundary": "有错语义即使更快，也不是成功。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l7-skew-tuning": {
+      "title": "长尾的治疗也要保留业务事实",
+      "sections": [
+        {
+          "id": "l7-skew-tuning/diagnose",
+          "title": "最大值很高先定性吗",
+          "body": "将长尾与键、字节、spill、匹配基数和其他异常一起核对。",
+          "boundary": "合成症状不是生产基准或唯一诊断。"
+        },
+        {
+          "id": "l7-skew-tuning/weighted",
+          "title": "拆开后能直接平均均值吗",
+          "body": "拆分聚合必须保留可正确合并的状态，AVG可用sum/count还原，不能一般地平均局部均值。",
+          "boundary": "NULL与分母约定也要保持一致。"
+        },
+        {
+          "id": "l7-skew-tuning/salt",
+          "title": "单边加盐会有什么风险",
+          "body": "salting需要一致的匹配策略与结果还原，并验证逐组指标与业务粒度。",
+          "boundary": "它有膨胀和复杂度成本，不是所有长尾的首选。"
+        },
+        {
+          "id": "l7-skew-tuning/null",
+          "title": "未知键是否能直接删",
+          "body": "异常/缺失键处理必须与业务约定一致，优化不得悄悄改变指标分母。",
+          "boundary": "若业务允许排除，也应记录规则与数量。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l7-read-less-data": {
+      "title": "少做无用功，也要守住语义",
+      "sections": [
+        {
+          "id": "l7-read-less-data/columns",
+          "title": "缓存之后，选列就完全没意义了吗",
+          "body": "Spark SQL列式缓存可按所需列扫描；减少无用字段与缓存复用是不同层次。",
+          "boundary": "具体收益要看源、缓存和算子路径。"
+        },
+        {
+          "id": "l7-read-less-data/pushdown",
+          "title": "下推有痕迹还要读残余条件",
+          "body": "数据源能力与具体表达式决定下推，残余过滤仍可能必需。",
+          "boundary": "下推存在不直接证明实际读字节下降多少。"
+        },
+        {
+          "id": "l7-read-less-data/preaggregate",
+          "title": "先聚合再连接总等价吗",
+          "body": "提前聚合可减少某些工作，但只有在粒度、过滤和匹配规则允许时才能保持结果。",
+          "boundary": "外连接、重复键和非可加指标尤其要验证。"
+        },
+        {
+          "id": "l7-read-less-data/reuse",
+          "title": "一次性小计算也要缓存吗",
+          "body": "缓存是有代价的复用策略，不能把cache当作所有慢作业的默认第一步。",
+          "boundary": "没有复用或便宜重算时，收益可能不足。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-performance-tuning.html"
+        }
+      ]
+    },
+    "l7-comprehensive": {
+      "title": "准备练习：让每项建议都能被复核",
+      "sections": [
+        {
+          "id": "l7-comprehensive/contract",
+          "title": "先锁定要守住的结果",
+          "body": "调优实验先定义业务不变量，再解释哪些工作可能被消除。",
+          "boundary": "总计正确也可能掩盖逐组错分。"
+        },
+        {
+          "id": "l7-comprehensive/symptom",
+          "title": "看见Python边界，假设还需实测",
+          "body": "将可表达的逻辑换成内置是可检验假设，采用与收益需要分别验证。",
+          "boundary": "不要在小样本计时上作生产保证。"
+        },
+        {
+          "id": "l7-comprehensive/compare",
+          "title": "一次改六个参数，收益从哪来",
+          "body": "诊断与调优需要可重复实验，明确数据、配置、缓存和资源条件。",
+          "boundary": "必要组合改动也应说明交互与验证计划。"
+        },
+        {
+          "id": "l7-comprehensive/rollback",
+          "title": "没有收益，也要算有效实验",
+          "body": "实验可以否定假设，回退和清楚记录比参数堆叠更可靠。",
+          "boundary": "不要通过改变业务口径伪造收益。"
+        },
+        {
+          "id": "l7-comprehensive/scope",
+          "title": "哪种PASS真的经过验证",
+          "body": "自动化检查覆盖明确的结果与结构；自由诊断的合理性不能被非空检查冒充评分。",
+          "boundary": "学习效果仍需真实使用与独立情境验证。"
+        },
+        {
+          "id": "l7-comprehensive/next",
+          "title": "换数据也要成立",
+          "body": "最终交付同时给出可运行实现、明确限制与下一步验证计划。",
+          "boundary": "本地验证不覆盖所有版本或大规模资源场景。"
         }
       ],
       "sources": [

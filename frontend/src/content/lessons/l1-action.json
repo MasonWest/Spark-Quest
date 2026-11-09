@@ -1,0 +1,226 @@
+{
+  "slug": "l1-action",
+  "version": 1,
+  "title": "什么时候真的请求结果",
+  "mission": "选 count、take 或 collect，分清结果规模和副作用。",
+  "correction": "action 不只把数据交给 Driver，也可能保存或执行分区逻辑；一次 action 不保证严格一个 job，外部写入也不自动 exactly-once。",
+  "source": "https://spark.apache.org/docs/3.5.7/rdd-programming-guide.html",
+  "next": "先用新输入验证你的判断，再继续下一课。正式成绩与本机练习记录分开。",
+  "tasks": [
+    {
+      "id": "l1-action/count",
+      "knowledgeIds": [
+        "l1-action/count"
+      ],
+      "title": "只想知道有几条",
+      "intro": "输入六个元素，只需要数量。",
+      "code": "rdd.__A__()",
+      "prompt": "A 最直接选什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "collect 后在 Driver 全部存下",
+              "feedback": "为了数量收集全部元素没有必要。"
+            },
+            {
+              "id": "o2",
+              "text": "map",
+              "feedback": "map 返回新 RDD，不直接返回条数。"
+            },
+            {
+              "id": "o1",
+              "text": "count",
+              "feedback": "对，返回数量而非全表元素。"
+            }
+          ]
+        }
+      ],
+      "insight": "count 返回计数，collect 将全部结果收集到 Driver；选接口先看所需结果规模。",
+      "ability": "只想知道有几条",
+      "reading": {
+        "id": "l1-action/count/reading",
+        "title": "只想知道有几条",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "count 返回计数，collect 将全部结果收集到 Driver；选接口先看所需结果规模。",
+        "boundary": "count 仍可能需要执行上游工作，不等于免费元数据查询。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-action/collect",
+      "knowledgeIds": [
+        "l1-action/collect"
+      ],
+      "title": "十亿条结果能直接搬到 Driver 吗",
+      "intro": "Driver 容量有限，只想先看几条。",
+      "code": "all_rows=rdd.collect()",
+      "prompt": "更稳妥的做法是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o1",
+              "text": "用有界样本/少量结果检查，完整交付另定方式",
+              "feedback": "对，明确结果规模。"
+            },
+            {
+              "id": "o0",
+              "text": "直接收全表，Spark 保证 Driver 装得下",
+              "feedback": "collect 不提供无限内存。"
+            },
+            {
+              "id": "o2",
+              "text": "只把变量名改短",
+              "feedback": "变量名不改变数据量。"
+            }
+          ]
+        }
+      ],
+      "insight": "collect 适用于已知很小的教学结果或有界产物，不应无条件搬运海量明细。",
+      "ability": "十亿条结果能直接搬到 Driver 吗",
+      "reading": {
+        "id": "l1-action/collect/reading",
+        "title": "十亿条结果能直接搬到 Driver 吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "collect 适用于已知很小的教学结果或有界产物，不应无条件搬运海量明细。",
+        "boundary": "take 限制返回量，但上游成本仍由查询决定，也不代表均匀随机抽样。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      },
+      "remediation": {
+        "id": "l1-action/collect-transfer",
+        "knowledgeId": "l1-action/collect",
+        "title": "只看三条，不必收全部",
+        "intro": "用另一份材料判断同一个问题。",
+        "code": "上游有百万记录，只需要有限预览。",
+        "prompt": "哪种目标更合适？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r1",
+          "options": [
+            {
+              "id": "r0",
+              "text": "collect 全部再切片",
+              "feedback": "切片前已收集全部。"
+            },
+            {
+              "id": "r1",
+              "text": "请求有限条结果并评估上游代价",
+              "feedback": "对，返回规模应有界。"
+            },
+            {
+              "id": "r2",
+              "text": "所有记录必须存在 Driver",
+              "feedback": "分布式数据不要求这样收集。"
+            }
+          ]
+        },
+        "insight": "按目标限制 Driver 接收规模；计数不需要收集全部记录内容。"
+      }
+    },
+    {
+      "id": "l1-action/foreach",
+      "knowledgeIds": [
+        "l1-action/foreach"
+      ],
+      "title": "闭包里追加，Driver 列表会跟着变吗",
+      "intro": "在分布式任务里运行函数。",
+      "code": "seen=[]\nrdd.foreach(lambda x: seen.append(x))",
+      "prompt": "能把它当 Driver 收集接口吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，闭包天然共享同一个列表",
+              "feedback": "分布式任务不提供该共享列表语义。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，任务中的闭包与 Driver 状态不能这样当共享结果",
+              "feedback": "对，需采用适合的结果/聚合接口。"
+            },
+            {
+              "id": "o2",
+              "text": "会自动按序返回 seen",
+              "feedback": "foreach 不返回这样的有序集合。"
+            }
+          ]
+        }
+      ],
+      "insight": "任务闭包的副作用不等于可靠的 Driver 汇总；外部副作用还可能受重试影响。",
+      "ability": "闭包里追加，Driver 列表会跟着变吗",
+      "reading": {
+        "id": "l1-action/foreach/reading",
+        "title": "闭包里追加，Driver 列表会跟着变吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "任务闭包的副作用不等于可靠的 Driver 汇总；外部副作用还可能受重试影响。",
+        "boundary": "不要把本地偶然表现外推为集群共享状态或 exactly-once 保证。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    },
+    {
+      "id": "l1-action/again",
+      "knowledgeIds": [
+        "l1-action/again"
+      ],
+      "title": "count 之后已经自动缓存了吗",
+      "intro": "先 count，再 take，未显式选择持久化。",
+      "code": "rdd.count()\nrdd.take(2)",
+      "prompt": "能保证第二次完全不算上游吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o1",
+          "options": [
+            {
+              "id": "o0",
+              "text": "能，任何 action 都自动缓存",
+              "feedback": "action 不是自动全量缓存承诺。"
+            },
+            {
+              "id": "o2",
+              "text": "第二个 action 必报错",
+              "feedback": "多个 action 可以合法调用。"
+            },
+            {
+              "id": "o1",
+              "text": "不能，复用/重算与持久化和执行条件有关",
+              "feedback": "对，是否复用要看实际策略。"
+            }
+          ]
+        }
+      ],
+      "insight": "请求结果和保存可复用状态是两回事，多次 action 可能重复部分工作。",
+      "ability": "count 之后已经自动缓存了吗",
+      "reading": {
+        "id": "l1-action/again/reading",
+        "title": "count 之后已经自动缓存了吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么 Spark 需要它】",
+        "connection": "请求结果和保存可复用状态是两回事，多次 action 可能重复部分工作。",
+        "boundary": "持久化也可能因逐出、失败或未物化而不能避免全部重算。",
+        "caution": "此处保留旧讲义。惰性执行、容错、缓存、默认参数与性能的简化说法，请以当前标准讲解的条件和边界为准。"
+      }
+    }
+  ]
+}
