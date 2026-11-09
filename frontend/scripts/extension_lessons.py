@@ -150,6 +150,8 @@ def apply_continuity(lessons,guides,delayed):
             lessons[slug]['version']=max(lessons[slug]['version'],version);lessons[slug][key]=text
     guides['version']=max(guides['version'],6)
     delayed['version']=max(delayed['version'],6)
+    from question_polish import apply as apply_question_polish
+    apply_question_polish(lessons,guides,delayed)
 
 
 def extension_specs(lessons):

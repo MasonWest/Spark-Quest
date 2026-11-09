@@ -4,6 +4,7 @@ export interface Attempt {
   runId: string; taskId: string; answers: Record<string, string>;
   correctOptions: Record<string, string>; correct: boolean; at: string;
   activity?: "remediation"; remediationId?: string; knowledgeId?: string;
+  responses?: Record<string, string>;
 }
 export interface JourneyProgress {
   version: number; runId: string; cursorId: string | null;

@@ -1,27 +1,27 @@
 {
   "l1-action": {
-    "version": 2,
-    "hash": "a7ca0b3b04f661bb47e10cf608b12a2b6722069cac584a22cd669cd9f04d083b"
+    "version": 3,
+    "hash": "298e3c441856dc568300e462953ba6eaf02426c5993081a7d2ac5ce48876de54"
   },
   "l1-lazy-evaluation": {
-    "version": 2,
-    "hash": "eaf20fcb0b24d3a9ea1b0d333ecb1d348e9549d30a44e612203519fde8ccfa83"
+    "version": 3,
+    "hash": "e7aa14cd0123ce27afdda5eae3bb7bc5ac86d90dfbb5a2986705b65af2838c46"
   },
   "l1-rdd-exercise": {
-    "version": 2,
-    "hash": "e29300af425a40f148674c87045f6cb627c96eeae0609e40cbb69ab7a0960518"
+    "version": 3,
+    "hash": "4ae57a3a30d56cdd71bac7da66160b772ad7043d4eca44fcafd0077ba3cc9bc6"
   },
   "l1-transformation": {
-    "version": 1,
-    "hash": "6d40aa1c9904c1fc6c1093b10a387625740986acfccb4cbacaf55d6d79a1af36"
+    "version": 3,
+    "hash": "cf569b3ab477b2ccaf2b57bf3add394ebe44749e6acac6b25702022de601e723"
   },
   "l1-what-is-rdd": {
-    "version": 2,
-    "hash": "6b7cccbe295532ac71c47e32fa17767f012124079547995498c4cbf8d84d2e45"
+    "version": 3,
+    "hash": "5af71e93ce33e3cafe5b7dfd090e03dfce6f3c1d92eb95466e679f7a81c9cbb2"
   },
   "l1-why-dataframe-replaces-rdd": {
-    "version": 2,
-    "hash": "6b71bf3bab224aafc70d16b495b6a03be920dd2e8127560668dddb9ac916ea0a"
+    "version": 4,
+    "hash": "a9c849f6f5e614c49b0a424b86d01c1f0818eeb3f3cae37a339714788a8f1401"
   },
   "l2-comprehensive": {
     "version": 3,
@@ -176,88 +176,88 @@
     "hash": "355c3b1dd53b4d79969d36e7a3fec9627130306abdcc47ac9628d4259f4fee1e"
   },
   "l6-broadcast-hash-join": {
-    "version": 2,
-    "hash": "b2f3b636b0007bf7563240778431603e82662f8e8a7096c716726733ff0f6ef9"
+    "version": 3,
+    "hash": "97ebe9a287e0f2033a91ac4e05497ea52dc1e9c04cc0d701e1c0c49dec3655b5"
   },
   "l6-broadcast-hint-and-control": {
-    "version": 1,
-    "hash": "bb600aea705d0a5b3f17ebed020c1c77b8263ded1be33c065ae3e4437c1d8b62"
+    "version": 3,
+    "hash": "322da829cc4867f1c75c19e3941e35342fd6a86cd46076bc512d546b5946d22d"
   },
   "l6-comprehensive": {
-    "version": 2,
-    "hash": "83c9f38b8b7e344044a7e1de3e02f8971beb2e53b5c8b372aa2b45b37c649c04"
+    "version": 3,
+    "hash": "247f973ec07b89efe6d2b49a574906860d20d7c46d91780ba94a0a32446ef30a"
   },
   "l6-how-spark-chooses": {
-    "version": 1,
-    "hash": "1afdb1a02fbe63dc84c8d4ae65ffb315f7d6cb9a195b74003012cc6e450e95f6"
+    "version": 3,
+    "hash": "aabe6dc4ec5ad23120a06a813f7c407dbe59e3ddecfa266b745ac42d955b1382"
   },
   "l6-join-data-skew": {
-    "version": 2,
-    "hash": "b5569aa4114ea1a5f120f5eada758f6355c9cdc08bd5b7649e125cf636152daa"
+    "version": 3,
+    "hash": "1ba2e44a7e145d5060f61d86666ab4bd9f6e285a3134ab2d8e1c39720dd79514"
   },
   "l6-join-strategies-overview": {
-    "version": 2,
-    "hash": "b713b6df6b1da803033f9b4a137dbbb0f32c0cab76ccfa04191b31a833164a15"
+    "version": 3,
+    "hash": "de8846e799824240b63ba06b129a7f2fa9d839569b0159671f737bbf8afd135d"
   },
   "l6-shuffle-hash-join": {
-    "version": 1,
-    "hash": "a76e49132c3511869c0f00af38f924a570f72297fa50dfc5fa582fc60116ac10"
+    "version": 3,
+    "hash": "b5fa8add5e215256abc2a61bec8c1dc1205d2c195816d1c30146292210a83e2d"
   },
   "l6-sort-merge-join": {
-    "version": 1,
-    "hash": "50a8a4f5023a6aa7b19d51fba0bd18a93c503525c480c182d4be158d0b8ee599"
+    "version": 3,
+    "hash": "b4f2a1f49eed03a218cc5e8d8b33c10c3fc4cb5625c7cccee7b9461829c8acc1"
   },
   "l6-what-is-join": {
-    "version": 2,
-    "hash": "20887ca59ee4f9752304cefe4f0e359b8d0beb74edd30f3333788bb9e4570da6"
+    "version": 4,
+    "hash": "95cab98aa5db8610da894ec9fb93c1dbb73c5961e195afcef0fca2112b8a53ee"
   },
   "l7-aqe": {
-    "version": 1,
-    "hash": "faf6cc9f66ed531ef354435ed60deb2c838b9ea78cbe7164855a75108f3bbe7c"
+    "version": 3,
+    "hash": "593c221efd34015cf4ea49f11e81d69bdc2da9f1289376f410f8bb85622573ce"
   },
   "l7-broadcast-threshold": {
-    "version": 1,
-    "hash": "d3c2ef7d4618f856ae151bd545a2af647feb3ec25d947f7b87f3182d67b9393c"
+    "version": 3,
+    "hash": "6f0c4e355758127c1105dcdff34713181777615451abd5de9780486b5cec8cdb"
   },
   "l7-cache-lifecycle": {
-    "version": 1,
-    "hash": "7015004f86a70e3379ae139b1ea7f5847f223ae5ee06f7d7e36065f4b1df986c"
+    "version": 3,
+    "hash": "2f5ceaf74b3d5212a7680c2b4d732565539f18c131e48728ab4653e0fc9c39ec"
   },
   "l7-comprehensive": {
-    "version": 1,
-    "hash": "38f04614381594371cf0c09bf5f1070a45e08897971c4da4b9238aea086bb624"
+    "version": 3,
+    "hash": "fc3d187b6bd95fa00e95615c0d6142ab80ac9a847240146516c9ebc599e9633d"
   },
   "l7-executor-memory": {
-    "version": 3,
-    "hash": "94f48b20cbdff303eda71808f59d402769678f3ca9233726eff719d9320c6d91"
+    "version": 4,
+    "hash": "9fae0c86252c7ecc97311f666b35031dbb1f997d7ee30c7dec25b06960643bf6"
   },
   "l7-read-less-data": {
-    "version": 1,
-    "hash": "7abe588e3210620263e4de55433b59d1a20b0b7871466facdccf73e6f2dc9a4d"
+    "version": 3,
+    "hash": "d97d7b3ba7dbf85db62279ea82e3e18e16fcffad4be301171e84f64467878a80"
   },
   "l7-shuffle-partitions": {
-    "version": 2,
-    "hash": "ee656639dcbb93c68b186485084028d20f41f76e50f71b6753ba56b37981a714"
+    "version": 3,
+    "hash": "f6d05a578bd66336a3a8523ad961829987a7112c6ce6fbe18f5d96c6d52cc366"
   },
   "l7-skew-tuning": {
-    "version": 1,
-    "hash": "5720069096a630ddf623411102e615758770079557a1d06f5b16247b384b900b"
+    "version": 3,
+    "hash": "956492ef85871b3a537ac11b25047183f185af2018b6693a8281aeb46d0fe221"
   },
   "l7-tungsten-encoding": {
-    "version": 1,
-    "hash": "2db006ca94ff7fd19f379ed67a7f4d1d9924182acb8c50be3c5d004af9498b9c"
+    "version": 3,
+    "hash": "06ec5a8ee4e93ba61c7bc789d701c8932a80805bd0ac9ad65dee8802fa15ba31"
   },
   "l7-what-is-tuning": {
-    "version": 3,
-    "hash": "6e702ba1a59ccedd2c94ac378cdb6796908db7cf2ccac08d00defb5dd75b7fd4"
+    "version": 4,
+    "hash": "aa8a2d53d5ad57882f2105fe905f99ba5197636a107ba1d5722f153df24f07a9"
   },
   "delayed-checks": {
     "version": 6,
     "hash": "c15b4589b62a6f49074ceadf4d34e295dc6bd319f2af68b459cdc127fdcb824d"
   },
   "standard-guides": {
-    "version": 6,
-    "hash": "65823f3adbdcf57e9b2ac4d3ce49c1550e05803583cf885797ad6e30bca00755"
+    "version": 8,
+    "hash": "29b5fdf62d26f40b355b973cc7062d5d9c64ed65ed3b7519e149f2bd005316ba"
   },
   "capstones": {
     "version": 5,

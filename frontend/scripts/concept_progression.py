@@ -247,6 +247,8 @@ if __name__=='__main__':
     guides=json.loads((root/'standardGuides.json').read_text(encoding='utf-8'))
     delayed=json.loads((root/'delayedChecks.json').read_text(encoding='utf-8'))
     apply(lessons,guides,delayed)
+    from question_polish import apply as apply_question_polish
+    apply_question_polish(lessons,guides,delayed)
     outputs={root/'lessons'/f'{slug}.json':l for slug,l in lessons.items() if slug in REVISIONS}
     outputs.update({root/'standardGuides.json':guides,root/'delayedChecks.json':delayed})
     for path,data in outputs.items():

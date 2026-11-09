@@ -37,7 +37,11 @@ with sync_playwright() as p:
   page.set_viewport_size({'width':390,'height':844})
   page.screenshot(path=str(out/(slug+'-390.png')),full_page=True)
   for n,expected in enumerate(steps):
-   if page.locator('.lj-field select').count():
+   if page.locator('.lj-field input').count():
+    assert page.get_by_role('button',name='检查判断').is_disabled()
+    assert page.get_by_role('radio').count()==0
+    for i,f in enumerate(content[slug]['tasks'][n]['fields']):page.locator('.lj-field input').nth(i).fill('999')
+   elif page.locator('.lj-field select').count():
     for i,index in enumerate(expected):page.locator('.lj-field select').nth(i).select_option(content[slug]['tasks'][n]['fields'][i]['options'][(index+1)%3]['id'])
    else:
     assert page.get_by_role('button',name='检查判断').is_disabled()
@@ -46,7 +50,10 @@ with sync_playwright() as p:
    assert page.get_by_role('status').is_visible()
    assert page.get_by_role('button',name='继续下一步 →').count()==0
    page.get_by_role('button',name='先重试原题' if content[slug]['tasks'][n].get('remediation') else '调整后再试').click()
-   if page.locator('.lj-field select').count():
+   if page.locator('.lj-field input').count():
+    for i,f in enumerate(content[slug]['tasks'][n]['fields']):page.locator('.lj-field input').nth(i).fill(f['input']['acceptedAnswers'][0])
+    page.screenshot(path=str(out/(slug+'-input-'+str(n)+'-390.png')),full_page=True)
+   elif page.locator('.lj-field select').count():
     for i,index in enumerate(expected):page.locator('.lj-field select').nth(i).select_option(content[slug]['tasks'][n]['fields'][i]['options'][index]['id'])
    else:page.get_by_role('radio').nth(expected[0]).check()
    page.get_by_role('button',name='检查判断').click()

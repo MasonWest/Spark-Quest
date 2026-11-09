@@ -339,7 +339,8 @@ def build():
                 assert len(set(options))==4,(slug,key,variant,options)
                 ordinal+=1
         lessons.append(dict(lesson_slug=slug,questions=questions))
-    return dict(version=1,scope='L3-L6',lessons=lessons)
+    from question_polish import apply
+    return apply(dict(version=1,scope='L3-L6',lessons=lessons))
 
 if __name__=='__main__':
     data=build();path=Path(__file__).parent/'app/l3_l6_reviewed_bank.json'

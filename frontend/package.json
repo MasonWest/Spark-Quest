@@ -11,7 +11,7 @@
     "check:css:all": "node scripts/check-css-namespace.mjs --all",
     "test:weak-grouping": "node --test scripts/weak-grouping.test.ts",
     "check:content": "node scripts/check-journey-content.mjs",
-    "test:journey": "node --test scripts/journey-progress.test.mjs",
+    "test:journey": "node --test scripts/journey-progress.test.mjs scripts/journey-answer.test.mjs",
     "prebuild": "npm run check:content"
   },
   "dependencies": {

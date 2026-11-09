@@ -1,5 +1,8 @@
 export interface JourneyOption { id: string; text: string; feedback: string }
-export interface AnswerField { id: string; label: string; options: JourneyOption[]; correctOptionId: string }
+export interface AnswerField {
+  id: string; label: string; options: JourneyOption[]; correctOptionId: string;
+  input?: { kind: "integer" | "text"; acceptedAnswers: string[]; placeholder: string; incorrectOptionId: string };
+}
 export interface JourneyRemedy {
   id: string; knowledgeId: string; title: string; intro: string; code: string;
   prompt: string; field: AnswerField; insight: string;

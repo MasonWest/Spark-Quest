@@ -1,7 +1,7 @@
 {
   "l1-action": {
     "slug": "l1-action",
-    "version": 2,
+    "version": 3,
     "title": "什么时候真的请求结果",
     "tasks": [
       {
@@ -20,7 +20,7 @@
   },
   "l1-lazy-evaluation": {
     "slug": "l1-lazy-evaluation",
-    "version": 2,
+    "version": 3,
     "title": "还没取结果，先把路线写清",
     "tasks": [
       {
@@ -39,7 +39,7 @@
   },
   "l1-rdd-exercise": {
     "slug": "l1-rdd-exercise",
-    "version": 2,
+    "version": 3,
     "title": "准备练习：把文本变成可核对的词频",
     "tasks": [
       {
@@ -70,7 +70,7 @@
   },
   "l1-transformation": {
     "slug": "l1-transformation",
-    "version": 1,
+    "version": 3,
     "title": "先写加工规则，再预测结果",
     "tasks": [
       {
@@ -89,7 +89,7 @@
   },
   "l1-what-is-rdd": {
     "slug": "l1-what-is-rdd",
-    "version": 2,
+    "version": 3,
     "title": "把一批数字交给分布式计算",
     "tasks": [
       {
@@ -111,7 +111,7 @@
   },
   "l1-why-dataframe-replaces-rdd": {
     "slug": "l1-why-dataframe-replaces-rdd",
-    "version": 2,
+    "version": 4,
     "title": "结构化问题，先选能表达语义的工具",
     "tasks": [
       {
@@ -955,7 +955,7 @@
   },
   "l6-broadcast-hash-join": {
     "slug": "l6-broadcast-hash-join",
-    "version": 2,
+    "version": 3,
     "title": "小表广播，先问装得下吗",
     "tasks": [
       {
@@ -977,7 +977,7 @@
   },
   "l6-broadcast-hint-and-control": {
     "slug": "l6-broadcast-hint-and-control",
-    "version": 1,
+    "version": 3,
     "title": "给建议，也要核对执行",
     "tasks": [
       {
@@ -996,7 +996,7 @@
   },
   "l6-comprehensive": {
     "slug": "l6-comprehensive",
-    "version": 2,
+    "version": 3,
     "title": "准备练习：交付不丢不重的补维汇总",
     "tasks": [
       {
@@ -1021,7 +1021,7 @@
   },
   "l6-how-spark-chooses": {
     "slug": "l6-how-spark-chooses",
-    "version": 1,
+    "version": 3,
     "title": "统计、配置、适用条件一起决定路线",
     "tasks": [
       {
@@ -1040,7 +1040,7 @@
   },
   "l6-join-data-skew": {
     "slug": "l6-join-data-skew",
-    "version": 2,
+    "version": 3,
     "title": "一个键拖住了整条连接",
     "tasks": [
       {
@@ -1059,7 +1059,7 @@
   },
   "l6-join-strategies-overview": {
     "slug": "l6-join-strategies-overview",
-    "version": 2,
+    "version": 3,
     "title": "同一个连接，几条执行路线",
     "tasks": [
       {
@@ -1081,7 +1081,7 @@
   },
   "l6-shuffle-hash-join": {
     "slug": "l6-shuffle-hash-join",
-    "version": 1,
+    "version": 3,
     "title": "按分区建哈希，也要装得下",
     "tasks": [
       {
@@ -1100,7 +1100,7 @@
   },
   "l6-sort-merge-join": {
     "slug": "l6-sort-merge-join",
-    "version": 1,
+    "version": 3,
     "title": "有序相遇，排序与分布都要看",
     "tasks": [
       {
@@ -1119,7 +1119,7 @@
   },
   "l6-what-is-join": {
     "slug": "l6-what-is-join",
-    "version": 2,
+    "version": 4,
     "title": "连接先保正确，再谈快慢",
     "tasks": [
       {
@@ -1141,7 +1141,7 @@
   },
   "l7-aqe": {
     "slug": "l7-aqe",
-    "version": 1,
+    "version": 3,
     "title": "看到最终路线，再解释自适应",
     "tasks": [
       {
@@ -1160,7 +1160,7 @@
   },
   "l7-broadcast-threshold": {
     "slug": "l7-broadcast-threshold",
-    "version": 1,
+    "version": 3,
     "title": "不是把阈值抬高就叫优化",
     "tasks": [
       {
@@ -1179,7 +1179,7 @@
   },
   "l7-cache-lifecycle": {
     "slug": "l7-cache-lifecycle",
-    "version": 1,
+    "version": 3,
     "title": "缓存实践：从复用到释放",
     "tasks": [
       {
@@ -1210,7 +1210,7 @@
   },
   "l7-comprehensive": {
     "slug": "l7-comprehensive",
-    "version": 1,
+    "version": 3,
     "title": "准备练习：让每项建议都能被复核",
     "tasks": [
       {
@@ -1235,7 +1235,7 @@
   },
   "l7-executor-memory": {
     "slug": "l7-executor-memory",
-    "version": 3,
+    "version": 4,
     "title": "先分清谁在内存紧张",
     "tasks": [
       {
@@ -1272,7 +1272,7 @@
   },
   "l7-read-less-data": {
     "slug": "l7-read-less-data",
-    "version": 1,
+    "version": 3,
     "title": "少做无用功，也要守住语义",
     "tasks": [
       {
@@ -1291,7 +1291,7 @@
   },
   "l7-shuffle-partitions": {
     "slug": "l7-shuffle-partitions",
-    "version": 2,
+    "version": 3,
     "title": "用任务分布选下一次实验",
     "tasks": [
       {
@@ -1310,7 +1310,7 @@
   },
   "l7-skew-tuning": {
     "slug": "l7-skew-tuning",
-    "version": 1,
+    "version": 3,
     "title": "长尾的治疗也要保留业务事实",
     "tasks": [
       {
@@ -1329,7 +1329,7 @@
   },
   "l7-tungsten-encoding": {
     "slug": "l7-tungsten-encoding",
-    "version": 1,
+    "version": 3,
     "title": "对象少一些，不代表所有成本消失",
     "tasks": [
       {
@@ -1348,7 +1348,7 @@
   },
   "l7-what-is-tuning": {
     "slug": "l7-what-is-tuning",
-    "version": 3,
+    "version": 4,
     "title": "慢作业诊室：先证据，后处方",
     "tasks": [
       {

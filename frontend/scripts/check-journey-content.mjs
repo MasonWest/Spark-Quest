@@ -34,6 +34,12 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
       unique(f.options.map(o => o.text), `${file}/${t.id}/${f.id}`);
       requireThat(f.options.every(o => text(o.id) && text(o.text) && text(o.feedback)), `${file}/${t.id}: option missing feedback`);
       requireThat(f.options.some(o => o.id === f.correctOptionId), `${file}/${t.id}: dangling correctOptionId`);
+      if (f.input) {
+        requireThat(['integer','text'].includes(f.input.kind) && text(f.input.placeholder), `${file}/${t.id}: invalid input kind/label`);
+        requireThat(Array.isArray(f.input.acceptedAnswers) && f.input.acceptedAnswers.length > 0 && f.input.acceptedAnswers.every(text), `${file}/${t.id}: no accepted input`);
+        requireThat(f.input.incorrectOptionId !== f.correctOptionId && f.options.some(o => o.id === f.input.incorrectOptionId), `${file}/${t.id}: invalid incorrect input identity`);
+        requireThat(t.fields.every(field => field.input), `${file}/${t.id}: mixed inputs need a dedicated renderer`);
+      }
     }
     if (t.reading) {
       for (const k of ['sectionTitle', 'caution']) if (t.reading[k] !== undefined) requireThat(text(t.reading[k]), `${file}/${t.id}: empty reading ${k}`);

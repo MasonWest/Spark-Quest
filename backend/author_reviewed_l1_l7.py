@@ -113,7 +113,8 @@ def build():
                                prompt=f'{titles[slug]}：{prompt}',options=options,correct_index=correct,explanation=why,dimension=['concept','apply','mechanism','debug','transfer'][j]))
                 ordinal+=1
         lessons.append(dict(lesson_slug=slug,questions=qs))
-    return dict(version=1,scope='L1/L7',lessons=lessons)
+    from question_polish import apply
+    return apply(dict(version=1,scope='L1/L7',lessons=lessons))
 if __name__=='__main__':
     path=Path(__file__).parent/'app/l1_l7_reviewed_bank.json';text=json.dumps(build(),ensure_ascii=False,indent=2)+'\n'
     if '--check' in sys.argv:assert path.read_text(encoding='utf-8')==text

@@ -1,5 +1,5 @@
 {
-  "version": 6,
+  "version": 8,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -1809,7 +1809,7 @@
         {
           "id": "l1-action/collect",
           "title": "十亿条结果能直接搬到 Driver 吗",
-          "body": "collect 适用于已知很小的教学结果或有界产物，不应无条件搬运海量明细。",
+          "body": "take(5)请求至多5个元素，collect()先回传全部结果，本地切片来不及限制回传规模。有界返回仍可能需要较多上游工作，也不保证随机抽样或全局排名。",
           "boundary": "take 限制返回量，但上游成本仍由查询决定，也不代表均匀随机抽样。"
         },
         {
@@ -1885,7 +1885,7 @@
         {
           "id": "l1-why-dataframe-replaces-rdd/still-rdd",
           "title": "RDD 什么时候仍有意义",
-          "body": "DataFrame 是结构化任务常用入口，RDD 仍服务特定低层处理；避免绝对接口排名。",
+          "body": "按需求选择接口，核对转换边界和资源成本。改写先验证结果；使用DataFrame不自动证明业务正确，也不承诺固定性能收益，仍需同条件代表性测量。",
           "boundary": "选低层控制也意味着更多类型、资源和语义责任。"
         },
         {

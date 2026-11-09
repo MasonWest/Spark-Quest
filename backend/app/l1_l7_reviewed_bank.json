@@ -1,169 +1,179 @@
 {
-  "version": 1,
+  "version": 3,
   "scope": "L1/L7",
   "lessons": [
     {
       "lesson_slug": "l1-what-is-rdd",
       "questions": [
         {
-          "key": "l1-what-is-rdd/partition/assessment-v1",
-          "knowledge_id": "l1-what-is-rdd/partition",
+          "key": "l1-what-is-rdd/parts/assessment-v2",
+          "knowledge_id": "l1-what-is-rdd/parts",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 是什么：local[2]里有5个分区，就有5台机器吗？",
+          "prompt": "sc.parallelize([2,4,6,8,10,12],3)在local[2]中创建。能确定的是？",
           "options": [
-            "不能，分区与资源不同",
-            "能，严格一分区一机器",
-            "能，分区就是线程",
-            "只能存在一个分区"
+            "3个分区",
+            "3台机器",
+            "3个同时运行的任务",
+            "每个分区必定1个元素"
           ],
           "correct_index": 0,
-          "explanation": "计算份数不是机器、线程或同时运行任务的保证。",
-          "dimension": "concept"
+          "explanation": "分区是数据的逻辑份数，并发还取决于可用资源。",
+          "dimension": "concept",
+          "task_id": "l1-what-is-rdd/parts"
         },
         {
-          "key": "l1-what-is-rdd/partition/review-v1",
-          "knowledge_id": "l1-what-is-rdd/partition",
+          "key": "l1-what-is-rdd/parts/review-v2",
+          "knowledge_id": "l1-what-is-rdd/parts",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 是什么：3个分区能直接证明3个并发槽位吗？",
+          "prompt": "12个元素分为4个分区、可用2个槽位。分区数代表什么？",
           "options": [
-            "能，严格一分区一机器",
-            "不能，分区与资源不同",
-            "能，分区就是线程",
-            "只能存在一个分区"
+            "4个并发槽位",
+            "4份逻辑数据",
+            "4份完整副本",
+            "4台物理机器"
           ],
           "correct_index": 1,
-          "explanation": "计算份数不是机器、线程或同时运行任务的保证。",
-          "dimension": "concept"
+          "explanation": "分区是数据的逻辑份数，并发还取决于可用资源。",
+          "dimension": "concept",
+          "task_id": "l1-what-is-rdd/parts"
         },
         {
-          "key": "l1-what-is-rdd/immutable/assessment-v1",
+          "key": "l1-what-is-rdd/immutable/assessment-v2",
           "knowledge_id": "l1-what-is-rdd/immutable",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 是什么：a有1、4，b=a.map加2，a请求结果仍是？",
+          "prompt": "a包含2、5；b=a.map(lambda x:x+3)。a请求结果仍是？",
           "options": [
-            "3、6",
-            "空结果",
-            "1、4",
-            "只能得到b的结果"
+            "5、8",
+            "3、3",
+            "2、5",
+            "只剩8"
           ],
           "correct_index": 2,
-          "explanation": "转换生成新RDD，不把原查询就地改写。",
-          "dimension": "apply"
+          "explanation": "转换生成新RDD，不就地修改原RDD。",
+          "dimension": "apply",
+          "task_id": "l1-what-is-rdd/immutable"
         },
         {
-          "key": "l1-what-is-rdd/immutable/review-v1",
+          "key": "l1-what-is-rdd/immutable/review-v2",
           "knowledge_id": "l1-what-is-rdd/immutable",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 是什么：a有3、6，b=a.map乘3，a请求结果仍是？",
+          "prompt": "a包含4、9；b=a.filter(lambda x:x>5)。随后a.count()是多少？",
           "options": [
-            "9、18",
-            "空结果",
-            "只能得到b的结果",
-            "3、6"
+            "1",
+            "0",
+            "9",
+            "2"
           ],
           "correct_index": 3,
-          "explanation": "转换生成新RDD，不把原查询就地改写。",
-          "dimension": "apply"
+          "explanation": "转换生成新RDD，不就地修改原RDD。",
+          "dimension": "apply",
+          "task_id": "l1-what-is-rdd/immutable"
         },
         {
-          "key": "l1-what-is-rdd/lineage/assessment-v1",
-          "knowledge_id": "l1-what-is-rdd/lineage",
+          "key": "l1-what-is-rdd/recover/assessment-v2",
+          "knowledge_id": "l1-what-is-rdd/recover",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 是什么：分区丢失、上游可读且计算可重算，恢复依据？",
+          "prompt": "没有缓存副本或检查点，某分区丢失；上游仍可读，转换可重算。重建依据是？",
           "options": [
-            "血缘和可重算上游",
-            "永久备份了所有结果",
-            "只按分区号猜数值",
-            "Python变量名含完整数据"
+            "血缘依赖",
+            "结果排序",
+            "分区编号",
+            "Driver变量名"
           ],
           "correct_index": 0,
-          "explanation": "血缘记录依赖与计算，恢复有条件且有成本。",
-          "dimension": "mechanism"
+          "explanation": "血缘记录依赖和计算规则，重算仍需要可用上游。",
+          "dimension": "mechanism",
+          "task_id": "l1-what-is-rdd/recover"
         },
         {
-          "key": "l1-what-is-rdd/lineage/review-v1",
-          "knowledge_id": "l1-what-is-rdd/lineage",
+          "key": "l1-what-is-rdd/recover/review-v2",
+          "knowledge_id": "l1-what-is-rdd/recover",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 是什么：缓存丢失后重建所需贡献，依赖什么信息？",
+          "prompt": "重算需要的源文件已不可读。仅有血缘能保证恢复原值吗？",
           "options": [
-            "永久备份了所有结果",
-            "血缘和可重算上游",
-            "只按分区号猜数值",
-            "Python变量名含完整数据"
+            "能，从编号恢复",
+            "不能保证",
+            "能，从函数名恢复",
+            "能，补零即可"
           ],
           "correct_index": 1,
-          "explanation": "血缘记录依赖与计算，恢复有条件且有成本。",
-          "dimension": "mechanism"
+          "explanation": "血缘记录依赖和计算规则，重算仍需要可用上游。",
+          "dimension": "mechanism",
+          "task_id": "l1-what-is-rdd/recover"
         },
         {
-          "key": "l1-what-is-rdd/cache/assessment-v1",
-          "knowledge_id": "l1-what-is-rdd/cache",
+          "key": "l1-what-is-rdd/storage/assessment-v2",
+          "knowledge_id": "l1-what-is-rdd/storage",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 是什么：仅创建RDD就能保证全部结果常驻内存吗？",
+          "prompt": "只创建RDD、未调用cache或persist。哪项有证据？",
           "options": [
-            "能，RDD默认永久缓存",
-            "能，所有数据在Driver",
-            "不能，抽象与存储分开",
-            "只要分区多就无须内存"
+            "所有分区已缓存",
+            "首分区已缓存",
+            "已有RDD定义",
+            "结果已永久写出"
           ],
           "correct_index": 2,
-          "explanation": "创建、执行与缓存不是同一个操作。",
-          "dimension": "debug"
+          "explanation": "创建抽象不等于缓存或完成结果求值。",
+          "dimension": "debug",
+          "task_id": "l1-what-is-rdd/storage"
         },
         {
-          "key": "l1-what-is-rdd/cache/remediation-v1",
-          "knowledge_id": "l1-what-is-rdd/cache",
+          "key": "l1-what-is-rdd/storage/remediation-v2",
+          "knowledge_id": "l1-what-is-rdd/storage",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "RDD 是什么：没有选择持久化策略，可把RDD当永久内存备份吗？",
+          "prompt": "仅看到rdd变量存在，能确认哪件事？",
           "options": [
-            "能，RDD默认永久缓存",
-            "能，所有数据在Driver",
-            "只要分区多就无须内存",
-            "不能，抽象与存储分开"
+            "缓存已填满",
+            "磁盘副本已持久化",
+            "全部结果已回传",
+            "定义已创建"
           ],
           "correct_index": 3,
-          "explanation": "创建、执行与缓存不是同一个操作。",
-          "dimension": "debug"
+          "explanation": "创建抽象不等于缓存或完成结果求值。",
+          "dimension": "debug",
+          "task_id": "l1-what-is-rdd/storage"
         },
         {
-          "key": "l1-what-is-rdd/source/assessment-v1",
-          "knowledge_id": "l1-what-is-rdd/source",
+          "key": "l1-what-is-rdd/result/assessment-v2",
+          "knowledge_id": "l1-what-is-rdd/result",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 是什么：上游源已不可读，血缘能保证恢复一切吗？",
+          "prompt": "a为1、3，b=a.map(lambda x:x*2)。分别请求后，b应包含？",
           "options": [
-            "不能，恢复有前提",
-            "能，血缘就是万能备份",
-            "能，变量仍在就能恢复",
-            "只要加分区就能解决"
+            "2、6",
+            "1、3",
+            "3、5",
+            "只有6"
           ],
           "correct_index": 0,
-          "explanation": "可用上游、确定性和外部一致性需要另行约定。",
-          "dimension": "transfer"
+          "explanation": "原查询保持不变，新查询按转换规则得到自己的结果。",
+          "dimension": "transfer",
+          "task_id": "l1-what-is-rdd/immutable"
         },
         {
-          "key": "l1-what-is-rdd/source/remediation-v1",
-          "knowledge_id": "l1-what-is-rdd/source",
+          "key": "l1-what-is-rdd/result/remediation-v2",
+          "knowledge_id": "l1-what-is-rdd/result",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "RDD 是什么：任意外部副作用能靠RDD血缘保证只发生一次吗？",
+          "prompt": "x为2、8，y=x.filter(lambda n:n<5)。请求y得到？",
           "options": [
-            "能，血缘就是万能备份",
-            "不能，恢复有前提",
-            "能，变量仍在就能恢复",
-            "只要加分区就能解决"
+            "2、8",
+            "2",
+            "8",
+            "0"
           ],
           "correct_index": 1,
-          "explanation": "可用上游、确定性和外部一致性需要另行约定。",
-          "dimension": "transfer"
+          "explanation": "原查询保持不变，新查询按转换规则得到自己的结果。",
+          "dimension": "transfer",
+          "task_id": "l1-what-is-rdd/immutable"
         }
       ]
     },
@@ -171,43 +181,45 @@
       "lesson_slug": "l1-transformation",
       "questions": [
         {
-          "key": "l1-transformation/map/assessment-v1",
+          "key": "l1-transformation/map/assessment-v2",
           "knowledge_id": "l1-transformation/map",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Transformation：输入2、5，map平方后请求结果？",
+          "prompt": "输入2、4、5，map(lambda x:x*x)请求结果后是？",
           "options": [
-            "2、5",
-            "只有最后一个",
-            "4、25",
-            "只有第一个"
+            "2、4、5",
+            "4、8、10",
+            "4、16、25",
+            "只有25"
           ],
           "correct_index": 2,
-          "explanation": "map对每个元素应用函数，不自动去重或截取。",
-          "dimension": "concept"
+          "explanation": "map对每个输入应用函数，各产生一个输出。",
+          "dimension": "concept",
+          "task_id": "l1-transformation/map"
         },
         {
-          "key": "l1-transformation/map/review-v1",
+          "key": "l1-transformation/map/review-v2",
           "knowledge_id": "l1-transformation/map",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Transformation：输入3、4，map平方后请求结果？",
+          "prompt": "输入1、3，map(lambda x:x+2)后有几个输出元素？",
           "options": [
-            "3、4",
-            "只有最后一个",
-            "只有第一个",
-            "9、16"
+            "1",
+            "3",
+            "5",
+            "2"
           ],
           "correct_index": 3,
-          "explanation": "map对每个元素应用函数，不自动去重或截取。",
-          "dimension": "concept"
+          "explanation": "map对每个输入应用函数，各产生一个输出。",
+          "dimension": "concept",
+          "task_id": "l1-transformation/map"
         },
         {
-          "key": "l1-transformation/flatmap/assessment-v1",
+          "key": "l1-transformation/flatmap/assessment-v2",
           "knowledge_id": "l1-transformation/flatmap",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Transformation：两行\"a b\"、\"b\"，flatMap空白分词后几条？",
+          "prompt": "输入\"red blue\"、\"red\"，flatMap(split)后有几个词元素？",
           "options": [
             "3",
             "2",
@@ -215,120 +227,128 @@
             "0"
           ],
           "correct_index": 0,
-          "explanation": "flatMap展开输出，不自动去重或计频。",
-          "dimension": "apply"
+          "explanation": "展开保留每次出现；空行split结果为空列表，不贡献词。",
+          "dimension": "apply",
+          "task_id": "l1-transformation/flatmap"
         },
         {
-          "key": "l1-transformation/flatmap/review-v1",
+          "key": "l1-transformation/flatmap/review-v2",
           "knowledge_id": "l1-transformation/flatmap",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Transformation：两行\"x\"、\"y z\"，flatMap空白分词后几条？",
+          "prompt": "输入\"\"、\"a a\"、\"b\"，flatMap(split)后有几个词元素？",
           "options": [
             "2",
             "3",
             "1",
-            "0"
+            "4"
           ],
           "correct_index": 1,
-          "explanation": "flatMap展开输出，不自动去重或计频。",
-          "dimension": "apply"
+          "explanation": "展开保留每次出现；空行split结果为空列表，不贡献词。",
+          "dimension": "apply",
+          "task_id": "l1-transformation/flatmap"
         },
         {
-          "key": "l1-transformation/filter/assessment-v1",
+          "key": "l1-transformation/filter/assessment-v2",
           "knowledge_id": "l1-transformation/filter",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Transformation：输入-1、0、3、8，filter >0留下？",
+          "prompt": "输入-3、0、2、6，filter(lambda x:x>0)保留？",
           "options": [
-            "0、3、8",
-            "全部变正数",
-            "3、8",
-            "只保留最后一个"
+            "0、2、6",
+            "3、0、2、6",
+            "2、6",
+            "只有6"
           ],
           "correct_index": 2,
-          "explanation": "filter保留满足条件的元素，不修改数值。",
-          "dimension": "mechanism"
+          "explanation": "按转换顺序求值；filter筛选，不改写元素。",
+          "dimension": "mechanism",
+          "task_id": "l1-transformation/filter"
         },
         {
-          "key": "l1-transformation/filter/review-v1",
+          "key": "l1-transformation/filter/review-v2",
           "knowledge_id": "l1-transformation/filter",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Transformation：输入-2、0、4、9，filter >0留下？",
+          "prompt": "输入1、4、7，先map加1，再filter大于4，留下？",
           "options": [
-            "0、4、9",
-            "全部变正数",
-            "只保留最后一个",
-            "4、9"
+            "4、7",
+            "2、5、8",
+            "只有8",
+            "5、8"
           ],
           "correct_index": 3,
-          "explanation": "filter保留满足条件的元素，不修改数值。",
-          "dimension": "mechanism"
+          "explanation": "按转换顺序求值；filter筛选，不改写元素。",
+          "dimension": "mechanism",
+          "task_id": "l1-transformation/filter"
         },
         {
-          "key": "l1-transformation/shape/assessment-v1",
+          "key": "l1-transformation/shape/assessment-v2",
           "knowledge_id": "l1-transformation/shape",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Transformation：map(split)和flatMap(split)形状一样吗？",
+          "prompt": "两行文本分别split；希望每个RDD元素仍是一行的词列表，应选？",
           "options": [
-            "前者保留列表层，后者展开",
-            "两者都自动统计词频",
-            "两者都自动去重",
-            "前者自动收集到Driver"
+            "map(split)",
+            "flatMap(split)",
+            "filter(split)",
+            "count()"
           ],
           "correct_index": 0,
-          "explanation": "输出结构由函数与转换语义共同决定。",
-          "dimension": "debug"
+          "explanation": "map保留函数返回的列表元素，flatMap展开这一层。",
+          "dimension": "debug",
+          "task_id": "l1-transformation/flatmap"
         },
         {
-          "key": "l1-transformation/shape/remediation-v1",
+          "key": "l1-transformation/shape/remediation-v2",
           "knowledge_id": "l1-transformation/shape",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Transformation：每行返回一个列表时，map与flatMap有什么区别？",
+          "prompt": "要把各行拆成独立词供后续计数，哪一步完成这一层展开？",
           "options": [
-            "两者都自动统计词频",
-            "前者保留列表层，后者展开",
-            "两者都自动去重",
-            "前者自动收集到Driver"
+            "map(split)",
+            "flatMap(split)",
+            "filter(split)",
+            "collect()"
           ],
           "correct_index": 1,
-          "explanation": "输出结构由函数与转换语义共同决定。",
-          "dimension": "debug"
+          "explanation": "map保留函数返回的列表元素，flatMap展开这一层。",
+          "dimension": "debug",
+          "task_id": "l1-transformation/flatmap"
         },
         {
-          "key": "l1-transformation/execution/assessment-v1",
-          "knowledge_id": "l1-transformation/execution",
+          "key": "l1-transformation/chain/assessment-v2",
+          "knowledge_id": "l1-transformation/chain",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Transformation：只定义两个转换就固定两个job吗？",
+          "prompt": "只定义map后filter，尚未请求结果。此时建立的是？",
           "options": [
-            "能，源码步骤严格对应job",
-            "只按变量数计算",
-            "不能，依赖与运行另看",
-            "所有结果立刻落盘"
+            "两个完成的job",
+            "两份热缓存",
+            "计算依赖链",
+            "一个已回传列表"
           ],
           "correct_index": 2,
-          "explanation": "转换链不是按代码行固定计数的调度记录。",
-          "dimension": "transfer"
+          "explanation": "转换调用数与运行时job/stage数没有逐行对应关系。",
+          "dimension": "transfer",
+          "task_id": "l1-transformation/chain"
         },
         {
-          "key": "l1-transformation/execution/remediation-v1",
-          "knowledge_id": "l1-transformation/execution",
+          "key": "l1-transformation/chain/remediation-v2",
+          "knowledge_id": "l1-transformation/chain",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Transformation：三个转换调用能直接推断三个stage吗？",
+          "prompt": "看到源码调用三个转换，就能确定运行时三个stage吗？",
           "options": [
-            "能，源码步骤严格对应job",
-            "只按变量数计算",
-            "所有结果立刻落盘",
-            "不能，依赖与运行另看"
+            "一定是三个",
+            "一定只有一个",
+            "一定还没有RDD",
+            "不能直接确定"
           ],
           "correct_index": 3,
-          "explanation": "转换链不是按代码行固定计数的调度记录。",
-          "dimension": "transfer"
+          "explanation": "转换调用数与运行时job/stage数没有逐行对应关系。",
+          "dimension": "transfer",
+          "task_id": "l1-transformation/chain"
         }
       ]
     },
@@ -336,164 +356,174 @@
       "lesson_slug": "l1-action",
       "questions": [
         {
-          "key": "l1-action/count/assessment-v1",
+          "key": "l1-action/count/assessment-v2",
           "knowledge_id": "l1-action/count",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Action：只要总条数，不要明细，用什么？",
+          "prompt": "过滤后只需要总条数，直接调用？",
           "options": [
-            "count",
-            "collect全表再永久存下",
-            "map",
-            "cache标记即返回条数"
+            "count()",
+            "collect()",
+            "map()",
+            "cache()"
           ],
           "correct_index": 0,
-          "explanation": "count返回数量，仍可能执行上游工作。",
-          "dimension": "concept"
+          "explanation": "count返回数量，仍可能执行上游转换。",
+          "dimension": "concept",
+          "task_id": "l1-action/count"
         },
         {
-          "key": "l1-action/count/review-v1",
+          "key": "l1-action/count/review-v2",
           "knowledge_id": "l1-action/count",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Action：想知道过滤后有几条，最直接请求？",
+          "prompt": "a含1、3、5、7，a.filter(lambda x:x>3).count()返回？",
           "options": [
-            "collect全表再永久存下",
-            "count",
-            "map",
-            "cache标记即返回条数"
+            "4",
+            "2",
+            "3",
+            "7"
           ],
           "correct_index": 1,
-          "explanation": "count返回数量，仍可能执行上游工作。",
-          "dimension": "concept"
+          "explanation": "count返回数量，仍可能执行上游转换。",
+          "dimension": "concept",
+          "task_id": "l1-action/count"
         },
         {
-          "key": "l1-action/collect/assessment-v1",
+          "key": "l1-action/collect/assessment-v2",
           "knowledge_id": "l1-action/collect",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Action：海量明细只预览几条，应避免什么？",
+          "prompt": "只预览5条，Driver容量有限，先用哪种方式限制返回数量？",
           "options": [
-            "请求有界结果并看上游成本",
-            "只对已知小结果collect",
-            "先collect全部再切片",
-            "明确返回规模"
+            "collect()[:5]",
+            "cache().collect()",
+            "take(5)",
+            "map(lambda x:x).collect()"
           ],
           "correct_index": 2,
-          "explanation": "切片发生在collect之后，不能消除已经回传的规模风险。",
-          "dimension": "apply"
+          "explanation": "先限制返回规模；本地切片不能撤销已经发生的collect。",
+          "dimension": "apply",
+          "task_id": "l1-action/collect"
         },
         {
-          "key": "l1-action/collect/review-v1",
+          "key": "l1-action/collect/review-v2",
           "knowledge_id": "l1-action/collect",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Action：Driver有限，哪些做法有收集规模风险？",
+          "prompt": "先collect全部再切片，能避免全集回传Driver的风险吗？",
           "options": [
-            "请求有界结果并看上游成本",
-            "只对已知小结果collect",
-            "明确返回规模",
-            "先collect全部再切片"
+            "能，只保留切片内数据",
+            "能，Python会改写Spark计划",
+            "能，切片会取消其余任务",
+            "不能，切片在回传后"
           ],
           "correct_index": 3,
-          "explanation": "切片发生在collect之后，不能消除已经回传的规模风险。",
-          "dimension": "apply"
+          "explanation": "先限制返回规模；本地切片不能撤销已经发生的collect。",
+          "dimension": "apply",
+          "task_id": "l1-action/collect"
         },
         {
-          "key": "l1-action/take/assessment-v1",
-          "knowledge_id": "l1-action/take",
+          "key": "l1-action/closure/assessment-v2",
+          "knowledge_id": "l1-action/closure",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Action：take(3)能保证均匀随机样本吗？",
+          "prompt": "任务在foreach中append普通Python列表，能把它当Driver全局汇总接口吗？",
           "options": [
-            "不能，数量不定义抽样或排名",
-            "能，take自动随机均匀",
-            "能，自动全局降序",
-            "只要是action就保证排名"
+            "不能这样依赖",
+            "所有任务共享该列表",
+            "仅首分区共享该列表",
+            "同名变量会自动合并"
           ],
           "correct_index": 0,
-          "explanation": "有界返回与随机/排序规则不同。",
-          "dimension": "mechanism"
+          "explanation": "闭包副作用不是可靠的分布式结果收集接口。",
+          "dimension": "mechanism",
+          "task_id": "l1-action/foreach"
         },
         {
-          "key": "l1-action/take/review-v1",
-          "knowledge_id": "l1-action/take",
+          "key": "l1-action/closure/review-v2",
+          "knowledge_id": "l1-action/closure",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Action：请求前4条就等于最高4条吗？",
+          "prompt": "分布式任务中给普通闭包变量加1，Driver读到0。优先理解为？",
           "options": [
-            "能，take自动随机均匀",
-            "不能，数量不定义抽样或排名",
-            "能，自动全局降序",
-            "只要是action就保证排名"
+            "所有任务均未运行",
+            "任务状态不等于Driver共享状态",
+            "RDD输入必定为空",
+            "变量名被Spark忽略"
           ],
           "correct_index": 1,
-          "explanation": "有界返回与随机/排序规则不同。",
-          "dimension": "mechanism"
+          "explanation": "闭包副作用不是可靠的分布式结果收集接口。",
+          "dimension": "mechanism",
+          "task_id": "l1-action/foreach"
         },
         {
-          "key": "l1-action/closure/assessment-v1",
-          "knowledge_id": "l1-action/closure",
+          "key": "l1-action/again/assessment-v2",
+          "knowledge_id": "l1-action/again",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Action：foreach里给闭包列表append，可当Driver收集接口吗？",
+          "prompt": "未持久化，第一次count结束后再次请求同一RDD，哪项仍可能发生？",
           "options": [
-            "可以，闭包天然全局共享",
-            "可以，foreach返回有序列表",
-            "不能这样依赖共享语义",
-            "只需变量同名"
+            "复用完整热缓存",
+            "只读取上次计数",
+            "上游重算",
+            "返回首次请求的明细列表"
           ],
           "correct_index": 2,
-          "explanation": "分布式闭包副作用不等于可靠共享汇总。",
-          "dimension": "debug"
+          "explanation": "action不自动把全部计算结果永久缓存。",
+          "dimension": "debug",
+          "task_id": "l1-action/again"
         },
         {
-          "key": "l1-action/closure/remediation-v1",
-          "knowledge_id": "l1-action/closure",
+          "key": "l1-action/again/remediation-v2",
+          "knowledge_id": "l1-action/again",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Action：任务中修改普通Python变量，可当所有节点共享结果吗？",
+          "prompt": "只因一次action成功，就认定下一次无需计算，缺少什么？",
           "options": [
-            "可以，闭包天然全局共享",
-            "可以，foreach返回有序列表",
-            "只需变量同名",
-            "不能这样依赖共享语义"
+            "变量名足够短",
+            "相同输出列顺序",
+            "action调用行号",
+            "可复用状态的证据"
           ],
           "correct_index": 3,
-          "explanation": "分布式闭包副作用不等于可靠共享汇总。",
-          "dimension": "debug"
+          "explanation": "action不自动把全部计算结果永久缓存。",
+          "dimension": "debug",
+          "task_id": "l1-action/again"
         },
         {
-          "key": "l1-action/persist/assessment-v1",
-          "knowledge_id": "l1-action/persist",
+          "key": "l1-action/bounded/assessment-v2",
+          "knowledge_id": "l1-action/bounded",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Action：count后再take，能保证不重算上游吗？",
+          "prompt": "take(4)返回4条，可据此认定Driver已收到完整十亿条结果吗？",
           "options": [
-            "不能，复用需看持久化等条件",
-            "能，所有action都自动缓存",
-            "第二次action必报错",
-            "所有行必已落Parquet"
+            "不能，只请求有界结果",
+            "能，take内部等于全量回传",
+            "能，返回4就是总共4条",
+            "能，其他行已被删除"
           ],
           "correct_index": 0,
-          "explanation": "结果请求与保存可复用状态分开理解。",
-          "dimension": "transfer"
+          "explanation": "限制返回数量不等于保证上游读取或聚合成本极小。",
+          "dimension": "transfer",
+          "task_id": "l1-action/collect"
         },
         {
-          "key": "l1-action/persist/remediation-v1",
-          "knowledge_id": "l1-action/persist",
+          "key": "l1-action/bounded/remediation-v2",
+          "knowledge_id": "l1-action/bounded",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Action：action会自动永久缓存所有分区吗？",
+          "prompt": "取少量结果后能保证上游工作量也固定很小吗？",
           "options": [
-            "能，所有action都自动缓存",
-            "不能，复用需看持久化等条件",
-            "第二次action必报错",
-            "所有行必已落Parquet"
+            "能，只算返回的几行",
+            "不能，还要看上游依赖",
+            "能，所有聚合都会跳过",
+            "能，所有分区都不执行"
           ],
           "correct_index": 1,
-          "explanation": "结果请求与保存可复用状态分开理解。",
-          "dimension": "transfer"
+          "explanation": "限制返回数量不等于保证上游读取或聚合成本极小。",
+          "dimension": "transfer",
+          "task_id": "l1-action/collect"
         }
       ]
     },
@@ -501,164 +531,174 @@
       "lesson_slug": "l1-lazy-evaluation",
       "questions": [
         {
-          "key": "l1-lazy-evaluation/definition/assessment-v1",
+          "key": "l1-lazy-evaluation/definition/assessment-v2",
           "knowledge_id": "l1-lazy-evaluation/definition",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：建立平方查询后只打印type，得到完整平方数据了吗？",
+          "prompt": "建立平方RDD后只打印type，确认了什么？",
           "options": [
-            "有，所有转换立即收全表",
-            "有，自动永久落盘",
-            "没有，只建立了查询描述",
-            "类型里包含完整结果列表"
+            "取回了全部平方值",
+            "保存了永久结果",
+            "创建了查询对象",
+            "填满了缓存"
           ],
           "correct_index": 2,
-          "explanation": "对象类型与业务求值结果不同。",
-          "dimension": "concept"
+          "explanation": "区分查询定义与请求结果。",
+          "dimension": "concept",
+          "task_id": "l1-lazy-evaluation/predict"
         },
         {
-          "key": "l1-lazy-evaluation/definition/review-v1",
+          "key": "l1-lazy-evaluation/definition/review-v2",
           "knowledge_id": "l1-lazy-evaluation/definition",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：建立筛选RDD但没请求结果，是否已collect？",
+          "prompt": "建立过滤RDD后尚未请求结果，下一步count的角色是？",
           "options": [
-            "有，所有转换立即收全表",
-            "有，自动永久落盘",
-            "类型里包含完整结果列表",
-            "没有，只建立了查询描述"
+            "只重命名查询对象",
+            "只登记缓存策略",
+            "只打印Python类型",
+            "请求求值并返回数量"
           ],
           "correct_index": 3,
-          "explanation": "对象类型与业务求值结果不同。",
-          "dimension": "concept"
+          "explanation": "区分查询定义与请求结果。",
+          "dimension": "concept",
+          "task_id": "l1-lazy-evaluation/predict"
         },
         {
-          "key": "l1-lazy-evaluation/branch/assessment-v1",
-          "knowledge_id": "l1-lazy-evaluation/branch",
+          "key": "l1-lazy-evaluation/branches/assessment-v2",
+          "knowledge_id": "l1-lazy-evaluation/branches",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：定义p/n两分支，只请求p，n必完整运行吗？",
+          "prompt": "定义a=base.filter(正数)、b=base.filter(负数)，仅a.count()。工作需求沿哪里追踪？",
           "options": [
-            "沿实际action依赖检查",
-            "所有变量必求值",
-            "按源码行号全执行",
-            "永远只执行最后定义者"
+            "a的依赖",
+            "a和b全部分支",
+            "只沿最后定义的b",
+            "不再需要base"
           ],
           "correct_index": 0,
-          "explanation": "惰性执行由所需依赖驱动，不是所有潜在分支逐一执行。",
-          "dimension": "apply"
+          "explanation": "action由其所需依赖驱动，不因定义了变量就遍历所有分支。",
+          "dimension": "apply",
+          "task_id": "l1-lazy-evaluation/branches"
         },
         {
-          "key": "l1-lazy-evaluation/branch/review-v1",
-          "knowledge_id": "l1-lazy-evaluation/branch",
+          "key": "l1-lazy-evaluation/branches/review-v2",
+          "knowledge_id": "l1-lazy-evaluation/branches",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：定义两个下游，只count其一，应怎样追工作范围？",
+          "prompt": "先定义p和q，随后仅q.take(2)，p是否因变量存在就必完整运行？",
           "options": [
-            "所有变量必求值",
-            "沿实际action依赖检查",
-            "按源码行号全执行",
-            "永远只执行最后定义者"
+            "必定完整运行",
+            "不必",
+            "只有p会运行",
+            "p已自动缓存"
           ],
           "correct_index": 1,
-          "explanation": "惰性执行由所需依赖驱动，不是所有潜在分支逐一执行。",
-          "dimension": "apply"
+          "explanation": "action由其所需依赖驱动，不因定义了变量就遍历所有分支。",
+          "dimension": "apply",
+          "task_id": "l1-lazy-evaluation/branches"
         },
         {
-          "key": "l1-lazy-evaluation/cache/assessment-v1",
-          "knowledge_id": "l1-lazy-evaluation/cache",
+          "key": "l1-lazy-evaluation/persist/assessment-v2",
+          "knowledge_id": "l1-lazy-evaluation/persist",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：cache标记后，未遍历数据，保证全量热缓存吗？",
+          "prompt": "cache后尚无遍历，哪项已经确认？",
           "options": [
-            "能，标记就是完整结果",
-            "能，所有action都无需工作",
-            "不能，标记与物化不同",
-            "只要名字叫cached就足够"
+            "缓存全部物化",
+            "结果全部回传",
+            "登记了缓存意图",
+            "源文件已经删除"
           ],
           "correct_index": 2,
-          "explanation": "实际填充、容量、逐出与执行需求要分别核对。",
-          "dimension": "mechanism"
+          "explanation": "登记持久化与实际物化分开，部分请求不证明全量就绪。",
+          "dimension": "mechanism",
+          "task_id": "l1-lazy-evaluation/persist"
         },
         {
-          "key": "l1-lazy-evaluation/cache/review-v1",
-          "knowledge_id": "l1-lazy-evaluation/cache",
+          "key": "l1-lazy-evaluation/persist/review-v2",
+          "knowledge_id": "l1-lazy-evaluation/persist",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：persist调用后能认定所有分区已在存储中吗？",
+          "prompt": "persist后只请求少量元素，能保证所有分区已经热缓存吗？",
           "options": [
-            "能，标记就是完整结果",
-            "能，所有action都无需工作",
-            "只要名字叫cached就足够",
-            "不能，标记与物化不同"
+            "已经全部物化",
+            "已经永久写出",
+            "下一次必不计算",
+            "不能保证全量"
           ],
           "correct_index": 3,
-          "explanation": "实际填充、容量、逐出与执行需求要分别核对。",
-          "dimension": "mechanism"
+          "explanation": "登记持久化与实际物化分开，部分请求不证明全量就绪。",
+          "dimension": "mechanism",
+          "task_id": "l1-lazy-evaluation/persist"
         },
         {
-          "key": "l1-lazy-evaluation/retry/assessment-v1",
+          "key": "l1-lazy-evaluation/retry/assessment-v2",
           "knowledge_id": "l1-lazy-evaluation/retry",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：任务向外部写一次后重试，能无条件保证只写一次吗？",
+          "prompt": "任务写外部系统后重试，哪种设计有助于防止重复业务写入？",
           "options": [
-            "不能，需幂等或合适提交",
-            "能，RDD本身保证任意副作用只一次",
-            "会自动删除全部外部旧记录",
-            "加分区即可保证事务"
+            "幂等写入或提交协议",
+            "依靠RDD变量不变",
+            "增加map调用次数",
+            "把输出列重新命名"
           ],
           "correct_index": 0,
-          "explanation": "容错重算和外部一致性是不同问题。",
-          "dimension": "debug"
+          "explanation": "RDD容错不代替任意外部系统的事务协议。",
+          "dimension": "debug",
+          "task_id": "l1-lazy-evaluation/recovery"
         },
         {
-          "key": "l1-lazy-evaluation/retry/remediation-v1",
+          "key": "l1-lazy-evaluation/retry/remediation-v2",
           "knowledge_id": "l1-lazy-evaluation/retry",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：血缘能代替任意外部系统的事务提交吗？",
+          "prompt": "任务已向外部写入但确认丢失，直接重试会有什么风险？",
           "options": [
-            "能，RDD本身保证任意副作用只一次",
-            "不能，需幂等或合适提交",
-            "会自动删除全部外部旧记录",
-            "加分区即可保证事务"
+            "自动回滚全部外部数据",
+            "重复写入",
+            "只重写Python变量",
+            "所有重试自动跳过副作用"
           ],
           "correct_index": 1,
-          "explanation": "容错重算和外部一致性是不同问题。",
-          "dimension": "debug"
+          "explanation": "RDD容错不代替任意外部系统的事务协议。",
+          "dimension": "debug",
+          "task_id": "l1-lazy-evaluation/recovery"
         },
         {
-          "key": "l1-lazy-evaluation/optimizer/assessment-v1",
-          "knowledge_id": "l1-lazy-evaluation/optimizer",
+          "key": "l1-lazy-evaluation/request/assessment-v2",
+          "knowledge_id": "l1-lazy-evaluation/request",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：惰性RDD就等于Catalyst理解任意Python函数吗？",
+          "prompt": "b=a.map加1，c=b.filter正数；只请求c.count()。b在此处是什么？",
           "options": [
-            "能，函数体完全透明",
-            "能，自动变成SQL表",
-            "不能等同",
-            "只要等到action就无任何开销"
+            "必独立完成的第二个job",
+            "已经落盘的中间文件",
+            "c所需的上游依赖",
+            "和c无关的未使用分支"
           ],
           "correct_index": 2,
-          "explanation": "惰性执行与结构化优化能力不同。",
-          "dimension": "transfer"
+          "explanation": "推迟求值不等于上游依赖无须执行。",
+          "dimension": "transfer",
+          "task_id": "l1-lazy-evaluation/branches"
         },
         {
-          "key": "l1-lazy-evaluation/optimizer/remediation-v1",
-          "knowledge_id": "l1-lazy-evaluation/optimizer",
+          "key": "l1-lazy-evaluation/request/remediation-v2",
+          "knowledge_id": "l1-lazy-evaluation/request",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Lazy Evaluation：延后求值能保证任意函数体都按SQL代数重写吗？",
+          "prompt": "先定义转换链再调用collect，结果回传由哪一步请求？",
           "options": [
-            "能，函数体完全透明",
-            "能，自动变成SQL表",
-            "只要等到action就无任何开销",
-            "不能等同"
+            "第一个map",
+            "最后一个filter",
+            "变量赋值",
+            "collect"
           ],
           "correct_index": 3,
-          "explanation": "惰性执行与结构化优化能力不同。",
-          "dimension": "transfer"
+          "explanation": "推迟求值不等于上游依赖无须执行。",
+          "dimension": "transfer",
+          "task_id": "l1-lazy-evaluation/branches"
         }
       ]
     },
@@ -666,164 +706,174 @@
       "lesson_slug": "l1-why-dataframe-replaces-rdd",
       "questions": [
         {
-          "key": "l1-why-dataframe-replaces-rdd/structured/assessment-v1",
+          "key": "l1-why-dataframe-replaces-rdd/structured/assessment-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/structured",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：已有字段与类型，按地区求金额，优先考虑？",
+          "prompt": "已有team、amount字段，要按team汇总，优先用哪种结构化表达？",
           "options": [
-            "DataFrame/SQL表达列与关系",
-            "先把全表拼成一个字符串",
-            "只按变量名猜字段",
-            "默认所有接口永远同耗时"
+            "DataFrame/SQL聚合",
+            "把全表拼成字符串",
+            "按行号关联字段",
+            "先collect全部明细"
           ],
           "correct_index": 0,
-          "explanation": "结构化表达暴露字段与关系，便于分析和优化。",
-          "dimension": "concept"
+          "explanation": "列与关系表达暴露更多可分析结构。",
+          "dimension": "concept",
+          "task_id": "l1-why-dataframe-replaces-rdd/schema"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/structured/review-v1",
+          "key": "l1-why-dataframe-replaces-rdd/structured/review-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/structured",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：结构化事件按日期计数，清晰起点是？",
+          "prompt": "订单有清晰字段与类型，要筛选并分组，哪种方式更直接暴露列关系？",
           "options": [
-            "先把全表拼成一个字符串",
-            "DataFrame/SQL表达列与关系",
-            "只按变量名猜字段",
-            "默认所有接口永远同耗时"
+            "任意Python对象函数",
+            "内置列表达式",
+            "普通闭包列表修改",
+            "字符串化整行处理"
           ],
           "correct_index": 1,
-          "explanation": "结构化表达暴露字段与关系，便于分析和优化。",
-          "dimension": "concept"
+          "explanation": "列与关系表达暴露更多可分析结构。",
+          "dimension": "concept",
+          "task_id": "l1-why-dataframe-replaces-rdd/schema"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/schema/assessment-v1",
+          "key": "l1-why-dataframe-replaces-rdd/schema/assessment-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/schema",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：对象记录转DataFrame时要明确什么？",
+          "prompt": "金额显示为\"12\"，准备建立结构化列，仍需明确什么？",
           "options": [
-            "只要变量名短",
-            "只看第一条就认定全部有效",
-            "Schema与真实输入/业务规则",
-            "无需处理NULL"
+            "仅显示宽度",
+            "仅变量名称",
+            "类型与输入规则",
+            "仅原始行号"
           ],
           "correct_index": 2,
-          "explanation": "类型约定和质量校验不能互相替代。",
-          "dimension": "apply"
+          "explanation": "类型契约和业务质量约定互相补充。",
+          "dimension": "apply",
+          "task_id": "l1-why-dataframe-replaces-rdd/bridge"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/schema/review-v1",
+          "key": "l1-why-dataframe-replaces-rdd/schema/review-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/schema",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：列看起来是数字，结构化前还需什么？",
+          "prompt": "字段允许NULL但业务要求有效金额，Schema能替代所有质量校验吗？",
           "options": [
-            "只要变量名短",
-            "只看第一条就认定全部有效",
-            "无需处理NULL",
-            "Schema与真实输入/业务规则"
+            "能，类型通过即业务有效",
+            "能，NULL会自动补合法金额",
+            "能，转换会自动删除冲突",
+            "不能，还需业务检查"
           ],
           "correct_index": 3,
-          "explanation": "类型约定和质量校验不能互相替代。",
-          "dimension": "apply"
+          "explanation": "类型契约和业务质量约定互相补充。",
+          "dimension": "apply",
+          "task_id": "l1-why-dataframe-replaces-rdd/bridge"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/opaque/assessment-v1",
+          "key": "l1-why-dataframe-replaces-rdd/opaque/assessment-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/opaque",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：任意Python map函数与内置列表达式，优化器信息一样吗？",
+          "prompt": "把列表达式封入任意Python函数体，能假定优化器看到相同语义吗？",
           "options": [
-            "不能，执行边界需核对",
-            "能，名字相同就完全等价",
-            "自动优化掉所有副作用",
-            "只看源码更短即可"
+            "不能这样假定",
+            "函数名称相同就能",
+            "惰性执行就能",
+            "返回列名相同就能"
           ],
           "correct_index": 0,
-          "explanation": "可暴露的语义与执行路径不同，不能无条件互推性能。",
-          "dimension": "mechanism"
+          "explanation": "表达能力与执行边界需要分别验证。",
+          "dimension": "mechanism",
+          "task_id": "l1-why-dataframe-replaces-rdd/optimizer"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/opaque/review-v1",
+          "key": "l1-why-dataframe-replaces-rdd/opaque/review-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/opaque",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：把逻辑封进Python UDF后，能保证同等可分析性吗？",
+          "prompt": "两段代码输出相同，Python UDF与内置表达式的执行边界能直接视为相同吗？",
           "options": [
-            "能，名字相同就完全等价",
-            "不能，执行边界需核对",
-            "自动优化掉所有副作用",
-            "只看源码更短即可"
+            "相同列名就相同",
+            "不能直接视为相同",
+            "同样行数就相同",
+            "使用相同变量就相同"
           ],
           "correct_index": 1,
-          "explanation": "可暴露的语义与执行路径不同，不能无条件互推性能。",
-          "dimension": "mechanism"
+          "explanation": "表达能力与执行边界需要分别验证。",
+          "dimension": "mechanism",
+          "task_id": "l1-why-dataframe-replaces-rdd/optimizer"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/rdd/assessment-v1",
+          "key": "l1-why-dataframe-replaces-rdd/rdd/assessment-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/rdd",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：确需低层分区级自定义处理，RDD永远不能用吗？",
+          "prompt": "确需低层分区处理，合理选择是？",
           "options": [
-            "是，所有RDD都非法",
-            "是，RDD无法产生结果",
-            "不是，按需求与成本选择",
-            "只要能跑就不必验证"
+            "禁止一切RDD操作",
+            "先收集全表再分区",
+            "按需求评估RDD及转换成本",
+            "按API名称决定结果正确"
           ],
           "correct_index": 2,
-          "explanation": "工具选择不应变成永久胜负排名。",
-          "dimension": "debug"
+          "explanation": "工具选择依赖具体需求和成本。",
+          "dimension": "debug",
+          "task_id": "l1-why-dataframe-replaces-rdd/still-rdd"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/rdd/remediation-v1",
+          "key": "l1-why-dataframe-replaces-rdd/rdd/remediation-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/rdd",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：DataFrame常用是否等于RDD已无任何适用场景？",
+          "prompt": "现有DataFrame流程中需要特殊分区逻辑，先做什么？",
           "options": [
-            "是，所有RDD都非法",
-            "是，RDD无法产生结果",
-            "只要能跑就不必验证",
-            "不是，按需求与成本选择"
+            "直接宣布RDD永远更快",
+            "直接宣布RDD不再可用",
+            "忽略Schema转换的成本",
+            "评估接口边界与正确性"
           ],
           "correct_index": 3,
-          "explanation": "工具选择不应变成永久胜负排名。",
-          "dimension": "debug"
+          "explanation": "工具选择依赖具体需求和成本。",
+          "dimension": "debug",
+          "task_id": "l1-why-dataframe-replaces-rdd/still-rdd"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/measure/assessment-v1",
+          "key": "l1-why-dataframe-replaces-rdd/measure/assessment-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/measure",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：同需求两接口，能按名字保证快慢吗？",
+          "prompt": "改为DataFrame后结果与原流程不同，能只凭接口名称验收吗？",
           "options": [
-            "不能，核对语义与执行证据",
-            "SQL永远快一倍",
-            "RDD永远最快",
-            "字段相同就可删验收"
+            "不能，先查语义差异",
+            "能，结构化接口保证业务正确",
+            "能，行数减少即可",
+            "能，只要代码更短"
           ],
           "correct_index": 0,
-          "explanation": "结果与代表性测量支持具体性能结论。",
-          "dimension": "transfer"
+          "explanation": "语义验证与性能测量支持的结论范围不同。",
+          "dimension": "transfer",
+          "task_id": "l1-why-dataframe-replaces-rdd/still-rdd"
         },
         {
-          "key": "l1-why-dataframe-replaces-rdd/measure/remediation-v1",
+          "key": "l1-why-dataframe-replaces-rdd/measure/remediation-v2",
           "knowledge_id": "l1-why-dataframe-replaces-rdd/measure",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "RDD 为什么逐渐被 DataFrame 替代：改成DataFrame后可不核对结果和测量吗？",
+          "prompt": "两种实现结果相同，只测过一次小样本，能保证所有生产负载更快吗？",
           "options": [
-            "SQL永远快一倍",
-            "不能，核对语义与执行证据",
-            "RDD永远最快",
-            "字段相同就可删验收"
+            "能，同结果就同收益",
+            "不能，仍需代表性测量",
+            "能，使用SQL就有固定倍数",
+            "能，小样本决定所有规模"
           ],
           "correct_index": 1,
-          "explanation": "结果与代表性测量支持具体性能结论。",
-          "dimension": "transfer"
+          "explanation": "语义验证与性能测量支持的结论范围不同。",
+          "dimension": "transfer",
+          "task_id": "l1-why-dataframe-replaces-rdd/still-rdd"
         }
       ]
     },
@@ -831,164 +881,174 @@
       "lesson_slug": "l1-rdd-exercise",
       "questions": [
         {
-          "key": "l1-rdd-exercise/normalize/assessment-v1",
+          "key": "l1-rdd-exercise/normalize/assessment-v2",
           "knowledge_id": "l1-rdd-exercise/normalize",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 小练习：\"Go go\"空白切词再小写计数，go多少？",
+          "prompt": "约定空白分词并小写，\"Go GO go\"中go计数？",
           "options": [
             "1",
-            "0",
             "2",
-            "固定为分区数"
+            "3",
+            "0"
           ],
           "correct_index": 2,
-          "explanation": "每次出现都贡献一次，归一不是去重。",
-          "dimension": "concept"
+          "explanation": "大小写归一不等于去重或删除标点。",
+          "dimension": "concept",
+          "task_id": "l1-rdd-exercise/normalize"
         },
         {
-          "key": "l1-rdd-exercise/normalize/review-v1",
+          "key": "l1-rdd-exercise/normalize/review-v2",
           "knowledge_id": "l1-rdd-exercise/normalize",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 小练习：\"Hi hi\"空白切词再小写计数，hi多少？",
+          "prompt": "保留标点并小写，\"Hi hi! HI\"中hi计数？",
           "options": [
+            "3",
             "1",
             "0",
-            "固定为分区数",
             "2"
           ],
           "correct_index": 3,
-          "explanation": "每次出现都贡献一次，归一不是去重。",
-          "dimension": "concept"
+          "explanation": "大小写归一不等于去重或删除标点。",
+          "dimension": "concept",
+          "task_id": "l1-rdd-exercise/normalize"
         },
         {
-          "key": "l1-rdd-exercise/punctuation/assessment-v1",
-          "knowledge_id": "l1-rdd-exercise/punctuation",
+          "key": "l1-rdd-exercise/pairs/assessment-v2",
+          "knowledge_id": "l1-rdd-exercise/pairs",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 小练习：规则保留标点，\"A a!\"小写后几个键？",
+          "prompt": "\"A b a\"分词小写后，计数前应得到哪些卡片？",
           "options": [
-            "2",
-            "1",
-            "0",
-            "自动删除整行"
+            "(a,1),(b,1),(a,1)",
+            "(a,2),(b,1)",
+            "(a,1),(b,1)",
+            "(a,3),(b,3)"
           ],
           "correct_index": 0,
-          "explanation": "标点保留与大小写归一是两件事。",
-          "dimension": "apply"
+          "explanation": "每次出现先映射为词与1，再按键求和。",
+          "dimension": "apply",
+          "task_id": "l1-rdd-exercise/bridge-key-value"
         },
         {
-          "key": "l1-rdd-exercise/punctuation/review-v1",
-          "knowledge_id": "l1-rdd-exercise/punctuation",
+          "key": "l1-rdd-exercise/pairs/review-v2",
+          "knowledge_id": "l1-rdd-exercise/pairs",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 小练习：规则保留标点，\"X x,\"小写后几个键？",
+          "prompt": "\"x X\"归一后，两次出现应分别贡献什么？",
           "options": [
-            "1",
-            "2",
-            "0",
-            "自动删除整行"
+            "(x,2)",
+            "(x,1),(x,1)",
+            "(x,1)",
+            "(x,0),(x,0)"
           ],
           "correct_index": 1,
-          "explanation": "标点保留与大小写归一是两件事。",
-          "dimension": "apply"
+          "explanation": "每次出现先映射为词与1，再按键求和。",
+          "dimension": "apply",
+          "task_id": "l1-rdd-exercise/bridge-key-value"
         },
         {
-          "key": "l1-rdd-exercise/empty/assessment-v1",
+          "key": "l1-rdd-exercise/empty/assessment-v2",
           "knowledge_id": "l1-rdd-exercise/empty",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 小练习：只有空白行时词频应？",
+          "prompt": "输入仅\"  \"和空行，词频输出应是？",
           "options": [
+            "空词计数2",
             "空词计数1",
-            "原样例结果",
             "空键集合",
-            "每分区伪造一个词"
+            "沿用上一批计数"
           ],
           "correct_index": 2,
-          "explanation": "没有词就不造词。",
-          "dimension": "mechanism"
+          "explanation": "空白分词不贡献词，不能凭空制造键。",
+          "dimension": "mechanism",
+          "task_id": "l1-rdd-exercise/empty"
         },
         {
-          "key": "l1-rdd-exercise/empty/review-v1",
+          "key": "l1-rdd-exercise/empty/review-v2",
           "knowledge_id": "l1-rdd-exercise/empty",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "RDD 小练习：空输入的token计数结果应？",
+          "prompt": "空输入参与词频统计，是否应为每个分区补造一个词？",
           "options": [
-            "空词计数1",
-            "原样例结果",
-            "每分区伪造一个词",
-            "空键集合"
+            "应各造一个空词",
+            "应补上上次结果",
+            "应补一个总数为1的词",
+            "不应造词"
           ],
           "correct_index": 3,
-          "explanation": "没有词就不造词。",
-          "dimension": "mechanism"
+          "explanation": "空白分词不贡献词，不能凭空制造键。",
+          "dimension": "mechanism",
+          "task_id": "l1-rdd-exercise/empty"
         },
         {
-          "key": "l1-rdd-exercise/sum/assessment-v1",
+          "key": "l1-rdd-exercise/sum/assessment-v2",
           "knowledge_id": "l1-rdd-exercise/sum",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 小练习：同词局部计数4和6，最终？",
+          "prompt": "同词两个局部计数为4与7，合并为？",
           "options": [
-            "10",
+            "11",
             "4",
-            "6",
-            "只保留首次出现"
+            "7",
+            "2"
           ],
           "correct_index": 0,
-          "explanation": "局部合并不能漏掉其他贡献。",
-          "dimension": "debug"
+          "explanation": "按键合并应累加全部合法贡献。",
+          "dimension": "debug",
+          "task_id": "l1-rdd-exercise/sum"
         },
         {
-          "key": "l1-rdd-exercise/sum/remediation-v1",
+          "key": "l1-rdd-exercise/sum/remediation-v2",
           "knowledge_id": "l1-rdd-exercise/sum",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "RDD 小练习：同词局部计数3和8，最终？",
+          "prompt": "同词三个局部计数为1、2、5，合并为？",
           "options": [
-            "3",
-            "11",
+            "5",
             "8",
-            "只保留首次出现"
+            "3",
+            "1"
           ],
           "correct_index": 1,
-          "explanation": "局部合并不能漏掉其他贡献。",
-          "dimension": "debug"
+          "explanation": "按键合并应累加全部合法贡献。",
+          "dimension": "debug",
+          "task_id": "l1-rdd-exercise/sum"
         },
         {
-          "key": "l1-rdd-exercise/partitions/assessment-v1",
+          "key": "l1-rdd-exercise/partitions/assessment-v2",
           "knowledge_id": "l1-rdd-exercise/partitions",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "RDD 小练习：同文本从2改4分区，必须保持？",
+          "prompt": "同文本从2改成4分区，验收必须保持什么？",
           "options": [
-            "每个task耗时相同",
-            "每词固定同一台机器",
+            "输出遍历顺序",
+            "每词所在机器",
             "每词整数计数",
-            "中间记录顺序相同"
+            "每个任务耗时"
           ],
           "correct_index": 2,
-          "explanation": "分区位置可以变，业务计数不能因此改变。",
-          "dimension": "transfer"
+          "explanation": "实现按契约计算输入，分区布局变化不应改变业务计数。",
+          "dimension": "transfer",
+          "task_id": "l1-rdd-exercise/accept"
         },
         {
-          "key": "l1-rdd-exercise/partitions/remediation-v1",
+          "key": "l1-rdd-exercise/partitions/remediation-v2",
           "knowledge_id": "l1-rdd-exercise/partitions",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "RDD 小练习：同文本从3改5分区，应验证？",
+          "prompt": "新数据中词分布改变，程序仍固定返回样例词频，问题是？",
           "options": [
-            "每个task耗时相同",
-            "每词固定同一台机器",
-            "中间记录顺序相同",
-            "每词整数计数"
+            "分区数量太少",
+            "输出排序方式不同",
+            "变量名称不一致",
+            "没有按实际输入计算"
           ],
           "correct_index": 3,
-          "explanation": "分区位置可以变，业务计数不能因此改变。",
-          "dimension": "transfer"
+          "explanation": "实现按契约计算输入，分区布局变化不应改变业务计数。",
+          "dimension": "transfer",
+          "task_id": "l1-rdd-exercise/accept"
         }
       ]
     },
@@ -996,160 +1056,160 @@
       "lesson_slug": "l7-what-is-tuning",
       "questions": [
         {
-          "key": "l7-what-is-tuning/evidence/assessment-v1",
+          "key": "l7-what-is-tuning/evidence/assessment-v3",
           "knowledge_id": "l7-what-is-tuning/evidence",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：只有耗时翻倍，能确定内存瓶颈吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：只有耗时翻倍，能确定内存瓶颈吗？",
           "options": [
-            "不能，先补证据",
-            "能，所有慢都是内存",
-            "能，所有慢都是网络",
-            "只按变量名判断"
+            "尚不能，需定位",
+            "可确定内存不足",
+            "可确定网络不足",
+            "可确定分区过少"
           ],
           "correct_index": 0,
           "explanation": "输入、计划、资源与运行指标一起解释症状。",
           "dimension": "concept"
         },
         {
-          "key": "l7-what-is-tuning/evidence/review-v1",
+          "key": "l7-what-is-tuning/evidence/review-v3",
           "knowledge_id": "l7-what-is-tuning/evidence",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：只知道作业慢，能立刻开参数处方吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：只知道作业慢，能立刻开参数处方吗？",
           "options": [
-            "能，所有慢都是内存",
-            "不能，先补证据",
-            "能，所有慢都是网络",
-            "只按变量名判断"
+            "可确定内存不足",
+            "尚不能，需定位",
+            "可确定网络不足",
+            "可确定分区过少"
           ],
           "correct_index": 1,
           "explanation": "输入、计划、资源与运行指标一起解释症状。",
           "dimension": "concept"
         },
         {
-          "key": "l7-what-is-tuning/tail/assessment-v1",
+          "key": "l7-what-is-tuning/tail/assessment-v3",
           "knowledge_id": "l7-what-is-tuning/tail",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：最大任务远慢于中位数，足以唯一确认热键吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：最大任务远慢于中位数，足以唯一确认热键吗？",
           "options": [
-            "足够，所有长尾都是热键",
-            "可直接删除慢键",
-            "不够，还需负载与异常证据",
-            "只看平均即可"
+            "长尾即键倾斜",
+            "可直接过滤热键",
+            "还需联合证据",
+            "可直接随机加盐"
           ],
           "correct_index": 2,
           "explanation": "长尾是线索，不是单独病因证明。",
           "dimension": "apply"
         },
         {
-          "key": "l7-what-is-tuning/tail/review-v1",
+          "key": "l7-what-is-tuning/tail/review-v3",
           "knowledge_id": "l7-what-is-tuning/tail",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：看到单个长任务即可忽略GC/机器等因素吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：看到单个长任务即可忽略GC/机器等因素吗？",
           "options": [
-            "足够，所有长尾都是热键",
-            "可直接删除慢键",
-            "只看平均即可",
-            "不够，还需负载与异常证据"
+            "长尾即键倾斜",
+            "可直接过滤热键",
+            "可直接随机加盐",
+            "还需联合证据"
           ],
           "correct_index": 3,
           "explanation": "长尾是线索，不是单独病因证明。",
           "dimension": "apply"
         },
         {
-          "key": "l7-what-is-tuning/correct/assessment-v1",
+          "key": "l7-what-is-tuning/correct/assessment-v3",
           "knowledge_id": "l7-what-is-tuning/correct",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：更快但漏一组，能算成功吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：更快但漏一组，能算成功吗？",
           "options": [
-            "先修正确性差异",
-            "只要快就是成功",
-            "只看总额即可",
-            "节点少即可忽略结果"
+            "先修业务差异",
+            "更快就接受漏组",
+            "仅看全局总额",
+            "仅看结果行数"
           ],
           "correct_index": 0,
           "explanation": "业务不变量是性能评价前提。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-what-is-tuning/correct/review-v1",
+          "key": "l7-what-is-tuning/correct/review-v3",
           "knowledge_id": "l7-what-is-tuning/correct",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：总额相同但逐地区分错，能直接交付吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：总额相同但逐地区分错，能直接交付吗？",
           "options": [
-            "只要快就是成功",
-            "先修正确性差异",
-            "只看总额即可",
-            "节点少即可忽略结果"
+            "更快就接受漏组",
+            "先修业务差异",
+            "仅看全局总额",
+            "仅看结果行数"
           ],
           "correct_index": 1,
           "explanation": "业务不变量是性能评价前提。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-what-is-tuning/trial/assessment-v1",
+          "key": "l7-what-is-tuning/trial/assessment-v3",
           "knowledge_id": "l7-what-is-tuning/trial",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：同一输入单一可回退改动，为什么重要？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：同一输入单一可回退改动，为什么重要？",
           "options": [
-            "保证所有改动都有效",
-            "保证所有运行同秒数",
-            "减少混杂，便于归因",
-            "可以省掉原结果检查"
+            "保证每次同样秒数",
+            "保证改动全部有效",
+            "减少混杂便于归因",
+            "允许省去逐组校验"
           ],
           "correct_index": 2,
           "explanation": "可重复对照与回退让结论可审查。",
           "dimension": "debug"
         },
         {
-          "key": "l7-what-is-tuning/trial/remediation-v1",
+          "key": "l7-what-is-tuning/trial/remediation-v3",
           "knowledge_id": "l7-what-is-tuning/trial",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：多项同时修改且只测一次，应该改进什么？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：多项同时修改且只测一次，应该改进什么？",
           "options": [
-            "保证所有改动都有效",
-            "保证所有运行同秒数",
-            "可以省掉原结果检查",
-            "减少混杂，便于归因"
+            "保证每次同样秒数",
+            "保证改动全部有效",
+            "允许省去逐组校验",
+            "减少混杂便于归因"
           ],
           "correct_index": 3,
           "explanation": "可重复对照与回退让结论可审查。",
           "dimension": "debug"
         },
         {
-          "key": "l7-what-is-tuning/newcase/assessment-v1",
+          "key": "l7-what-is-tuning/newcase/assessment-v3",
           "knowledge_id": "l7-what-is-tuning/newcase",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：新症状不同，能套上次参数吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：新症状不同，能套上次参数吗？",
           "options": [
-            "应重新核对假设",
-            "所有参数永远通用",
-            "只看旧截图即可",
-            "无需核对实际计划"
+            "先核对当前新假设",
+            "照搬上次热键处理",
+            "照搬上次内存参数",
+            "照搬上次广播提示"
           ],
           "correct_index": 0,
           "explanation": "调优建议有条件与适用范围。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-what-is-tuning/newcase/remediation-v1",
+          "key": "l7-what-is-tuning/newcase/remediation-v3",
           "knowledge_id": "l7-what-is-tuning/newcase",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "性能调优是什么（度量驱动的闭环）：输入规模和执行路径变化，能直接复用旧处方吗？",
+          "prompt": "独立验证：性能调优是什么（度量驱动的闭环）：输入规模和执行路径变化，能直接复用旧处方吗？",
           "options": [
-            "所有参数永远通用",
-            "应重新核对假设",
-            "只看旧截图即可",
-            "无需核对实际计划"
+            "照搬上次热键处理",
+            "先核对当前新假设",
+            "照搬上次内存参数",
+            "照搬上次广播提示"
           ],
           "correct_index": 1,
           "explanation": "调优建议有条件与适用范围。",
@@ -1161,160 +1221,160 @@
       "lesson_slug": "l7-tungsten-encoding",
       "questions": [
         {
-          "key": "l7-tungsten-encoding/width/assessment-v1",
+          "key": "l7-tungsten-encoding/width/assessment-v3",
           "knowledge_id": "l7-tungsten-encoding/width",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：相同行数但字段宽度不同，负载必一样吗？",
+          "prompt": "独立验证：Tungsten 与编码字节级：相同行数但字段宽度不同，负载必一样吗？",
           "options": [
-            "能，所有行同样大",
-            "只看列名字数",
-            "不能，还看字节与结构",
-            "只看文件名"
+            "行同即内存相同",
+            "列同即宽度相同",
+            "还看字节与结构",
+            "行同即传输相同"
           ],
           "correct_index": 2,
           "explanation": "表示和字段宽度影响真实工作量。",
           "dimension": "concept"
         },
         {
-          "key": "l7-tungsten-encoding/width/review-v1",
+          "key": "l7-tungsten-encoding/width/review-v3",
           "knowledge_id": "l7-tungsten-encoding/width",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：大数组与两列整数，能只数行比较内存吗？",
+          "prompt": "独立验证：Tungsten 与编码字节级：大数组与两列整数，能只数行比较内存吗？",
           "options": [
-            "能，所有行同样大",
-            "只看列名字数",
-            "只看文件名",
-            "不能，还看字节与结构"
+            "行同即内存相同",
+            "列同即宽度相同",
+            "行同即传输相同",
+            "还看字节与结构"
           ],
           "correct_index": 3,
           "explanation": "表示和字段宽度影响真实工作量。",
           "dimension": "concept"
         },
         {
-          "key": "l7-tungsten-encoding/serializer/assessment-v1",
+          "key": "l7-tungsten-encoding/serializer/assessment-v3",
           "knowledge_id": "l7-tungsten-encoding/serializer",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：改JVM序列化设置能保证所有Python UDF更快吗？",
+          "prompt": "独立验证：Tungsten 与编码字节级：改JVM序列化设置能保证所有Python UDF更快吗？",
           "options": [
-            "不能，先看作用路径",
-            "能，所有Python开销归零",
-            "自动改写业务函数",
-            "保证不再占内存"
+            "先检查作用路径",
+            "清零Python开销",
+            "自动改函数内置",
+            "使全部结果常驻"
           ],
           "correct_index": 0,
           "explanation": "JVM表示、序列化与Python执行不同层。",
           "dimension": "apply"
         },
         {
-          "key": "l7-tungsten-encoding/serializer/review-v1",
+          "key": "l7-tungsten-encoding/serializer/review-v3",
           "knowledge_id": "l7-tungsten-encoding/serializer",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：一个serializer开关能替代执行边界分析吗？",
+          "prompt": "独立验证：Tungsten 与编码字节级：一个serializer开关能替代执行边界分析吗？",
           "options": [
-            "能，所有Python开销归零",
-            "不能，先看作用路径",
-            "自动改写业务函数",
-            "保证不再占内存"
+            "清零Python开销",
+            "先检查作用路径",
+            "自动改函数内置",
+            "使全部结果常驻"
           ],
           "correct_index": 1,
           "explanation": "JVM表示、序列化与Python执行不同层。",
           "dimension": "apply"
         },
         {
-          "key": "l7-tungsten-encoding/builtin/assessment-v1",
+          "key": "l7-tungsten-encoding/builtin/assessment-v3",
           "knowledge_id": "l7-tungsten-encoding/builtin",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：仅需trim+upper，合理起点？",
+          "prompt": "独立验证：Tungsten 与编码字节级：仅需trim+upper，合理起点？",
           "options": [
-            "先collect全表",
-            "必须定制Python UDF",
-            "可表达需求的内置函数",
-            "先改所有内存比例"
+            "Python标量UDF",
+            "收回再Python处理",
+            "内置trim/upper",
+            "先增加序列化缓冲"
           ],
           "correct_index": 2,
           "explanation": "优先避免不必要边界，结果和收益仍需验证。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-tungsten-encoding/builtin/review-v1",
+          "key": "l7-tungsten-encoding/builtin/review-v3",
           "knowledge_id": "l7-tungsten-encoding/builtin",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：简单大小写清洗先考虑？",
+          "prompt": "独立验证：Tungsten 与编码字节级：简单大小写清洗先考虑？",
           "options": [
-            "先collect全表",
-            "必须定制Python UDF",
-            "先改所有内存比例",
-            "可表达需求的内置函数"
+            "Python标量UDF",
+            "收回再Python处理",
+            "先增加序列化缓冲",
+            "内置trim/upper"
           ],
           "correct_index": 3,
           "explanation": "优先避免不必要边界，结果和收益仍需验证。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-tungsten-encoding/capacity/assessment-v1",
+          "key": "l7-tungsten-encoding/capacity/assessment-v3",
           "knowledge_id": "l7-tungsten-encoding/capacity",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：紧凑内部表示能保证无OOM吗？",
+          "prompt": "独立验证：Tungsten 与编码字节级：紧凑内部表示能保证无OOM吗？",
           "options": [
-            "不能，工作集仍有限",
-            "能，内存自动无限",
-            "能，所有状态消失",
-            "所有IO变免费"
+            "工作集与并发有限",
+            "已排除所有内存问题",
+            "保证全部状态消失",
+            "保证并发不占容量"
           ],
           "correct_index": 0,
           "explanation": "表示优化不取消容量约束。",
           "dimension": "debug"
         },
         {
-          "key": "l7-tungsten-encoding/capacity/remediation-v1",
+          "key": "l7-tungsten-encoding/capacity/remediation-v3",
           "knowledge_id": "l7-tungsten-encoding/capacity",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：代码生成后能保证没有spill吗？",
+          "prompt": "独立验证：Tungsten 与编码字节级：代码生成后能保证没有spill吗？",
           "options": [
-            "能，内存自动无限",
-            "不能，工作集仍有限",
-            "能，所有状态消失",
-            "所有IO变免费"
+            "已排除所有内存问题",
+            "工作集与并发有限",
+            "保证全部状态消失",
+            "保证并发不占容量"
           ],
           "correct_index": 1,
           "explanation": "表示优化不取消容量约束。",
           "dimension": "debug"
         },
         {
-          "key": "l7-tungsten-encoding/proof/assessment-v1",
+          "key": "l7-tungsten-encoding/proof/assessment-v3",
           "knowledge_id": "l7-tungsten-encoding/proof",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：替换UDF且结果正确，下一项？",
+          "prompt": "独立验证：Tungsten 与编码字节级：替换UDF且结果正确，下一项？",
           "options": [
-            "固定宣布快十倍",
-            "无需再看计划",
-            "同条件核对资源与耗时",
-            "删除回退"
+            "换UDF即固定加速比",
+            "代码变短就可接受",
+            "同条件查耗时资源",
+            "仅以单次最快验收"
           ],
           "correct_index": 2,
           "explanation": "实施、正确性与收益分别验证。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-tungsten-encoding/proof/remediation-v1",
+          "key": "l7-tungsten-encoding/proof/remediation-v3",
           "knowledge_id": "l7-tungsten-encoding/proof",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Tungsten 与编码字节级：执行树变简单，如何评价收益？",
+          "prompt": "独立验证：Tungsten 与编码字节级：执行树变简单，如何评价收益？",
           "options": [
-            "固定宣布快十倍",
-            "无需再看计划",
-            "删除回退",
-            "同条件核对资源与耗时"
+            "换UDF即固定加速比",
+            "代码变短就可接受",
+            "仅以单次最快验收",
+            "同条件查耗时资源"
           ],
           "correct_index": 3,
           "explanation": "实施、正确性与收益分别验证。",
@@ -1326,164 +1386,174 @@
       "lesson_slug": "l7-executor-memory",
       "questions": [
         {
-          "key": "l7-executor-memory/driver/assessment-v1",
+          "key": "l7-executor-memory/driver/assessment-v2",
           "knowledge_id": "l7-executor-memory/driver",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：collect后Driver内存错误，先看？",
+          "prompt": "collect后Driver失败、Executor未报告同样错误，先检查？",
           "options": [
-            "Driver结果规模与容量",
-            "只调Executor heap即可",
-            "只改输出别名",
-            "先把所有记录再复制一次"
+            "Driver结果回传规模",
+            "Executor缓存块数量",
+            "Executor聚合状态大小",
+            "Shuffle写出文件数量"
           ],
           "correct_index": 0,
-          "explanation": "失败进程和工作类型是诊断起点。",
-          "dimension": "concept"
+          "explanation": "先定位失败进程，再限制结果回传。",
+          "dimension": "concept",
+          "task_id": "l7-executor-memory/driver"
         },
         {
-          "key": "l7-executor-memory/driver/review-v1",
+          "key": "l7-executor-memory/driver/review-v2",
           "knowledge_id": "l7-executor-memory/driver",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：Executor正常但Driver回传结果失败，先核对？",
+          "prompt": "只需要少量预览，哪种动作优先限制Driver返回规模？",
           "options": [
-            "只调Executor heap即可",
-            "Driver结果规模与容量",
-            "只改输出别名",
-            "先把所有记录再复制一次"
+            "collect()[:5]",
+            "take(5)",
+            "cache().collect()",
+            "collect后再过滤"
           ],
           "correct_index": 1,
-          "explanation": "失败进程和工作类型是诊断起点。",
-          "dimension": "concept"
+          "explanation": "先定位失败进程，再限制结果回传。",
+          "dimension": "concept",
+          "task_id": "l7-executor-memory/driver"
         },
         {
-          "key": "l7-executor-memory/python/assessment-v1",
-          "knowledge_id": "l7-executor-memory/python",
+          "key": "l7-executor-memory/scope/assessment-v2",
+          "knowledge_id": "l7-executor-memory/scope",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：节点内存高，能都算JVM heap吗？",
+          "prompt": "节点总内存上升，能把全部占用都算作JVM heap吗？",
           "options": [
-            "能，所有资源同一池",
-            "只看压缩文件",
-            "不能，需区分进程与口径",
-            "只看文件后缀"
+            "能，Python与JVM共用同一堆",
+            "能，缓存块代表所有占用",
+            "不能，需分进程核对",
+            "能，节点占用就是heap上限"
           ],
           "correct_index": 2,
-          "explanation": "JVM、Python与其他开销需要分别核对。",
-          "dimension": "apply"
+          "explanation": "JVM、Python和其他开销不是同一统计口径。",
+          "dimension": "apply",
+          "task_id": "l7-executor-memory/scope"
         },
         {
-          "key": "l7-executor-memory/python/review-v1",
-          "knowledge_id": "l7-executor-memory/python",
+          "key": "l7-executor-memory/scope/review-v2",
+          "knowledge_id": "l7-executor-memory/scope",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：带Python任务时，只看一个JVM指标足够吗？",
+          "prompt": "Python进程占用上升但JVM heap稳定，下一步更合理的是？",
           "options": [
-            "能，所有资源同一池",
-            "只看压缩文件",
-            "只看文件后缀",
-            "不能，需区分进程与口径"
+            "只提高JVM堆内缓存比例",
+            "仅查看缓存块数量",
+            "仅增加广播阈值",
+            "检查Python及节点限制"
           ],
           "correct_index": 3,
-          "explanation": "JVM、Python与其他开销需要分别核对。",
-          "dimension": "apply"
+          "explanation": "JVM、Python和其他开销不是同一统计口径。",
+          "dimension": "apply",
+          "task_id": "l7-executor-memory/scope"
         },
         {
-          "key": "l7-executor-memory/cache/assessment-v1",
-          "knowledge_id": "l7-executor-memory/cache",
+          "key": "l7-executor-memory/idle-borrow/assessment-v2",
+          "knowledge_id": "l7-executor-memory/idle-borrow",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：cache占用永远不可逐出吗？",
+          "prompt": "简化容量图M=100、R=50，当前E=0、S=0。执行请求70，会被R固定卡在50吗？",
           "options": [
-            "不能，要查具体规则",
-            "能，所有缓存永久固定",
-            "cache就必OOM",
-            "执行不用任何内存"
+            "不会，空闲可共享",
+            "会，R是执行的上限",
+            "会，必须先装入50缓存",
+            "会，执行只能用M-R"
           ],
           "correct_index": 0,
-          "explanation": "容量、级别、逐出和复用收益需具体理解。",
-          "dimension": "mechanism"
+          "explanation": "空闲可共享，R是缓存保护阈值，不是双方固定配额。",
+          "dimension": "mechanism",
+          "task_id": "l7-executor-memory/bridge-idle-borrow"
         },
         {
-          "key": "l7-executor-memory/cache/review-v1",
-          "knowledge_id": "l7-executor-memory/cache",
+          "key": "l7-executor-memory/idle-borrow/review-v2",
+          "knowledge_id": "l7-executor-memory/idle-borrow",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：共享内存机制能用“无限互借”概括吗？",
+          "prompt": "M=120、R=60且无执行占用，空闲充分。缓存能否使用超过60的空间？",
           "options": [
-            "能，所有缓存永久固定",
-            "不能，要查具体规则",
-            "cache就必OOM",
-            "执行不用任何内存"
+            "不能，R是缓存绝对上限",
+            "可以，R不是缓存上限",
+            "不能，执行必须永久占一半",
+            "不能，空闲也只能由执行用"
           ],
           "correct_index": 1,
-          "explanation": "容量、级别、逐出和复用收益需具体理解。",
-          "dimension": "mechanism"
+          "explanation": "空闲可共享，R是缓存保护阈值，不是双方固定配额。",
+          "dimension": "mechanism",
+          "task_id": "l7-executor-memory/bridge-idle-borrow"
         },
         {
-          "key": "l7-executor-memory/economics/assessment-v1",
-          "knowledge_id": "l7-executor-memory/economics",
+          "key": "l7-executor-memory/reclaim/assessment-v2",
+          "knowledge_id": "l7-executor-memory/reclaim",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：合成模型：预热8、每读2、使用3次，总缓存成本？",
+          "prompt": "简化模型M=100、R=50、S=80、E=0；执行目标40。先用空闲后，仅回收不足部分，应逐出多少缓存？",
           "options": [
-            "6",
-            "8",
-            "14",
-            "24"
+            "40",
+            "50",
+            "20",
+            "80"
           ],
           "correct_index": 2,
-          "explanation": "模型中预热与每次读取都需计入，不是实际运行秒数。",
-          "dimension": "debug"
+          "explanation": "先用已有空闲，再回收R以上缓存中满足目标所缺部分；不模拟块粒度或任务公平性。",
+          "dimension": "debug",
+          "task_id": "l7-executor-memory/bridge-execution-reclaim"
         },
         {
-          "key": "l7-executor-memory/economics/remediation-v1",
-          "knowledge_id": "l7-executor-memory/economics",
+          "key": "l7-executor-memory/reclaim/remediation-v2",
+          "knowledge_id": "l7-executor-memory/reclaim",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：合成模型：预热12、每读1、使用5次，总缓存成本？",
+          "prompt": "简化模型M=200、R=80、S=160、E=0；执行目标100。仅回收不足部分，逐出多少？",
           "options": [
-            "5",
-            "12",
-            "60",
-            "17"
+            "100",
+            "80",
+            "160",
+            "60"
           ],
           "correct_index": 3,
-          "explanation": "模型中预热与每次读取都需计入，不是实际运行秒数。",
-          "dimension": "debug"
+          "explanation": "先用已有空闲，再回收R以上缓存中满足目标所缺部分；不模拟块粒度或任务公平性。",
+          "dimension": "debug",
+          "task_id": "l7-executor-memory/bridge-execution-reclaim"
         },
         {
-          "key": "l7-executor-memory/max/assessment-v1",
-          "knowledge_id": "l7-executor-memory/max",
+          "key": "l7-executor-memory/protected/assessment-v2",
+          "knowledge_id": "l7-executor-memory/protected",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：平均分区小但最大巨大，内存应重点看？",
+          "prompt": "M=100、R=50、S=80、E=0；仅凭空闲和保护线外缓存，执行最多可获得多少？",
           "options": [
-            "最大工作集与并发余量",
-            "只看总平均",
-            "只看名字",
-            "认定所有分区完全一样"
+            "50",
+            "20",
+            "80",
+            "100"
           ],
           "correct_index": 0,
-          "explanation": "局部峰值与并发共同决定容量风险。",
-          "dimension": "transfer"
+          "explanation": "执行回收缓存有保护阈值；存储不能反向逐出执行已占用空间。这是总体容量模型，不是单任务配额保证。",
+          "dimension": "transfer",
+          "task_id": "l7-executor-memory/bridge-protected-limit"
         },
         {
-          "key": "l7-executor-memory/max/remediation-v1",
-          "knowledge_id": "l7-executor-memory/max",
+          "key": "l7-executor-memory/protected/remediation-v2",
+          "knowledge_id": "l7-executor-memory/protected",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Executor 内存模型与 OOM 根因：并发task状态大，只看整表均值够吗？",
+          "prompt": "M=100、R=50、E=80、S=0；缓存请求50，能逐出30执行占用来满足吗？",
           "options": [
-            "只看总平均",
-            "最大工作集与并发余量",
-            "只看名字",
-            "认定所有分区完全一样"
+            "能，R保证即时分配50",
+            "不能，存储不逐出执行",
+            "能，双方能任意抢占",
+            "能，缓存优先于执行"
           ],
           "correct_index": 1,
-          "explanation": "局部峰值与并发共同决定容量风险。",
-          "dimension": "transfer"
+          "explanation": "执行回收缓存有保护阈值；存储不能反向逐出执行已占用空间。这是总体容量模型，不是单任务配额保证。",
+          "dimension": "transfer",
+          "task_id": "l7-executor-memory/bridge-protected-limit"
         }
       ]
     },
@@ -1491,160 +1561,160 @@
       "lesson_slug": "l7-shuffle-partitions",
       "questions": [
         {
-          "key": "l7-shuffle-partitions/tiny/assessment-v1",
+          "key": "l7-shuffle-partitions/tiny/assessment-v3",
           "knowledge_id": "l7-shuffle-partitions/tiny",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：多数task极短且调度高，合理实验？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：多数task极短且调度高，合理实验？",
           "options": [
-            "无条件再增百倍",
-            "删除数据",
-            "评估减少过碎任务",
-            "认定管理免费"
+            "继续增加小任务",
+            "只增内存不改粒度",
+            "试减少过碎任务",
+            "仅降低输出的精度"
           ],
           "correct_index": 2,
           "explanation": "按负载调整粒度，而不是固定更多更好。",
           "dimension": "concept"
         },
         {
-          "key": "l7-shuffle-partitions/tiny/review-v1",
+          "key": "l7-shuffle-partitions/tiny/review-v3",
           "knowledge_id": "l7-shuffle-partitions/tiny",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：数据不大任务太碎，应先试什么方向？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：数据不大任务太碎，应先试什么方向？",
           "options": [
-            "无条件再增百倍",
-            "删除数据",
-            "认定管理免费",
-            "评估减少过碎任务"
+            "继续增加小任务",
+            "只增内存不改粒度",
+            "仅降低输出的精度",
+            "试减少过碎任务"
           ],
           "correct_index": 3,
           "explanation": "按负载调整粒度，而不是固定更多更好。",
           "dimension": "concept"
         },
         {
-          "key": "l7-shuffle-partitions/hot/assessment-v1",
+          "key": "l7-shuffle-partitions/hot/assessment-v3",
           "knowledge_id": "l7-shuffle-partitions/hot",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：一个键占80%，加分区保证均分该键吗？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：一个键占80%，加分区保证均分该键吗？",
           "options": [
-            "不能，需针对热点",
-            "保证均分",
-            "自动删除热键",
-            "自动降低业务金额"
+            "仍不保证拆散热键",
+            "同键记录自动均分",
+            "每区自动仅剩一键",
+            "每项工作量必相同"
           ],
           "correct_index": 0,
           "explanation": "同键位置约束不能仅靠更多容器解除。",
           "dimension": "apply"
         },
         {
-          "key": "l7-shuffle-partitions/hot/review-v1",
+          "key": "l7-shuffle-partitions/hot/review-v3",
           "knowledge_id": "l7-shuffle-partitions/hot",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：按键路由热点仍集中，数量翻倍必解决吗？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：按键路由热点仍集中，数量翻倍必解决吗？",
           "options": [
-            "保证均分",
-            "不能，需针对热点",
-            "自动删除热键",
-            "自动降低业务金额"
+            "同键记录自动均分",
+            "仍不保证拆散热键",
+            "每区自动仅剩一键",
+            "每项工作量必相同"
           ],
           "correct_index": 1,
           "explanation": "同键位置约束不能仅靠更多容器解除。",
           "dimension": "apply"
         },
         {
-          "key": "l7-shuffle-partitions/aqe/assessment-v1",
+          "key": "l7-shuffle-partitions/aqe/assessment-v3",
           "knowledge_id": "l7-shuffle-partitions/aqe",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：设置200后AQE可能调整最终划分吗？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：设置200后AQE可能调整最终划分吗？",
           "options": [
-            "永远所有阶段200",
-            "表示200行输出",
-            "可能调整，核对最终执行",
-            "表示200台机器"
+            "各阶段固定200task",
+            "结果固定200条记录",
+            "最终任务划分仍可能调整",
+            "输入固定200个文件"
           ],
           "correct_index": 2,
           "explanation": "配置与实际执行分开记录。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-shuffle-partitions/aqe/review-v1",
+          "key": "l7-shuffle-partitions/aqe/review-v3",
           "knowledge_id": "l7-shuffle-partitions/aqe",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：初始配置能代表所有阶段最终task数吗？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：初始配置能代表所有阶段最终task数吗？",
           "options": [
-            "永远所有阶段200",
-            "表示200行输出",
-            "表示200台机器",
-            "可能调整，核对最终执行"
+            "各阶段固定200task",
+            "结果固定200条记录",
+            "输入固定200个文件",
+            "最终任务划分仍可能调整"
           ],
           "correct_index": 3,
           "explanation": "配置与实际执行分开记录。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-shuffle-partitions/large/assessment-v1",
+          "key": "l7-shuffle-partitions/large/assessment-v3",
           "knowledge_id": "l7-shuffle-partitions/large",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：task状态巨大并spill，应该核对？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：task状态巨大并spill，应该核对？",
           "options": [
-            "负载、状态与并发容量",
-            "只改文件名",
-            "只看代码长度",
-            "保证分区越多越好"
+            "工作集状态与并发",
+            "仅全局平均分区量",
+            "仅最终聚合输出量",
+            "仅磁盘文件压缩量"
           ],
           "correct_index": 0,
           "explanation": "粒度、工作集和资源需一起评估。",
           "dimension": "debug"
         },
         {
-          "key": "l7-shuffle-partitions/large/remediation-v1",
+          "key": "l7-shuffle-partitions/large/remediation-v3",
           "knowledge_id": "l7-shuffle-partitions/large",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：内存峰值高且并发多个task，应看？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：内存峰值高且并发多个task，应看？",
           "options": [
-            "只改文件名",
-            "负载、状态与并发容量",
-            "只看代码长度",
-            "保证分区越多越好"
+            "仅全局平均分区量",
+            "工作集状态与并发",
+            "仅最终聚合输出量",
+            "仅磁盘文件压缩量"
           ],
           "correct_index": 1,
           "explanation": "粒度、工作集和资源需一起评估。",
           "dimension": "debug"
         },
         {
-          "key": "l7-shuffle-partitions/invariance/assessment-v1",
+          "key": "l7-shuffle-partitions/invariance/assessment-v3",
           "knowledge_id": "l7-shuffle-partitions/invariance",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：换分区前后指标不同，应先？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：换分区前后指标不同，应先？",
           "options": [
-            "只看速度",
-            "删除旧断言",
-            "修正正确性，不算成功",
-            "按新行数宣称收益"
+            "更快即可验收",
+            "删除逐组断言",
+            "先修正确性",
+            "少行即有收益"
           ],
           "correct_index": 2,
           "explanation": "性能设置不应改变业务结果。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-shuffle-partitions/invariance/remediation-v1",
+          "key": "l7-shuffle-partitions/invariance/remediation-v3",
           "knowledge_id": "l7-shuffle-partitions/invariance",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "Shuffle 分区数怎么定：调参少了一地区，怎样评价？",
+          "prompt": "独立验证：Shuffle 分区数怎么定：调参少了一地区，怎样评价？",
           "options": [
-            "只看速度",
-            "删除旧断言",
-            "按新行数宣称收益",
-            "修正正确性，不算成功"
+            "更快即可验收",
+            "删除逐组断言",
+            "少行即有收益",
+            "先修正确性"
           ],
           "correct_index": 3,
           "explanation": "性能设置不应改变业务结果。",
@@ -1656,160 +1726,160 @@
       "lesson_slug": "l7-broadcast-threshold",
       "questions": [
         {
-          "key": "l7-broadcast-threshold/stats/assessment-v1",
+          "key": "l7-broadcast-threshold/stats/assessment-v3",
           "knowledge_id": "l7-broadcast-threshold/stats",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "广播阈值调优：计划估计陈旧，第一步？",
+          "prompt": "独立验证：广播阈值调优：计划估计陈旧，第一步？",
           "options": [
-            "核对来源、统计与实际规模",
-            "阈值无限大",
-            "只看文件名",
-            "保证优化器永远精确"
+            "核对统计与规模",
+            "沿旧统计提阈值",
+            "按压缩量定阈值",
+            "按结果条数定阈值"
           ],
           "correct_index": 0,
           "explanation": "统计质量影响选型，不靠盲目参数代替证据。",
           "dimension": "concept"
         },
         {
-          "key": "l7-broadcast-threshold/stats/review-v1",
+          "key": "l7-broadcast-threshold/stats/review-v3",
           "knowledge_id": "l7-broadcast-threshold/stats",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "广播阈值调优：新数据规模变了但统计未更新，应先？",
+          "prompt": "独立验证：广播阈值调优：新数据规模变了但统计未更新，应先？",
           "options": [
-            "阈值无限大",
-            "核对来源、统计与实际规模",
-            "只看文件名",
-            "保证优化器永远精确"
+            "沿旧统计提阈值",
+            "核对统计与规模",
+            "按压缩量定阈值",
+            "按结果条数定阈值"
           ],
           "correct_index": 1,
           "explanation": "统计质量影响选型，不靠盲目参数代替证据。",
           "dimension": "concept"
         },
         {
-          "key": "l7-broadcast-threshold/capacity/assessment-v1",
+          "key": "l7-broadcast-threshold/capacity/assessment-v3",
           "knowledge_id": "l7-broadcast-threshold/capacity",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "广播阈值调优：压缩文件小就安全广播吗？",
+          "prompt": "独立验证：广播阈值调优：压缩文件小就安全广播吗？",
           "options": [
-            "够，文件大小就是内存",
-            "保证永不OOM",
-            "不够，核对构建与容量",
-            "只看总磁盘空间"
+            "文件字节即内存",
+            "整侧按节点分摊",
+            "还需看构建容量",
+            "低于阈值必安全"
           ],
           "correct_index": 2,
           "explanation": "展开、哈希结构、并发与节点余量都相关。",
           "dimension": "apply"
         },
         {
-          "key": "l7-broadcast-threshold/capacity/review-v1",
+          "key": "l7-broadcast-threshold/capacity/review-v3",
           "knowledge_id": "l7-broadcast-threshold/capacity",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "广播阈值调优：并发多条查询，只看单文件体积够吗？",
+          "prompt": "独立验证：广播阈值调优：并发多条查询，只看单文件体积够吗？",
           "options": [
-            "够，文件大小就是内存",
-            "保证永不OOM",
-            "只看总磁盘空间",
-            "不够，核对构建与容量"
+            "文件字节即内存",
+            "整侧按节点分摊",
+            "低于阈值必安全",
+            "还需看构建容量"
           ],
           "correct_index": 3,
           "explanation": "展开、哈希结构、并发与节点余量都相关。",
           "dimension": "apply"
         },
         {
-          "key": "l7-broadcast-threshold/disable/assessment-v1",
+          "key": "l7-broadcast-threshold/disable/assessment-v3",
           "knowledge_id": "l7-broadcast-threshold/disable",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "广播阈值调优：关闭自动阈值就禁全部显式广播吗？",
+          "prompt": "独立验证：广播阈值调优：关闭自动阈值就禁全部显式广播吗？",
           "options": [
-            "不能，控制层次不同",
-            "能，所有层都全禁",
-            "所有JOIN必失败",
-            "自动改成CROSS"
+            "不能混同控制层次",
+            "显式提示同时全禁",
+            "广播变量同时全禁",
+            "自适应广播同时全禁"
           ],
           "correct_index": 0,
           "explanation": "自动、显式和自适应控制要分别看。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-broadcast-threshold/disable/review-v1",
+          "key": "l7-broadcast-threshold/disable/review-v3",
           "knowledge_id": "l7-broadcast-threshold/disable",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "广播阈值调优：单个自动参数能保证AQE广播也关闭吗？",
+          "prompt": "独立验证：广播阈值调优：单个自动参数能保证AQE广播也关闭吗？",
           "options": [
-            "能，所有层都全禁",
-            "不能，控制层次不同",
-            "所有JOIN必失败",
-            "自动改成CROSS"
+            "显式提示同时全禁",
+            "不能混同控制层次",
+            "广播变量同时全禁",
+            "自适应广播同时全禁"
           ],
           "correct_index": 1,
           "explanation": "自动、显式和自适应控制要分别看。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-broadcast-threshold/condition/assessment-v1",
+          "key": "l7-broadcast-threshold/condition/assessment-v3",
           "knowledge_id": "l7-broadcast-threshold/condition",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "广播阈值调优：非等值条件给广播hint，必BHJ吗？",
+          "prompt": "独立验证：广播阈值调优：非等值条件给广播hint，必BHJ吗？",
           "options": [
-            "能，任何条件固定BHJ",
-            "自动改成等号",
-            "不能，需看适用路线",
-            "无需验证结果"
+            "提示强制采用哈希",
+            "提示自动补等值键",
+            "还需核对适用路线",
+            "提示允许忽略条件"
           ],
           "correct_index": 2,
           "explanation": "提示不改变业务条件或取消适用性。",
           "dimension": "debug"
         },
         {
-          "key": "l7-broadcast-threshold/condition/remediation-v1",
+          "key": "l7-broadcast-threshold/condition/remediation-v3",
           "knowledge_id": "l7-broadcast-threshold/condition",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "广播阈值调优：hint能取消算法支持范围吗？",
+          "prompt": "独立验证：广播阈值调优：hint能取消算法支持范围吗？",
           "options": [
-            "能，任何条件固定BHJ",
-            "自动改成等号",
-            "无需验证结果",
-            "不能，需看适用路线"
+            "提示强制采用哈希",
+            "提示自动补等值键",
+            "提示允许忽略条件",
+            "还需核对适用路线"
           ],
           "correct_index": 3,
           "explanation": "提示不改变业务条件或取消适用性。",
           "dimension": "debug"
         },
         {
-          "key": "l7-broadcast-threshold/rollback/assessment-v1",
+          "key": "l7-broadcast-threshold/rollback/assessment-v3",
           "knowledge_id": "l7-broadcast-threshold/rollback",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "广播阈值调优：实际广播但更慢且内存高，应？",
+          "prompt": "独立验证：广播阈值调优：实际广播但更慢且内存高，应？",
           "options": [
-            "可回退并复查容量/路线",
-            "只报hint已采用即成功",
-            "继续盲目抬阈值",
-            "隐藏原指标"
+            "回退后重新核对容量",
+            "仅因节点采用保留",
+            "仅延超时继续广播",
+            "仅加分区继续广播"
           ],
           "correct_index": 0,
           "explanation": "采用和收益不是同一结论。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-broadcast-threshold/rollback/remediation-v1",
+          "key": "l7-broadcast-threshold/rollback/remediation-v3",
           "knowledge_id": "l7-broadcast-threshold/rollback",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "广播阈值调优：节点改变后目标指标退化，应如何交付？",
+          "prompt": "独立验证：广播阈值调优：节点改变后目标指标退化，应如何交付？",
           "options": [
-            "只报hint已采用即成功",
-            "可回退并复查容量/路线",
-            "继续盲目抬阈值",
-            "隐藏原指标"
+            "仅因节点采用保留",
+            "回退后重新核对容量",
+            "仅延超时继续广播",
+            "仅加分区继续广播"
           ],
           "correct_index": 1,
           "explanation": "采用和收益不是同一结论。",
@@ -1821,160 +1891,160 @@
       "lesson_slug": "l7-aqe",
       "questions": [
         {
-          "key": "l7-aqe/actual/assessment-v1",
+          "key": "l7-aqe/actual/assessment-v3",
           "knowledge_id": "l7-aqe/actual",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：默认说已开启，还应查什么？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：默认说已开启，还应查什么？",
           "options": [
-            "只背默认值",
-            "所有子功能必应用",
-            "实际配置、版本与执行效果",
-            "所有查询必转换"
+            "仅背文档默认值",
+            "仅看单个子开关",
+            "实际配置与执行",
+            "仅看源码有无JOIN"
           ],
           "correct_index": 2,
           "explanation": "默认、覆盖值、适用性与实际采用不同。",
           "dimension": "concept"
         },
         {
-          "key": "l7-aqe/actual/review-v1",
+          "key": "l7-aqe/actual/review-v3",
           "knowledge_id": "l7-aqe/actual",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：新版本默认值能替代应用实际状态吗？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：新版本默认值能替代应用实际状态吗？",
           "options": [
-            "只背默认值",
-            "所有子功能必应用",
-            "所有查询必转换",
-            "实际配置、版本与执行效果"
+            "仅背文档默认值",
+            "仅看单个子开关",
+            "仅看源码有无JOIN",
+            "实际配置与执行"
           ],
           "correct_index": 3,
           "explanation": "默认、覆盖值、适用性与实际采用不同。",
           "dimension": "concept"
         },
         {
-          "key": "l7-aqe/final/assessment-v1",
+          "key": "l7-aqe/final/assessment-v3",
           "knowledge_id": "l7-aqe/final",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：isFinalPlan=false应怎样看？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：isFinalPlan=false应怎样看？",
           "options": [
-            "运行后核对最终计划与指标",
-            "证明优化器坏了",
-            "保证不会变化",
-            "可以固定承诺stage数"
+            "执行后核对最终计划指标",
+            "当前初始图就是定论",
+            "提示源码就是采用证据",
+            "配置数值就是采用证据"
           ],
           "correct_index": 0,
           "explanation": "初始计划不是最终运行事实。",
           "dimension": "apply"
         },
         {
-          "key": "l7-aqe/final/review-v1",
+          "key": "l7-aqe/final/review-v3",
           "knowledge_id": "l7-aqe/final",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：执行前的AQE计划能当最终证据吗？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：执行前的AQE计划能当最终证据吗？",
           "options": [
-            "证明优化器坏了",
-            "运行后核对最终计划与指标",
-            "保证不会变化",
-            "可以固定承诺stage数"
+            "当前初始图就是定论",
+            "执行后核对最终计划指标",
+            "提示源码就是采用证据",
+            "配置数值就是采用证据"
           ],
           "correct_index": 1,
           "explanation": "初始计划不是最终运行事实。",
           "dimension": "apply"
         },
         {
-          "key": "l7-aqe/merge/assessment-v1",
+          "key": "l7-aqe/merge/assessment-v3",
           "knowledge_id": "l7-aqe/merge",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：task数减少且结果一致，可能是？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：task数减少且结果一致，可能是？",
           "options": [
-            "必丢掉业务行",
-            "所有查询固定减半",
-            "结合最终计划确认自适应调整",
-            "等于分区字段删掉了"
+            "直接认定丢业务行",
+            "直接认定输入变少",
+            "结合最终计划确认",
+            "认定所有查询减半"
           ],
           "correct_index": 2,
           "explanation": "调度划分变化不直接表示结果行变化。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-aqe/merge/review-v1",
+          "key": "l7-aqe/merge/review-v3",
           "knowledge_id": "l7-aqe/merge",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：小Shuffle分区执行后合并，需如何说明？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：小Shuffle分区执行后合并，需如何说明？",
           "options": [
-            "必丢掉业务行",
-            "所有查询固定减半",
-            "等于分区字段删掉了",
-            "结合最终计划确认自适应调整"
+            "直接认定丢业务行",
+            "直接认定输入变少",
+            "认定所有查询减半",
+            "结合最终计划确认"
           ],
           "correct_index": 3,
           "explanation": "调度划分变化不直接表示结果行变化。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-aqe/semantics/assessment-v1",
+          "key": "l7-aqe/semantics/assessment-v3",
           "knowledge_id": "l7-aqe/semantics",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：维表重复金额翻倍，AQE能定义正确保留规则吗？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：维表重复金额翻倍，AQE能定义正确保留规则吗？",
           "options": [
-            "不能，先修结果契约",
-            "能，自动按业务意图更改",
-            "只调更多参数",
-            "只看更快"
+            "先修正业务结果契约",
+            "自动按意图去重",
+            "自动按金额选维度",
+            "自动恢复丢失订单"
           ],
           "correct_index": 0,
           "explanation": "物理优化应保持原语义，不替代业务校验。",
           "dimension": "debug"
         },
         {
-          "key": "l7-aqe/semantics/remediation-v1",
+          "key": "l7-aqe/semantics/remediation-v3",
           "knowledge_id": "l7-aqe/semantics",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：SQL语义错了，可等自适应自动修业务吗？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：SQL语义错了，可等自适应自动修业务吗？",
           "options": [
-            "能，自动按业务意图更改",
-            "不能，先修结果契约",
-            "只调更多参数",
-            "只看更快"
+            "自动按意图去重",
+            "先修正业务结果契约",
+            "自动按金额选维度",
+            "自动恢复丢失订单"
           ],
           "correct_index": 1,
           "explanation": "物理优化应保持原语义，不替代业务校验。",
           "dimension": "debug"
         },
         {
-          "key": "l7-aqe/scope/assessment-v1",
+          "key": "l7-aqe/scope/assessment-v3",
           "knowledge_id": "l7-aqe/scope",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：子开关true而总开关未知，可认定生效吗？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：子开关true而总开关未知，可认定生效吗？",
           "options": [
-            "能，配置即验证",
-            "必修复所有输入",
-            "不能，还需核对条件与效果",
-            "自动完成文字诊断"
+            "子开关即全部生效",
+            "所有查询均用此功能",
+            "配置不足以证明",
+            "所有倾斜均已解决"
           ],
           "correct_index": 2,
           "explanation": "开启机制不等于特定优化实际采用。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-aqe/scope/remediation-v1",
+          "key": "l7-aqe/scope/remediation-v3",
           "knowledge_id": "l7-aqe/scope",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "AQE：让 Spark 在运行时自我修正：AQE开了就保证所有倾斜处理成功吗？",
+          "prompt": "独立验证：AQE：让 Spark 在运行时自我修正：AQE开了就保证所有倾斜处理成功吗？",
           "options": [
-            "能，配置即验证",
-            "必修复所有输入",
-            "自动完成文字诊断",
-            "不能，还需核对条件与效果"
+            "子开关即全部生效",
+            "所有查询均用此功能",
+            "所有倾斜均已解决",
+            "配置不足以证明"
           ],
           "correct_index": 3,
           "explanation": "开启机制不等于特定优化实际采用。",
@@ -1986,32 +2056,32 @@
       "lesson_slug": "l7-skew-tuning",
       "questions": [
         {
-          "key": "l7-skew-tuning/tail/assessment-v1",
+          "key": "l7-skew-tuning/tail/assessment-v3",
           "knowledge_id": "l7-skew-tuning/tail",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：最大耗时远超中位数足以唯一定位热键吗？",
+          "prompt": "独立验证：数据倾斜实战处理：最大耗时远超中位数足以唯一定位热键吗？",
           "options": [
-            "不能，需联合证据",
-            "能，直接删除热键",
-            "只看平均即可",
-            "不用核对数据分布"
+            "仍需负载运行联合证据",
+            "长任务就是热键",
+            "可直接删最慢键",
+            "无须检查匹配基数"
           ],
           "correct_index": 0,
           "explanation": "症状需与负载和异常共同解释。",
           "dimension": "concept"
         },
         {
-          "key": "l7-skew-tuning/tail/review-v1",
+          "key": "l7-skew-tuning/tail/review-v3",
           "knowledge_id": "l7-skew-tuning/tail",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：有长尾就可忽略硬件/GC/字节吗？",
+          "prompt": "独立验证：数据倾斜实战处理：有长尾就可忽略硬件/GC/字节吗？",
           "options": [
-            "能，直接删除热键",
-            "不能，需联合证据",
-            "只看平均即可",
-            "不用核对数据分布"
+            "长任务就是热键",
+            "仍需负载运行联合证据",
+            "可直接删最慢键",
+            "无须检查匹配基数"
           ],
           "correct_index": 1,
           "explanation": "症状需与负载和异常共同解释。",
@@ -2050,96 +2120,96 @@
           "dimension": "apply"
         },
         {
-          "key": "l7-skew-tuning/salt/assessment-v1",
+          "key": "l7-skew-tuning/salt/assessment-v3",
           "knowledge_id": "l7-skew-tuning/salt",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：单边乱加盐不配套另一侧，主要风险？",
+          "prompt": "独立验证：数据倾斜实战处理：单边乱加盐不配套另一侧，主要风险？",
           "options": [
-            "匹配与还原是否漏重",
-            "只有变量名不够短",
-            "保证所有结果不变",
-            "只看行数即可认证"
+            "核对匹配与还原",
+            "仅看总行数相同",
+            "仅看总耗时下降",
+            "仅看键已经分散"
           ],
           "correct_index": 0,
           "explanation": "加盐必须保持原关系与指标语义。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-skew-tuning/salt/review-v1",
+          "key": "l7-skew-tuning/salt/review-v3",
           "knowledge_id": "l7-skew-tuning/salt",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：拆分聚合后没设计还原规则，先检查什么？",
+          "prompt": "独立验证：数据倾斜实战处理：拆分聚合后没设计还原规则，先检查什么？",
           "options": [
-            "只有变量名不够短",
-            "匹配与还原是否漏重",
-            "保证所有结果不变",
-            "只看行数即可认证"
+            "仅看总行数相同",
+            "核对匹配与还原",
+            "仅看总耗时下降",
+            "仅看键已经分散"
           ],
           "correct_index": 1,
           "explanation": "加盐必须保持原关系与指标语义。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-skew-tuning/null/assessment-v1",
+          "key": "l7-skew-tuning/null/assessment-v3",
           "knowledge_id": "l7-skew-tuning/null",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：业务要保留未知用户贡献，可直接删NULL热键吗？",
+          "prompt": "独立验证：数据倾斜实战处理：业务要保留未知用户贡献，可直接删NULL热键吗？",
           "options": [
-            "可以，NULL永远无用",
-            "可以，只看总耗时",
-            "不可以，先遵守业务口径",
-            "直接改INNER即可"
+            "未知用户不算业务",
+            "仅按耗时下降决定",
+            "不能，先守住缺失口径",
+            "LEFT统一改INNER"
           ],
           "correct_index": 2,
           "explanation": "缺失不是自动无效，不能用丢事实伪造收益。",
           "dimension": "debug"
         },
         {
-          "key": "l7-skew-tuning/null/remediation-v1",
+          "key": "l7-skew-tuning/null/remediation-v3",
           "knowledge_id": "l7-skew-tuning/null",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：为了快过滤掉合法未知键，是纯性能改动吗？",
+          "prompt": "独立验证：数据倾斜实战处理：为了快过滤掉合法未知键，是纯性能改动吗？",
           "options": [
-            "可以，NULL永远无用",
-            "可以，只看总耗时",
-            "直接改INNER即可",
-            "不可以，先遵守业务口径"
+            "未知用户不算业务",
+            "仅按耗时下降决定",
+            "LEFT统一改INNER",
+            "不能，先守住缺失口径"
           ],
           "correct_index": 3,
           "explanation": "缺失不是自动无效，不能用丢事实伪造收益。",
           "dimension": "debug"
         },
         {
-          "key": "l7-skew-tuning/measure/assessment-v1",
+          "key": "l7-skew-tuning/measure/assessment-v3",
           "knowledge_id": "l7-skew-tuning/measure",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：分区加倍热键仍集中，下一步？",
+          "prompt": "独立验证：数据倾斜实战处理：分区加倍热键仍集中，下一步？",
           "options": [
-            "核对逐组/匹配与实际负载",
-            "只比较总行数就结束",
-            "只增加参数",
-            "不再看语义"
+            "核对逐组结果及实际负载",
+            "仅比较总输出行数",
+            "仅继续调高分区数",
+            "仅比较SQL源码长度"
           ],
           "correct_index": 0,
           "explanation": "相同行数仍可能有错配和错误归属。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-skew-tuning/measure/remediation-v1",
+          "key": "l7-skew-tuning/measure/remediation-v3",
           "knowledge_id": "l7-skew-tuning/measure",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "数据倾斜实战处理：salting后总行数相同就够验证吗？",
+          "prompt": "独立验证：数据倾斜实战处理：salting后总行数相同就够验证吗？",
           "options": [
-            "只比较总行数就结束",
-            "核对逐组/匹配与实际负载",
-            "只增加参数",
-            "不再看语义"
+            "仅比较总输出行数",
+            "核对逐组结果及实际负载",
+            "仅继续调高分区数",
+            "仅比较SQL源码长度"
           ],
           "correct_index": 1,
           "explanation": "相同行数仍可能有错配和错误归属。",
@@ -2151,160 +2221,160 @@
       "lesson_slug": "l7-read-less-data",
       "questions": [
         {
-          "key": "l7-read-less-data/cached/assessment-v1",
+          "key": "l7-read-less-data/cached/assessment-v3",
           "knowledge_id": "l7-read-less-data/cached",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：Spark SQL列式缓存后一律读全列吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：Spark SQL列式缓存后一律读全列吗？",
           "options": [
-            "是，缓存取消所有列需求",
-            "所有缓存都无效",
-            "不是，仍可按所需列扫描",
-            "缓存保证永不重算"
+            "缓存即取消列需求",
+            "所有缓存均扫全列",
+            "仍可按所需列扫描",
+            "缓存块不区分字段"
           ],
           "correct_index": 2,
           "explanation": "列式缓存与所需字段扫描可同时存在。",
           "dimension": "concept"
         },
         {
-          "key": "l7-read-less-data/cached/review-v1",
+          "key": "l7-read-less-data/cached/review-v3",
           "knowledge_id": "l7-read-less-data/cached",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：缓存后列裁剪就绝对无意义吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：缓存后列裁剪就绝对无意义吗？",
           "options": [
-            "是，缓存取消所有列需求",
-            "所有缓存都无效",
-            "缓存保证永不重算",
-            "不是，仍可按所需列扫描"
+            "缓存即取消列需求",
+            "所有缓存均扫全列",
+            "缓存块不区分字段",
+            "仍可按所需列扫描"
           ],
           "correct_index": 3,
           "explanation": "列式缓存与所需字段扫描可同时存在。",
           "dimension": "concept"
         },
         {
-          "key": "l7-read-less-data/pushdown/assessment-v1",
+          "key": "l7-read-less-data/pushdown/assessment-v3",
           "knowledge_id": "l7-read-less-data/pushdown",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：只看到部分PushedFilters，其他条件能删吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：只看到部分PushedFilters，其他条件能删吗？",
           "options": [
-            "不能，残余语义仍需执行",
-            "能，只要更快",
-            "所有条件已必在源端完成",
-            "改列别名即可等价"
+            "未下推仍需残余过滤",
+            "未下推就可忽略",
+            "下推部分即全部条件",
+            "少读优先于业务条件"
           ],
           "correct_index": 0,
           "explanation": "数据源能力不取消业务条件。",
           "dimension": "apply"
         },
         {
-          "key": "l7-read-less-data/pushdown/review-v1",
+          "key": "l7-read-less-data/pushdown/review-v3",
           "knowledge_id": "l7-read-less-data/pushdown",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：源不能下推某条件，为少读可去掉它吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：源不能下推某条件，为少读可去掉它吗？",
           "options": [
-            "能，只要更快",
-            "不能，残余语义仍需执行",
-            "所有条件已必在源端完成",
-            "改列别名即可等价"
+            "未下推就可忽略",
+            "未下推仍需残余过滤",
+            "下推部分即全部条件",
+            "少读优先于业务条件"
           ],
           "correct_index": 1,
           "explanation": "数据源能力不取消业务条件。",
           "dimension": "apply"
         },
         {
-          "key": "l7-read-less-data/preaggregate/assessment-v1",
+          "key": "l7-read-less-data/preaggregate/assessment-v3",
           "knowledge_id": "l7-read-less-data/preaggregate",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：聚合挪到JOIN前，先验什么？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：聚合挪到JOIN前，先验什么？",
           "options": [
-            "只看变少即正确",
-            "所有改写都等价",
-            "粒度、匹配和指标等价",
-            "只看源码更短"
+            "仅看中间行变少",
+            "仅看全局总额同",
+            "粒度与指标等价",
+            "仅看SQL源码短"
           ],
           "correct_index": 2,
           "explanation": "外连接、重复键和非可加指标需特别核对。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-read-less-data/preaggregate/review-v1",
+          "key": "l7-read-less-data/preaggregate/review-v3",
           "knowledge_id": "l7-read-less-data/preaggregate",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：少传数据的改写，是否只看中间行数下降？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：少传数据的改写，是否只看中间行数下降？",
           "options": [
-            "只看变少即正确",
-            "所有改写都等价",
-            "只看源码更短",
-            "粒度、匹配和指标等价"
+            "仅看中间行变少",
+            "仅看全局总额同",
+            "仅看SQL源码短",
+            "粒度与指标等价"
           ],
           "correct_index": 3,
           "explanation": "外连接、重复键和非可加指标需特别核对。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-read-less-data/cache/assessment-v1",
+          "key": "l7-read-less-data/cache/assessment-v3",
           "knowledge_id": "l7-read-less-data/cache",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：只用一次且重算便宜，cache必赚吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：只用一次且重算便宜，cache必赚吗？",
           "options": [
-            "不一定，核对整体成本",
-            "永远赚且零资源",
-            "只看命中一次",
-            "所有结果永久不逐出"
+            "核对全流程缓存成本",
+            "登记缓存零开销",
+            "首次命中即回本",
+            "全部缓存永不逐出"
           ],
           "correct_index": 0,
           "explanation": "复用次数、预热、读取和资源成本一起决定。",
           "dimension": "debug"
         },
         {
-          "key": "l7-read-less-data/cache/remediation-v1",
+          "key": "l7-read-less-data/cache/remediation-v3",
           "knowledge_id": "l7-read-less-data/cache",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：缓存能忽略预热和容量吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：缓存能忽略预热和容量吗？",
           "options": [
-            "永远赚且零资源",
-            "不一定，核对整体成本",
-            "只看命中一次",
-            "所有结果永久不逐出"
+            "登记缓存零开销",
+            "核对全流程缓存成本",
+            "首次命中即回本",
+            "全部缓存永不逐出"
           ],
           "correct_index": 1,
           "explanation": "复用次数、预热、读取和资源成本一起决定。",
           "dimension": "debug"
         },
         {
-          "key": "l7-read-less-data/proof/assessment-v1",
+          "key": "l7-read-less-data/proof/assessment-v3",
           "knowledge_id": "l7-read-less-data/proof",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：ReadSchema减少就保证生产提速十倍吗？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：ReadSchema减少就保证生产提速十倍吗？",
           "options": [
-            "保证固定倍数",
-            "删掉未验范围",
-            "报告线索，收益另测",
-            "可以不验结果"
+            "裁剪比即加速比",
+            "少列即固定十倍",
+            "仅是线索，收益另测",
+            "计划对即生产快"
           ],
           "correct_index": 2,
           "explanation": "结构证据与实际收益不同。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-read-less-data/proof/remediation-v1",
+          "key": "l7-read-less-data/proof/remediation-v3",
           "knowledge_id": "l7-read-less-data/proof",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "最优先的调优：少读、少传、少算：看到计划减量线索后如何报告？",
+          "prompt": "独立验证：最优先的调优：少读、少传、少算：看到计划减量线索后如何报告？",
           "options": [
-            "保证固定倍数",
-            "删掉未验范围",
-            "可以不验结果",
-            "报告线索，收益另测"
+            "裁剪比即加速比",
+            "少列即固定十倍",
+            "计划对即生产快",
+            "仅是线索，收益另测"
           ],
           "correct_index": 3,
           "explanation": "结构证据与实际收益不同。",
@@ -2316,160 +2386,160 @@
       "lesson_slug": "l7-comprehensive",
       "questions": [
         {
-          "key": "l7-comprehensive/contract/assessment-v1",
+          "key": "l7-comprehensive/contract/assessment-v3",
           "knowledge_id": "l7-comprehensive/contract",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：改写前后全局总额相同但分组错，能通过吗？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：改写前后全局总额相同但分组错，能通过吗？",
           "options": [
-            "不能，先修业务不变量",
-            "能，只看总额",
-            "能，只看秒数",
-            "只看节点少"
+            "先修正逐组结果差异",
+            "总额同即业务同",
+            "行数同即可通过",
+            "更快就足以验收"
           ],
           "correct_index": 0,
           "explanation": "正确性先于性能结论。",
           "dimension": "concept"
         },
         {
-          "key": "l7-comprehensive/contract/review-v1",
+          "key": "l7-comprehensive/contract/review-v3",
           "knowledge_id": "l7-comprehensive/contract",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：更快但NULL地区丢失，能算成功吗？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：更快但NULL地区丢失，能算成功吗？",
           "options": [
-            "能，只看总额",
-            "不能，先修业务不变量",
-            "能，只看秒数",
-            "只看节点少"
+            "总额同即业务同",
+            "先修正逐组结果差异",
+            "行数同即可通过",
+            "更快就足以验收"
           ],
           "correct_index": 1,
           "explanation": "正确性先于性能结论。",
           "dimension": "concept"
         },
         {
-          "key": "l7-comprehensive/experiment/assessment-v1",
+          "key": "l7-comprehensive/experiment/assessment-v3",
           "knowledge_id": "l7-comprehensive/experiment",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：同时改六项只测一次，最大问题？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：同时改六项只测一次，最大问题？",
           "options": [
-            "所有改动必有效",
-            "结果同名就可忽略",
-            "混杂条件，归因不充分",
-            "短代码必是原因"
+            "短代码即原因",
+            "同列名即可归因",
+            "混杂难以归因",
+            "最快一次即可归因"
           ],
           "correct_index": 2,
           "explanation": "需要可比条件和可回退的对照。",
           "dimension": "apply"
         },
         {
-          "key": "l7-comprehensive/experiment/review-v1",
+          "key": "l7-comprehensive/experiment/review-v3",
           "knowledge_id": "l7-comprehensive/experiment",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：原冷缓存新热缓存，可直接归因代码吗？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：原冷缓存新热缓存，可直接归因代码吗？",
           "options": [
-            "所有改动必有效",
-            "结果同名就可忽略",
-            "短代码必是原因",
-            "混杂条件，归因不充分"
+            "短代码即原因",
+            "同列名即可归因",
+            "最快一次即可归因",
+            "混杂难以归因"
           ],
           "correct_index": 3,
           "explanation": "需要可比条件和可回退的对照。",
           "dimension": "apply"
         },
         {
-          "key": "l7-comprehensive/manual/assessment-v1",
+          "key": "l7-comprehensive/manual/assessment-v3",
           "knowledge_id": "l7-comprehensive/manual",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：自动脚本仅保存自由诊断文本，能认证推理质量吗？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：自动脚本仅保存自由诊断文本，能认证推理质量吗？",
           "options": [
-            "只覆盖明确自动检查",
-            "文字非空即推理必对",
-            "生产性能全部认证",
-            "所有版本均已验证"
+            "推理质量仍需人工复核",
+            "文字非空即论证正确",
+            "脚本成功即生产提速",
+            "保存即覆盖全部版本"
           ],
           "correct_index": 0,
           "explanation": "自动结果与人工诊断评分分开。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-comprehensive/manual/review-v1",
+          "key": "l7-comprehensive/manual/review-v3",
           "knowledge_id": "l7-comprehensive/manual",
           "purpose": "review",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：manual_review=required，应怎样理解PASS？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：manual_review=required，应怎样理解PASS？",
           "options": [
-            "文字非空即推理必对",
-            "只覆盖明确自动检查",
-            "生产性能全部认证",
-            "所有版本均已验证"
+            "文字非空即论证正确",
+            "推理质量仍需人工复核",
+            "脚本成功即生产提速",
+            "保存即覆盖全部版本"
           ],
           "correct_index": 1,
           "explanation": "自动结果与人工诊断评分分开。",
           "dimension": "mechanism"
         },
         {
-          "key": "l7-comprehensive/rollback/assessment-v1",
+          "key": "l7-comprehensive/rollback/assessment-v3",
           "knowledge_id": "l7-comprehensive/rollback",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：无收益的实验应该隐去吗？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：无收益的实验应该隐去吗？",
           "options": [
-            "隐藏负结果",
-            "只留下最快一次",
-            "保留证据并回退或拒绝",
-            "用改业务规则制造收益"
+            "仅展示最快的一次",
+            "仅展示成功的参数",
+            "保留负结果与证据",
+            "改业务口径造收益"
           ],
           "correct_index": 2,
           "explanation": "负结果也是可审查的实验信息。",
           "dimension": "debug"
         },
         {
-          "key": "l7-comprehensive/rollback/remediation-v1",
+          "key": "l7-comprehensive/rollback/remediation-v3",
           "knowledge_id": "l7-comprehensive/rollback",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：正确但代表指标更差，应怎样交付？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：正确但代表指标更差，应怎样交付？",
           "options": [
-            "隐藏负结果",
-            "只留下最快一次",
-            "用改业务规则制造收益",
-            "保留证据并回退或拒绝"
+            "仅展示最快的一次",
+            "仅展示成功的参数",
+            "改业务口径造收益",
+            "保留负结果与证据"
           ],
           "correct_index": 3,
           "explanation": "负结果也是可审查的实验信息。",
           "dimension": "debug"
         },
         {
-          "key": "l7-comprehensive/transfer/assessment-v1",
+          "key": "l7-comprehensive/transfer/assessment-v3",
           "knowledge_id": "l7-comprehensive/transfer",
           "purpose": "assessment",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：换数据与空输入，可靠实现应？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：换数据与空输入，可靠实现应？",
           "options": [
-            "按输入与契约计算",
-            "写死原样例",
-            "只看参考输出",
-            "固定返回同样总额"
+            "按输入契约计算",
+            "固定样例的总额",
+            "只换样例地区名",
+            "只在已知数据运行"
           ],
           "correct_index": 0,
           "explanation": "独立情境验证规则，不靠记答案。",
           "dimension": "transfer"
         },
         {
-          "key": "l7-comprehensive/transfer/remediation-v1",
+          "key": "l7-comprehensive/transfer/remediation-v3",
           "knowledge_id": "l7-comprehensive/transfer",
           "purpose": "remediation",
           "type": "single_choice",
-          "prompt": "综合练习（诊断清单与优先级）：新地区和NULL加入后，应依靠什么？",
+          "prompt": "独立验证：综合练习（诊断清单与优先级）：新地区和NULL加入后，应依靠什么？",
           "options": [
-            "写死原样例",
-            "按输入与契约计算",
-            "只看参考输出",
-            "固定返回同样总额"
+            "固定样例的总额",
+            "按输入契约计算",
+            "只换样例地区名",
+            "只在已知数据运行"
           ],
           "correct_index": 1,
           "explanation": "独立情境验证规则，不靠记答案。",

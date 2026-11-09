@@ -1,6 +1,6 @@
 {
   "slug": "l1-transformation",
-  "version": 1,
+  "version": 3,
   "title": "先写加工规则，再预测结果",
   "mission": "在 map、filter 与 flatMap 中选对数据形状。",
   "correction": "RDD 转换描述新计算，不等于 Catalyst 能理解任意 Python 函数体；记录增减不决定窄/宽依赖。",
@@ -25,17 +25,17 @@
             {
               "id": "o1",
               "text": "1、3、5",
-              "feedback": "没有应用平方规则。"
+              "feedback": "这个判断还不成立。map 为每个输入元素产生一个输出元素，结果内容由函数决定。"
             },
             {
               "id": "o0",
               "text": "1、9、25",
-              "feedback": "对，每元素独立平方。"
+              "feedback": "对。map 为每个输入元素产生一个输出元素，结果内容由函数决定。"
             },
             {
               "id": "o2",
-              "text": "只有 25",
-              "feedback": "map 不只保留最后一个。"
+              "text": "2、6、10",
+              "feedback": "这个判断还不成立。map 为每个输入元素产生一个输出元素，结果内容由函数决定。"
             }
           ]
         }
@@ -70,18 +70,18 @@
           "options": [
             {
               "id": "o0",
-              "text": "都只有一个字符串",
-              "feedback": "函数返回值决定形状。"
+              "text": "词元素；列表元素",
+              "feedback": "这个判断还不成立。flatMap 允许每个输入产生零到多个输出，并将这层结果展开。"
             },
             {
               "id": "o2",
-              "text": "flatMap 自动统计词频",
-              "feedback": "还需要按词计数。"
+              "text": "词及次数；词及次数",
+              "feedback": "这个判断还不成立。flatMap 允许每个输入产生零到多个输出，并将这层结果展开。"
             },
             {
               "id": "o1",
-              "text": "map 得到词列表元素；flatMap 展平成词元素",
-              "feedback": "对，展开与聚合是不同操作。"
+              "text": "列表元素；词元素",
+              "feedback": "对。flatMap 允许每个输入产生零到多个输出，并将这层结果展开。"
             }
           ]
         }
@@ -148,19 +148,30 @@
             {
               "id": "o0",
               "text": "4、7",
-              "feedback": "对，只保留严格正数。"
+              "feedback": "对。filter 保留谓词成立的元素，不能与数值变换混淆。"
             },
             {
               "id": "o1",
               "text": "0、4、7",
-              "feedback": "零不满足 >0。"
+              "feedback": "这个判断还不成立。filter 保留谓词成立的元素，不能与数值变换混淆。"
             },
             {
               "id": "o2",
               "text": "2、0、4、7",
-              "feedback": "filter 不把负数变正。"
+              "feedback": "这个判断还不成立。filter 保留谓词成立的元素，不能与数值变换混淆。"
             }
-          ]
+          ],
+          "input": {
+            "kind": "text",
+            "acceptedAnswers": [
+              "4,7",
+              "4、7",
+              "[4,7]",
+              "4 7"
+            ],
+            "placeholder": "用逗号分隔保留的数字",
+            "incorrectOptionId": "o1"
+          }
         }
       ],
       "insight": "filter 保留谓词成立的元素，不能与数值变换混淆。",
@@ -193,18 +204,18 @@
           "options": [
             {
               "id": "o1",
-              "text": "每个转换必独立跑一次完整 job",
-              "feedback": "运行划分要看实际依赖与执行。"
+              "text": "已执行完成的作业",
+              "feedback": "这个判断还不成立。转换链可推迟实际求值，并按依赖执行；不要把它等同于 SQL 优化器任意理解 Python 逻辑。"
             },
             {
               "id": "o0",
-              "text": "先定义计算链，实际执行与调度不按源码步骤固定计数",
-              "feedback": "对，别把转换调用数当 job 数。"
+              "text": "尚待求值的依赖链",
+              "feedback": "对。转换链可推迟实际求值，并按依赖执行；不要把它等同于 SQL 优化器任意理解 Python 逻辑。"
             },
             {
               "id": "o2",
-              "text": "原始数据被永久改写",
-              "feedback": "转换不是就地修改。"
+              "text": "已填充完成的缓存",
+              "feedback": "这个判断还不成立。转换链可推迟实际求值，并按依赖执行；不要把它等同于 SQL 优化器任意理解 Python 逻辑。"
             }
           ]
         }
