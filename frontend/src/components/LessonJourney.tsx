@@ -46,7 +46,7 @@ export default function LessonJourney({ lesson, detail }: { lesson: JourneyLesso
     <div className="dfj-body">
       {!saved && <p role="status" className="lj-storage-note">此设备暂时不能保存进度，本次练习仍可继续。</p>}
       {done ? <>
-        <p className="dfj-kicker">本节互动完成</p><h2 ref={heading} tabIndex={-1}>这次练会了什么？</h2>
+        <p className="dfj-kicker">本节互动完成</p><h2 ref={heading} tabIndex={-1} data-journey-heading>这次练会了什么？</h2>
         <ul className="dfj-outcomes">{lesson.tasks.map(t => <li key={t.id}><strong>{t.ability}</strong><small className="lj-evidence">{evidence(progress, t.id)}</small></li>)}</ul>
         <DelayedCheckLink />{lesson.tasks.some(t => t.remediation) && <p>离开这些题目至少 24 小时后，首页会出现「隔天验证」，换个情境看看还记得多少。请在当前浏览器继续，练习记录保存在本机。</p>}<p>{lesson.next}</p><p className="dfj-footnote">这是本设备的练习记录，不是独立编程能力认证。课后测验继续使用原有掌握与解锁规则。</p>
         {lesson.project && <div className="lj-project"><h3>把选择变成自己的代码</h3><p>下载输入和任务骨架，先独立实现，再对照。脚本在本地运行，应用不会自动判定你已掌握。</p><ProjectDownloads lesson={lesson} /><details><summary>展开参考实现下载</summary><p>{lesson.project.solutionNote ?? "参考实现写入每次新建的练习目录，不覆盖已有结果；包含逐地区验收断言。"}</p><a href={lesson.project.solution.href} download>{lesson.project.solution.label}</a></details></div>}
@@ -57,7 +57,7 @@ export default function LessonJourney({ lesson, detail }: { lesson: JourneyLesso
         <button className="btn-ghost" onClick={() => { save({ ...freshProgress(lesson), attempts: progress.attempts }); setAnswers({}); setResponses({}); setChecked(false); setRemediationActive(false); requestAnimationFrame(() => heading.current?.focus()); }}>重新练一遍</button>
       </> : remediationActive && task.remediation ? <JourneyRemediation key={task.remediation.id} remedy={task.remediation} onAnswer={answer => save(recordRemediation(lesson, progress, task.id, answer))} onReturn={() => { setRemediationActive(false); setAnswers({}); setResponses({}); setChecked(false); requestAnimationFrame(() => heading.current?.focus()); }} /> : <>
         <p className="dfj-kicker">第 {step + 1} 步 / 共 {lesson.tasks.length} 步 · {task.fields.some(f => f.input) ? "自己填写" : task.fields.length > 1 ? "补齐方案" : "推理判断"}</p>
-        <h2 ref={heading} tabIndex={-1}>{task.title}</h2>
+        <h2 ref={heading} tabIndex={-1} data-journey-heading>{task.title}</h2>
         {step === 0 && <p className="lj-mission">{lesson.mission}</p>}
         {step === 0 && lesson.project && <div className="lj-project"><strong>先自己动手，也可以边做边核对</strong><ProjectDownloads lesson={lesson} /></div>}
         <p>{task.intro}</p>{task.table && <div className="dfj-table-wrap"><table className="dfj-table"><caption>{task.table.caption ?? "订单样本"}</caption><thead><tr>{task.table.columns.map(c => <th key={c}>{c}</th>)}</tr></thead><tbody>{task.table.rows.map((r, i) => <tr key={i}>{r.map((v, j) => <td key={j}>{v}</td>)}</tr>)}</tbody></table></div>}<pre className="dfj-code"><code>{task.code}</code></pre><p><strong>{task.prompt}</strong></p>

@@ -12,7 +12,7 @@ export default function JourneyRemediation({ remedy, onAnswer, onReturn }: {
   const correct = answer === remedy.field.correctOptionId;
   return <div className="lj-remediation" aria-label="同知识点变式验证">
     <p className="dfj-kicker">换一道小题 · 先把这个点想通</p>
-    <h2 ref={heading} tabIndex={-1}>{remedy.title}</h2><p>{remedy.intro}</p>
+    <h2 ref={heading} tabIndex={-1} data-journey-heading>{remedy.title}</h2><p>{remedy.intro}</p>
     <pre className="dfj-code"><code>{remedy.code}</code></pre>
     <p><strong>{remedy.prompt}</strong></p>
     <fieldset className="dfj-options"><legend>{remedy.field.label}</legend>{remedy.field.options.map(o => <label key={o.id} className={`dfj-option${answer === o.id ? " dfj-selected" : ""}`}><input type="radio" name={remedy.id} checked={answer === o.id} disabled={checked} onChange={() => setAnswer(o.id)} /><span>{o.text}</span></label>)}</fieldset>

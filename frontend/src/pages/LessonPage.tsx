@@ -9,9 +9,11 @@ import capstoneBank from "../content/capstones.json";
 import CapstoneProject, { type Capstone } from "../components/CapstoneProject";
 import StandardGuide from "../components/StandardGuide";
 import RichText from "../components/RichText";
+import ReadingPanel from "../components/ReadingPanel";
 import "./LessonPage.css";
 
 function Reference({ compact, children, id, title = "展开完整讲解、示例与易错点" }: { compact: boolean; children: ReactNode; id?: string; title?: string }) {
+  if (compact && (id === "lesson-original" || id === "lesson-reference")) return <ReadingPanel id={id} title={title} collapseLabel="收起原文">{children}</ReadingPanel>;
   return compact ? <details className="dfj-reference" id={id}><summary>{title}</summary>{children}</details> : <>{children}</>;
 }
 
