@@ -21,7 +21,7 @@ class QuestionPolishTests(unittest.TestCase):
                     row=report[scope][chapter]
                     self.assertLess(row['longest_choice_accuracy_pct'],40)
                     self.assertLess(row['shortest_choice_accuracy_pct'],40)
-        self.assertEqual(report['journey_task_shapes']['free_response_fields'],5)
+        self.assertEqual(report['free_response_by_level']['l1'],5)
 
     def test_l1_and_memory_questions_trace_to_current_teaching(self):
         bank=json.loads((ROOT/'backend/app/l1_l7_reviewed_bank.json').read_text(encoding='utf-8'))

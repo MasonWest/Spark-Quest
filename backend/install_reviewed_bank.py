@@ -1,4 +1,4 @@
-"""Install all L1-L7 purpose banks. Dry-run default; --apply backs up first."""
+"""Install all L0-L7 purpose banks. Dry-run default; --apply backs up first."""
 import argparse
 import json
 from install_reviewed_l3_l6 import install

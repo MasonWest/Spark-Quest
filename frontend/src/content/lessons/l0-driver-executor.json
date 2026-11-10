@@ -1,0 +1,280 @@
+{
+  "slug": "l0-driver-executor",
+  "version": 2,
+  "title": "一份工作，谁协调，谁执行",
+  "mission": "上一课知道要分工与重做，现在给角色起名：Driver协调，Executor执行任务。先分清职责，再看本地并行。",
+  "next": "下一课用SparkSession取得编程入口，再把这些角色串成一个可以启动的小程序。",
+  "source": "https://spark.apache.org/docs/3.5.7/cluster-overview.html",
+  "correction": "Driver不只是“永不计算的包工头”，结果也不必全部回Driver；本地模式下角色与物理机器不是一一对应。",
+  "tasks": [
+    {
+      "id": "l0-driver-executor/coordinate",
+      "knowledgeIds": [
+        "l0-driver-executor/coordinate"
+      ],
+      "title": "谁安排这份任务",
+      "intro": "Driver运行应用的主程序，并组织与跟踪任务。Executor执行分配到的任务；Task就是交给执行端的一份工作。",
+      "code": "主程序 → 安排任务 → 跟踪完成情况",
+      "prompt": "这里负责全局协调的角色是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "Driver",
+              "feedback": "对，协调应用任务属于Driver职责。"
+            },
+            {
+              "id": "o1",
+              "text": "Executor",
+              "feedback": "Executor主要执行分配来的任务。"
+            },
+            {
+              "id": "o2",
+              "text": "每一行订单",
+              "feedback": "记录是待处理的数据，不是协调进程。"
+            }
+          ]
+        }
+      ],
+      "insight": "Driver负责应用级协调与调度；Executor是执行进程，接收Task并处理数据。先把角色和职责分清，再去看它们运行在哪台机器。",
+      "ability": "谁安排这份任务",
+      "reading": {
+        "id": "l0-driver-executor/coordinate/reading",
+        "title": "谁安排这份任务",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要两个角色】",
+        "connection": "Driver负责应用级协调与调度；Executor是执行进程，接收Task并处理数据。先把角色和职责分清，再去看它们运行在哪台机器。",
+        "boundary": "这是经典Spark应用的入门模型，不把Spark Connect等部署路径混在本课。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-driver-executor/execute",
+      "knowledgeIds": [
+        "l0-driver-executor/execute"
+      ],
+      "title": "谁处理分到的那份数据",
+      "intro": "Driver已经安排任务A和B。Executor接收任务，处理分到的数据，也可保存缓存或写外部结果。",
+      "code": "任务A：处理这一份订单\n任务B：处理另一份订单",
+      "prompt": "正常分布式执行中，谁运行这些任务？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "全由Driver逐行处理",
+              "feedback": "不是把所有分份工作都先收回Driver。"
+            },
+            {
+              "id": "o2",
+              "text": "原文件负责计算",
+              "feedback": "文件保存数据，不负责执行Spark任务。"
+            },
+            {
+              "id": "o0",
+              "text": "Executor",
+              "feedback": "对，任务交给执行进程。"
+            }
+          ]
+        }
+      ],
+      "insight": "Executor可以在应用期间执行许多Task；它不是只处理一次工作的“任务本身”。应用有几个Executor、每次能同时跑多少任务，取决于资源与配置。",
+      "ability": "谁处理分到的那份数据",
+      "reading": {
+        "id": "l0-driver-executor/execute/reading",
+        "title": "谁处理分到的那份数据",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要两个角色】",
+        "connection": "Executor可以在应用期间执行许多Task；它不是只处理一次工作的“任务本身”。应用有几个Executor、每次能同时跑多少任务，取决于资源与配置。",
+        "boundary": "一个分区通常对应某个阶段的一份任务，但阶段与分区会在后续课程展开，本课不据源码行数数Task。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      },
+      "remediation": {
+        "id": "l0-driver-executor/execute/transfer",
+        "knowledgeId": "l0-driver-executor/execute",
+        "title": "换一份材料再判断",
+        "intro": "用同一个规则处理新材料。",
+        "code": "同一个执行进程先完成任务1，再接任务2。",
+        "prompt": "应怎样区分进程和任务？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "每个Task必是一台机器",
+              "feedback": "Task不是物理机器。"
+            },
+            {
+              "id": "r2",
+              "text": "一个Executor只准一个Task",
+              "feedback": "进程在应用期间可执行多项任务。"
+            },
+            {
+              "id": "r0",
+              "text": "一个Executor可接多个Task",
+              "feedback": "对，任务是工作单元，Executor是执行进程。"
+            }
+          ]
+        },
+        "insight": "分清执行进程、任务与物理机器，不从编号猜部署。"
+      }
+    },
+    {
+      "id": "l0-driver-executor/slots",
+      "knowledgeIds": [
+        "l0-driver-executor/slots"
+      ],
+      "title": "两份并发能力，不是两台机器",
+      "intro": "把同时能做的工作位置叫“槽位”。教学模型中共有5个等长任务，每轮最多同时做2个；没有重试和额外开销。",
+      "code": "第1轮最多2项\n第2轮最多2项\n共有5项工作",
+      "prompt": "至少需要几轮才能全部完成？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "轮数",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "5",
+              "feedback": "不必每轮只做一个任务。"
+            },
+            {
+              "id": "o0",
+              "text": "3",
+              "feedback": "对，2+2+1需要3轮。"
+            },
+            {
+              "id": "o1",
+              "text": "2",
+              "feedback": "两轮最多完成4项。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "3"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "任务总数与可用并发位置不同。即使有5份任务，也可能分几轮执行；机器数、进程数和槽位数不能直接画等号。",
+      "ability": "两份并发能力，不是两台机器",
+      "reading": {
+        "id": "l0-driver-executor/slots/reading",
+        "title": "两份并发能力，不是两台机器",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要两个角色】",
+        "connection": "任务总数与可用并发位置不同。即使有5份任务，也可能分几轮执行；机器数、进程数和槽位数不能直接画等号。",
+        "boundary": "这里只算理想轮数，不承诺真实调度时间或某个作业的准确Task数。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-driver-executor/results",
+      "knowledgeIds": [
+        "l0-driver-executor/results"
+      ],
+      "title": "回传数字，还是写出明细",
+      "intro": "应用只请求总条数时，可以把最终小计数交回主程序；交付大量明细时，可以让任务写到外部存储，不必把全部明细收回Driver。",
+      "code": "请求A：返回一个总条数\n请求B：交付大量明细文件",
+      "prompt": "哪种路线更符合职责与规模？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "计数回传，明细写出",
+              "feedback": "对，结果去向取决于请求。"
+            },
+            {
+              "id": "o1",
+              "text": "明细全收，再做切片",
+              "feedback": "先收全表会把规模压力集中到Driver。"
+            },
+            {
+              "id": "o2",
+              "text": "全表回传，才能计数",
+              "feedback": "请求数量不要求把全部明细交给主程序。"
+            }
+          ]
+        }
+      ],
+      "insight": "并不是每个任务都把全部数据沿原路交回Driver。结果可以作为小值返回，也可以由执行端写外部；中间数据也可能在执行端之间交换。",
+      "ability": "回传数字，还是写出明细",
+      "reading": {
+        "id": "l0-driver-executor/results/reading",
+        "title": "回传数字，还是写出明细",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要两个角色】",
+        "connection": "并不是每个任务都把全部数据沿原路交回Driver。结果可以作为小值返回，也可以由执行端写外部；中间数据也可能在执行端之间交换。",
+        "boundary": "具体接口和数据搬运路径会在后续课程学习；有界返回也不保证上游计算成本很小。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-driver-executor/local-roles",
+      "knowledgeIds": [
+        "l0-driver-executor/local-roles"
+      ],
+      "title": "本地模式也保留职责区别",
+      "intro": "local模式在同一台电脑上学习协调与执行。不要把“角色不同”理解成“必须分别买一台机器”。PySpark也涉及Python与JVM边界。",
+      "code": "# 一台电脑上的local模式\n# 角色：协调、执行；不据此推断两台机器。",
+      "prompt": "哪句话成立？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "两种角色必占两台机器",
+              "feedback": "角色不同不要求各占一台机器。"
+            },
+            {
+              "id": "o2",
+              "text": "本地模式没有任务执行",
+              "feedback": "本地仍会运行计算任务。"
+            },
+            {
+              "id": "o0",
+              "text": "可在本机学习两类职责",
+              "feedback": "对，职责与物理部署分开理解。"
+            }
+          ]
+        }
+      ],
+      "insight": "经典本地模式的调度和执行可在同一个JVM里进行；PySpark的Python进程又是另一层边界。本课先理解职责，不用进程比喻替代实际部署检查。",
+      "ability": "本地模式也保留职责区别",
+      "reading": {
+        "id": "l0-driver-executor/local-roles/reading",
+        "title": "本地模式也保留职责区别",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要两个角色】",
+        "connection": "经典本地模式的调度和执行可在同一个JVM里进行；PySpark的Python进程又是另一层边界。本课先理解职责，不用进程比喻替代实际部署检查。",
+        "boundary": "集群与本地的进程布局不同；不能仅凭“本地模式”断言整个PySpark程序只有一个进程。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    }
+  ]
+}

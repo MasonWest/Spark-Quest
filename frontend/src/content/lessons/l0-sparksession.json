@@ -1,0 +1,288 @@
+{
+  "slug": "l0-sparksession",
+  "version": 1,
+  "title": "把程序接到Spark入口",
+  "mission": "有了协调与执行的角色图，现在获得一个真正的编程入口。下面按创建、命名、本地并发、数据和释放逐步练习。",
+  "next": "下一课把这些调用串成读CSV、预览、统计、释放资源的小程序；不要求先背完DataFrame语法。",
+  "source": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html",
+  "correction": "SparkSession是现代DataFrame/SQL常用入口，RDD也可从SparkContext使用；getOrCreate不等于每次重建应用或重置所有配置。",
+  "tasks": [
+    {
+      "id": "l0-sparksession/entry",
+      "knowledgeIds": [
+        "l0-sparksession/entry"
+      ],
+      "title": "builder还差最后一步",
+      "intro": "SparkSession是现代DataFrame/SQL程序的常用入口。builder先描述如何取得会话，getOrCreate()才取得现有或新建的会话。",
+      "code": "from pyspark.sql import SparkSession\nspark = SparkSession.builder.appName(\"first-app\").__A__()",
+      "prompt": "A应填哪个方法名？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "方法名",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "appName",
+              "feedback": "appName设置名字，不完成取得会话。"
+            },
+            {
+              "id": "o2",
+              "text": "show",
+              "feedback": "show是查看数据结果，不是构造入口。"
+            },
+            {
+              "id": "o0",
+              "text": "getOrCreate",
+              "feedback": "对，取得会话入口。"
+            }
+          ],
+          "input": {
+            "kind": "text",
+            "acceptedAnswers": [
+              "getOrCreate"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写名称"
+          }
+        }
+      ],
+      "insight": "把builder看作准备创建会话的设置链，把getOrCreate看作取得会话的动作。在笔记本环境中可能已经有spark变量，可使用现有入口，不需要反复创建。",
+      "ability": "builder还差最后一步",
+      "reading": {
+        "id": "l0-sparksession/entry/reading",
+        "title": "builder还差最后一步",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它（历史角度）】",
+        "connection": "把builder看作准备创建会话的设置链，把getOrCreate看作取得会话的动作。在笔记本环境中可能已经有spark变量，可使用现有入口，不需要反复创建。",
+        "boundary": "已有会话可能被复用；不要把再次调用当作清空数据或重置全部配置。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-sparksession/local-two",
+      "knowledgeIds": [
+        "l0-sparksession/local-two"
+      ],
+      "title": "local[2]里的2是什么",
+      "intro": "master指定运行位置。本课选local[2]：在本机用两个工作线程演练，和上一课“两份并发能力”的模型衔接。",
+      "code": "SparkSession.builder.master(\"local[2]\")",
+      "prompt": "这里的2主要表示什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "输入数据的总行数",
+              "feedback": "运行配置不规定业务行数。"
+            },
+            {
+              "id": "o0",
+              "text": "本地工作线程数",
+              "feedback": "对，是本地运行的线程设置。"
+            },
+            {
+              "id": "o1",
+              "text": "远程物理机器数",
+              "feedback": "local指本机，不是在申请两台机器。"
+            }
+          ]
+        }
+      ],
+      "insight": "local[N]表示本地使用N个工作线程；local[*]使用可用的逻辑核心数。教学采用较小并发，便于观察；它不代表创建N个独立远程Executor。",
+      "ability": "local[2]里的2是什么",
+      "reading": {
+        "id": "l0-sparksession/local-two/reading",
+        "title": "local[2]里的2是什么",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它（历史角度）】",
+        "connection": "local[N]表示本地使用N个工作线程；local[*]使用可用的逻辑核心数。教学采用较小并发，便于观察；它不代表创建N个独立远程Executor。",
+        "boundary": "真实能同时完成多少工作还受依赖、资源和操作影响，不按线程数保证加速倍数。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-sparksession/name",
+      "knowledgeIds": [
+        "l0-sparksession/name"
+      ],
+      "title": "应用名不是输入路径",
+      "intro": "appName给应用一个便于识别的名字，常用于界面与日志。本课稍后会读取sales.csv，文件路径要写在读取调用中。",
+      "code": ".appName(\"sales-intro\")\n# 输入文件仍由read.csv(\"sales.csv\")指定",
+      "prompt": "sales-intro在这里是什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "应用识别的名字",
+              "feedback": "对，它帮助辨认应用。"
+            },
+            {
+              "id": "o1",
+              "text": "CSV输入路径",
+              "feedback": "设置名字不会自动读取同名文件。"
+            },
+            {
+              "id": "o2",
+              "text": "结果分组的字段",
+              "feedback": "它也不修改数据列。"
+            }
+          ]
+        }
+      ],
+      "insight": "应用名、输入路径和数据列名是三个不同概念。名字帮助人识别应用，不会创建业务数据、打开同名文件或改变查询口径。",
+      "ability": "应用名不是输入路径",
+      "reading": {
+        "id": "l0-sparksession/name/reading",
+        "title": "应用名不是输入路径",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它（历史角度）】",
+        "connection": "应用名、输入路径和数据列名是三个不同概念。名字帮助人识别应用，不会创建业务数据、打开同名文件或改变查询口径。",
+        "boundary": "不把appName当作性能参数、唯一应用ID或SQL表注册操作。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-sparksession/table",
+      "knowledgeIds": [
+        "l0-sparksession/table"
+      ],
+      "title": "第一次看到带列名的数据",
+      "intro": "DataFrame可先理解成带列名和类型的数据表。下面直接给出两行与类型；创建后用count请求条数。类型的细节到L2再展开。",
+      "code": "df = spark.createDataFrame(\n [(\"north\", 3), (\"south\", 5)],\n \"region string, amount long\")\nprint(df.count())",
+      "prompt": "这次count返回多少？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "条数",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "8",
+              "feedback": "8是金额相加，不是行数。"
+            },
+            {
+              "id": "o2",
+              "text": "1",
+              "feedback": "两行不会自动合成一行。"
+            },
+            {
+              "id": "o0",
+              "text": "2",
+              "feedback": "对，输入是两行。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "2"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "region、amount是列名；string表示文本，long表示整数类型。count请求记录条数，不对金额求和。先会分清行数与业务指标，再逐步学习列操作。",
+      "ability": "第一次看到带列名的数据",
+      "reading": {
+        "id": "l0-sparksession/table/reading",
+        "title": "第一次看到带列名的数据",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它（历史角度）】",
+        "connection": "region、amount是列名；string表示文本，long表示整数类型。count请求记录条数，不对金额求和。先会分清行数与业务指标，再逐步学习列操作。",
+        "boundary": "这里只是很小的本地输入，不代表大数据应先放进Driver的Python列表。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-sparksession/stop",
+      "knowledgeIds": [
+        "l0-sparksession/stop"
+      ],
+      "title": "谁创建，谁负责收尾",
+      "intro": "在这个独立脚本中，我们自己创建并拥有会话。所有结果使用结束后再stop；不要在每个show前都关闭入口。",
+      "code": "# 自己拥有的独立脚本\n# 取得会话 → 数据处理 → 查看结果 → spark.stop()",
+      "prompt": "stop在这里主要负责什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "永久保存计算结果",
+              "feedback": "永久交付需要明确写出，不由stop代办。"
+            },
+            {
+              "id": "o0",
+              "text": "结束自有会话资源",
+              "feedback": "对，计算资源也需要生命周期。"
+            },
+            {
+              "id": "o1",
+              "text": "删除原CSV文件",
+              "feedback": "stop不是删除输入的业务指令。"
+            }
+          ]
+        }
+      ],
+      "insight": "stop结束相应Spark上下文所用资源；本课在独立脚本中负责清理自己拥有的会话。在共享笔记本或平台上，先确认资源所有权，不能随意停止他人共享环境。",
+      "ability": "谁创建，谁负责收尾",
+      "reading": {
+        "id": "l0-sparksession/stop/reading",
+        "title": "谁创建，谁负责收尾",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它（历史角度）】",
+        "connection": "stop结束相应Spark上下文所用资源；本课在独立脚本中负责清理自己拥有的会话。在共享笔记本或平台上，先确认资源所有权，不能随意停止他人共享环境。",
+        "boundary": "释放资源不等于删除原始数据，也不等于把结果持久保存。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      },
+      "remediation": {
+        "id": "l0-sparksession/stop/transfer",
+        "knowledgeId": "l0-sparksession/stop",
+        "title": "换一份材料再判断",
+        "intro": "用同一个规则处理新材料。",
+        "code": "共享笔记本提供现成spark，其他单元格还要继续查询。",
+        "prompt": "应该怎样处理停止会话这一步？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "每次查看前先stop",
+              "feedback": "先停止会让后续查询无法按原流程继续。"
+            },
+            {
+              "id": "r2",
+              "text": "用stop把结果永久保存",
+              "feedback": "stop不负责业务持久化。"
+            },
+            {
+              "id": "r0",
+              "text": "先确认共享资源约定",
+              "feedback": "对，不随意结束共享会话。"
+            }
+          ]
+        },
+        "insight": "独立脚本与共享环境的所有权不同。"
+      }
+    }
+  ]
+}

@@ -1,0 +1,280 @@
+{
+  "slug": "l0-what-is-spark",
+  "version": 1,
+  "title": "先认识这台计算引擎",
+  "mission": "从三份小统计开始：先看Spark帮谁做计算，再分清计算、存储与部署。暂时不需要背API。",
+  "next": "下一课继续看分工的代价：有些工作可以并行，有些时间花在搬运与协调上。",
+  "source": "https://spark.apache.org/docs/3.5.7/quick-start.html",
+  "correction": "Spark可以在单机运行，不是数据库，也不保证所有数据默认常驻内存。是否采用Spark取决于需求与成本，没有通用的GB门槛。",
+  "tasks": [
+    {
+      "id": "l0-what-is-spark/fit",
+      "knowledgeIds": [
+        "l0-what-is-spark/fit"
+      ],
+      "title": "小表也一定要上集群吗",
+      "intro": "你要给一张200行的表求和，当前单机工具已经能快速完成。Spark是数据处理引擎：可组织并行工作，但启动与协调也有成本。",
+      "code": "# 情境：200行；当前工具秒级完成；没有集群或统一流水线的额外要求。",
+      "prompt": "此时更合适的起点是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "立即改用Spark",
+              "feedback": "Spark能处理小表，不代表一定值得切换。"
+            },
+            {
+              "id": "o2",
+              "text": "先扩成多台机器",
+              "feedback": "先增加机器并未证明有收益。"
+            },
+            {
+              "id": "o0",
+              "text": "先评估现有工具",
+              "feedback": "对，先看实际需求。"
+            }
+          ]
+        }
+      ],
+      "insight": "Spark提供处理数据的能力，选工具仍需看输入、操作、交付需求与资源。小数据可用于学习Spark；业务中现有工具已够用时，不必为了分布式而迁移。",
+      "ability": "小表也一定要上集群吗",
+      "reading": {
+        "id": "l0-what-is-spark/fit/reading",
+        "title": "小表也一定要上集群吗",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它】",
+        "connection": "Spark提供处理数据的能力，选工具仍需看输入、操作、交付需求与资源。小数据可用于学习Spark；业务中现有工具已够用时，不必为了分布式而迁移。",
+        "boundary": "没有统一的数据量门槛，也不能仅凭行数断言某个工具永远更快。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-what-is-spark/combine",
+      "knowledgeIds": [
+        "l0-what-is-spark/combine"
+      ],
+      "title": "三份计数怎样合成一份",
+      "intro": "同一天的订单被分成互不重叠的三份，各自数出12、8、5条。分工计算后，还要按同一个业务规则合并。",
+      "code": "三份互不重叠的订单\n份A：12条；份B：8条；份C：5条",
+      "prompt": "全日共多少条订单？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "总条数",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "8",
+              "feedback": "这里需要相加，不是取某一份。"
+            },
+            {
+              "id": "o0",
+              "text": "25",
+              "feedback": "对，12+8+5=25。"
+            },
+            {
+              "id": "o1",
+              "text": "12",
+              "feedback": "12只是其中一份，不是总数。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "25"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "分布式计算常把工作拆成多份，再合并各份的贡献。对互不重叠的计数可以相加；“分工”不自动决定所有指标都用同一种合并规则。",
+      "ability": "三份计数怎样合成一份",
+      "reading": {
+        "id": "l0-what-is-spark/combine/reading",
+        "title": "三份计数怎样合成一份",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它】",
+        "connection": "分布式计算常把工作拆成多份，再合并各份的贡献。对互不重叠的计数可以相加；“分工”不自动决定所有指标都用同一种合并规则。",
+        "boundary": "本题已约定无重叠；若同一订单重复出现，需要先明确去重规则。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      },
+      "remediation": {
+        "id": "l0-what-is-spark/combine/transfer",
+        "knowledgeId": "l0-what-is-spark/combine",
+        "title": "换一份材料再判断",
+        "intro": "用同一个规则处理新材料。",
+        "code": "互不重叠的两份记录：6条、9条",
+        "prompt": "总数应是多少？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "9",
+              "feedback": "9只是其中一份。"
+            },
+            {
+              "id": "r2",
+              "text": "2",
+              "feedback": "2是份数，不是记录数。"
+            },
+            {
+              "id": "r0",
+              "text": "15",
+              "feedback": "对，两份贡献相加。"
+            }
+          ]
+        },
+        "insight": "总量与数据分成几份不是同一个数字。"
+      }
+    },
+    {
+      "id": "l0-what-is-spark/engine",
+      "knowledgeIds": [
+        "l0-what-is-spark/engine"
+      ],
+      "title": "负责计算，不等于长期存放",
+      "intro": "订单文件已经保存在对象存储中。Spark读取文件、计算每日统计，再把报表写回指定位置。对象存储在这里负责保存文件。",
+      "code": "对象存储中的订单 → Spark计算 → 外部位置中的日报",
+      "prompt": "这条流程中，Spark主要承担什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "读取并计算报表",
+              "feedback": "对，计算与存储要分开理解。"
+            },
+            {
+              "id": "o1",
+              "text": "永久保存源文件",
+              "feedback": "长期保存需要明确的存储系统和写出策略。"
+            },
+            {
+              "id": "o2",
+              "text": "替代外部的存储",
+              "feedback": "使用Spark不意味着移除原来的存储系统。"
+            }
+          ]
+        }
+      ],
+      "insight": "计算引擎描述、组织并执行数据处理，数据通常来自外部文件或系统，结果也可以写到外部。把“能读写数据”理解成“自动成为永久数据库”，会混淆职责。",
+      "ability": "负责计算，不等于长期存放",
+      "reading": {
+        "id": "l0-what-is-spark/engine/reading",
+        "title": "负责计算，不等于长期存放",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它】",
+        "connection": "计算引擎描述、组织并执行数据处理，数据通常来自外部文件或系统，结果也可以写到外部。把“能读写数据”理解成“自动成为永久数据库”，会混淆职责。",
+        "boundary": "Spark生态有目录和表等能力，本课只建立计算与持久保存的职责区别。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-what-is-spark/local",
+      "knowledgeIds": [
+        "l0-what-is-spark/local"
+      ],
+      "title": "只有一台电脑，也可以开始",
+      "intro": "分布式描述的是组织计算的能力，不是“每次启动必须有多台物理机器”。本地学习可以让同一台电脑执行这套流程。",
+      "code": "# 后面会实际使用：本地模式 local[2]\n# 现在先认清：local 指本机，不是两台机器。",
+      "prompt": "只有一台电脑，能学习Spark吗？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "至少两台机器",
+              "feedback": "不需要用多台机器才能创建应用。"
+            },
+            {
+              "id": "o2",
+              "text": "先建远程集群",
+              "feedback": "本课不要求先部署远程集群。"
+            },
+            {
+              "id": "o0",
+              "text": "可以在本机运行",
+              "feedback": "对，本地可以学习接口与分工。"
+            }
+          ]
+        }
+      ],
+      "insight": "本地模式可以在一台机器上运行Spark，便于学习和小规模验证。后续再区分负责协调与负责执行的角色；角色有区别，不代表必须各占一台机器。",
+      "ability": "只有一台电脑，也可以开始",
+      "reading": {
+        "id": "l0-what-is-spark/local/reading",
+        "title": "只有一台电脑，也可以开始",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它】",
+        "connection": "本地模式可以在一台机器上运行Spark，便于学习和小规模验证。后续再区分负责协调与负责执行的角色；角色有区别，不代表必须各占一台机器。",
+        "boundary": "本地成功不等于已验证集群权限、网络、规模或生产性能。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-what-is-spark/memory",
+      "knowledgeIds": [
+        "l0-what-is-spark/memory"
+      ],
+      "title": "内存计算不是永远不碰磁盘",
+      "intro": "内存可加快某些工作，但输入、缓存和处理中间状态受容量与策略影响。Spark也可能读写磁盘或重新计算。",
+      "code": "# 数据比可用内存大；运行方式与具体操作仍需检查。",
+      "prompt": "哪种理解更可靠？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "使用Spark就不再读盘",
+              "feedback": "外部输入和执行过程仍可能涉及磁盘。"
+            },
+            {
+              "id": "o0",
+              "text": "可能使用内存和磁盘",
+              "feedback": "对，后面会逐步学习这些条件。"
+            },
+            {
+              "id": "o1",
+              "text": "默认全量永久驻内存",
+              "feedback": "创建数据对象并没有这样的永久承诺。"
+            }
+          ]
+        }
+      ],
+      "insight": "Spark能够利用内存，也可能发生磁盘读写与重算。缓存是需要讨论复用、容量和生命周期的策略，不是给所有结果自动贴上的“永久存放”标签。",
+      "ability": "内存计算不是永远不碰磁盘",
+      "reading": {
+        "id": "l0-what-is-spark/memory/reading",
+        "title": "内存计算不是永远不碰磁盘",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要它】",
+        "connection": "Spark能够利用内存，也可能发生磁盘读写与重算。缓存是需要讨论复用、容量和生命周期的策略，不是给所有结果自动贴上的“永久存放”标签。",
+        "boundary": "本课不要求记缓存级别或内存比例；先去掉“永远不读盘”的误解。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    }
+  ]
+}

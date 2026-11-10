@@ -1,4 +1,4 @@
-"""L1-L7 purpose routing; legacy question IDs remain gradable and in history."""
+"""L0-L7 purpose routing; legacy question IDs remain gradable and in history."""
 import json
 from pathlib import Path
 from sqlalchemy import select
@@ -9,7 +9,7 @@ BANK_PATH = Path(__file__).with_name('l3_l6_reviewed_bank.json')
 
 
 def extra_catalog():
-    paths=[BANK_PATH,Path(__file__).with_name('l1_l7_reviewed_bank.json'),Path(__file__).with_name('extension_reviewed_bank.json')]
+    paths=[BANK_PATH,Path(__file__).with_name('l1_l7_reviewed_bank.json'),Path(__file__).with_name('extension_reviewed_bank.json'),Path(__file__).with_name('l0_reviewed_bank.json')]
     return [entry for path in paths for entry in json.loads(path.read_text(encoding='utf-8'))['lessons']]
 
 

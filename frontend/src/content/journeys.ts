@@ -20,7 +20,7 @@ export interface JourneyTask {
 export interface JourneyLesson {
   slug: string; version: number; legacyTaskIds?: string[]; title: string; mission: string; correction: string;
   source: string; next: string; tasks: JourneyTask[];
-  project?: { downloads: { label: string; href: string }[]; solution: { label: string; href: string } };
+  project?: { downloads: { label: string; href: string }[]; solution: { label: string; href: string }; solutionNote?: string; checksums?: Record<string, string> };
 }
 export interface JourneyMetadata {
   slug: string; version: number; title: string; tasks: { id: string }[]; legacyTaskIds?: string[];

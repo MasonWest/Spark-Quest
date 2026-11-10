@@ -1,0 +1,358 @@
+{
+  "slug": "l0-first-pyspark-program",
+  "version": 2,
+  "title": "读三行订单，跑完第一个程序",
+  "mission": "把前四课拼起来：检查环境、读一份小CSV、预览、分组求和、释放资源。手机上先推演，电脑上可下载同一任务实际运行。",
+  "next": "L0到这里有了一次完整计算。下一章L1用整数和分份建立RDD模型，再学转换与结果请求；L2会回来细讲这里的DataFrame与列类型。",
+  "source": "https://spark.apache.org/docs/3.5.7/quick-start.html",
+  "correction": "使用有表头、显式列类型的小CSV。历史CSV示例中的north行有拼写问题，请以本课下载的sales.csv为准。读取可能做文件发现等工作，不能说action前绝对零IO；推演通过不等于代码已实际运行。",
+  "tasks": [
+    {
+      "id": "l0-first-pyspark-program/environment",
+      "knowledgeIds": [
+        "l0-first-pyspark-program/environment"
+      ],
+      "title": "错误发生在哪一层",
+      "intro": "PySpark程序需要可用的Python环境、匹配的pyspark包以及兼容的Java运行时。Java虚拟机（JVM）运行Spark主体。先看错误发生在哪一步。",
+      "code": "from pyspark.sql import SparkSession\n# ModuleNotFoundError: No module named \"pyspark\"",
+      "prompt": "这个错误应先检查什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "Driver返回的数据行数",
+              "feedback": "也还没有运行到结果回传。"
+            },
+            {
+              "id": "o0",
+              "text": "当前Python环境中的包",
+              "feedback": "对，导入还未成功，先查实际解释器和包。"
+            },
+            {
+              "id": "o1",
+              "text": "业务分组汇总公式",
+              "feedback": "程序还没有进入分组阶段。"
+            }
+          ]
+        }
+      ],
+      "insight": "先确认运行脚本的Python解释器与安装包对应，再检查Java版本、JAVA_HOME及启动错误。不要把环境失败当成SQL或业务理解错误；版本要求以所用Spark发行版官方说明为准。",
+      "ability": "错误发生在哪一层",
+      "reading": {
+        "id": "l0-first-pyspark-program/environment/reading",
+        "title": "错误发生在哪一层",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【运行前置】",
+        "connection": "先确认运行脚本的Python解释器与安装包对应，再检查Java版本、JAVA_HOME及启动错误。不要把环境失败当成SQL或业务理解错误；版本要求以所用Spark发行版官方说明为准。",
+        "boundary": "本课程按经典PySpark本地运行；Spark Connect等远程客户端的环境要求不混入本任务。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-first-pyspark-program/read",
+      "knowledgeIds": [
+        "l0-first-pyspark-program/read"
+      ],
+      "title": "表头不是一条订单",
+      "intro": "文件第一行是列名，后面有三条订单。header=True表示使用首行为表头；schema在这里直接给出列名与类型，不要求现在背语法。",
+      "code": "region,amount\nnorth,12\nnorth,8\nsouth,5\n\n# 读取：header=True，schema=\"region string, amount long\"",
+      "prompt": "正确读取后，df.count()应为多少？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "订单条数",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "3",
+              "feedback": "对，三条订单，不包含表头。"
+            },
+            {
+              "id": "o1",
+              "text": "4",
+              "feedback": "4把表头误当数据。"
+            },
+            {
+              "id": "o2",
+              "text": "2",
+              "feedback": "2是地区数量，不是订单数量。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "3"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "读取时把表头、数据行与列类型分清。这里显式指定amount为整数，避免把文本外观等同于数值类型；类型推断与错误数据处理会在L2详细学习。",
+      "ability": "表头不是一条订单",
+      "reading": {
+        "id": "l0-first-pyspark-program/read/reading",
+        "title": "表头不是一条订单",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【运行前置】",
+        "connection": "读取时把表头、数据行与列类型分清。这里显式指定amount为整数，避免把文本外观等同于数值类型；类型推断与错误数据处理会在L2详细学习。",
+        "boundary": "文件路径按实际工作目录解析；读取也可能做文件发现等工作，不承诺action前绝对零IO。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-first-pyspark-program/preview",
+      "knowledgeIds": [
+        "l0-first-pyspark-program/preview"
+      ],
+      "title": "看两行，不是只剩两行",
+      "intro": "这张表仍有三条订单。show(2)只是请求显示少量结果；不会把原查询改成只有两行。",
+      "code": "df.show(2)\nprint(df.count())\n# 输入仍是上一步的三条订单",
+      "prompt": "第二行打印什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "打印条数",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "2",
+              "feedback": "显示上限不是全表行数。"
+            },
+            {
+              "id": "o2",
+              "text": "1",
+              "feedback": "也没有按地区去重。"
+            },
+            {
+              "id": "o0",
+              "text": "3",
+              "feedback": "对，预览不删记录。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "3"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "show的显示上限与count返回的记录数不同。少量预览便于检查形状，但不能只凭屏幕显示两行就推断总量、数据质量或读取成本。",
+      "ability": "看两行，不是只剩两行",
+      "reading": {
+        "id": "l0-first-pyspark-program/preview/reading",
+        "title": "看两行，不是只剩两行",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【运行前置】",
+        "connection": "show的显示上限与count返回的记录数不同。少量预览便于检查形状，但不能只凭屏幕显示两行就推断总量、数据质量或读取成本。",
+        "boundary": "返回少量结果不等于上游只做同样少量工作；本步不要求理解完整计划。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      },
+      "remediation": {
+        "id": "l0-first-pyspark-program/preview/transfer",
+        "knowledgeId": "l0-first-pyspark-program/preview",
+        "title": "换一份材料再判断",
+        "intro": "用同一个规则处理新材料。",
+        "code": "输入有6条，执行df.show(2)，然后df.count()。",
+        "prompt": "count应是多少？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "2",
+              "feedback": "2只是显示上限。"
+            },
+            {
+              "id": "r2",
+              "text": "4",
+              "feedback": "不是显示后把两条删掉。"
+            },
+            {
+              "id": "r0",
+              "text": "6",
+              "feedback": "对，显示不删除原记录。"
+            }
+          ]
+        },
+        "insight": "查询预览不修改原来的逻辑内容。"
+      }
+    },
+    {
+      "id": "l0-first-pyspark-program/aggregate",
+      "knowledgeIds": [
+        "l0-first-pyspark-program/aggregate"
+      ],
+      "title": "按地区把金额合起来",
+      "intro": "groupBy(\"region\")表示按地区分组，sum(\"amount\")把各组金额相加。north有12和8，south有5，输出每个地区一行。",
+      "code": "report = df.groupBy(\"region\").sum(\"amount\")\n# north: 12、8；south: 5",
+      "prompt": "填写两个地区的总金额：",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "north金额",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "2",
+              "feedback": "2是north订单条数，不是金额。"
+            },
+            {
+              "id": "o0",
+              "text": "20",
+              "feedback": "对，north的两次贡献都需要计入。"
+            },
+            {
+              "id": "o1",
+              "text": "12",
+              "feedback": "12只算了一条。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "20"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        },
+        {
+          "id": "south",
+          "label": "south金额",
+          "correctOptionId": "s0",
+          "options": [
+            {
+              "id": "s0",
+              "text": "5",
+              "feedback": "对，south只有一条5元订单。"
+            },
+            {
+              "id": "s1",
+              "text": "1",
+              "feedback": "1是订单条数，不是金额。"
+            },
+            {
+              "id": "s2",
+              "text": "25",
+              "feedback": "25是全局金额，不是south分组金额。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "5"
+            ],
+            "incorrectOptionId": "s1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "每个分组先接收属于自己的记录，再按指定指标合并。这里的输入是3条订单、输出是2个地区汇总；sum(amount)是Spark给求和结果列的默认名称。",
+      "ability": "按地区把金额合起来",
+      "reading": {
+        "id": "l0-first-pyspark-program/aggregate/reading",
+        "title": "按地区把金额合起来",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【运行前置】",
+        "connection": "每个分组先接收属于自己的记录，再按指定指标合并。这里的输入是3条订单、输出是2个地区汇总；sum(amount)是Spark给求和结果列的默认名称。",
+        "boundary": "本题金额均为非空整数，地区非空；NULL、金额精度和更复杂分组留给后续章节。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-first-pyspark-program/cleanup",
+      "knowledgeIds": [
+        "l0-first-pyspark-program/cleanup"
+      ],
+      "title": "成功和报错都要收尾",
+      "intro": "这是自己拥有会话的独立脚本。try内执行读取与统计；finally会在正常结束或异常路径尝试运行，适合放资源清理。",
+      "code": "spark = SparkSession.builder.master(\"local[2]\").getOrCreate()\ntry:\n    # 读CSV、计算并显示report\n    report.show()\nfinally:\n    spark.stop()",
+      "prompt": "finally在这里主要保证哪条路径？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "异常时也尝试清理",
+              "feedback": "对，清理也要覆盖异常路径。"
+            },
+            {
+              "id": "o1",
+              "text": "异常被修成成功",
+              "feedback": "原异常仍需正确报告和处理。"
+            },
+            {
+              "id": "o2",
+              "text": "原文件自动删除",
+              "feedback": "stop负责计算资源，不删除CSV。"
+            }
+          ]
+        }
+      ],
+      "insight": "程序能跑通，不只看屏幕上有没有表，还要检查结果与预期一致、收尾路径清楚。下载任务可换数据运行验证；网页推演本身不会启动Spark，也不会把你标记为已完成真实编程。",
+      "ability": "成功和报错都要收尾",
+      "reading": {
+        "id": "l0-first-pyspark-program/cleanup/reading",
+        "title": "成功和报错都要收尾",
+        "sectionTitle": "先人话理解",
+        "startMarker": "【先人话理解】",
+        "endMarker": "【运行前置】",
+        "connection": "程序能跑通，不只看屏幕上有没有表，还要检查结果与预期一致、收尾路径清楚。下载任务可换数据运行验证；网页推演本身不会启动Spark，也不会把你标记为已完成真实编程。",
+        "boundary": "进程崩溃、强制终止或清理自身失败仍需环境处理；finally不是一切故障的绝对保证。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    }
+  ],
+  "project": {
+    "downloads": [
+      {
+        "label": "任务说明 README.txt",
+        "href": "/practice/l0-first-run/README.txt"
+      },
+      {
+        "label": "三条订单 sales.csv",
+        "href": "/practice/l0-first-run/sales.csv"
+      },
+      {
+        "label": "填写代码 starter.py",
+        "href": "/practice/l0-first-run/starter.py"
+      },
+      {
+        "label": "换数据验证 verify.py",
+        "href": "/practice/l0-first-run/verify.py"
+      }
+    ],
+    "solution": {
+      "label": "下载参考实现 reference.py",
+      "href": "/practice/l0-first-run/reference.py"
+    },
+    "solutionNote": "先独立填写，再对照参考实现。verify.py会换四份小CSV检查结果，使用临时文件，不提交课程成绩。",
+    "checksums": {
+      "/practice/l0-first-run/starter.py": "dc318aa437fc67b5f6c5fa4ce2230228a62be7aee9937387008404c11967c27b",
+      "/practice/l0-first-run/reference.py": "562781ccfa70a59176013fe33af0fa3239b71a0ad4bf9188a001489bd9c055eb",
+      "/practice/l0-first-run/verify.py": "f6590336d016efe6788e61215697b11f1e88f04657f21228f50c3c5de233939b",
+      "/practice/l0-first-run/README.txt": "8187b0913881b9ab663ef92be38d5007f12f49bcd1b72282b5d0b4b3030fdcef",
+      "/practice/l0-first-run/sales.csv": "140853f893da8f1d543ec755eb7f5199f0c71b16d4076c36f8662cc8adcfbca3"
+    }
+  }
+}

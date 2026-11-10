@@ -1,5 +1,5 @@
 {
-  "version": 8,
+  "version": 9,
   "lessons": {
     "l2-what-is-dataframe": {
       "title": "动手理解 · DataFrame",
@@ -2455,6 +2455,211 @@
           "title": "比较方案，预热与冷启动要算同一本账",
           "body": "接下来调分区时继续采用相同方法：明确单一改动，保留完整时间与资源证据，保持结果不变。缓存与分区都应由需求和测量决定。",
           "boundary": "本课不提供固定倍数的性能保证；正式报告的缓存冷热条件应可复核。"
+        }
+      ]
+    },
+    "l0-what-is-spark": {
+      "title": "先认识这台计算引擎",
+      "sections": [
+        {
+          "id": "l0-what-is-spark/fit",
+          "title": "小表也一定要上集群吗",
+          "body": "Spark提供处理数据的能力，选工具仍需看输入、操作、交付需求与资源。小数据可用于学习Spark；业务中现有工具已够用时，不必为了分布式而迁移。",
+          "boundary": "没有统一的数据量门槛，也不能仅凭行数断言某个工具永远更快。"
+        },
+        {
+          "id": "l0-what-is-spark/combine",
+          "title": "三份计数怎样合成一份",
+          "body": "分布式计算常把工作拆成多份，再合并各份的贡献。对互不重叠的计数可以相加；“分工”不自动决定所有指标都用同一种合并规则。",
+          "boundary": "本题已约定无重叠；若同一订单重复出现，需要先明确去重规则。"
+        },
+        {
+          "id": "l0-what-is-spark/engine",
+          "title": "负责计算，不等于长期存放",
+          "body": "计算引擎描述、组织并执行数据处理，数据通常来自外部文件或系统，结果也可以写到外部。把“能读写数据”理解成“自动成为永久数据库”，会混淆职责。",
+          "boundary": "Spark生态有目录和表等能力，本课只建立计算与持久保存的职责区别。"
+        },
+        {
+          "id": "l0-what-is-spark/local",
+          "title": "只有一台电脑，也可以开始",
+          "body": "本地模式可以在一台机器上运行Spark，便于学习和小规模验证。后续再区分负责协调与负责执行的角色；角色有区别，不代表必须各占一台机器。",
+          "boundary": "本地成功不等于已验证集群权限、网络、规模或生产性能。"
+        },
+        {
+          "id": "l0-what-is-spark/memory",
+          "title": "内存计算不是永远不碰磁盘",
+          "body": "Spark能够利用内存，也可能发生磁盘读写与重算。缓存是需要讨论复用、容量和生命周期的策略，不是给所有结果自动贴上的“永久存放”标签。",
+          "boundary": "本课不要求记缓存级别或内存比例；先去掉“永远不读盘”的误解。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/quick-start.html"
+        }
+      ]
+    },
+    "l0-what-problem-spark-solves": {
+      "title": "分工之后，还要付出什么",
+      "sections": [
+        {
+          "id": "l0-what-problem-spark-solves/maximum",
+          "title": "这次不是求和，而是找最大值",
+          "body": "把工作分开后，合并规则必须跟着业务指标走。计数相加、最大值取最大；不能把“合并”都理解成求和。",
+          "boundary": "这里只处理最大值；平均值等指标的合并规则会在后续课程具体推演。"
+        },
+        {
+          "id": "l0-what-problem-spark-solves/movement",
+          "title": "算得快，也可能等在搬运上",
+          "body": "并行计算要交换数据、等待依赖并协调任务。观察完整流程后再定位主要成本，才能避免只盯着CPU计算。后面会把某些数据交接称为Shuffle。",
+          "boundary": "单次教学记录只能说明本次线索，不是所有作业都由网络限制。"
+        },
+        {
+          "id": "l0-what-problem-spark-solves/reuse",
+          "title": "重复工作可以复用，但先确认条件",
+          "body": "缓存可帮助重复使用同一结果，但要有实际复用、足够资源和正确生命周期。只运行一次、重算便宜或容量不足时，不应直接宣布缓存有收益。",
+          "boundary": "本课不要求操作缓存API；L1会区分登记与执行，后续再做具体缓存实验。"
+        },
+        {
+          "id": "l0-what-problem-spark-solves/retry",
+          "title": "一份任务失败，不等于答案能凭空恢复",
+          "body": "容错帮助系统处理某些任务失败，但不等于所有故障都可恢复，更不等于任意外部写入只发生一次。先记住“可读输入、可重做工作”，L1再讲记录依赖的血缘。",
+          "boundary": "若上游已不可读、整个应用失败或外部写入不可重复，需要其他恢复设计。"
+        },
+        {
+          "id": "l0-what-problem-spark-solves/measure",
+          "title": "“这次更快”与“永远更快”",
+          "body": "收益要由正确结果和可比较的测量支持。重复测量帮助观察波动；报告应说清输入、资源和范围，不从一份样例推导固定倍数。",
+          "boundary": "这些是合成教学记录，不是本项目的真实性能基准。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/quick-start.html"
+        }
+      ]
+    },
+    "l0-driver-executor": {
+      "title": "一份工作，谁协调，谁执行",
+      "sections": [
+        {
+          "id": "l0-driver-executor/coordinate",
+          "title": "谁安排这份任务",
+          "body": "Driver负责应用级协调与调度；Executor是执行进程，接收Task并处理数据。先把角色和职责分清，再去看它们运行在哪台机器。",
+          "boundary": "这是经典Spark应用的入门模型，不把Spark Connect等部署路径混在本课。"
+        },
+        {
+          "id": "l0-driver-executor/execute",
+          "title": "谁处理分到的那份数据",
+          "body": "Executor可以在应用期间执行许多Task；它不是只处理一次工作的“任务本身”。应用有几个Executor、每次能同时跑多少任务，取决于资源与配置。",
+          "boundary": "一个分区通常对应某个阶段的一份任务，但阶段与分区会在后续课程展开，本课不据源码行数数Task。"
+        },
+        {
+          "id": "l0-driver-executor/slots",
+          "title": "两份并发能力，不是两台机器",
+          "body": "任务总数与可用并发位置不同。即使有5份任务，也可能分几轮执行；机器数、进程数和槽位数不能直接画等号。",
+          "boundary": "这里只算理想轮数，不承诺真实调度时间或某个作业的准确Task数。"
+        },
+        {
+          "id": "l0-driver-executor/results",
+          "title": "回传数字，还是写出明细",
+          "body": "并不是每个任务都把全部数据沿原路交回Driver。结果可以作为小值返回，也可以由执行端写外部；中间数据也可能在执行端之间交换。",
+          "boundary": "具体接口和数据搬运路径会在后续课程学习；有界返回也不保证上游计算成本很小。"
+        },
+        {
+          "id": "l0-driver-executor/local-roles",
+          "title": "本地模式也保留职责区别",
+          "body": "经典本地模式的调度和执行可在同一个JVM里进行；PySpark的Python进程又是另一层边界。本课先理解职责，不用进程比喻替代实际部署检查。",
+          "boundary": "集群与本地的进程布局不同；不能仅凭“本地模式”断言整个PySpark程序只有一个进程。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/cluster-overview.html"
+        }
+      ]
+    },
+    "l0-sparksession": {
+      "title": "把程序接到Spark入口",
+      "sections": [
+        {
+          "id": "l0-sparksession/entry",
+          "title": "builder还差最后一步",
+          "body": "把builder看作准备创建会话的设置链，把getOrCreate看作取得会话的动作。在笔记本环境中可能已经有spark变量，可使用现有入口，不需要反复创建。",
+          "boundary": "已有会话可能被复用；不要把再次调用当作清空数据或重置全部配置。"
+        },
+        {
+          "id": "l0-sparksession/local-two",
+          "title": "local[2]里的2是什么",
+          "body": "local[N]表示本地使用N个工作线程；local[*]使用可用的逻辑核心数。教学采用较小并发，便于观察；它不代表创建N个独立远程Executor。",
+          "boundary": "真实能同时完成多少工作还受依赖、资源和操作影响，不按线程数保证加速倍数。"
+        },
+        {
+          "id": "l0-sparksession/name",
+          "title": "应用名不是输入路径",
+          "body": "应用名、输入路径和数据列名是三个不同概念。名字帮助人识别应用，不会创建业务数据、打开同名文件或改变查询口径。",
+          "boundary": "不把appName当作性能参数、唯一应用ID或SQL表注册操作。"
+        },
+        {
+          "id": "l0-sparksession/table",
+          "title": "第一次看到带列名的数据",
+          "body": "region、amount是列名；string表示文本，long表示整数类型。count请求记录条数，不对金额求和。先会分清行数与业务指标，再逐步学习列操作。",
+          "boundary": "这里只是很小的本地输入，不代表大数据应先放进Driver的Python列表。"
+        },
+        {
+          "id": "l0-sparksession/stop",
+          "title": "谁创建，谁负责收尾",
+          "body": "stop结束相应Spark上下文所用资源；本课在独立脚本中负责清理自己拥有的会话。在共享笔记本或平台上，先确认资源所有权，不能随意停止他人共享环境。",
+          "boundary": "释放资源不等于删除原始数据，也不等于把结果持久保存。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/sql-getting-started.html"
+        }
+      ]
+    },
+    "l0-first-pyspark-program": {
+      "title": "读三行订单，跑完第一个程序",
+      "sections": [
+        {
+          "id": "l0-first-pyspark-program/environment",
+          "title": "错误发生在哪一层",
+          "body": "先确认运行脚本的Python解释器与安装包对应，再检查Java版本、JAVA_HOME及启动错误。不要把环境失败当成SQL或业务理解错误；版本要求以所用Spark发行版官方说明为准。",
+          "boundary": "本课程按经典PySpark本地运行；Spark Connect等远程客户端的环境要求不混入本任务。"
+        },
+        {
+          "id": "l0-first-pyspark-program/read",
+          "title": "表头不是一条订单",
+          "body": "读取时把表头、数据行与列类型分清。这里显式指定amount为整数，避免把文本外观等同于数值类型；类型推断与错误数据处理会在L2详细学习。",
+          "boundary": "文件路径按实际工作目录解析；读取也可能做文件发现等工作，不承诺action前绝对零IO。"
+        },
+        {
+          "id": "l0-first-pyspark-program/preview",
+          "title": "看两行，不是只剩两行",
+          "body": "show的显示上限与count返回的记录数不同。少量预览便于检查形状，但不能只凭屏幕显示两行就推断总量、数据质量或读取成本。",
+          "boundary": "返回少量结果不等于上游只做同样少量工作；本步不要求理解完整计划。"
+        },
+        {
+          "id": "l0-first-pyspark-program/aggregate",
+          "title": "按地区把金额合起来",
+          "body": "每个分组先接收属于自己的记录，再按指定指标合并。这里的输入是3条订单、输出是2个地区汇总；sum(amount)是Spark给求和结果列的默认名称。",
+          "boundary": "本题金额均为非空整数，地区非空；NULL、金额精度和更复杂分组留给后续章节。"
+        },
+        {
+          "id": "l0-first-pyspark-program/cleanup",
+          "title": "成功和报错都要收尾",
+          "body": "程序能跑通，不只看屏幕上有没有表，还要检查结果与预期一致、收尾路径清楚。下载任务可换数据运行验证；网页推演本身不会启动Spark，也不会把你标记为已完成真实编程。",
+          "boundary": "进程崩溃、强制终止或清理自身失败仍需环境处理；finally不是一切故障的绝对保证。"
+        }
+      ],
+      "sources": [
+        {
+          "title": "Spark 3.5.7 官方说明",
+          "url": "https://spark.apache.org/docs/3.5.7/quick-start.html"
         }
       ]
     }

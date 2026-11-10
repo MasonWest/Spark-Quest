@@ -1,4 +1,24 @@
 {
+  "l0-driver-executor": {
+    "version": 2,
+    "hash": "eff9c76a8036d43269eda3452f95ae8bd746238db2ede49dc502b769e3477bb1"
+  },
+  "l0-first-pyspark-program": {
+    "version": 2,
+    "hash": "69081e883c832d51445fb67496ce3b4b714b8fae4cc97a7ade5bba8f340830e1"
+  },
+  "l0-sparksession": {
+    "version": 1,
+    "hash": "70e5a00f32f939e39699a3830268fcd070fd6a006f0c8f0a615060396202edc9"
+  },
+  "l0-what-is-spark": {
+    "version": 1,
+    "hash": "5e6a34a2e18eff3f2d6fcf03107e4d421a49da59cb16ca775bff4a0e2d183e75"
+  },
+  "l0-what-problem-spark-solves": {
+    "version": 1,
+    "hash": "c5bd16bfcfbd61734106831d060a150c8ec0d504a371441a66c5b4087c540095"
+  },
   "l1-action": {
     "version": 3,
     "hash": "298e3c441856dc568300e462953ba6eaf02426c5993081a7d2ac5ce48876de54"
@@ -252,12 +272,12 @@
     "hash": "aa8a2d53d5ad57882f2105fe905f99ba5197636a107ba1d5722f153df24f07a9"
   },
   "delayed-checks": {
-    "version": 6,
-    "hash": "c15b4589b62a6f49074ceadf4d34e295dc6bd319f2af68b459cdc127fdcb824d"
+    "version": 7,
+    "hash": "75abb72c8b222eab6d133ddfba8a1e88e639c48e85dba1601cea27b8f9d28698"
   },
   "standard-guides": {
-    "version": 8,
-    "hash": "29b5fdf62d26f40b355b973cc7062d5d9c64ed65ed3b7519e149f2bd005316ba"
+    "version": 9,
+    "hash": "31bee4b49983c5d582aaf9b563365caf71d32d1b5d0583732b9045258c2b0cb4"
   },
   "capstones": {
     "version": 5,

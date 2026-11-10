@@ -11,7 +11,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 BANKS = (
     "l2_reviewed_bank.json", "l3_l6_reviewed_bank.json",
-    "l1_l7_reviewed_bank.json", "extension_reviewed_bank.json",
+    "l1_l7_reviewed_bank.json", "extension_reviewed_bank.json", "l0_reviewed_bank.json",
 )
 
 
@@ -62,6 +62,7 @@ def audit():
             "groups_with_identical_option_sets_across_phases": repeated,
         })
     chapters = defaultdict(list)
+    free_responses = Counter()
     formal_by_level = defaultdict(list)
     for name in BANKS:
         for entry in json.loads((ROOT/'backend/app'/name).read_text(encoding='utf-8'))['lessons']:
@@ -75,16 +76,18 @@ def audit():
             for field in task["fields"]:
                 if field.get('input'):
                     task_shapes['free_response_fields'] += 1
+                    free_responses[lesson['slug'].split('-')[0]] += 1
                     continue
                 options = field["options"]
                 correct = next(i for i, o in enumerate(options) if o["id"] == field["correctOptionId"])
                 chapters[lesson["slug"].split("-")[0]].append(([o["text"] for o in options], correct))
     return {
-        "scope": "Current L1-L7 authored formal banks and primary journey fields; excludes legacy/L0, remedies, delayed checks, and downloadable labs.",
+        "scope": "Current L0-L7 authored formal banks and primary journey fields; excludes legacy questions, remedies, delayed checks, and downloadable labs.",
         "length_unit": "Unicode code points; ties broken uniformly; source-only, not learner analytics",
         "formal": formal,
         "formal_by_level": {chapter:metrics(rows) for chapter,rows in sorted(formal_by_level.items())},
         "journey_task_shapes": dict(task_shapes),
+        "free_response_by_level": dict(free_responses),
         "journey_by_level": {chapter: metrics(rows) for chapter, rows in sorted(chapters.items())},
     }
 

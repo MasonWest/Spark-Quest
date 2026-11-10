@@ -1,0 +1,280 @@
+{
+  "slug": "l0-what-problem-spark-solves",
+  "version": 1,
+  "title": "分工之后，还要付出什么",
+  "mission": "接着上一课的分份计数：换一种指标、加入搬运和重算，看看引擎真正替我们组织哪些工作。",
+  "next": "下一课给这些工作安排角色：谁协调任务，谁处理每一份数据，结果又去哪里。",
+  "source": "https://spark.apache.org/docs/3.5.7/quick-start.html",
+  "correction": "加机器不保证线性加速；缓存需要实际复用与容量；容错有上游与副作用边界；不承诺固定的加速倍数。",
+  "tasks": [
+    {
+      "id": "l0-what-problem-spark-solves/maximum",
+      "knowledgeIds": [
+        "l0-what-problem-spark-solves/maximum"
+      ],
+      "title": "这次不是求和，而是找最大值",
+      "intro": "上一课计数可以相加。这次业务要“全天最长响应时间”，两份数据各自的最大值是6秒和11秒。",
+      "code": "份A最大：6秒\n份B最大：11秒",
+      "prompt": "全天最大响应时间是？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "最大秒数",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "2",
+              "feedback": "2是份数，不是响应时间。"
+            },
+            {
+              "id": "o0",
+              "text": "11",
+              "feedback": "对，取两份最大值中的较大者。"
+            },
+            {
+              "id": "o1",
+              "text": "17",
+              "feedback": "17是相加，不是最大值。"
+            }
+          ],
+          "input": {
+            "kind": "integer",
+            "acceptedAnswers": [
+              "11"
+            ],
+            "incorrectOptionId": "o1",
+            "placeholder": "填写整数"
+          }
+        }
+      ],
+      "insight": "把工作分开后，合并规则必须跟着业务指标走。计数相加、最大值取最大；不能把“合并”都理解成求和。",
+      "ability": "这次不是求和，而是找最大值",
+      "reading": {
+        "id": "l0-what-problem-spark-solves/maximum/reading",
+        "title": "这次不是求和，而是找最大值",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要分布式 + Spark】",
+        "connection": "把工作分开后，合并规则必须跟着业务指标走。计数相加、最大值取最大；不能把“合并”都理解成求和。",
+        "boundary": "这里只处理最大值；平均值等指标的合并规则会在后续课程具体推演。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-what-problem-spark-solves/movement",
+      "knowledgeIds": [
+        "l0-what-problem-spark-solves/movement"
+      ],
+      "title": "算得快，也可能等在搬运上",
+      "intro": "一份对照记录：计算本身花2秒，数据跨机器搬运花8秒。这里的秒数只是教学记录，不是Spark固定规律。",
+      "code": "本次记录：计算2秒；搬运8秒\n只把计算阶段从2秒缩到1秒",
+      "prompt": "哪一部分最值得继续调查？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "优先调查数据搬运",
+              "feedback": "对，先看当前主要代价。"
+            },
+            {
+              "id": "o1",
+              "text": "仅缩短计算用时",
+              "feedback": "计算更快不代表解决了主要等待。"
+            },
+            {
+              "id": "o2",
+              "text": "仅增加计算节点",
+              "feedback": "更多机器还可能增加协调和搬运。"
+            }
+          ]
+        }
+      ],
+      "insight": "并行计算要交换数据、等待依赖并协调任务。观察完整流程后再定位主要成本，才能避免只盯着CPU计算。后面会把某些数据交接称为Shuffle。",
+      "ability": "算得快，也可能等在搬运上",
+      "reading": {
+        "id": "l0-what-problem-spark-solves/movement/reading",
+        "title": "算得快，也可能等在搬运上",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要分布式 + Spark】",
+        "connection": "并行计算要交换数据、等待依赖并协调任务。观察完整流程后再定位主要成本，才能避免只盯着CPU计算。后面会把某些数据交接称为Shuffle。",
+        "boundary": "单次教学记录只能说明本次线索，不是所有作业都由网络限制。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-what-problem-spark-solves/reuse",
+      "knowledgeIds": [
+        "l0-what-problem-spark-solves/reuse"
+      ],
+      "title": "重复工作可以复用，但先确认条件",
+      "intro": "两份报告都要用同一份清洗结果。缓存的意思是尝试保留可复用结果，减少重复计算；是否划算还要看建立、读取与资源成本。",
+      "code": "原流程：清洗 → 报告A；重新清洗 → 报告B\n候选：清洗 → 保留共享结果 → A、B复用",
+      "prompt": "候选方案要先确认什么？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o1",
+              "text": "调用缓存就必定更快",
+              "feedback": "建立和管理缓存也有成本。"
+            },
+            {
+              "id": "o2",
+              "text": "只要同源就自动命中",
+              "feedback": "同一来源不代表同一个待复用结果。"
+            },
+            {
+              "id": "o0",
+              "text": "同一结果确实能复用",
+              "feedback": "对，复用对象与资源条件都要明确。"
+            }
+          ]
+        }
+      ],
+      "insight": "缓存可帮助重复使用同一结果，但要有实际复用、足够资源和正确生命周期。只运行一次、重算便宜或容量不足时，不应直接宣布缓存有收益。",
+      "ability": "重复工作可以复用，但先确认条件",
+      "reading": {
+        "id": "l0-what-problem-spark-solves/reuse/reading",
+        "title": "重复工作可以复用，但先确认条件",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要分布式 + Spark】",
+        "connection": "缓存可帮助重复使用同一结果，但要有实际复用、足够资源和正确生命周期。只运行一次、重算便宜或容量不足时，不应直接宣布缓存有收益。",
+        "boundary": "本课不要求操作缓存API；L1会区分登记与执行，后续再做具体缓存实验。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      },
+      "remediation": {
+        "id": "l0-what-problem-spark-solves/reuse/transfer",
+        "knowledgeId": "l0-what-problem-spark-solves/reuse",
+        "title": "换一份材料再判断",
+        "intro": "用同一个规则处理新材料。",
+        "code": "同一输入：报告A用原始明细，报告B用不同过滤后的明细。",
+        "prompt": "仅凭输入来源相同，能认定两份查询自动复用同一缓存吗？",
+        "field": {
+          "id": "answer",
+          "label": "变式判断",
+          "correctOptionId": "r0",
+          "options": [
+            {
+              "id": "r1",
+              "text": "能，同源就必命中",
+              "feedback": "查询计算不同，不能仅凭同源保证。"
+            },
+            {
+              "id": "r2",
+              "text": "能，同名就必命中",
+              "feedback": "变量名也不是复用证据。"
+            },
+            {
+              "id": "r0",
+              "text": "不能，要查复用关系",
+              "feedback": "对，来源相同不足以证明复用。"
+            }
+          ]
+        },
+        "insight": "先确认复用的是哪个计算结果，再看实际采用与成本。"
+      }
+    },
+    {
+      "id": "l0-what-problem-spark-solves/retry",
+      "knowledgeIds": [
+        "l0-what-problem-spark-solves/retry"
+      ],
+      "title": "一份任务失败，不等于答案能凭空恢复",
+      "intro": "某份计算失败，但原始输入仍可读，规则可重新执行。系统可以尝试重新安排这份工作；重新读取和计算仍要时间。",
+      "code": "输入仍可读 + 计算可重做\n其中一份任务失败",
+      "prompt": "哪种理解正确？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o2",
+              "text": "写外部天然去重",
+              "feedback": "重新执行与外部系统去重是不同问题。"
+            },
+            {
+              "id": "o0",
+              "text": "按条件重做该份",
+              "feedback": "对，恢复有前提也有成本。"
+            },
+            {
+              "id": "o1",
+              "text": "丢结果能猜回",
+              "feedback": "没有输入和规则就不能凭空重建。"
+            }
+          ]
+        }
+      ],
+      "insight": "容错帮助系统处理某些任务失败，但不等于所有故障都可恢复，更不等于任意外部写入只发生一次。先记住“可读输入、可重做工作”，L1再讲记录依赖的血缘。",
+      "ability": "一份任务失败，不等于答案能凭空恢复",
+      "reading": {
+        "id": "l0-what-problem-spark-solves/retry/reading",
+        "title": "一份任务失败，不等于答案能凭空恢复",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要分布式 + Spark】",
+        "connection": "容错帮助系统处理某些任务失败，但不等于所有故障都可恢复，更不等于任意外部写入只发生一次。先记住“可读输入、可重做工作”，L1再讲记录依赖的血缘。",
+        "boundary": "若上游已不可读、整个应用失败或外部写入不可重复，需要其他恢复设计。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    },
+    {
+      "id": "l0-what-problem-spark-solves/measure",
+      "knowledgeIds": [
+        "l0-what-problem-spark-solves/measure"
+      ],
+      "title": "“这次更快”与“永远更快”",
+      "intro": "同一输入、相同资源下，旧流程三次为12/11/12秒，新流程为8/9/8秒；逐组结果已经核对一致。",
+      "code": "旧：12、11、12秒\n新：8、9、8秒\n相同条件；结果一致",
+      "prompt": "目前能支持哪项结论？",
+      "fields": [
+        {
+          "id": "answer",
+          "label": "你的判断",
+          "correctOptionId": "o0",
+          "options": [
+            {
+              "id": "o0",
+              "text": "本次条件下更快",
+              "feedback": "对，明确已验证范围。"
+            },
+            {
+              "id": "o1",
+              "text": "所有数据必提速",
+              "feedback": "换输入与执行条件后需要重新验证。"
+            },
+            {
+              "id": "o2",
+              "text": "节点翻倍快一倍",
+              "feedback": "数据分布和协调成本不由节点数单独决定。"
+            }
+          ]
+        }
+      ],
+      "insight": "收益要由正确结果和可比较的测量支持。重复测量帮助观察波动；报告应说清输入、资源和范围，不从一份样例推导固定倍数。",
+      "ability": "“这次更快”与“永远更快”",
+      "reading": {
+        "id": "l0-what-problem-spark-solves/measure/reading",
+        "title": "“这次更快”与“永远更快”",
+        "sectionTitle": "先用人话理解",
+        "startMarker": "【先用人话理解】",
+        "endMarker": "【为什么需要分布式 + Spark】",
+        "connection": "收益要由正确结果和可比较的测量支持。重复测量帮助观察波动；报告应说清输入、资源和范围，不从一份样例推导固定倍数。",
+        "boundary": "这些是合成教学记录，不是本项目的真实性能基准。",
+        "caution": "旧讲义保留查阅，其中的绝对化说法已在本课标准讲解修正，请结合这里的条件理解。"
+      }
+    }
+  ]
+}

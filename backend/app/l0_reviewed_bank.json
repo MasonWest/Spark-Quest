@@ -1,0 +1,881 @@
+{
+  "version": 1,
+  "scope": "L0",
+  "lessons": [
+    {
+      "lesson_slug": "l0-what-is-spark",
+      "questions": [
+        {
+          "key": "l0-what-is-spark/fit/assessment-v1",
+          "knowledge_id": "l0-what-is-spark/fit",
+          "task_id": "l0-what-is-spark/fit",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "300行报表当前工具运行很快、没有额外平台要求，下一步最合理的是？",
+          "options": [
+            "先评估现有工具",
+            "必须迁移Spark",
+            "必须增加机器",
+            "必须引入缓存"
+          ],
+          "correct_index": 0,
+          "explanation": "先确认需求，不凭工具名决定迁移。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-what-is-spark/fit/review-v1",
+          "knowledge_id": "l0-what-is-spark/fit",
+          "task_id": "l0-what-is-spark/fit",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "只有几KB数据却计划启动集群，评估时还应算入什么？",
+          "options": [
+            "只看输出列数",
+            "启动与协调成本",
+            "只看代码行数",
+            "只看工具流行度"
+          ],
+          "correct_index": 1,
+          "explanation": "分工有成本，输入很小也能学习，但不能直接推导收益。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-what-is-spark/combine/assessment-v1",
+          "knowledge_id": "l0-what-is-spark/combine",
+          "task_id": "l0-what-is-spark/combine",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "三份互不重叠的访问分别计4、7、9次，总访问数是？",
+          "options": [
+            "9",
+            "20",
+            "7",
+            "3"
+          ],
+          "correct_index": 1,
+          "explanation": "总数是各份贡献相加，不是份数或最大值。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-what-is-spark/combine/review-v1",
+          "knowledge_id": "l0-what-is-spark/combine",
+          "task_id": "l0-what-is-spark/combine",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "两份无重叠的告警计数为6、11，合成总数应？",
+          "options": [
+            "11",
+            "6",
+            "17",
+            "2"
+          ],
+          "correct_index": 2,
+          "explanation": "每份合法贡献都需要计入。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-what-is-spark/engine/assessment-v1",
+          "knowledge_id": "l0-what-is-spark/engine",
+          "task_id": "l0-what-is-spark/engine",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "文件留在外部存储，Spark读取后生成日报。Spark主要属于哪一层？",
+          "options": [
+            "长期文件保存层",
+            "集群资源分配层",
+            "数据计算处理层",
+            "业务索引保存层"
+          ],
+          "correct_index": 2,
+          "explanation": "读写外部数据不等于替代其保存职责。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-what-is-spark/engine/review-v1",
+          "knowledge_id": "l0-what-is-spark/engine",
+          "task_id": "l0-what-is-spark/engine",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "日报计算结束后，怎样让结果长期保留？",
+          "options": [
+            "只保留Python变量",
+            "只关闭终端窗口",
+            "仅让查询对象存在",
+            "写到约定的持久存储"
+          ],
+          "correct_index": 3,
+          "explanation": "应明确保存位置和写出规则，不依赖临时变量。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-what-is-spark/local/assessment-v1",
+          "knowledge_id": "l0-what-is-spark/local",
+          "task_id": "l0-what-is-spark/local",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "学习者只有一台电脑，尚未部署集群，可以怎样开始？",
+          "options": [
+            "等待第二台机器",
+            "先租用多节点集群",
+            "必须先安装分布式存储",
+            "使用本地运行模式"
+          ],
+          "correct_index": 3,
+          "explanation": "本地模式可运行学习样例。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-what-is-spark/local/remediation-v1",
+          "knowledge_id": "l0-what-is-spark/local",
+          "task_id": "l0-what-is-spark/local",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "小程序在本机通过，能直接认定远程集群部署已验证吗？",
+          "options": [
+            "不能，还需部署验证",
+            "能，运行位置没有区别",
+            "能，本地就是远程认证",
+            "能，接口相同即全部相同"
+          ],
+          "correct_index": 0,
+          "explanation": "程序语义与部署条件需要分别验证。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-what-is-spark/memory/assessment-v1",
+          "knowledge_id": "l0-what-is-spark/memory",
+          "task_id": "l0-what-is-spark/memory",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "看到Spark作业发生磁盘读写，可以立即断言它不是Spark吗？",
+          "options": [
+            "不能，磁盘仍可能参与",
+            "能，系统永不读写磁盘",
+            "能，只可处理内存输入",
+            "能，所有结果永久缓存"
+          ],
+          "correct_index": 0,
+          "explanation": "Spark不是不使用磁盘的系统。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l0-what-is-spark/memory/remediation-v1",
+          "knowledge_id": "l0-what-is-spark/memory",
+          "task_id": "l0-what-is-spark/memory",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "只创建数据查询对象，就能保证所有结果永久缓存吗？",
+          "options": [
+            "能，变量即完整缓存",
+            "不能，需要另看策略",
+            "能，内存即永久保存",
+            "能，本地运行即保证"
+          ],
+          "correct_index": 1,
+          "explanation": "创建对象与结果持久化不是同一件事。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l0-what-problem-spark-solves",
+      "questions": [
+        {
+          "key": "l0-what-problem-spark-solves/maximum/assessment-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/maximum",
+          "task_id": "l0-what-problem-spark-solves/maximum",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "两份数据的最大响应时间为5秒和13秒，全天最大值？",
+          "options": [
+            "18",
+            "13",
+            "9",
+            "2"
+          ],
+          "correct_index": 1,
+          "explanation": "最大值取较大者，不做求和或局部平均。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/maximum/review-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/maximum",
+          "task_id": "l0-what-problem-spark-solves/maximum",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "三份最高温度为18、21、19，整体最高温度？",
+          "options": [
+            "58",
+            "19",
+            "21",
+            "3"
+          ],
+          "correct_index": 2,
+          "explanation": "合并的是同一指标的各份最大值。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/movement/assessment-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/movement",
+          "task_id": "l0-what-problem-spark-solves/movement",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "本次计算1秒、数据搬运9秒，只加快计算就能解决主要成本吗？",
+          "options": [
+            "能，计算快即整体快",
+            "能，搬运不会影响总时间",
+            "不能，搬运仍占主要部分",
+            "能，增加机器必消除搬运"
+          ],
+          "correct_index": 2,
+          "explanation": "先关注已观察到的主要代价。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/movement/review-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/movement",
+          "task_id": "l0-what-problem-spark-solves/movement",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "节点增加后更慢，同时看到搬运与调度开销上升，应如何理解？",
+          "options": [
+            "认定Spark不能并行",
+            "认定结果一定计算错误",
+            "仅按机器数量宣称提速",
+            "继续定位这些新增代价"
+          ],
+          "correct_index": 3,
+          "explanation": "横向扩展有代价，不能按节点数承诺加速。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/reuse/assessment-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/reuse",
+          "task_id": "l0-what-problem-spark-solves/reuse",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "两份报告共用昂贵清洗结果，评估缓存时第一项条件是？",
+          "options": [
+            "只看是否写了cache",
+            "仅看变量名是否相同",
+            "只看原文件来自同处",
+            "确认实际共享复用"
+          ],
+          "correct_index": 3,
+          "explanation": "要确认复用关系，不能把接口调用当收益证明。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/reuse/review-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/reuse",
+          "task_id": "l0-what-problem-spark-solves/reuse",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "某结果只用一次且重算便宜，应该怎样评价缓存？",
+          "options": [
+            "比较全流程成本",
+            "一定值得永久缓存",
+            "命中一次就保证回本",
+            "只按内存计算名词判断"
+          ],
+          "correct_index": 0,
+          "explanation": "建立与管理成本也需要计入。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/retry/assessment-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/retry",
+          "task_id": "l0-what-problem-spark-solves/retry",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "一份任务失败，输入仍可读且计算可重做，系统可尝试什么？",
+          "options": [
+            "重新安排该份计算",
+            "按结果长度猜原值",
+            "跳过该份仍算总量",
+            "直接把失败份填成零"
+          ],
+          "correct_index": 0,
+          "explanation": "恢复要重新获得正确贡献，不能漏算或造数。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/retry/remediation-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/retry",
+          "task_id": "l0-what-problem-spark-solves/retry",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "输入已永久丢失，仅知道过去做过一次计算，能保证恢复原结果吗？",
+          "options": [
+            "能，从任务名字恢复",
+            "不能保证恢复",
+            "能，增加机器即可恢复",
+            "能，补零等于恢复"
+          ],
+          "correct_index": 1,
+          "explanation": "恢复依赖可用来源或其他可靠副本。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/measure/assessment-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/measure",
+          "task_id": "l0-what-problem-spark-solves/measure",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "同条件多次运行更快且结果一致，合理报告是？",
+          "options": [
+            "所有输入保证同倍加速",
+            "该条件下观察到收益",
+            "所有集群保证耗时减半",
+            "不再需要未来验证"
+          ],
+          "correct_index": 1,
+          "explanation": "结论应限制在已经测量的范围。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l0-what-problem-spark-solves/measure/remediation-v1",
+          "knowledge_id": "l0-what-problem-spark-solves/measure",
+          "task_id": "l0-what-problem-spark-solves/measure",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "原方案冷缓存、新方案热缓存且输入量更小，直接比较秒数缺少什么？",
+          "options": [
+            "更短的变量名称",
+            "更多结果截图",
+            "可比较的实验条件",
+            "固定的加速倍数"
+          ],
+          "correct_index": 2,
+          "explanation": "同时改变多个条件，不能直接把收益归于某一改动。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l0-driver-executor",
+      "questions": [
+        {
+          "key": "l0-driver-executor/coordinate/assessment-v1",
+          "knowledge_id": "l0-driver-executor/coordinate",
+          "task_id": "l0-driver-executor/coordinate",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "主程序组织并跟踪各份任务，主要对应哪个角色？",
+          "options": [
+            "Executor",
+            "输入记录",
+            "Driver",
+            "输出字段"
+          ],
+          "correct_index": 2,
+          "explanation": "Driver协调应用计算。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-driver-executor/coordinate/review-v1",
+          "knowledge_id": "l0-driver-executor/coordinate",
+          "task_id": "l0-driver-executor/coordinate",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "执行端完成一份工作后，谁负责跟踪整个应用的进度？",
+          "options": [
+            "单条数据记录",
+            "一个输出列名",
+            "源文件的表头",
+            "Driver"
+          ],
+          "correct_index": 3,
+          "explanation": "区分应用级协调与单份工作执行。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-driver-executor/execute/assessment-v1",
+          "knowledge_id": "l0-driver-executor/execute",
+          "task_id": "l0-driver-executor/execute",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "Driver已分发任务，对相应数据份实际执行计算的是？",
+          "options": [
+            "源文件表头",
+            "输出字段名",
+            "Driver变量名称",
+            "Executor"
+          ],
+          "correct_index": 3,
+          "explanation": "Executor运行被分配的任务。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-driver-executor/execute/review-v1",
+          "knowledge_id": "l0-driver-executor/execute",
+          "task_id": "l0-driver-executor/execute",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "一个Executor完成任务A后，能继续执行任务B吗？",
+          "options": [
+            "可以，进程可运行多个任务",
+            "不能，一进程只准一个任务",
+            "不能，必须换机器",
+            "不能，必须改业务结果"
+          ],
+          "correct_index": 0,
+          "explanation": "执行进程和一次任务不是同一个概念。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-driver-executor/slots/assessment-v1",
+          "knowledge_id": "l0-driver-executor/slots",
+          "task_id": "l0-driver-executor/slots",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "教学模型：7项等长任务，每轮最多3项，至少几轮？",
+          "options": [
+            "3",
+            "7",
+            "2",
+            "1"
+          ],
+          "correct_index": 0,
+          "explanation": "3+3+1，共3轮。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-driver-executor/slots/review-v1",
+          "knowledge_id": "l0-driver-executor/slots",
+          "task_id": "l0-driver-executor/slots",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "教学模型：6项等长任务，每轮最多2项，至少几轮？",
+          "options": [
+            "2",
+            "3",
+            "6",
+            "4"
+          ],
+          "correct_index": 1,
+          "explanation": "并发容量限制一轮能完成的任务数量。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-driver-executor/results/assessment-v1",
+          "knowledge_id": "l0-driver-executor/results",
+          "task_id": "l0-driver-executor/results",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "只要最终总条数，应回传给主程序什么？",
+          "options": [
+            "全部明细再数",
+            "小计数结果",
+            "所有源文件副本",
+            "每台机器的完整磁盘"
+          ],
+          "correct_index": 1,
+          "explanation": "返回数量与回传所有明细不同。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-driver-executor/results/remediation-v1",
+          "knowledge_id": "l0-driver-executor/results",
+          "task_id": "l0-driver-executor/results",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "要交付海量明细，哪条路线避免强制全部收回Driver？",
+          "options": [
+            "先全量collect再切片",
+            "先全量转Python列表",
+            "按任务写约定存储",
+            "把Driver变量名改短"
+          ],
+          "correct_index": 2,
+          "explanation": "交付大结果要设计写出方式和容量。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-driver-executor/local-roles/assessment-v1",
+          "knowledge_id": "l0-driver-executor/local-roles",
+          "task_id": "l0-driver-executor/local-roles",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "本机只有一台电脑，仍能演练Driver协调与任务执行吗？",
+          "options": [
+            "不能，角色必须各占一机",
+            "不能，本地只有代码没有计算",
+            "可以，本地模式可运行",
+            "不能，必须先租集群"
+          ],
+          "correct_index": 2,
+          "explanation": "职责不等于物理机器数量。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l0-driver-executor/local-roles/remediation-v1",
+          "knowledge_id": "l0-driver-executor/local-roles",
+          "task_id": "l0-driver-executor/local-roles",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "看到Driver与Executor两个名字，可以直接推断有两台机器吗？",
+          "options": [
+            "能，一个名字就是一台机",
+            "能，所有应用固定两台机",
+            "能，本地模式也固定两台机",
+            "不能，需看部署方式"
+          ],
+          "correct_index": 3,
+          "explanation": "角色、进程与机器需要分别区分。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l0-sparksession",
+      "questions": [
+        {
+          "key": "l0-sparksession/entry/assessment-v1",
+          "knowledge_id": "l0-sparksession/entry",
+          "task_id": "l0-sparksession/entry",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "SparkSession.builder.appName(\"demo\")后，取得会话还需要哪一步？",
+          "options": [
+            "show()",
+            "count()",
+            "printSchema()",
+            "getOrCreate()"
+          ],
+          "correct_index": 3,
+          "explanation": "builder设置与会话对象不同。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-sparksession/entry/review-v1",
+          "knowledge_id": "l0-sparksession/entry",
+          "task_id": "l0-sparksession/entry",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "笔记本环境已经提供spark变量，合理起点是？",
+          "options": [
+            "先了解并使用现有会话",
+            "每条查询重建一个应用",
+            "先停止所有共享会话",
+            "只因变量存在就重设全部配置"
+          ],
+          "correct_index": 0,
+          "explanation": "先确认环境和会话所有权。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-sparksession/local-two/assessment-v1",
+          "knowledge_id": "l0-sparksession/local-two",
+          "task_id": "l0-sparksession/local-two",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "master(\"local[3]\")中的3表示什么？",
+          "options": [
+            "本地工作线程设置",
+            "远程机器数量",
+            "数据记录总条数",
+            "查询返回字段数"
+          ],
+          "correct_index": 0,
+          "explanation": "local参数不是机器或业务数据数。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-sparksession/local-two/review-v1",
+          "knowledge_id": "l0-sparksession/local-two",
+          "task_id": "l0-sparksession/local-two",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "想在本机用两个工作线程练习，哪项配置表达这个意图？",
+          "options": [
+            "local[20]",
+            "local[2]",
+            "local[1]",
+            "远程两台机器"
+          ],
+          "correct_index": 1,
+          "explanation": "配置数字表达本地工作线程数。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-sparksession/name/assessment-v1",
+          "knowledge_id": "l0-sparksession/name",
+          "task_id": "l0-sparksession/name",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "appName(\"daily-demo\")会自动读取daily-demo文件吗？",
+          "options": [
+            "会，名字就是路径",
+            "不会，只设置应用名",
+            "会，名字就是SQL表",
+            "会，名字就是输出目录"
+          ],
+          "correct_index": 1,
+          "explanation": "读取路径由实际读取调用指定。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-sparksession/name/review-v1",
+          "knowledge_id": "l0-sparksession/name",
+          "task_id": "l0-sparksession/name",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "要给应用起名便于日志辨认，应使用哪一项？",
+          "options": [
+            "master",
+            "header",
+            "appName",
+            "region"
+          ],
+          "correct_index": 2,
+          "explanation": "识别应用与配置运行位置、文件表头不同。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-sparksession/table/assessment-v1",
+          "knowledge_id": "l0-sparksession/table",
+          "task_id": "l0-sparksession/table",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "给出三行(city,amount)，amount分别2、4、8，df.count()返回？",
+          "options": [
+            "14",
+            "8",
+            "3",
+            "2"
+          ],
+          "correct_index": 2,
+          "explanation": "count数行，不求金额总和。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-sparksession/table/remediation-v1",
+          "knowledge_id": "l0-sparksession/table",
+          "task_id": "l0-sparksession/table",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "只有一行(\"north\",100)，count返回？",
+          "options": [
+            "100",
+            "2",
+            "0",
+            "1"
+          ],
+          "correct_index": 3,
+          "explanation": "一行包含多列仍只贡献一条记录。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-sparksession/stop/assessment-v1",
+          "knowledge_id": "l0-sparksession/stop",
+          "task_id": "l0-sparksession/stop",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "自己创建会话的独立脚本完成后，stop主要表示什么？",
+          "options": [
+            "删除输入业务文件",
+            "永久保存所有结果",
+            "清空所有外部数据库",
+            "释放相应计算资源"
+          ],
+          "correct_index": 3,
+          "explanation": "资源生命周期与业务数据保存不同。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l0-sparksession/stop/remediation-v1",
+          "knowledge_id": "l0-sparksession/stop",
+          "task_id": "l0-sparksession/stop",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "共享平台已有会话，是否应在每个练习结束时盲目stop？",
+          "options": [
+            "先确认会话所有权",
+            "必须无条件停止",
+            "必须先删除源数据",
+            "只要名字相同就能停止"
+          ],
+          "correct_index": 0,
+          "explanation": "共享环境需尊重会话所有权，不能照搬独立脚本。",
+          "dimension": "transfer"
+        }
+      ]
+    },
+    {
+      "lesson_slug": "l0-first-pyspark-program",
+      "questions": [
+        {
+          "key": "l0-first-pyspark-program/environment/assessment-v1",
+          "knowledge_id": "l0-first-pyspark-program/environment",
+          "task_id": "l0-first-pyspark-program/environment",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "导入pyspark就报ModuleNotFoundError，优先核对？",
+          "options": [
+            "当前解释器与包安装",
+            "分组聚合与金额计算",
+            "地区保留与缺失处理",
+            "线程数量与并发配置"
+          ],
+          "correct_index": 0,
+          "explanation": "导入失败先处理当前Python环境。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-first-pyspark-program/environment/review-v1",
+          "knowledge_id": "l0-first-pyspark-program/environment",
+          "task_id": "l0-first-pyspark-program/environment",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "导入成功但启动时报Java相关错误，应先查？",
+          "options": [
+            "地区求和的业务公式",
+            "Java环境兼容性",
+            "CSV某地区的拼写",
+            "结果显示的排序方向"
+          ],
+          "correct_index": 1,
+          "explanation": "区分Python导入、JVM启动和业务计算阶段。",
+          "dimension": "concept"
+        },
+        {
+          "key": "l0-first-pyspark-program/read/assessment-v1",
+          "knowledge_id": "l0-first-pyspark-program/read",
+          "task_id": "l0-first-pyspark-program/read",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "CSV有一行表头与四条订单，header=True且类型正确，count应为？",
+          "options": [
+            "5",
+            "4",
+            "1",
+            "0"
+          ],
+          "correct_index": 1,
+          "explanation": "表头不是订单记录。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-first-pyspark-program/read/review-v1",
+          "knowledge_id": "l0-first-pyspark-program/read",
+          "task_id": "l0-first-pyspark-program/read",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "文件有一行表头、两条订单且属于同一地区，正确读取后count是？",
+          "options": [
+            "1",
+            "3",
+            "2",
+            "0"
+          ],
+          "correct_index": 2,
+          "explanation": "记录数不等于不同地区数。",
+          "dimension": "apply"
+        },
+        {
+          "key": "l0-first-pyspark-program/preview/assessment-v1",
+          "knowledge_id": "l0-first-pyspark-program/preview",
+          "task_id": "l0-first-pyspark-program/preview",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "8条记录先show(3)，随后count，打印条数？",
+          "options": [
+            "3",
+            "5",
+            "8",
+            "1"
+          ],
+          "correct_index": 2,
+          "explanation": "预览不原地截断查询。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-first-pyspark-program/preview/review-v1",
+          "knowledge_id": "l0-first-pyspark-program/preview",
+          "task_id": "l0-first-pyspark-program/preview",
+          "purpose": "review",
+          "type": "single_choice",
+          "prompt": "show(1)只显示一条，能据此证明输入只有一条吗？",
+          "options": [
+            "能，显示上限等于总量",
+            "能，其余记录已被删除",
+            "能，所有记录已被去重",
+            "不能，还需请求条数"
+          ],
+          "correct_index": 3,
+          "explanation": "可见样本不等于完整数据规模。",
+          "dimension": "mechanism"
+        },
+        {
+          "key": "l0-first-pyspark-program/aggregate/assessment-v1",
+          "knowledge_id": "l0-first-pyspark-program/aggregate",
+          "task_id": "l0-first-pyspark-program/aggregate",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "订单east/7、east/4、west/9，按地区求和，east金额？",
+          "options": [
+            "7",
+            "2",
+            "20",
+            "11"
+          ],
+          "correct_index": 3,
+          "explanation": "同地区金额相加，既不计条数也不混入其他组。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-first-pyspark-program/aggregate/remediation-v1",
+          "knowledge_id": "l0-first-pyspark-program/aggregate",
+          "task_id": "l0-first-pyspark-program/aggregate",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "订单A/3、B/5、A/6，按地区求和后的结果是？",
+          "options": [
+            "A=9，B=5",
+            "A=3，B=5",
+            "A=14，B=14",
+            "A=2，B=1"
+          ],
+          "correct_index": 0,
+          "explanation": "逐组汇总保持各组的业务贡献。",
+          "dimension": "debug"
+        },
+        {
+          "key": "l0-first-pyspark-program/cleanup/assessment-v1",
+          "knowledge_id": "l0-first-pyspark-program/cleanup",
+          "task_id": "l0-first-pyspark-program/cleanup",
+          "purpose": "assessment",
+          "type": "single_choice",
+          "prompt": "独立脚本统计途中抛错，怎样仍尝试释放自己创建的会话？",
+          "options": [
+            "在finally中stop",
+            "只在成功末尾stop",
+            "删输入文件代替stop",
+            "吞掉异常宣称成功"
+          ],
+          "correct_index": 0,
+          "explanation": "清理覆盖异常路径，不伪造成功。",
+          "dimension": "transfer"
+        },
+        {
+          "key": "l0-first-pyspark-program/cleanup/remediation-v1",
+          "knowledge_id": "l0-first-pyspark-program/cleanup",
+          "task_id": "l0-first-pyspark-program/cleanup",
+          "purpose": "remediation",
+          "type": "single_choice",
+          "prompt": "本机运行新CSV结果与预期不同，但程序没有异常，应怎样评价？",
+          "options": [
+            "无异常就是计算正确",
+            "先修结果差异",
+            "只看打印格式通过",
+            "直接删除原预期值"
+          ],
+          "correct_index": 1,
+          "explanation": "环境能启动与业务结果正确不是同一个验收。",
+          "dimension": "transfer"
+        }
+      ]
+    }
+  ]
+}

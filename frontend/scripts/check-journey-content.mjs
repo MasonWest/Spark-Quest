@@ -70,6 +70,11 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
     requireThat(text(d.label) && d.href.startsWith('/practice/'), `${file}: invalid download`);
     const dest = path.resolve(root, 'public', d.href.slice(1));
     requireThat(dest.startsWith(path.join(root, 'public') + path.sep) && fs.existsSync(dest), `${file}: missing/unsafe asset ${d.href}`);
+    if (l.project.checksums) {
+      const bytes = fs.readFileSync(dest);
+      if (/\.(py|txt|csv|json)$/.test(dest)) requireThat(!bytes.includes(13), `${file}: project text assets must use LF`);
+      requireThat(l.project.checksums[d.href] === crypto.createHash('sha256').update(bytes).digest('hex'), `${file}: project asset changed; review and increment lesson version`);
+    }
   }
   metadata[l.slug] = { slug:l.slug, version:l.version, title:l.title, tasks:l.tasks.map(t=>({id:t.id})), ...(l.legacyTaskIds ? {legacyTaskIds:l.legacyTaskIds} : {}) };
   const hash = crypto.createHash('sha256').update(JSON.stringify(l)).digest('hex');
@@ -77,6 +82,8 @@ for (const file of fs.readdirSync(dir).filter(f => f.endsWith('.json'))) {
   if (previous) requireThat(l.version > previous.version || (l.version === previous.version && hash === previous.hash), `${file}: published content changed; increment version, preserve IDs, then record release`);
   next[l.slug] = { version: l.version, hash };
 }
+const expectedSlugs = courseSeed.levels.flatMap(level => level.lessons.map(lesson => lesson.slug));
+requireThat(Object.keys(metadata).length === expectedSlugs.length && expectedSlugs.every(slug => metadata[slug]), 'every seeded lesson, including L0, must have an interactive journey');
 const delayed = JSON.parse(fs.readFileSync(path.join(root, 'src/content/delayedChecks.json'), 'utf8'));
 requireThat(Number.isInteger(delayed.version) && delayed.version > 0 && Array.isArray(delayed.items), 'invalid delayed bank');
 unique(delayed.items.map(i => i.id), 'delayed items');
@@ -96,8 +103,8 @@ if (oldDelayed) requireThat(delayed.version > oldDelayed.version || (delayed.ver
 next['delayed-checks'] = { version: delayed.version, hash: delayedHash };
 const guides = JSON.parse(fs.readFileSync(path.join(root, 'src/content/standardGuides.json'), 'utf8'));
 requireThat(Number.isInteger(guides.version) && guides.version > 0, 'invalid standard guide version');
-const guidedSlugs = Object.keys(next).filter(slug => /^l[1-7]-/.test(slug));
-requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover L1 through L7');
+const guidedSlugs = expectedSlugs;
+requireThat(Object.keys(guides.lessons).length === guidedSlugs.length && guidedSlugs.every(slug => guides.lessons[slug]), 'standard guides must cover every lesson from L0 through L7');
 for (const [slug, guide] of Object.entries(guides.lessons)) {
   const lesson = JSON.parse(fs.readFileSync(path.join(dir, `${slug}.json`), 'utf8'));
   requireThat(text(guide.title) && Array.isArray(guide.sections), `${slug}: invalid guide`);

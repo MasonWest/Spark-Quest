@@ -1,4 +1,114 @@
 {
+  "l0-driver-executor": {
+    "slug": "l0-driver-executor",
+    "version": 2,
+    "title": "一份工作，谁协调，谁执行",
+    "tasks": [
+      {
+        "id": "l0-driver-executor/coordinate"
+      },
+      {
+        "id": "l0-driver-executor/execute"
+      },
+      {
+        "id": "l0-driver-executor/slots"
+      },
+      {
+        "id": "l0-driver-executor/results"
+      },
+      {
+        "id": "l0-driver-executor/local-roles"
+      }
+    ]
+  },
+  "l0-first-pyspark-program": {
+    "slug": "l0-first-pyspark-program",
+    "version": 2,
+    "title": "读三行订单，跑完第一个程序",
+    "tasks": [
+      {
+        "id": "l0-first-pyspark-program/environment"
+      },
+      {
+        "id": "l0-first-pyspark-program/read"
+      },
+      {
+        "id": "l0-first-pyspark-program/preview"
+      },
+      {
+        "id": "l0-first-pyspark-program/aggregate"
+      },
+      {
+        "id": "l0-first-pyspark-program/cleanup"
+      }
+    ]
+  },
+  "l0-sparksession": {
+    "slug": "l0-sparksession",
+    "version": 1,
+    "title": "把程序接到Spark入口",
+    "tasks": [
+      {
+        "id": "l0-sparksession/entry"
+      },
+      {
+        "id": "l0-sparksession/local-two"
+      },
+      {
+        "id": "l0-sparksession/name"
+      },
+      {
+        "id": "l0-sparksession/table"
+      },
+      {
+        "id": "l0-sparksession/stop"
+      }
+    ]
+  },
+  "l0-what-is-spark": {
+    "slug": "l0-what-is-spark",
+    "version": 1,
+    "title": "先认识这台计算引擎",
+    "tasks": [
+      {
+        "id": "l0-what-is-spark/fit"
+      },
+      {
+        "id": "l0-what-is-spark/combine"
+      },
+      {
+        "id": "l0-what-is-spark/engine"
+      },
+      {
+        "id": "l0-what-is-spark/local"
+      },
+      {
+        "id": "l0-what-is-spark/memory"
+      }
+    ]
+  },
+  "l0-what-problem-spark-solves": {
+    "slug": "l0-what-problem-spark-solves",
+    "version": 1,
+    "title": "分工之后，还要付出什么",
+    "tasks": [
+      {
+        "id": "l0-what-problem-spark-solves/maximum"
+      },
+      {
+        "id": "l0-what-problem-spark-solves/movement"
+      },
+      {
+        "id": "l0-what-problem-spark-solves/reuse"
+      },
+      {
+        "id": "l0-what-problem-spark-solves/retry"
+      },
+      {
+        "id": "l0-what-problem-spark-solves/measure"
+      }
+    ]
+  },
   "l1-action": {
     "slug": "l1-action",
     "version": 3,

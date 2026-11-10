@@ -79,7 +79,7 @@ class ExtensionTests(unittest.TestCase):
         self.assertEqual(self.db.scalar(select(func.count()).select_from(Lesson)),68)
         self.assertEqual(self.db.scalar(select(func.count()).select_from(QuizQuestion)),681)
         seed_reviewed_bank(self.db);self.db.commit()
-        self.assertEqual(self.db.scalar(select(func.count()).select_from(QuizQuestion)),1291)
+        self.assertEqual(self.db.scalar(select(func.count()).select_from(QuizQuestion)),1341)
         self.assertEqual(seed_reviewed_bank(self.db),0)
 
 

@@ -1,6 +1,131 @@
 {
-  "version": 6,
+  "version": 7,
   "items": [
+    {
+      "id": "l0-driver-executor/execute/transfer-delayed-v1",
+      "slug": "l0-driver-executor",
+      "taskId": "l0-driver-executor/execute",
+      "knowledgeId": "l0-driver-executor/execute",
+      "title": "谁处理分到的那份数据 · 隔天验证",
+      "code": "节点X上一个Executor先后运行Task 3和Task 7。",
+      "prompt": "这条记录能证明什么？",
+      "options": [
+        {
+          "id": "d2",
+          "text": "必须同时运行两个任务"
+        },
+        {
+          "id": "d0",
+          "text": "该进程执行过两个任务"
+        },
+        {
+          "id": "d1",
+          "text": "必有两台物理机器"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "先后运行不等于同时运行，任务数也不等于机器数。"
+    },
+    {
+      "id": "l0-first-pyspark-program/preview/transfer-delayed-v1",
+      "slug": "l0-first-pyspark-program",
+      "taskId": "l0-first-pyspark-program/preview",
+      "knowledgeId": "l0-first-pyspark-program/preview",
+      "title": "看两行，不是只剩两行 · 隔天验证",
+      "code": "输入有9条，先show(4)，之后再请求完整count。",
+      "prompt": "count返回？",
+      "options": [
+        {
+          "id": "d2",
+          "text": "5"
+        },
+        {
+          "id": "d0",
+          "text": "9"
+        },
+        {
+          "id": "d1",
+          "text": "4"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "仍是9；show显示多少与原查询的总条数不同。"
+    },
+    {
+      "id": "l0-sparksession/stop/transfer-delayed-v1",
+      "slug": "l0-sparksession",
+      "taskId": "l0-sparksession/stop",
+      "knowledgeId": "l0-sparksession/stop",
+      "title": "谁创建，谁负责收尾 · 隔天验证",
+      "code": "自己创建的独立脚本已经取完结果，原始文件仍需保留。",
+      "prompt": "结束计算资源应选择？",
+      "options": [
+        {
+          "id": "d2",
+          "text": "把全部明细collect回来"
+        },
+        {
+          "id": "d0",
+          "text": "调用spark.stop()"
+        },
+        {
+          "id": "d1",
+          "text": "删除所有输入文件"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "stop释放计算资源，不删除输入，也无需为关闭而收集全部明细。"
+    },
+    {
+      "id": "l0-what-is-spark/combine/transfer-delayed-v1",
+      "slug": "l0-what-is-spark",
+      "taskId": "l0-what-is-spark/combine",
+      "knowledgeId": "l0-what-is-spark/combine",
+      "title": "三份计数怎样合成一份 · 隔天验证",
+      "code": "互不重叠的三份记录：2条、10条、7条",
+      "prompt": "合并后的条数是？",
+      "options": [
+        {
+          "id": "d2",
+          "text": "3"
+        },
+        {
+          "id": "d0",
+          "text": "19"
+        },
+        {
+          "id": "d1",
+          "text": "10"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "无重叠计数相加得到19；分工不应丢贡献。"
+    },
+    {
+      "id": "l0-what-problem-spark-solves/reuse/transfer-delayed-v1",
+      "slug": "l0-what-problem-spark-solves",
+      "taskId": "l0-what-problem-spark-solves/reuse",
+      "knowledgeId": "l0-what-problem-spark-solves/reuse",
+      "title": "重复工作可以复用，但先确认条件 · 隔天验证",
+      "code": "昂贵结果只生成一次供两份报告使用，但缓存建立时间尚未计入。",
+      "prompt": "能直接用热缓存那一次耗时宣称全流程收益吗？",
+      "options": [
+        {
+          "id": "d2",
+          "text": "能，原始输入没变即可"
+        },
+        {
+          "id": "d0",
+          "text": "不能，还要计建立成本"
+        },
+        {
+          "id": "d1",
+          "text": "能，命中就证明回本"
+        }
+      ],
+      "correctOptionId": "d0",
+      "explanation": "比较范围必须一致，复用收益需扣除建立和资源成本。"
+    },
     {
       "id": "l1-action/collect-transfer-delayed-v1",
       "slug": "l1-action",
